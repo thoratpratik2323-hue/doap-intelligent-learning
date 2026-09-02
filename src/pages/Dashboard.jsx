@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Zap, Code, Video, TrendingUp, Trophy, Flame, Laptop, Mic, ArrowRight, CheckCircle2, Play, Sparkles } from 'lucide-react';
+import { SmartCoachRecommendation } from '../components/Common/SmartCoachRecommendation';
 import { 
   ResponsiveContainer, 
   LineChart, 
@@ -59,6 +60,9 @@ export const Dashboard = () => {
           <span>Launch AI Interview</span>
         </button>
       </div>
+
+      {/* AI Smart Coach & Study Balance Nudge */}
+      <SmartCoachRecommendation />
 
       {/* Top 4 Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

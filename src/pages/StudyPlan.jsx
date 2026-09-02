@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CheckCircle2, Circle, Clock, Sparkles, Plus, Trash2, X, Check } from 'lucide-react';
+import { SmartCoachRecommendation } from '../components/Common/SmartCoachRecommendation';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -123,6 +124,9 @@ export const StudyPlan = () => {
           <span>Add Custom Task</span>
         </button>
       </div>
+
+      {/* AI Smart Learning Coach & Balance Nudge */}
+      <SmartCoachRecommendation />
 
       {/* Days Strip */}
       <div className="grid grid-cols-7 gap-2">
