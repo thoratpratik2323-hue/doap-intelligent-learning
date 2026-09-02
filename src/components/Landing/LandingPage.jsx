@@ -73,13 +73,13 @@ export const LandingPage = ({ onGetStarted, onSignIn }) => {
           {/* Left Wordmark */}
           <div 
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center gap-2 cursor-pointer group"
+            className="flex items-center gap-2.5 cursor-pointer group"
           >
-            <span className={`font-black text-xl tracking-tight transition-opacity group-hover:opacity-80 ${
-              isDarkMode ? 'text-white' : 'text-[#0a0a0a]'
-            }`}>
-              DOAP
-            </span>
+            <img 
+              src="/doap-logo.jpg" 
+              alt="DOAP Logo" 
+              className="h-8 object-contain rounded-lg hover:opacity-80 transition-opacity" 
+            />
           </div>
 
           {/* Center Links */}

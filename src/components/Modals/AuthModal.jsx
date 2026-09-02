@@ -61,9 +61,11 @@ export const AuthModal = () => {
           isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
         }`}>
           <div className="flex items-center gap-2">
-            <span className={`font-black text-xl tracking-tighter ${isDarkMode ? 'text-white' : 'text-black'}`}>
-              DOAP
-            </span>
+            <img 
+              src="/doap-logo.jpg" 
+              alt="DOAP Logo" 
+              className="h-7 object-contain rounded-lg" 
+            />
           </div>
 
           <button 

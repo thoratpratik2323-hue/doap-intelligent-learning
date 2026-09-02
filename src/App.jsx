@@ -30,10 +30,12 @@ import { Profile } from './pages/Profile';
 const LoadingScreen = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 select-none doap-canvas">
-      <div className="rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center space-y-4 border doap-card">
-        <div className="w-12 h-12 rounded-2xl mx-auto flex items-center justify-center font-black text-xl shadow-md" style={{ backgroundColor: 'var(--accent, var(--doap-accent))', color: 'var(--background, var(--doap-bg))' }}>
-          D
-        </div>
+      <div className="rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center space-y-4 border doap-card" style={{ backgroundColor: 'var(--doap-surface, #111111)', borderColor: 'var(--doap-border, #262626)' }}>
+        <img 
+          src="/doap-logo.jpg" 
+          alt="DOAP Logo" 
+          className="h-10 mx-auto object-contain rounded-xl shadow-md animate-pulse" 
+        />
         <div className="space-y-1">
           <h3 className="font-bold text-base tracking-tight" style={{ color: 'var(--text-primary, var(--doap-text-prim))' }}>Resolving DOAP Session</h3>
           <p className="text-xs font-mono" style={{ color: 'var(--text-secondary, var(--doap-text-sec))' }}>Verifying session status...</p>

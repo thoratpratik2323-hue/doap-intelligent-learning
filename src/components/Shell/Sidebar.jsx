@@ -74,26 +74,30 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
       }}
     >
       {/* Sidebar Header / Logo */}
-      <div className="p-5 flex items-center justify-between border-b" style={{ borderColor: 'var(--doap-border)' }}>
+      <div className="p-4 sm:p-5 flex items-center justify-between border-b" style={{ borderColor: 'var(--doap-border)' }}>
         <div 
           onClick={() => handleNavClick('/')} 
           className="flex items-center gap-3 cursor-pointer group"
         >
           {!isSidebarCollapsed ? (
             <div className="flex items-center gap-2">
-              <span className="font-black text-2xl tracking-tighter" style={{ color: 'var(--doap-text-prim)' }}>
-                DOAP
-              </span>
+              <img 
+                src="/doap-logo.jpg" 
+                alt="DOAP Logo" 
+                className="h-8 object-contain rounded-lg hover:opacity-90 transition-opacity" 
+              />
               {isDevBypass && (
                 <span className="px-1.5 py-0.5 rounded font-mono text-[9px] font-bold border" style={{ backgroundColor: 'var(--doap-surface-sec)', borderColor: 'var(--doap-border)', color: 'var(--doap-text-sec)' }}>
-                  DEV MODE
+                  DEV
                 </span>
               )}
             </div>
           ) : (
-            <span className="font-black text-xl tracking-tighter" style={{ color: 'var(--doap-text-prim)' }}>
-              D
-            </span>
+            <img 
+              src="/doap-logo.jpg" 
+              alt="DOAP Logo" 
+              className="w-8 h-8 object-contain rounded-lg" 
+            />
           )}
         </div>
 
