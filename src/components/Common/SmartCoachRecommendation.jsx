@@ -183,7 +183,7 @@ export const SmartCoachRecommendation = ({ className = '' }) => {
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           {/* Left Column: AI Recommendation Details */}
-          <div className="space-y-3 flex-1">
+          <div className="space-y-2.5 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase border flex items-center gap-1.5 ${currentRec.badgeColor}`}>
                 <Sparkles size={11} />
@@ -195,14 +195,25 @@ export const SmartCoachRecommendation = ({ className = '' }) => {
               </span>
             </div>
 
-            <div className="space-y-1">
-              <h3 className={`text-base sm:text-lg font-bold tracking-tight flex items-center gap-2 ${
-                isDarkMode ? 'text-white' : 'text-neutral-900'
-              }`}>
-                <IconComponent size={20} className="shrink-0" style={{ color: accentHex }} />
-                <span>{currentRec.title}</span>
-              </h3>
-              <p className={`text-xs sm:text-sm leading-relaxed ${
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 border shadow-xs"
+                  style={{ 
+                    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                    borderColor: isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)',
+                    color: accentHex 
+                  }}
+                >
+                  <IconComponent size={18} />
+                </div>
+                <h3 className={`text-base sm:text-lg font-bold tracking-tight leading-snug ${
+                  isDarkMode ? 'text-white' : 'text-neutral-900'
+                }`}>
+                  {currentRec.title}
+                </h3>
+              </div>
+              <p className={`text-xs sm:text-sm leading-relaxed pl-12 ${
                 isDarkMode ? 'text-neutral-300' : 'text-neutral-600'
               }`}>
                 {currentRec.description}

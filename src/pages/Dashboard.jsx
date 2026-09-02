@@ -68,25 +68,25 @@ export const Dashboard = () => {
       {/* Top 4 Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* AI Readiness Card */}
-        <div className={`p-5 rounded-3xl space-y-3 border transition-colors doap-card ${
+        <div className={`p-5 rounded-3xl space-y-3 border transition-colors doap-card flex flex-col items-center justify-between text-center ${
           isDarkMode 
             ? 'bg-[#111111] border-neutral-800 text-white' 
             : 'bg-[#f7f7f7] border-neutral-200 text-[#0a0a0a]'
         }`}>
-          <div className="flex justify-between items-center">
-            <span className={`text-[11px] font-mono uppercase tracking-wider ${
+          <div className="flex items-center justify-center gap-1.5 w-full">
+            <span className={`text-[11px] font-mono font-bold uppercase tracking-wider ${
               isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
             }`}>
               AI READINESS
             </span>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5 my-1">
             <div className={`text-5xl font-black ${
               isDarkMode ? 'text-white' : 'text-black'
             }`} style={{ color: readinessScore > 0 ? accentHex : undefined }}>
               {readinessScore > 0 ? `${readinessScore}%` : '--'}
             </div>
-            <div className={`flex items-center gap-1 text-xs font-medium ${
+            <div className={`flex items-center justify-center gap-1 text-xs font-medium ${
               isDarkMode ? 'text-neutral-400' : 'text-neutral-600'
             }`}>
               {readinessScore > 0 ? (
@@ -100,7 +100,7 @@ export const Dashboard = () => {
                   className="text-xs font-bold underline cursor-pointer hover:opacity-80"
                   style={{ color: accentHex }}
                 >
-                  + Take Assessment to calculate
+                  + Take Assessment
                 </button>
               )}
             </div>
@@ -110,25 +110,21 @@ export const Dashboard = () => {
         {/* Study Tasks Card */}
         <div 
           onClick={() => navigateTo('/study-plan')}
-          className={`p-5 rounded-3xl space-y-3 border flex flex-col justify-between transition-colors cursor-pointer doap-card ${
+          className={`p-5 rounded-3xl space-y-3 border flex flex-col items-center justify-between text-center transition-colors cursor-pointer doap-card ${
             isDarkMode 
               ? 'bg-[#111111] border-neutral-800 text-white hover:border-neutral-700' 
               : 'bg-white border-neutral-200 text-[#0a0a0a] hover:border-neutral-300'
           }`}
         >
-          <div className="flex justify-between items-start">
-            <span className={`text-[11px] font-mono uppercase tracking-wider ${
+          <div className="flex items-center justify-center gap-1.5 w-full">
+            <Zap size={14} className={isDarkMode ? "text-neutral-400" : "text-neutral-500"} />
+            <span className={`text-[11px] font-mono font-bold uppercase tracking-wider ${
               isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
             }`}>
               STUDY TASKS
             </span>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              isDarkMode ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-100 text-neutral-700'
-            }`}>
-              <Zap size={16} />
-            </div>
           </div>
-          <div>
+          <div className="space-y-1 my-1">
             <div className={`text-4xl font-extrabold ${isDarkMode ? 'text-white' : 'text-black'}`}>
               {totalTasks > 0 ? `${tasksCompleted}/${totalTasks}` : '0'}
             </div>
@@ -141,25 +137,21 @@ export const Dashboard = () => {
         {/* Coding Practice Card */}
         <div 
           onClick={() => navigateTo('/coding')}
-          className={`p-5 rounded-3xl space-y-3 border flex flex-col justify-between transition-colors cursor-pointer doap-card ${
+          className={`p-5 rounded-3xl space-y-3 border flex flex-col items-center justify-between text-center transition-colors cursor-pointer doap-card ${
             isDarkMode 
               ? 'bg-[#111111] border-neutral-800 text-white hover:border-neutral-700' 
               : 'bg-white border-neutral-200 text-[#0a0a0a] hover:border-neutral-300'
           }`}
         >
-          <div className="flex justify-between items-start">
-            <span className={`text-[11px] font-mono uppercase tracking-wider ${
+          <div className="flex items-center justify-center gap-1.5 w-full">
+            <Code size={14} className={isDarkMode ? "text-neutral-400" : "text-neutral-500"} />
+            <span className={`text-[11px] font-mono font-bold uppercase tracking-wider ${
               isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
             }`}>
               CODING PRACTICE
             </span>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              isDarkMode ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-100 text-neutral-700'
-            }`}>
-              <Code size={16} />
-            </div>
           </div>
-          <div>
+          <div className="space-y-1 my-1">
             <div className={`text-4xl font-extrabold ${isDarkMode ? 'text-white' : 'text-black'}`}>
               Sandbox
             </div>
@@ -170,24 +162,20 @@ export const Dashboard = () => {
         </div>
 
         {/* Day Streak Card */}
-        <div className={`p-5 rounded-3xl space-y-3 border flex flex-col justify-between transition-colors doap-card ${
+        <div className={`p-5 rounded-3xl space-y-3 border flex flex-col items-center justify-between text-center transition-colors doap-card ${
           isDarkMode 
             ? 'bg-[#111111] border-neutral-800 text-white' 
             : 'bg-white border-neutral-200 text-[#0a0a0a]'
         }`}>
-          <div className="flex justify-between items-start">
-            <span className={`text-[11px] font-mono uppercase tracking-wider ${
+          <div className="flex items-center justify-center gap-1.5 w-full">
+            <Flame size={14} className={isDarkMode ? "text-amber-400" : "text-amber-500"} />
+            <span className={`text-[11px] font-mono font-bold uppercase tracking-wider ${
               isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
             }`}>
               DAY STREAK
             </span>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              isDarkMode ? 'bg-neutral-800 text-amber-400' : 'bg-neutral-100 text-amber-500'
-            }`}>
-              <Flame size={16} />
-            </div>
           </div>
-          <div>
+          <div className="space-y-1 my-1">
             <div className={`text-4xl font-extrabold ${isDarkMode ? 'text-white' : 'text-black'}`}>{streak} Day</div>
             <p className={`text-xs font-medium ${isDarkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>Active learning streak</p>
           </div>
@@ -200,11 +188,14 @@ export const Dashboard = () => {
         <div className={`lg:col-span-7 p-6 rounded-3xl border space-y-4 doap-card ${
           isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
         }`}>
-          <span className={`text-[11px] font-mono uppercase tracking-widest block ${
-            isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
-          }`}>
-            PERFORMANCE TRAJECTORY
-          </span>
+          <div className="flex items-center justify-between border-b pb-3" style={{ borderColor: isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }}>
+            <span className={`text-[11px] font-mono uppercase tracking-widest font-bold block ${
+              isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
+            }`}>
+              PERFORMANCE TRAJECTORY
+            </span>
+            <span className="text-[10px] font-mono text-neutral-500">Live Trend</span>
+          </div>
           
           {hasAssessments ? (
             <div className="h-64 w-full">
@@ -249,11 +240,14 @@ export const Dashboard = () => {
         <div className={`lg:col-span-5 p-6 rounded-3xl border space-y-4 doap-card ${
           isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
         }`}>
-          <span className={`text-[11px] font-mono uppercase tracking-widest block ${
-            isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
-          }`}>
-            SKILL MATRIX RADAR
-          </span>
+          <div className="flex items-center justify-between border-b pb-3" style={{ borderColor: isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }}>
+            <span className={`text-[11px] font-mono uppercase tracking-widest font-bold block ${
+              isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
+            }`}>
+              SKILL MATRIX RADAR
+            </span>
+            <span className="text-[10px] font-mono text-neutral-500">Live Radar</span>
+          </div>
 
           {hasAssessments ? (
             <div className="h-64 w-full flex items-center justify-center">
