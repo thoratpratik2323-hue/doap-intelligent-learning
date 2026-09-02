@@ -11,16 +11,15 @@ const PROBLEM_DEFINITIONS = [
     category: "Arrays",
     functionName: "twoSum",
     description: "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.",
-    starterCode: `function twoSum(nums, target) {
-  const map = new Map();
-  for (let i = 0; i < nums.length; i++) {
-    const complement = target - nums[i];
-    if (map.has(complement)) {
-      return [map.get(complement), i];
-    }
-    map.set(nums[i], i);
-  }
-  return [];
+    hint: "Instead of nested loops O(N²), store visited numbers and their indices in a Map to find the complement (target - num) in O(1) lookup time.",
+    starterCode: `/**
+ * @param {number[]} nums
+ * @param {number} target
+ * @return {number[]}
+ */
+function twoSum(nums, target) {
+  // Write your solution here
+  
 }`,
     tests: [
       { input: [[2, 7, 11, 15], 9], expected: [0, 1], display: "twoSum([2, 7, 11, 15], 9)" },
@@ -35,17 +34,14 @@ const PROBLEM_DEFINITIONS = [
     category: "Strings",
     functionName: "isValid",
     description: "Given a string `s` containing just '(', ')', '{', '}', '[' and ']', determine if the input string is valid.",
-    starterCode: `function isValid(s) {
-  const stack = [];
-  const map = { ')': '(', '}': '{', ']': '[' };
-  for (const char of s) {
-    if (char === '(' || char === '{' || char === '[') {
-      stack.push(char);
-    } else if (stack.pop() !== map[char]) {
-      return false;
-    }
-  }
-  return stack.length === 0;
+    hint: "Use a Stack (LIFO). Push opening brackets onto the stack. When seeing a closing bracket, pop the top element and verify it matches.",
+    starterCode: `/**
+ * @param {string} s
+ * @return {boolean}
+ */
+function isValid(s) {
+  // Write your solution here
+  
 }`,
     tests: [
       { input: ["()[]{}"], expected: true, display: 'isValid("()[]{}")' },
@@ -61,8 +57,14 @@ const PROBLEM_DEFINITIONS = [
     category: "Linked Lists",
     functionName: "reverseList",
     description: "Given the head of a singly linked list represented as an array, return the reversed list array.",
-    starterCode: `function reverseList(head) {
-  return [...head].reverse();
+    hint: "Iterate through the elements and construct the reversed output, or use array manipulation methods.",
+    starterCode: `/**
+ * @param {number[]} head
+ * @return {number[]}
+ */
+function reverseList(head) {
+  // Write your solution here
+  
 }`,
     tests: [
       { input: [[1, 2, 3, 4, 5]], expected: [5, 4, 3, 2, 1], display: "reverseList([1, 2, 3, 4, 5])" },
@@ -77,17 +79,14 @@ const PROBLEM_DEFINITIONS = [
     category: "Arrays",
     functionName: "maxProfit",
     description: "Find the maximum profit you can achieve by buying on one day and selling on a different future day.",
-    starterCode: `function maxProfit(prices) {
-  let minPrice = Infinity;
-  let maxProfit = 0;
-  for (const price of prices) {
-    if (price < minPrice) {
-      minPrice = price;
-    } else if (price - minPrice > maxProfit) {
-      maxProfit = price - minPrice;
-    }
-  }
-  return maxProfit;
+    hint: "Keep track of the minimum price seen so far. At each day, calculate (current price - min price) and track the highest profit.",
+    starterCode: `/**
+ * @param {number[]} prices
+ * @return {number}
+ */
+function maxProfit(prices) {
+  // Write your solution here
+  
 }`,
     tests: [
       { input: [[7, 1, 5, 3, 6, 4]], expected: 5, display: "maxProfit([7, 1, 5, 3, 6, 4])" },
@@ -101,23 +100,63 @@ const PROBLEM_DEFINITIONS = [
     category: "Linked Lists",
     functionName: "mergeTwoLists",
     description: "Merge two sorted linked lists represented as arrays into one sorted list.",
-    starterCode: `function mergeTwoLists(list1, list2) {
-  const result = [];
-  let i = 0, j = 0;
-  while (i < list1.length && j < list2.length) {
-    if (list1[i] <= list2[j]) {
-      result.push(list1[i++]);
-    } else {
-      result.push(list2[j++]);
-    }
-  }
-  while (i < list1.length) result.push(list1[i++]);
-  while (j < list2.length) result.push(list2[j++]);
-  return result;
+    hint: "Use two pointers pointing to the heads of both lists. Compare current values, push the smaller one to result, and increment that pointer.",
+    starterCode: `/**
+ * @param {number[]} list1
+ * @param {number[]} list2
+ * @return {number[]}
+ */
+function mergeTwoLists(list1, list2) {
+  // Write your solution here
+  
 }`,
     tests: [
       { input: [[1, 2, 4], [1, 3, 4]], expected: [1, 1, 2, 3, 4, 4], display: "mergeTwoLists([1,2,4], [1,3,4])" },
       { input: [[], []], expected: [], display: "mergeTwoLists([], [])" }
+    ]
+  },
+  {
+    id: 6,
+    title: "Binary Search",
+    difficulty: "Easy",
+    category: "Searching",
+    functionName: "search",
+    description: "Given an array of integers `nums` which is sorted in ascending order, and an integer `target`, return the index of `target` if it exists, or `-1` if it does not.",
+    hint: "Maintain left and right boundaries. Check the middle element: if nums[mid] === target return mid; if nums[mid] < target search right; else search left.",
+    starterCode: `/**
+ * @param {number[]} nums
+ * @param {number} target
+ * @return {number}
+ */
+function search(nums, target) {
+  // Write your solution here
+  
+}`,
+    tests: [
+      { input: [[-1, 0, 3, 5, 9, 12], 9], expected: 4, display: "search([-1,0,3,5,9,12], 9)" },
+      { input: [[-1, 0, 3, 5, 9, 12], 2], expected: -1, display: "search([-1,0,3,5,9,12], 2)" }
+    ]
+  },
+  {
+    id: 7,
+    title: "Maximum Subarray (Kadane's)",
+    difficulty: "Medium",
+    category: "Dynamic Programming",
+    functionName: "maxSubArray",
+    description: "Given an integer array `nums`, find the subarray with the largest sum, and return its sum.",
+    hint: "Use Kadane's Algorithm: At each step, currentMax = Math.max(num, currentMax + num), and update globalMax = Math.max(globalMax, currentMax).",
+    starterCode: `/**
+ * @param {number[]} nums
+ * @return {number}
+ */
+function maxSubArray(nums) {
+  // Write your solution here
+  
+}`,
+    tests: [
+      { input: [[-2, 1, -3, 4, -1, 2, 1, -5, 4]], expected: 6, display: "maxSubArray([-2,1,-3,4,-1,2,1,-5,4])" },
+      { input: [[1]], expected: 1, display: "maxSubArray([1])" },
+      { input: [[5, 4, -1, 7, 8]], expected: 23, display: "maxSubArray([5,4,-1,7,8])" }
     ]
   }
 ];
@@ -127,7 +166,7 @@ function deepEqual(a, b) {
 }
 
 export const CodingPractice = () => {
-  const { isDarkMode, activeAccentHex } = useTheme();
+  const { isDarkMode, activeAccentHex, navigateTo } = useTheme();
   const { userProgress, updateUserProgress } = useAuth();
   const accentHex = activeAccentHex || 'var(--doap-accent, #ffffff)';
 
@@ -139,6 +178,7 @@ export const CodingPractice = () => {
   // Active Sandbox State
   const [activeProblem, setActiveProblem] = useState(null);
   const [code, setCode] = useState('');
+  const [showHint, setShowHint] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [runResult, setRunResult] = useState(null);
 
@@ -158,6 +198,7 @@ export const CodingPractice = () => {
   const handleOpenProblem = (prob) => {
     setActiveProblem(prob);
     setCode(prob.starterCode);
+    setShowHint(false);
     setRunResult(null);
   };
 
@@ -366,15 +407,38 @@ export const CodingPractice = () => {
             <div className="p-4 flex-1 overflow-y-auto space-y-4 font-mono">
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-xs text-neutral-400">
-                  <span>JavaScript (ES6) Sandbox</span>
+                  <div className="flex items-center gap-3">
+                    <span>JavaScript (ES6) Sandbox</span>
+                    {activeProblem.hint && (
+                      <button 
+                        onClick={() => setShowHint(!showHint)}
+                        className={`text-[11px] px-2 py-0.5 rounded-md border flex items-center gap-1 transition-colors cursor-pointer ${
+                          showHint 
+                            ? 'bg-amber-400/20 text-amber-300 border-amber-400/40 font-bold' 
+                            : 'bg-neutral-900 border-neutral-700 text-neutral-400 hover:text-amber-300 hover:border-amber-400/30'
+                        }`}
+                      >
+                        <Sparkles size={11} />
+                        <span>{showHint ? 'Hide Hint' : '💡 Need a Hint?'}</span>
+                      </button>
+                    )}
+                  </div>
                   <button 
                     onClick={() => setCode(activeProblem.starterCode)}
-                    className="text-[11px] flex items-center gap-1 text-neutral-400 hover:text-white"
+                    className="text-[11px] flex items-center gap-1 text-neutral-400 hover:text-white cursor-pointer"
                   >
                     <RefreshCw size={11} />
                     <span>Reset Starter Code</span>
                   </button>
                 </div>
+
+                {/* Collapsible Hint Card */}
+                {showHint && activeProblem.hint && (
+                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-start gap-2 animate-fade-in">
+                    <Sparkles size={15} className="shrink-0 text-amber-400 mt-0.5" />
+                    <p className="leading-relaxed"><strong className="text-amber-300">Algorithmic Hint:</strong> {activeProblem.hint}</p>
+                  </div>
+                )}
 
                 <textarea
                   value={code}
@@ -386,6 +450,7 @@ export const CodingPractice = () => {
                     borderColor: 'var(--doap-border, #262626)', 
                     color: '#e4e4e7' 
                   }}
+                  placeholder="// Write your solution here..."
                   spellCheck={false}
                 />
               </div>
