@@ -213,7 +213,16 @@ export const Profile = () => {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-xs font-mono text-neutral-500">No interests added yet.</p>
+                  <div className="py-2">
+                    <p className="text-xs font-mono text-neutral-500 mb-2">No interests added yet.</p>
+                    <button
+                      onClick={() => setIsEditProfileOpen(true)}
+                      className="text-xs font-bold underline cursor-pointer"
+                      style={{ color: accentHex }}
+                    >
+                      + Add Interests (e.g. AI, Cloud)
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -239,7 +248,16 @@ export const Profile = () => {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-xs font-mono text-neutral-500">No career goals added yet.</p>
+                  <div className="py-2">
+                    <p className="text-xs font-mono text-neutral-500 mb-2">No career goals added yet.</p>
+                    <button
+                      onClick={() => setIsEditProfileOpen(true)}
+                      className="text-xs font-bold underline cursor-pointer"
+                      style={{ color: accentHex }}
+                    >
+                      + Add Career Goals (e.g. SDE at Google)
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
