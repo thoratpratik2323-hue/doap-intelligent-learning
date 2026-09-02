@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="public/doap-logo.jpg" alt="DOAP Logo" width="520" style="border-radius: 16px; margin-bottom: 20px;" />
+
 # ⚡ DOAP — Intelligent Learning & Engineering Ecosystem
 ### *The Ultimate AI-Powered Software Engineering Mentorship & Interview Acceleration Platform*
 
