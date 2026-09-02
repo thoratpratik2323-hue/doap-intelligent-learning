@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Zap, Code, Video, TrendingUp, Trophy, Flame, Laptop, Mic, ArrowRight, CheckCircle2, Play, Sparkles } from 'lucide-react';
 import { SmartCoachRecommendation } from '../components/Common/SmartCoachRecommendation';
+import { WeakAreasAnalyzer } from '../components/Common/WeakAreasAnalyzer';
 import { 
   ResponsiveContainer, 
   LineChart, 
@@ -295,6 +296,9 @@ export const Dashboard = () => {
           )}
         </div>
       </div>
+
+      {/* AI Weak Areas & Skill Gap Diagnostics */}
+      <WeakAreasAnalyzer />
 
       {/* Quick Launch Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

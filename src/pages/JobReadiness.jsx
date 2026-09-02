@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { TrendingUp, ChevronRight, Target, Zap, Award, ArrowRight, Play, Code, BookOpen, Video, MessageSquare, ExternalLink } from 'lucide-react';
+import { WeakAreasAnalyzer } from '../components/Common/WeakAreasAnalyzer';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -327,6 +328,9 @@ export const JobReadiness = () => {
           </div>
         </div>
       </div>
+
+      {/* AI Weak Areas & Skill Gap Diagnostics */}
+      <WeakAreasAnalyzer />
 
       {/* Interactive Actionable Recommendations */}
       <div className={`p-6 rounded-3xl border space-y-6 doap-card ${
