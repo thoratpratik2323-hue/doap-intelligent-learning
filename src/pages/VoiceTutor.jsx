@@ -96,6 +96,8 @@ export const VoiceTutor = () => {
   const animationFrameRef = useRef(null);
   const vadSilenceTimeoutRef = useRef(null);
   const hasSpokenInSessionRef = useRef(false);
+  const noiseFloorRef = useRef(5);
+  const speechStartTimeRef = useRef(0);
 
   // Browser SpeechRecognition reference (for Chrome/Edge if available)
   const recognitionRef = useRef(null);
@@ -154,14 +156,16 @@ export const VoiceTutor = () => {
     }
   };
 
-  // Start universal microphone recording (Firefox + Chrome)
+  // Start universal microphone recording (Firefox + Chrome) with Adaptive VAD
   const initUniversalMicrophone = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: { 
           echoCancellation: true, 
           noiseSuppression: true, 
-          autoGainControl: true 
+          autoGainControl: true,
+          sampleRate: 48000,
+          channelCount: 1
         } 
       });
       mediaStreamRef.current = stream;
@@ -190,21 +194,45 @@ export const VoiceTutor = () => {
           const avg = sum / bufferLength;
           setLiveVolume(avg);
 
-          // VAD: If speech detected and state is listening
-          if (avg > 15) {
+          // Update rolling ambient noise baseline
+          noiseFloorRef.current = noiseFloorRef.current * 0.96 + avg * 0.04;
+          const noise = noiseFloorRef.current;
+          const speechThresh = Math.max(13, noise + 6);
+          const silenceThresh = Math.max(8, noise + 2.5);
+
+          // 1. Natural Interruption / Barge-in:
+          // If AI is currently speaking and user speaks up
+          if (callState === 'speaking' && avg > Math.max(22, speechThresh + 6)) {
+            stopElevenLabsAudio();
+            if (synthRef.current) synthRef.current.cancel();
+            setCallState('listening');
             hasSpokenInSessionRef.current = true;
-            if (vadSilenceTimeoutRef.current) {
-              clearTimeout(vadSilenceTimeoutRef.current);
-              vadSilenceTimeoutRef.current = null;
-            }
-          } else if (hasSpokenInSessionRef.current && avg <= 10) {
-            // User paused speaking: set 1.2s silence timer to finalize speech
-            if (!vadSilenceTimeoutRef.current) {
-              vadSilenceTimeoutRef.current = setTimeout(() => {
+            speechStartTimeRef.current = Date.now();
+            startMediaRecording();
+            return;
+          }
+
+          // 2. Adaptive Voice Activity Detection (VAD) during listening
+          if (callState === 'listening') {
+            if (avg > speechThresh) {
+              if (!hasSpokenInSessionRef.current) {
+                hasSpokenInSessionRef.current = true;
+                speechStartTimeRef.current = Date.now();
+              }
+              if (vadSilenceTimeoutRef.current) {
+                clearTimeout(vadSilenceTimeoutRef.current);
                 vadSilenceTimeoutRef.current = null;
-                hasSpokenInSessionRef.current = false;
-                finalizeRecordedSpeech();
-              }, 1200);
+              }
+            } else if (hasSpokenInSessionRef.current && avg <= silenceThresh) {
+              const speechDuration = Date.now() - speechStartTimeRef.current;
+              // Reject accidental taps or brief coughs (< 350ms)
+              if (speechDuration > 350 && !vadSilenceTimeoutRef.current) {
+                vadSilenceTimeoutRef.current = setTimeout(() => {
+                  vadSilenceTimeoutRef.current = null;
+                  hasSpokenInSessionRef.current = false;
+                  finalizeRecordedSpeech();
+                }, 1300);
+              }
             }
           }
 
@@ -266,13 +294,19 @@ export const VoiceTutor = () => {
       };
 
       recorder.onstop = async () => {
-        if (audioChunksRef.current.length === 0) return;
+        if (audioChunksRef.current.length === 0) {
+          if (isCallActive && isMountedRef.current && !isMuted) {
+            setCallState('listening');
+            startMediaRecording();
+          }
+          return;
+        }
         const mime = recorder.mimeType || 'audio/webm';
         const blob = new Blob(audioChunksRef.current, { type: mime });
         audioChunksRef.current = [];
 
         // Send to Groq Whisper for instant transcription (120ms)
-        if (blob.size > 1500) {
+        if (blob.size > 1000) {
           setCallState('thinking');
           const transcribed = await transcribeAudioWithGroq(blob);
           if (transcribed && transcribed.trim().length > 1) {
@@ -280,10 +314,12 @@ export const VoiceTutor = () => {
             handleUserSpeechComplete(transcribed.trim());
           } else {
             setCallState('listening');
+            hasSpokenInSessionRef.current = false;
             startMediaRecording();
           }
         } else {
           setCallState('listening');
+          hasSpokenInSessionRef.current = false;
           startMediaRecording();
         }
       };
