@@ -393,44 +393,56 @@ export const AITutor = () => {
           {messages.map((msg) => (
             <div 
               key={msg.id} 
-              className={`flex items-start gap-3.5 max-w-5xl w-full mx-auto ${msg.sender === 'user' ? 'justify-end flex-row-reverse' : ''}`}
+              className={`flex items-start gap-3.5 max-w-5xl w-full mx-auto ${
+                msg.sender === 'user' ? 'justify-end' : 'justify-start'
+              }`}
             >
-              {msg.sender === 'ai' ? (
-                <div 
-                  className="w-8 h-8 rounded-2xl flex items-center justify-center shrink-0 shadow-md"
-                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000)' }}
-                >
-                  <Sparkles size={16} />
-                </div>
-              ) : (
-                <div 
-                  className="w-8 h-8 rounded-2xl font-bold text-xs flex items-center justify-center shrink-0 border"
-                  style={{ backgroundColor: 'var(--doap-surface-sec)', borderColor: 'var(--doap-border)', color: 'var(--doap-text-prim)' }}
-                >
-                  {profile?.avatar || 'PT'}
-                </div>
-              )}
-
-              <div 
-                className={`
-                  p-4 sm:p-6 rounded-3xl text-sm sm:text-[15px] leading-relaxed border doap-card shadow-sm min-w-0 ${msg.sender === 'user' ? 'max-w-[85%] sm:max-w-[75%]' : 'flex-1 max-w-full'}
-                  ${msg.sender === 'user' 
-                    ? 'bg-neutral-900 border-neutral-700 text-white rounded-tr-none' 
-                    : 'bg-[#111111] text-neutral-100 border-neutral-800 rounded-tl-none'
-                  }
-                `}
-              >
-                {msg.sender === 'ai' ? (
-                  <div className="relative">
-                    <MarkdownRenderer content={msg.text} isDarkMode={isDarkMode} />
-                    {msg.isStreaming && (
-                      <span className="inline-block w-2 h-4 ml-1 bg-emerald-400 animate-pulse rounded-xs align-middle" />
-                    )}
+              {msg.sender === 'user' ? (
+                <>
+                  <div 
+                    className="p-3.5 sm:p-4 rounded-3xl rounded-tr-xs text-sm sm:text-[15px] leading-relaxed border shadow-md max-w-[85%] sm:max-w-[70%]"
+                    style={{
+                      backgroundColor: 'var(--doap-surface-sec, #1c1c1c)',
+                      borderColor: 'var(--doap-border, #333333)',
+                      color: 'var(--doap-text-prim, #ffffff)'
+                    }}
+                  >
+                    <span className="whitespace-pre-wrap break-words font-medium">{msg.text}</span>
                   </div>
-                ) : (
-                  <span className="whitespace-pre-wrap break-words font-medium">{msg.text}</span>
-                )}
-              </div>
+
+                  <div 
+                    className="w-8 h-8 rounded-2xl font-bold text-xs flex items-center justify-center shrink-0 border shadow-sm"
+                    style={{ backgroundColor: 'var(--doap-surface-sec)', borderColor: 'var(--doap-border)', color: 'var(--doap-text-prim)' }}
+                  >
+                    {profile?.avatar || 'PT'}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div 
+                    className="w-8 h-8 rounded-2xl flex items-center justify-center shrink-0 shadow-md"
+                    style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000)' }}
+                  >
+                    <Sparkles size={16} />
+                  </div>
+
+                  <div 
+                    className="p-4 sm:p-6 rounded-3xl rounded-tl-xs text-sm sm:text-[15px] leading-relaxed border doap-card shadow-sm flex-1 max-w-full min-w-0"
+                    style={{
+                      backgroundColor: isDarkMode ? '#111111' : '#ffffff',
+                      borderColor: 'var(--doap-border, #262626)',
+                      color: 'var(--doap-text-prim)'
+                    }}
+                  >
+                    <div className="relative">
+                      <MarkdownRenderer content={msg.text} isDarkMode={isDarkMode} />
+                      {msg.isStreaming && (
+                        <span className="inline-block w-2 h-4 ml-1 bg-emerald-400 animate-pulse rounded-xs align-middle" />
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           ))}
 
