@@ -13,13 +13,7 @@ const PROBLEM_DEFINITIONS = [
     functionName: "twoSum",
     description: "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.",
     hint: "Instead of nested loops O(N²), store visited numbers and their indices in a Map to find the complement (target - num) in O(1) lookup time.",
-    starterCode: `/**
- * @param {number[]} nums
- * @param {number} target
- * @return {number[]}
- */
-function twoSum(nums, target) {
-  // Write your solution here
+    starterCode: `function twoSum(nums, target) {
   
 }`,
     tests: [
@@ -36,12 +30,7 @@ function twoSum(nums, target) {
     functionName: "isValid",
     description: "Given a string `s` containing just '(', ')', '{', '}', '[' and ']', determine if the input string is valid.",
     hint: "Use a Stack (LIFO). Push opening brackets onto the stack. When seeing a closing bracket, pop the top element and verify it matches.",
-    starterCode: `/**
- * @param {string} s
- * @return {boolean}
- */
-function isValid(s) {
-  // Write your solution here
+    starterCode: `function isValid(s) {
   
 }`,
     tests: [
@@ -59,12 +48,7 @@ function isValid(s) {
     functionName: "reverseList",
     description: "Given the head of a singly linked list represented as an array, return the reversed list array.",
     hint: "Iterate through the elements and construct the reversed output, or use array manipulation methods.",
-    starterCode: `/**
- * @param {number[]} head
- * @return {number[]}
- */
-function reverseList(head) {
-  // Write your solution here
+    starterCode: `function reverseList(head) {
   
 }`,
     tests: [
@@ -81,12 +65,7 @@ function reverseList(head) {
     functionName: "maxProfit",
     description: "Find the maximum profit you can achieve by buying on one day and selling on a different future day.",
     hint: "Keep track of the minimum price seen so far. At each day, calculate (current price - min price) and track the highest profit.",
-    starterCode: `/**
- * @param {number[]} prices
- * @return {number}
- */
-function maxProfit(prices) {
-  // Write your solution here
+    starterCode: `function maxProfit(prices) {
   
 }`,
     tests: [
@@ -102,13 +81,7 @@ function maxProfit(prices) {
     functionName: "mergeTwoLists",
     description: "Merge two sorted linked lists represented as arrays into one sorted list.",
     hint: "Use two pointers pointing to the heads of both lists. Compare current values, push the smaller one to result, and increment that pointer.",
-    starterCode: `/**
- * @param {number[]} list1
- * @param {number[]} list2
- * @return {number[]}
- */
-function mergeTwoLists(list1, list2) {
-  // Write your solution here
+    starterCode: `function mergeTwoLists(list1, list2) {
   
 }`,
     tests: [
@@ -124,13 +97,7 @@ function mergeTwoLists(list1, list2) {
     functionName: "search",
     description: "Given an array of integers `nums` which is sorted in ascending order, and an integer `target`, return the index of `target` if it exists, or `-1` if it does not.",
     hint: "Maintain left and right boundaries. Check the middle element: if nums[mid] === target return mid; if nums[mid] < target search right; else search left.",
-    starterCode: `/**
- * @param {number[]} nums
- * @param {number} target
- * @return {number}
- */
-function search(nums, target) {
-  // Write your solution here
+    starterCode: `function search(nums, target) {
   
 }`,
     tests: [
@@ -146,12 +113,7 @@ function search(nums, target) {
     functionName: "maxSubArray",
     description: "Given an integer array `nums`, find the subarray with the largest sum, and return its sum.",
     hint: "Use Kadane's Algorithm: At each step, currentMax = Math.max(num, currentMax + num), and update globalMax = Math.max(globalMax, currentMax).",
-    starterCode: `/**
- * @param {number[]} nums
- * @return {number}
- */
-function maxSubArray(nums) {
-  // Write your solution here
+    starterCode: `function maxSubArray(nums) {
   
 }`,
     tests: [
@@ -168,12 +130,7 @@ function maxSubArray(nums) {
     functionName: "trap",
     description: "Given `n` non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it can trap after raining.",
     hint: "Use Two Pointers (left & right). Track leftMax and rightMax. Water trapped at each step is determined by min(leftMax, rightMax) - height.",
-    starterCode: `/**
- * @param {number[]} height
- * @return {number}
- */
-function trap(height) {
-  // Write your solution here
+    starterCode: `function trap(height) {
   
 }`,
     tests: [
@@ -189,12 +146,7 @@ function trap(height) {
     functionName: "sieve",
     description: "Given an integer `n`, return an array of all prime numbers less than or equal to `n` in ascending order.",
     hint: "Initialize a boolean array of size n+1 with true. Mark 0 and 1 as false. For i from 2 to sqrt(n), if isPrime[i] is true, mark all multiples i*i, i*(i+1)... as false.",
-    starterCode: `/**
- * @param {number} n
- * @return {number[]}
- */
-function sieve(n) {
-  // Write your solution here
+    starterCode: `function sieve(n) {
   
 }`,
     tests: [
@@ -210,12 +162,7 @@ function sieve(n) {
     functionName: "merge",
     description: "Given an array of `intervals` where `intervals[i] = [start, end]`, merge all overlapping intervals, and return an array of the non-overlapping intervals.",
     hint: "Sort intervals by their start time. Iterate and merge with the previous interval if curr.start <= prev.end.",
-    starterCode: `/**
- * @param {number[][]} intervals
- * @return {number[][]}
- */
-function merge(intervals) {
-  // Write your solution here
+    starterCode: `function merge(intervals) {
   
 }`,
     tests: [
@@ -267,47 +214,28 @@ export const CodingPractice = () => {
   const getLanguageStarterCode = (prob, lang) => {
     if (!prob) return '';
     if (lang === 'python') {
-      return `# Python 3 (Judge0 Sandbox)
-class Solution:
+      return `class Solution:
     def ${prob.functionName}(self, *args):
-        # Write your solution here
-        pass
-
-# Example test run:
-print("Executing ${prob.title}...")
-s = Solution()
-`;
+        pass`;
     }
     if (lang === 'cpp') {
-      return `// C++ (GCC 9.2.0 - Judge0)
-#include <iostream>
+      return `#include <iostream>
 #include <vector>
-#include <string>
 using namespace std;
 
 class Solution {
 public:
     void ${prob.functionName}() {
-        // Write your solution here
+        
     }
-};
-
-int main() {
-    cout << "Testing ${prob.title}..." << endl;
-    return 0;
-}
-`;
+};`;
     }
     if (lang === 'java') {
-      return `// Java (OpenJDK 13.0.1 - Judge0)
-import java.util.*;
-
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("Testing ${prob.title} in Java...");
+      return `public class Solution {
+    public void ${prob.functionName}() {
+        
     }
-}
-`;
+}`;
     }
     return prob.starterCode;
   };
@@ -673,13 +601,24 @@ public class Main {
                       </button>
                     )}
                   </div>
-                  <button 
-                    onClick={() => setCode(getLanguageStarterCode(activeProblem, selectedLanguage))}
-                    className="text-[11px] flex items-center gap-1 text-neutral-400 hover:text-white cursor-pointer"
-                  >
-                    <RefreshCw size={11} />
-                    <span>Reset Starter Code</span>
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button 
+                      type="button"
+                      onClick={() => setCode('')}
+                      className="text-[11px] flex items-center gap-1 text-neutral-400 hover:text-white cursor-pointer transition-colors"
+                      title="Clear editor to write custom code from scratch"
+                    >
+                      <span>🧹 Blank Editor</span>
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setCode(getLanguageStarterCode(activeProblem, selectedLanguage))}
+                      className="text-[11px] flex items-center gap-1 text-neutral-400 hover:text-white cursor-pointer transition-colors"
+                    >
+                      <RefreshCw size={11} />
+                      <span>Reset Template</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Collapsible Hint Card */}
