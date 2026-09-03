@@ -105,7 +105,7 @@ export const AITutor = () => {
     {
       id: '1',
       sender: 'ai',
-      text: `Hey ${profile?.name ? profile.name.split(' ')[0] : 'there'}! 👋 I'm **DOAP AI**, your engineering mentor and interview tutor.\n\nAsk me anything about **coding**, **algorithms (DSA)**, **system design**, or **job interview preparation**!`
+      text: `Hey ${profile?.name ? profile.name.split(' ')[0] : 'there'}! 👋 I'm **✦ IP VEXA ✦**, your universal AI assistant & coding companion.\n\nI can answer **anything** (coding, DSA, math, science, general advice) and generate AI art with \`/image <prompt>\`!\n\nType \`/help\` to see all slash commands.`
     }
   ]);
 
@@ -241,12 +241,12 @@ export const AITutor = () => {
   };
 
   const quickPrompts = [
-    "🚀 How to start learning coding",
-    "💡 Explain Two Sum with code",
-    "🏗️ System Design blueprint",
-    "⚡ Dynamic Programming roadmap",
-    "🌐 What is an API simply explained",
-    "🎯 FAANG interview prep tips"
+    "🎨 /image a futuristic neon cybernetic workstation 8k",
+    "💻 /code Two Sum with optimal HashMap in Python",
+    "💡 /explain Quantum Computing simply with analogies",
+    "🎯 /interview Google Senior Software Engineer",
+    "😄 /joke",
+    "🚀 /help"
   ];
 
   const categories = ["TODAY", "YESTERDAY", "PREVIOUS 7 DAYS", "OLDER"];
@@ -366,11 +366,14 @@ export const AITutor = () => {
               {isSidebarOpen ? <PanelLeftClose size={15} /> : <PanelLeftOpen size={15} />}
             </button>
 
-            <span className="font-bold text-xs sm:text-sm" style={{ color: 'var(--doap-text-prim)' }}>
-              DOAP AI Mentor
+            <span className="font-black text-xs sm:text-sm tracking-tight" style={{ color: 'var(--doap-text-prim)' }}>
+              ✦ IP VEXA AI ✦
             </span>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-mono border border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
-              ⚡ Live AI
+              ⚡ 120B Super-Brain
+            </span>
+            <span className="hidden md:inline px-2 py-0.5 rounded-full text-[10px] font-mono border border-purple-500/30 text-purple-400 bg-purple-500/10">
+              🎨 Flux AI Art
             </span>
           </div>
 
@@ -381,7 +384,7 @@ export const AITutor = () => {
             >
               <Zap size={11} className="text-emerald-400 animate-pulse" />
               <span className="hidden sm:inline">
-                Groq LPU: GPT-OSS 120B Active
+                Groq 120B Active
               </span>
               <span className="sm:hidden">120B Active</span>
             </button>
