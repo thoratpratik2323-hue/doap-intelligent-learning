@@ -2,9 +2,17 @@
  * DOAP AI Tutor — Universal Multi-Cloud Super-Brain Engine
  * Powered by:
  * 1. Groq LPU (GPT-OSS 120B Super-Brain & Qwen 3.8 27B — Sub-150ms Instant Response)
- * 2. Flux AI Image Generation (/image <prompt>)
- * 3. Socratic Tutoring & 3-Layer Knowledge Synthesis
+ * 2. In-Chat Interactive Flash Quiz Engine (/quiz [c|py|java|dsa])
+ * 3. Flux AI Image Generation (/image <prompt>)
+ * 4. Socratic Tutoring & 3-Layer Knowledge Synthesis
  */
+
+import { 
+  C_LANGUAGE_BANK, 
+  PYTHON_BANK, 
+  JAVA_BANK, 
+  DSA_NUMERICALS_BANK 
+} from '../data/questionBanks';
 
 const defaultGk = [
   'gsk',
@@ -33,12 +41,60 @@ export async function generateSmartTutorResponse(message, userName = 'there', hi
     return `### 🎨 Generated AI Artwork\n**Prompt:** *"${prompt}"*\n\n![${prompt}](${imageUrl})\n\n[📥 Open Full Resolution](${imageUrl})\n\n*Generated live via Flux Neural Engine.*`;
   }
 
-  // B. /help — Master Commands Reference
+  // B. /quiz [topic] — Interactive In-Chat Flash Quiz
+  if (text.startsWith('/quiz')) {
+    const topic = text.replace(/^\/quiz\s*/i, '').trim().toLowerCase();
+    let bank = [...DSA_NUMERICALS_BANK, ...PYTHON_BANK, ...JAVA_BANK, ...C_LANGUAGE_BANK];
+    let domainName = "Computer Science & Engineering";
+
+    if (topic.includes('c') && !topic.includes('java')) {
+      bank = C_LANGUAGE_BANK;
+      domainName = "C Systems & Memory Internals";
+    } else if (topic.includes('py') || topic.includes('python')) {
+      bank = PYTHON_BANK;
+      domainName = "Python & CPython Architecture";
+    } else if (topic.includes('java')) {
+      bank = JAVA_BANK;
+      domainName = "Java 21 & JVM Concurrency";
+    } else if (topic.includes('dsa') || topic.includes('num') || topic.includes('complexity') || topic.includes('tree') || topic.includes('array')) {
+      bank = DSA_NUMERICALS_BANK;
+      domainName = "DSA Complexity & Numericals";
+    }
+
+    const q = bank[Math.floor(Math.random() * bank.length)];
+    const optionsText = q.options.map((opt, i) => `* **(${String.fromCharCode(65 + i)})** ${opt}`).join('\n');
+    const correctLetter = String.fromCharCode(65 + q.correctIndex);
+
+    return `### 📝 Flash Quiz: ${domainName}
+**Topic:** \`${q.topic}\` &nbsp;|&nbsp; **Level:** \`${q.level}\`
+
+**Question:**
+> ${q.question}
+
+**Options:**
+${optionsText}
+
+---
+
+<details>
+<summary>💡 <b>Click to Reveal Answer & Detailed Explanation</b></summary>
+
+**Correct Answer:** \`(${correctLetter}) ${q.options[q.correctIndex]}\`
+
+**Detailed Explanation:**
+${q.answer}
+</details>
+
+*Type \`/quiz\` for another question or try \`/quiz python\`, \`/quiz java\`, \`/quiz c\`, \`/quiz dsa\`!*`;
+  }
+
+  // C. /help — Master Commands Reference
   if (text === '/help' || text === '/commands') {
     return `### 💡 AI Tutor Commands Reference
 
 | Command | Action | Description |
 | :--- | :--- | :--- |
+| \`/quiz <topic>\` | 📝 **In-Chat Quiz** | Real interview MCQ with instant hidden explanation |
 | \`/image <prompt>\` | 🎨 **AI Image Gen** | Generates high-res Flux AI artwork directly in chat |
 | \`/code <prompt>\` | 💻 **Code Generator** | Clean, runnable code with complexity analysis |
 | \`/explain <topic>\` | 💡 **Deep Dive** | Intuitive conceptual breakdown with analogies |
@@ -48,7 +104,7 @@ export async function generateSmartTutorResponse(message, userName = 'there', hi
 *Tip: You can ask anything in Hindi, Hinglish, or English!*`;
   }
 
-  // C. /joke — Developer Humor
+  // D. /joke — Developer Humor
   if (text === '/joke') {
     const jokes = [
       "Why do programmers prefer dark mode? Because light attracts bugs! 🐛😂",
@@ -82,7 +138,7 @@ Core Tutoring & Interaction Principles:
    - ⚡ Time & Space Complexity Analysis ($O(N)$, $O(1)$, etc.) + Edge Cases
 3. Natural Language Matching: Automatically detect and match the student's language. If they talk in Hindi or Hinglish (e.g. "bhai", "kya haal", "ye code kaise kaam karta hai", "road map for ml"), reply in natural, fluent, friendly Hinglish/Hindi. If in English, reply in articulate English.
 4. Charismatic & Supportive: Be warm, empathetic, witty, and directly address the student as ${userName}.
-5. Universal Scope: Answer ANY question without limits (Machine Learning, DSA, programming, system design, math, science, creative writing, history, career advice, and everyday life).
+5. Universal Scope: Answer ANY question without limits (Machine Learning roadmaps, Python, Java, C, LeetCode, system design, math, science, creative writing, history, career advice, and everyday life).
 6. Beautiful Formatting: Use rich markdown headers, bullet points, syntax-highlighted code blocks, and tables for maximum readability.`;
 
   // Sanitize message history

@@ -33,8 +33,20 @@ import { speakElevenLabs } from '../services/elevenLabsService';
 
 const STORAGE_KEY = 'doap_ai_chat_sessions';
 
+const QUICK_PROMPTS = [
+  "🎨 /image a futuristic neon cybernetic workstation 8k",
+  "📝 /quiz Python",
+  "☕ /quiz Java",
+  "⚙️ /quiz C Systems",
+  "🧮 /quiz DSA",
+  "💻 /code Two Sum with optimal HashMap in Python",
+  "💡 /explain Kadane's Algorithm for max subarray sum",
+  "🎯 /interview Mock FAANG question on graph cycle detection",
+  "😄 /joke"
+];
+
 const generateTitleFromPrompt = (prompt) => {
-  let clean = prompt.replace(/^(\/image|\/code|\/explain|\/interview)\s+/i, '').trim();
+  let clean = prompt.replace(/^(\/image|\/code|\/explain|\/interview|\/quiz)\s+/i, '').trim();
   if (clean.length > 26) {
     clean = clean.slice(0, 26) + '...';
   }
@@ -42,6 +54,7 @@ const generateTitleFromPrompt = (prompt) => {
   if (prompt.startsWith('/code')) return `💻 ${clean}`;
   if (prompt.startsWith('/explain')) return `💡 ${clean}`;
   if (prompt.startsWith('/interview')) return `🎯 ${clean}`;
+  if (prompt.startsWith('/quiz')) return `📝 ${clean}`;
   return clean.charAt(0).toUpperCase() + clean.slice(1);
 };
 
@@ -691,7 +704,7 @@ export const AITutor = () => {
               ref={chipsScrollRef}
               className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1 px-1 scroll-smooth"
             >
-              {quickPrompts.map((prompt, idx) => (
+              {QUICK_PROMPTS.map((prompt, idx) => (
                 <button
                   key={idx}
                   type="button"
