@@ -4,22 +4,80 @@ import {
   MicOff, 
   Phone, 
   PhoneOff, 
-  Volume2, 
-  VolumeX, 
   Sparkles, 
   MessageSquare, 
   Radio, 
   Send, 
-  RefreshCw,
-  Clock,
-  ArrowRight,
-  Headphones,
-  Check
+  Clock, 
+  ArrowRight, 
+  Headphones, 
+  Maximize2, 
+  Minimize2, 
+  Cpu, 
+  Activity, 
+  ShieldCheck, 
+  Zap 
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { generateSmartTutorResponse } from '../services/aiTutorEngine';
 import { speakElevenLabs, stopElevenLabsAudio } from '../services/elevenLabsService';
+
+// Mark-LII Acoustic Sound Synthesizers (Web Audio API)
+const playBootChime = () => {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+
+    // Harmonic Bass Pulse
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(110, now);
+    osc1.frequency.exponentialRampToValueAtTime(320, now + 0.35);
+    gain1.gain.setValueAtTime(0.25, now);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    osc1.start(now);
+    osc1.stop(now + 0.5);
+
+    // Arc-Reactor High Energy Resonance
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(520, now + 0.12);
+    osc2.frequency.exponentialRampToValueAtTime(1040, now + 0.45);
+    gain2.gain.setValueAtTime(0.2, now + 0.12);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    osc2.start(now + 0.12);
+    osc2.stop(now + 0.75);
+  } catch(e) {}
+};
+
+const playShutdownChime = () => {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(440, now);
+    osc.frequency.exponentialRampToValueAtTime(110, now + 0.35);
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.35);
+  } catch(e) {}
+};
 
 export const VoiceTutor = () => {
   const { isDarkMode, activeAccentHex, navigateTo } = useTheme();
@@ -32,6 +90,7 @@ export const VoiceTutor = () => {
   const [isCallActive, setIsCallActive] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
+  const [isHudFullscreen, setIsHudFullscreen] = useState(false);
 
   const [userTranscript, setUserTranscript] = useState('');
   const [aiSpokenText, setAiSpokenText] = useState('');
@@ -44,7 +103,6 @@ export const VoiceTutor = () => {
   const synthRef = useRef(typeof window !== 'undefined' ? window.speechSynthesis : null);
   const durationTimerRef = useRef(null);
   const isMountedRef = useRef(true);
-  const logsEndRef = useRef(null);
 
   const QUICK_VOICE_TOPICS = [
     { title: "Explain Dynamic Programming", prompt: "Explain Dynamic Programming in simple terms with an intuitive analogy." },
@@ -88,7 +146,6 @@ export const VoiceTutor = () => {
         setUserTranscript(fullSpoken);
       }
 
-      // If user finished a spoken sentence, trigger AI response
       if (final.trim().length > 3) {
         handleUserSpeechComplete(final.trim());
       }
@@ -131,13 +188,6 @@ export const VoiceTutor = () => {
     };
   }, [isCallActive]);
 
-  // Auto scroll conversation logs
-  useEffect(() => {
-    if (logsEndRef.current) {
-      logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [conversationLogs, userTranscript, aiSpokenText]);
-
   const formatDuration = (secs) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
@@ -145,13 +195,13 @@ export const VoiceTutor = () => {
   };
 
   const handleStartCall = async () => {
+    playBootChime();
     setIsCallActive(true);
     setCallState('listening');
     setUserTranscript('');
     setAiSpokenText('');
 
-    // Welcome greeting
-    const welcome = `Hey ${userName}! I am your DOAP Voice Assistant. Ask me anything or pick any topic to discuss hands-free!`;
+    const welcome = `Mark L-II online. Hello ${userName}! All neural systems optimal. How can I assist your engineering today?`;
     setAiSpokenText(welcome);
     setConversationLogs([{ sender: 'ai', text: welcome, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
 
@@ -163,6 +213,7 @@ export const VoiceTutor = () => {
   };
 
   const handleEndCall = () => {
+    playShutdownChime();
     setIsCallActive(false);
     setCallState('idle');
     stopListening();
@@ -186,6 +237,28 @@ export const VoiceTutor = () => {
     } catch(err) {}
   };
 
+  // Mark-LII Action Plugin Engine: Detects voice commands & triggers actions
+  const executeVoicePlugins = (cmd) => {
+    const cleanCmd = cmd.toLowerCase().trim();
+    if (cleanCmd.includes('open coding') || cleanCmd.includes('go to coding') || cleanCmd.includes('coding practice')) {
+      navigateTo('/coding');
+      return "Navigating to Coding Practice.";
+    }
+    if (cleanCmd.includes('open learning') || cleanCmd.includes('my learning') || cleanCmd.includes('open courses')) {
+      navigateTo('/learning');
+      return "Opening My Learning engineering modules.";
+    }
+    if (cleanCmd.includes('open assessment') || cleanCmd.includes('open test') || cleanCmd.includes('assessments')) {
+      navigateTo('/assessments');
+      return "Opening Assessments & Live Benchmark Exams.";
+    }
+    if (cleanCmd.includes('open chat') || cleanCmd.includes('text ai') || cleanCmd.includes('switch to text')) {
+      navigateTo('/ai-tutor');
+      return "Switching to DOAP Text AI Tutor.";
+    }
+    return null;
+  };
+
   const handleUserSpeechComplete = async (spokenPrompt) => {
     if (!spokenPrompt || !isMountedRef.current) return;
     stopListening();
@@ -196,15 +269,25 @@ export const VoiceTutor = () => {
       text: spokenPrompt,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
-
     setConversationLogs(prev => [...prev, newLog]);
     setUserTranscript('');
 
+    // Check if user requested an automated system action
+    const actionResult = executeVoicePlugins(spokenPrompt);
+    if (actionResult) {
+      setAiSpokenText(actionResult);
+      speakResponse(actionResult, () => {
+        if (isMountedRef.current && isCallActive && !isMuted) {
+          startListening();
+        }
+      });
+      return;
+    }
+
     try {
       const response = await generateSmartTutorResponse(spokenPrompt, userName);
-      // Clean markdown tags for natural speech synthesis
       const speechCleaned = response
-        .replace(/```[\s\S]*?```/g, 'Here is the code block.')
+        .replace(/```[\s\S]*?```/g, 'Code block generated.')
         .replace(/`([^`]+)`/g, '$1')
         .replace(/[#*_~>]/g, '')
         .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
@@ -303,14 +386,16 @@ export const VoiceTutor = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 md:py-8 space-y-8 animate-fade-in select-none">
+    <div className={`max-w-5xl mx-auto px-4 py-6 md:py-8 space-y-8 animate-fade-in select-none ${
+      isHudFullscreen ? 'fixed inset-0 z-50 bg-[#050505] p-6 max-w-none overflow-y-auto' : ''
+    }`}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
-              <Radio size={12} className={isCallActive ? "animate-pulse" : ""} />
-              <span>{isCallActive ? "Live Session" : "Voice AI Assistant"}</span>
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 flex items-center gap-1.5 shadow-sm">
+              <Zap size={11} className={isCallActive ? "animate-bounce text-cyan-300" : ""} />
+              <span>Mark L-II • Neural Voice Engine</span>
             </span>
             {isCallActive && (
               <span className="text-[11px] font-mono text-neutral-400 flex items-center gap-1">
@@ -318,124 +403,175 @@ export const VoiceTutor = () => {
               </span>
             )}
           </div>
-          <h1 className={`text-3xl font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-[#0a0a0a]'}`}>
+          <h1 className={`text-3xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-[#0a0a0a]'}`}>
             Voice Assistant
           </h1>
           <p className={`text-xs font-mono uppercase tracking-wider ${isDarkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>
-            Real-time neural audio conversation powered by 120B Super-Brain
+            JARVIS-inspired interactive audio HUD powered by 120B Super-Brain
           </p>
         </div>
 
-        {/* Action Switch to Text AI Tutor */}
-        <button
-          onClick={() => navigateTo('/ai-tutor')}
-          className="px-4 py-2 rounded-xl text-xs font-semibold border transition-all flex items-center gap-2 cursor-pointer hover:opacity-80 self-start sm:self-auto"
-          style={{ 
-            backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-            borderColor: 'var(--doap-border)' 
-          }}
-        >
-          <MessageSquare size={14} style={{ color: accentHex }} />
-          <span>Switch to Text AI Chat</span>
-        </button>
+        {/* Top Actions: HUD Fullscreen & Text Chat */}
+        <div className="flex items-center gap-2.5 self-start sm:self-auto">
+          <button
+            onClick={() => setIsHudFullscreen(!isHudFullscreen)}
+            className="px-3.5 py-2 rounded-xl text-xs font-mono border transition-all flex items-center gap-1.5 cursor-pointer hover:opacity-80"
+            style={{ 
+              backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+              borderColor: 'var(--doap-border)' 
+            }}
+            title="Toggle Mark-LII Fullscreen HUD Mode"
+          >
+            {isHudFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+            <span>{isHudFullscreen ? 'Exit HUD' : 'HUD Mode'}</span>
+          </button>
+
+          <button
+            onClick={() => navigateTo('/ai-tutor')}
+            className="px-4 py-2 rounded-xl text-xs font-semibold border transition-all flex items-center gap-2 cursor-pointer hover:opacity-80"
+            style={{ 
+              backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+              borderColor: 'var(--doap-border)' 
+            }}
+          >
+            <MessageSquare size={14} style={{ color: accentHex }} />
+            <span>Text AI Chat</span>
+          </button>
+        </div>
       </div>
 
-      {/* Main Futuristic Voice Stage */}
+      {/* Main Mark-LII Arc-Reactor Stage */}
       <div 
         className="p-8 sm:p-12 rounded-3xl border flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-2xl"
         style={{ 
-          backgroundColor: isDarkMode ? '#0d0d0d' : '#ffffff',
-          borderColor: 'var(--doap-border, #222222)',
-          minHeight: '420px'
+          backgroundColor: '#07090e',
+          borderColor: isCallActive ? 'rgba(6,182,212,0.4)' : 'rgba(255,255,255,0.1)',
+          minHeight: isHudFullscreen ? '620px' : '440px'
         }}
       >
-        {/* Subtle Ambient Glow */}
+        {/* Subtle Cyber Grid Lines & Arc Reactor Glow */}
         <div 
-          className="absolute w-72 h-72 rounded-full blur-3xl opacity-20 pointer-events-none transition-all duration-700"
+          className="absolute w-96 h-96 rounded-full blur-3xl opacity-25 pointer-events-none transition-all duration-700"
           style={{
-            backgroundColor: callState === 'speaking' ? '#10b981' : callState === 'listening' ? '#3b82f6' : callState === 'thinking' ? '#f59e0b' : '#6366f1',
-            transform: isCallActive ? 'scale(1.3)' : 'scale(0.8)'
+            backgroundColor: callState === 'speaking' ? '#06b6d4' : callState === 'listening' ? '#3b82f6' : callState === 'thinking' ? '#f59e0b' : '#6366f1',
+            transform: isCallActive ? 'scale(1.4)' : 'scale(0.8)'
           }}
         />
 
+        {/* Telemetry Corner Badges */}
+        <div className="absolute top-4 left-5 flex items-center gap-2 text-[10px] font-mono text-cyan-400/80">
+          <Activity size={12} className="animate-pulse" />
+          <span>FREQ: 44.1 KHZ • PROTOCOL: GEMINI-LII</span>
+        </div>
+        <div className="absolute top-4 right-5 flex items-center gap-2 text-[10px] font-mono text-cyan-400/80">
+          <Cpu size={12} />
+          <span>ARC CORE: {isCallActive ? "ACTIVE" : "STANDBY"}</span>
+        </div>
+
         {/* Status Pill */}
-        <div className="mb-8 z-10">
+        <div className="mb-6 z-10">
           <div className={`px-4 py-1.5 rounded-full text-xs font-mono font-bold border flex items-center gap-2 transition-all ${
             isCallActive 
-              ? (callState === 'speaking' ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400' : callState === 'listening' ? 'bg-blue-500/10 border-blue-500/40 text-blue-400' : 'bg-amber-500/10 border-amber-500/40 text-amber-400')
+              ? (callState === 'speaking' ? 'bg-cyan-500/10 border-cyan-500/40 text-cyan-400' : callState === 'listening' ? 'bg-blue-500/10 border-blue-500/40 text-blue-400' : 'bg-amber-500/10 border-amber-500/40 text-amber-400')
               : 'bg-neutral-900 border-neutral-800 text-neutral-400'
           }`}>
             <span className={`w-2 h-2 rounded-full ${
-              isCallActive ? (callState === 'speaking' ? 'bg-emerald-400 animate-pulse' : callState === 'listening' ? 'bg-blue-400 animate-ping' : 'bg-amber-400 animate-bounce') : 'bg-neutral-600'
+              isCallActive ? (callState === 'speaking' ? 'bg-cyan-400 animate-pulse' : callState === 'listening' ? 'bg-blue-400 animate-ping' : 'bg-amber-400 animate-bounce') : 'bg-neutral-600'
             }`} />
             <span>
               {!isCallActive 
-                ? 'Ready to Connect' 
+                ? 'ARC CORE STANDBY — TAP TO ENGAGE' 
                 : callState === 'speaking' 
-                ? 'DOAP AI Speaking...' 
+                ? 'MARK-LII TRANSMITTING AUDIO...' 
                 : callState === 'listening' 
-                ? 'Listening to your voice...' 
-                : 'Thinking...'}
+                ? 'RECEPTIVE • LISTENING TO VOICE...' 
+                : 'SYNAPSE PROCESSING...'}
             </span>
           </div>
         </div>
 
-        {/* Central Neural Voice Orb */}
-        <div className="relative flex items-center justify-center my-4 z-10">
-          {/* Outer Pulsing Soundwave Rings */}
+        {/* Arc-Reactor Futuristic SVG/Orb Visualizer */}
+        <div className="relative flex items-center justify-center my-6 z-10">
+          {/* Rotating Outer Reactor Tech Rings */}
+          <div 
+            className="absolute w-60 h-60 rounded-full border border-dashed border-cyan-500/30 pointer-events-none transition-all duration-700"
+            style={{ 
+              animation: isCallActive ? 'spin 14s linear infinite' : 'none',
+              borderColor: isCallActive ? 'rgba(6,182,212,0.4)' : 'rgba(255,255,255,0.1)'
+            }}
+          />
+
+          <div 
+            className="absolute w-52 h-52 rounded-full border border-cyan-400/20 pointer-events-none transition-all duration-700"
+            style={{ 
+              animation: isCallActive ? 'spin 8s linear infinite reverse' : 'none'
+            }}
+          />
+
           {isCallActive && (
-            <>
-              <div 
-                className="absolute w-44 h-44 rounded-full border border-white/20 animate-ping opacity-40 pointer-events-none"
-                style={{ animationDuration: callState === 'speaking' ? '1.2s' : '2.5s' }}
-              />
-              <div 
-                className="absolute w-56 h-56 rounded-full border border-white/10 animate-pulse opacity-30 pointer-events-none"
-              />
-            </>
+            <div 
+              className="absolute w-44 h-44 rounded-full border-2 border-cyan-400/40 animate-ping pointer-events-none"
+              style={{ animationDuration: callState === 'speaking' ? '1.2s' : '2.4s' }}
+            />
           )}
 
-          {/* Core Interactive Calling Orb Button */}
+          {/* Central Glowing Reactor Core Button */}
           <button
             onClick={isCallActive ? handleEndCall : handleStartCall}
-            className={`w-32 h-32 rounded-full flex flex-col items-center justify-center cursor-pointer transition-all duration-500 shadow-2xl hover:scale-105 active:scale-95 z-20 ${
+            className={`w-36 h-36 rounded-full flex flex-col items-center justify-center cursor-pointer transition-all duration-500 shadow-2xl hover:scale-105 active:scale-95 z-20 ${
               isCallActive 
-                ? 'bg-rose-600 hover:bg-rose-500 text-white ring-8 ring-rose-500/20' 
-                : 'bg-white text-black hover:bg-neutral-100 ring-8 ring-white/10'
+                ? 'bg-gradient-to-tr from-cyan-600 to-blue-500 text-white ring-8 ring-cyan-500/20 shadow-cyan-500/50' 
+                : 'bg-neutral-900 text-white hover:bg-neutral-800 ring-8 ring-white/5 border border-white/20'
             }`}
           >
             {isCallActive ? (
               <>
-                <PhoneOff size={32} className="animate-bounce" />
-                <span className="text-[10px] font-mono font-bold mt-1 uppercase">End Call</span>
+                <PhoneOff size={34} className="animate-pulse" />
+                <span className="text-[10px] font-mono font-bold mt-1.5 uppercase tracking-wider text-cyan-100">Disengage</span>
               </>
             ) : (
               <>
-                <Phone size={32} />
-                <span className="text-[10px] font-mono font-bold mt-1 uppercase">Start Call</span>
+                <Phone size={34} className="text-cyan-400" />
+                <span className="text-[10px] font-mono font-bold mt-1.5 uppercase tracking-wider text-cyan-400">Engage Core</span>
               </>
             )}
           </button>
         </div>
 
-        {/* Live Subtitle / Transcript Pill */}
-        <div className="w-full max-w-xl text-center mt-8 min-h-[48px] flex items-center justify-center z-10">
+        {/* Live Audio Equalizer Wave Bars */}
+        {isCallActive && (
+          <div className="flex items-center gap-1.5 mt-2 h-7 z-10">
+            {[40, 70, 95, 60, 85, 100, 75, 50, 90, 65, 45].map((h, i) => (
+              <div 
+                key={i} 
+                className="w-1 rounded-full bg-cyan-400 transition-all duration-150"
+                style={{
+                  height: callState === 'speaking' ? `${(h * (Math.sin(Date.now() / 200 + i) + 1.2)) / 2}%` : callState === 'listening' ? `${h * 0.35}%` : '4px',
+                  opacity: callState === 'speaking' ? 0.9 : 0.4
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Live Subtitles & Captions */}
+        <div className="w-full max-w-xl text-center mt-6 min-h-[48px] flex items-center justify-center z-10">
           {userTranscript ? (
-            <p className="text-sm font-medium text-neutral-300 italic animate-fade-in bg-white/5 px-4 py-2 rounded-2xl border border-white/10">
+            <p className="text-sm font-medium text-cyan-200 italic animate-fade-in bg-cyan-950/40 px-4 py-2 rounded-2xl border border-cyan-500/30">
               "{userTranscript}"
             </p>
           ) : aiSpokenText ? (
-            <p className="text-xs sm:text-sm font-medium text-neutral-300 line-clamp-2 px-4 py-2 rounded-2xl bg-neutral-900/80 border border-neutral-800">
+            <p className="text-xs sm:text-sm font-medium text-neutral-200 line-clamp-2 px-4 py-2 rounded-2xl bg-black/60 border border-neutral-800">
               {aiSpokenText}
             </p>
           ) : (
             <p className="text-xs font-mono text-neutral-500">
-              {isCallActive ? "Speak naturally — DOAP AI answers in real-time" : "Tap Start Call for hands-free voice conversations"}
+              {isCallActive ? "Speak naturally — say 'Open Coding' or ask any engineering query" : "Tap Engage Core for hands-free voice command & Socratic discussions"}
             </p>
           )}
         </div>
 
-        {/* In-Call Controls Floating Bar */}
+        {/* Floating Controls Bar */}
         {isCallActive && (
           <div className="flex items-center gap-4 mt-6 z-10 animate-fade-in">
             <button
@@ -458,7 +594,7 @@ export const VoiceTutor = () => {
                   onClick={() => setSelectedVoicePersona(persona)}
                   className={`px-3 py-1 rounded-full text-[11px] font-mono capitalize transition-all cursor-pointer ${
                     selectedVoicePersona === persona 
-                      ? 'bg-white text-black font-bold' 
+                      ? 'bg-cyan-400 text-black font-bold' 
                       : 'text-neutral-400 hover:text-white'
                   }`}
                 >
@@ -473,7 +609,7 @@ export const VoiceTutor = () => {
       {/* Quick Voice Discussion Starter Chips */}
       <div className="space-y-3">
         <span className="text-xs font-mono uppercase tracking-wider text-neutral-500 block">
-          💡 1-Tap Voice Discussion Topics
+          ⚡ Mark-LII Quick Voice Discussion Topics
         </span>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {QUICK_VOICE_TOPICS.map((topic, idx) => (
@@ -485,12 +621,12 @@ export const VoiceTutor = () => {
               }}
               className={`p-3.5 rounded-2xl border text-left flex items-center justify-between gap-3 transition-all cursor-pointer hover-glide ${
                 isDarkMode 
-                  ? 'bg-[#111111] border-neutral-800 text-neutral-200 hover:border-neutral-700 hover:text-white' 
+                  ? 'bg-[#111111] border-neutral-800 text-neutral-200 hover:border-cyan-500/40 hover:text-white' 
                   : 'bg-white border-neutral-200 text-neutral-800 hover:border-neutral-300'
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <Headphones size={15} style={{ color: accentHex }} className="shrink-0" />
+                <Headphones size={15} style={{ color: '#06b6d4' }} className="shrink-0" />
                 <span className="text-xs font-semibold">{topic.title}</span>
               </div>
               <ArrowRight size={13} className="text-neutral-500 shrink-0" />
@@ -503,7 +639,7 @@ export const VoiceTutor = () => {
       <form onSubmit={handleManualSubmit} className="relative flex items-center gap-2">
         <input 
           type="text"
-          placeholder="Or type what you want to say in voice..."
+          placeholder="Or type what you want to transmit to Mark-LII..."
           value={manualInput}
           onChange={(e) => setManualInput(e.target.value)}
           className="w-full pl-4 pr-12 py-3 rounded-2xl border text-xs sm:text-sm focus:outline-none transition-all shadow-inner"
