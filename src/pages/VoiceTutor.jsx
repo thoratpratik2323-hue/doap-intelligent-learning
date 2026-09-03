@@ -23,6 +23,7 @@ import {
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { generateSmartTutorResponse } from '../services/aiTutorEngine';
+import { speakElevenLabs, stopElevenLabsAudio, ELEVEN_VOICES } from '../services/elevenLabsService';
 
 export const VoiceTutor = () => {
   const { isDarkMode, activeAccentHex, navigateTo } = useTheme();
@@ -171,6 +172,7 @@ export const VoiceTutor = () => {
   };
 
   const handleEndCall = () => {
+    stopElevenLabsAudio();
     if (synthRef.current) synthRef.current.cancel();
     stopListening();
     if (streamRef.current) {
@@ -317,21 +319,39 @@ export const VoiceTutor = () => {
     return matchedVoice;
   };
 
-  const speakResponse = (text, onComplete) => {
+  const speakResponse = async (text, onComplete) => {
+    setCallState('speaking');
+    stopElevenLabsAudio();
+    if (synthRef.current) synthRef.current.cancel();
+
+    // 1. Try ElevenLabs Ultra-Realistic Studio Female Voice
+    try {
+      await speakElevenLabs(
+        text, 
+        selectedVoicePersona === 'jenny' ? 'rachel' : selectedVoicePersona === 'samantha' ? 'sarah' : 'aria',
+        () => {
+          if (onComplete && isMountedRef.current) onComplete();
+        },
+        () => {
+          // Fallback to browser neural voice
+          fallbackBrowserSpeech(text, onComplete);
+        }
+      );
+    } catch (err) {
+      fallbackBrowserSpeech(text, onComplete);
+    }
+  };
+
+  const fallbackBrowserSpeech = (text, onComplete) => {
     if (!synthRef.current) {
       setCallState('listening');
       if (onComplete) onComplete();
       return;
     }
 
-    setCallState('speaking');
-    synthRef.current.cancel();
-
     const utterance = new SpeechSynthesisUtterance(text);
-    
-    // Natural Humanoid Female Audio Characteristics
-    utterance.rate = 1.04;      // Natural human conversational pacing
-    utterance.pitch = 1.10;     // Warm, friendly female vocal resonance
+    utterance.rate = 1.04;
+    utterance.pitch = 1.10;
     utterance.lang = 'en-US';
 
     const femaleVoice = getHumanoidFemaleVoice(selectedVoicePersona);
@@ -346,7 +366,7 @@ export const VoiceTutor = () => {
     };
 
     utterance.onerror = (e) => {
-      console.warn("Speech synthesis error:", e);
+      console.warn("Speech synthesis fallback event:", e);
       if (onComplete && isMountedRef.current) {
         onComplete();
       }
@@ -357,10 +377,10 @@ export const VoiceTutor = () => {
 
   const testFemaleVoice = () => {
     const testPhrases = {
-      aria: "Hi Pratik! I'm Aria, your humanoid voice mentor. I'm ready for our real-time coding call!",
-      jenny: "Hello! I'm Jenny. My neural voice is tuned for zero latency interview preparation.",
-      samantha: "Hey there! I'm Samantha. Let's discuss data structures and algorithms hands-free!",
-      google_female: "Greetings! I am DOAP Voice AI, ready to help you master system architecture."
+      aria: "Hi Pratik! I'm Aria, your studio humanoid voice mentor. I am powered by ElevenLabs and Groq LPU!",
+      jenny: "Hello! I'm Rachel. My voice is tuned for zero latency interview preparation and coding mentorship.",
+      samantha: "Hey there! I'm Sarah. Let's discuss algorithms, dynamic programming, and system design hands-free!",
+      google_female: "Greetings! I am DOAP Voice AI, ready to help you master software engineering."
     };
     speakResponse(testPhrases[selectedVoicePersona] || testPhrases.aria);
   };
@@ -372,6 +392,7 @@ export const VoiceTutor = () => {
     } else {
       setIsMuted(true);
       stopListening();
+      stopElevenLabsAudio();
       if (synthRef.current) synthRef.current.cancel();
       setCallState('idle');
     }
