@@ -88,7 +88,7 @@ export const AITutor = () => {
           {
             id: '1',
             sender: 'ai',
-            text: `Hey ${userName}! 👋 I'm **DOAP AI**, your universal AI assistant (powered by 120B Super-Brain).\n\nI can answer **anything from A to Z** — coding in any language, Machine Learning, math, science, essays, career advice, or generate images with \`/image <prompt>\`!\n\nWhat would you like to explore or solve right now?`
+            text: `Hey ${userName} bhai! 👋 Kya haal-chaal? Bata aaj kya kaam karna hai ya kya plan hai?\n\nChahe coding ho, project building, problem solving, ya bas normal baatein — bol bhai, main poori tarah ready hoon! 🚀🔥`
           }
         ]
       }
