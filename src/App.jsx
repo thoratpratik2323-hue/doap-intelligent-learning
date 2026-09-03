@@ -16,6 +16,7 @@ import { ErrorBoundary } from './components/Common/ErrorBoundary';
 import { Home } from './pages/Home';
 import { Dashboard } from './pages/Dashboard';
 import { AITutor } from './pages/AITutor';
+import { VoiceTutor } from './pages/VoiceTutor';
 import { MyLearning } from './pages/MyLearning';
 import { StudyPlan } from './pages/StudyPlan';
 import { CodingPractice } from './pages/CodingPractice';
@@ -92,6 +93,8 @@ const AppContent = () => {
         return <Dashboard />;
       case '/ai-tutor':
         return <AITutor />;
+      case '/voice-tutor':
+        return <VoiceTutor />;
       case '/learning':
         return <MyLearning />;
       case '/study-plan':

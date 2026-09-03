@@ -15,7 +15,9 @@ import {
   Terminal,
   PanelLeftClose,
   PanelLeftOpen,
-  MessageSquare
+  MessageSquare,
+  Phone,
+  PhoneCall
 } from 'lucide-react';
 import { INITIAL_CHAT_HISTORY } from '../data/mockData';
 import { useTheme } from '../context/ThemeContext';
@@ -23,6 +25,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { generateSmartTutorResponse } from '../services/aiTutorEngine';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
+import { VoiceAICallModal } from '../components/Interview/VoiceAICallModal';
 
 export const AITutor = () => {
   const { isDarkMode, activeAccentHex } = useTheme();
@@ -45,6 +48,7 @@ export const AITutor = () => {
     (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_gemini_key') : '') || ''
   );
   const [keySaved, setKeySaved] = useState(false);
+  const [isVoiceCallOpen, setIsVoiceCallOpen] = useState(false);
 
   const {
     isListening,
@@ -54,6 +58,26 @@ export const AITutor = () => {
     toggleListening,
     clearError: clearSpeechError
   } = useSpeechRecognition();
+
+  const handleSaveCallToChat = (logs) => {
+    if (!logs || logs.length === 0) return;
+    const newItems = logs.map((log, idx) => ({
+      id: `voice-${Date.now()}-${idx}`,
+      sender: log.role === 'user' ? 'user' : 'ai',
+      text: log.text,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }));
+
+    setChatHistory(prev => prev.map(chat => {
+      if (chat.id === activeChatId) {
+        return {
+          ...chat,
+          messages: [...chat.messages, ...newItems]
+        };
+      }
+      return chat;
+    }));
+  };
 
   useEffect(() => {
     if (transcript) {

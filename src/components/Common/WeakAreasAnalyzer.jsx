@@ -93,6 +93,12 @@ export const WeakAreasAnalyzer = ({ className = '' }) => {
     navigateTo('/ai-tutor');
   };
 
+  const [expandedTopicId, setExpandedTopicId] = useState(null); // click tab to view more detail
+
+  const toggleTopic = (id) => {
+    setExpandedTopicId(prev => prev === id ? null : id);
+  };
+
   return (
     <div 
       className={`p-6 sm:p-7 rounded-3xl border transition-all space-y-6 doap-card ${className}`}
@@ -121,7 +127,7 @@ export const WeakAreasAnalyzer = ({ className = '' }) => {
             Identified Weak Areas & Diagnostics
           </h2>
           <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-neutral-400' : 'text-neutral-600'}`}>
-            Automated telemetry tracks failed assertions, quiz errors, and pattern delays to target your exact knowledge gaps.
+            Click any skill tab to reveal its AI root-cause diagnosis, targeted action plan, and 1-click remedies.
           </p>
         </div>
 
@@ -156,6 +162,7 @@ export const WeakAreasAnalyzer = ({ className = '' }) => {
           const isCritical = topic.status === 'critical';
           const isModerate = topic.status === 'moderate';
           const isStrong = topic.status === 'strong';
+          const isExpanded = expandedTopicId === topic.id;
 
           const statusBadge = isCritical 
             ? { text: 'High Priority Gap', color: 'text-rose-400 bg-rose-500/10 border-rose-500/30' }
@@ -168,13 +175,14 @@ export const WeakAreasAnalyzer = ({ className = '' }) => {
           return (
             <div 
               key={topic.id}
-              className={`p-5 rounded-2xl border transition-all space-y-4 relative ${
-                isDarkMode 
-                  ? 'bg-neutral-900/60 border-neutral-800 hover:border-neutral-700' 
-                  : 'bg-white border-neutral-200 hover:border-neutral-300 shadow-sm'
+              onClick={() => toggleTopic(topic.id)}
+              className={`p-5 rounded-2xl border transition-all space-y-3 relative cursor-pointer select-none group ${
+                isExpanded
+                  ? (isDarkMode ? 'bg-neutral-900 border-neutral-700 shadow-xl' : 'bg-white border-neutral-400 shadow-md')
+                  : (isDarkMode ? 'bg-neutral-900/60 border-neutral-800 hover:border-neutral-700' : 'bg-white border-neutral-200 hover:border-neutral-300 shadow-sm')
               }`}
             >
-              {/* Card Header */}
+              {/* Card Header: Topic Name, Category & Mastery */}
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1 flex-1">
                   <div className="flex items-center gap-2">
@@ -183,13 +191,15 @@ export const WeakAreasAnalyzer = ({ className = '' }) => {
                     </span>
                     <span className="text-[10px] font-mono text-neutral-400">{topic.category}</span>
                   </div>
-                  <h4 className={`text-base font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-neutral-900'}`}>
+                  <h4 className={`text-base font-bold tracking-tight transition-colors ${
+                    isDarkMode ? 'text-white group-hover:text-white' : 'text-neutral-900 group-hover:text-black'
+                  }`}>
                     {topic.name}
                   </h4>
                 </div>
 
-                {/* Accuracy Gauge */}
-                <div className="text-right shrink-0">
+                {/* Accuracy Gauge & Expand Indicator */}
+                <div className="text-right shrink-0 flex flex-col items-end">
                   <div className="text-xl font-black font-mono" style={{ color: progressColor }}>
                     {topic.score}%
                   </div>
@@ -205,58 +215,77 @@ export const WeakAreasAnalyzer = ({ className = '' }) => {
                 />
               </div>
 
-              {/* Gap Analysis Description */}
-              <div className={`p-3 rounded-xl border text-xs space-y-1.5 ${
-                isDarkMode ? 'bg-black/40 border-neutral-800/80' : 'bg-neutral-50 border-neutral-200'
-              }`}>
-                <div className="flex items-start gap-2">
-                  <AlertTriangle size={14} className="shrink-0 mt-0.5 text-rose-400" />
-                  <p className={isDarkMode ? 'text-neutral-300' : 'text-neutral-700'}>
-                    <strong className="text-rose-400">Diagnosis:</strong> {topic.gapReason}
-                  </p>
-                </div>
-                <div className="flex items-start gap-2 pt-1 border-t border-neutral-800/40">
-                  <Target size={14} className="shrink-0 mt-0.5 text-emerald-400" />
-                  <p className={isDarkMode ? 'text-neutral-400' : 'text-neutral-600'}>
-                    <strong className="text-emerald-400">Action Plan:</strong> {topic.fixPlan}
-                  </p>
-                </div>
+              {/* Expand / Collapse Prompt Pill */}
+              <div className="flex items-center justify-between pt-1 text-[11px] font-mono text-neutral-400 border-t border-neutral-800/40">
+                <span className="flex items-center gap-1.5">
+                  <Sparkles size={11} style={{ color: accentHex }} />
+                  <span>{isExpanded ? 'Click to collapse details' : 'Click to view diagnosis & action plan'}</span>
+                </span>
+                <span className="font-bold text-xs" style={{ color: accentHex }}>
+                  {isExpanded ? '▲ Hide' : '▼ Details'}
+                </span>
               </div>
 
-              {/* Quick Action Fix Buttons */}
-              <div className="flex items-center gap-2 pt-1">
-                <button
-                  onClick={() => handleAskTutor(topic.tutorPrompt)}
-                  className="flex-1 px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90"
-                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
+              {/* Expanded Detail Drawer (Only shown after clicking tab!) */}
+              {isExpanded && (
+                <div 
+                  onClick={(e) => e.stopPropagation()} 
+                  className="space-y-3 pt-2 animate-fade-in cursor-default"
                 >
-                  <Sparkles size={13} />
-                  <span>Fix with AI Mentor</span>
-                </button>
+                  {/* Gap Analysis Description */}
+                  <div className={`p-3.5 rounded-xl border text-xs space-y-2 ${
+                    isDarkMode ? 'bg-black/50 border-neutral-800' : 'bg-neutral-50 border-neutral-200'
+                  }`}>
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle size={15} className="shrink-0 mt-0.5 text-rose-400" />
+                      <p className={isDarkMode ? 'text-neutral-300 leading-relaxed' : 'text-neutral-700 leading-relaxed'}>
+                        <strong className="text-rose-400">Diagnosis:</strong> {topic.gapReason}
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-2 pt-2 border-t border-neutral-800/60">
+                      <Target size={15} className="shrink-0 mt-0.5 text-emerald-400" />
+                      <p className={isDarkMode ? 'text-neutral-400 leading-relaxed' : 'text-neutral-600 leading-relaxed'}>
+                        <strong className="text-emerald-400">Action Plan:</strong> {topic.fixPlan}
+                      </p>
+                    </div>
+                  </div>
 
-                {topic.recommendedProblem && (
-                  <button
-                    onClick={() => navigateTo('/coding-practice')}
-                    className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-colors flex items-center gap-1 cursor-pointer ${
-                      isDarkMode ? 'bg-neutral-800 border-neutral-700 text-neutral-200 hover:text-white' : 'bg-neutral-100 border-neutral-300 text-neutral-800 hover:bg-neutral-200'
-                    }`}
-                    title="Solve in Sandbox"
-                  >
-                    <Code size={13} />
-                    <span>Practice</span>
-                  </button>
-                )}
+                  {/* Quick Action Fix Buttons */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      onClick={() => handleAskTutor(topic.tutorPrompt)}
+                      className="flex-1 px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90 shadow-sm"
+                      style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
+                    >
+                      <Sparkles size={13} />
+                      <span>Fix with AI Mentor</span>
+                    </button>
 
-                <button
-                  onClick={() => navigateTo('/assessments')}
-                  className={`p-2 rounded-xl border transition-colors cursor-pointer ${
-                    isDarkMode ? 'bg-neutral-800 border-neutral-700 text-neutral-300 hover:text-white' : 'bg-neutral-100 border-neutral-300 text-neutral-700 hover:bg-neutral-200'
-                  }`}
-                  title="Test This Skill"
-                >
-                  <Brain size={14} />
-                </button>
-              </div>
+                    {topic.recommendedProblem && (
+                      <button
+                        onClick={() => navigateTo('/coding')}
+                        className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-colors flex items-center gap-1 cursor-pointer ${
+                          isDarkMode ? 'bg-neutral-800 border-neutral-700 text-neutral-200 hover:text-white' : 'bg-neutral-100 border-neutral-300 text-neutral-800 hover:bg-neutral-200'
+                        }`}
+                        title="Solve in Sandbox"
+                      >
+                        <Code size={13} />
+                        <span>Practice</span>
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => navigateTo('/assessments')}
+                      className={`p-2 rounded-xl border transition-colors cursor-pointer ${
+                        isDarkMode ? 'bg-neutral-800 border-neutral-700 text-neutral-300 hover:text-white' : 'bg-neutral-100 border-neutral-300 text-neutral-700 hover:bg-neutral-200'
+                      }`}
+                      title="Test This Skill"
+                    >
+                      <Brain size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

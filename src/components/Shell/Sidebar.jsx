@@ -19,7 +19,8 @@ import {
   LogIn,
   LogOut,
   Sun,
-  Moon
+  Moon,
+  Radio
 } from 'lucide-react';
 import { NAVIGATION_ITEMS } from '../../data/mockData';
 import { useTheme } from '../../context/ThemeContext';
@@ -29,6 +30,7 @@ const ICON_MAP = {
   Home: Home,
   Dashboard: LayoutDashboard,
   'AI Tutor': MessageSquare,
+  'Voice Tutor': Radio,
   'My Learning': BookOpen,
   'Study Plan': Calendar,
   'Coding Practice': Code,

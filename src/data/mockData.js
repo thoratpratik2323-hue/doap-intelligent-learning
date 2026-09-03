@@ -22,6 +22,7 @@ export const NAVIGATION_ITEMS = [
   { id: 'home', label: 'Home', path: '/', icon: 'Home' },
   { id: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: 'LayoutDashboard' },
   { id: 'ai-tutor', label: 'AI Tutor', path: '/ai-tutor', icon: 'MessageSquare' },
+  { id: 'voice-tutor', label: 'Voice Tutor', path: '/voice-tutor', icon: 'Radio' },
   { id: 'learning', label: 'My Learning', path: '/learning', icon: 'BookOpen' },
   { id: 'study-plan', label: 'Study Plan', path: '/study-plan', icon: 'Calendar' },
   { id: 'coding', label: 'Coding Practice', path: '/coding', icon: 'Code' },
