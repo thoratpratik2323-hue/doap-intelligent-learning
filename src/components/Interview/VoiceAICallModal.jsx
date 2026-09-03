@@ -16,6 +16,7 @@ import {
   Send
 } from 'lucide-react';
 import { generateSmartTutorResponse } from '../../services/aiTutorEngine';
+import { speakElevenLabs, stopElevenLabsAudio } from '../../services/elevenLabsService';
 
 export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode, accentHex }) => {
   const [callState, setCallState] = useState('idle'); // 'listening' | 'thinking' | 'speaking'
@@ -31,6 +32,18 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
   const synthRef = useRef(typeof window !== 'undefined' ? window.speechSynthesis : null);
   const durationTimerRef = useRef(null);
   const isComponentMounted = useRef(true);
+
+  // Stop audio on unmount or close
+  useEffect(() => {
+    return () => {
+      isComponentMounted.current = false;
+      stopElevenLabsAudio();
+      if (synthRef.current) synthRef.current.cancel();
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch(e){}
+      }
+    };
+  }, []);
 
   // Initialize Web Speech API
   useEffect(() => {
@@ -189,25 +202,42 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
     }
   };
 
-  const speakAIResponse = (text, onFinished) => {
+  const speakAIResponse = async (text, onFinished) => {
+    setCallState('speaking');
+    stopElevenLabsAudio();
+    if (synthRef.current) synthRef.current.cancel();
+
+    try {
+      await speakElevenLabs(
+        text,
+        'aria',
+        () => {
+          if (onFinished && isComponentMounted.current) onFinished();
+        },
+        () => {
+          fallbackModalSpeech(text, onFinished);
+        }
+      );
+    } catch (e) {
+      fallbackModalSpeech(text, onFinished);
+    }
+  };
+
+  const fallbackModalSpeech = (text, onFinished) => {
     if (!synthRef.current) {
       setCallState('listening');
       if (onFinished) onFinished();
       return;
     }
 
-    setCallState('speaking');
-    synthRef.current.cancel();
-
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.05;
-    utterance.pitch = 1.0;
+    utterance.rate = 1.04;
+    utterance.pitch = 1.10;
     utterance.lang = 'en-US';
 
-    // Pick natural voice if available
     const voices = synthRef.current.getVoices();
-    const naturalVoice = voices.find(v => (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha')) && v.lang.includes('en'));
-    if (naturalVoice) utterance.voice = naturalVoice;
+    const femaleVoice = voices.find(v => (v.name.includes('Aria') || v.name.includes('Jenny') || v.name.includes('Samantha') || v.name.includes('Female')) && v.lang.includes('en'));
+    if (femaleVoice) utterance.voice = femaleVoice;
 
     utterance.onend = () => {
       if (onFinished && isComponentMounted.current) {
