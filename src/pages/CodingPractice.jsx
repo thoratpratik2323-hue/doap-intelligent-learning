@@ -175,6 +175,9 @@ export const CodingPractice = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
   
+  // Multi-Language State
+  const [selectedLanguage, setSelectedLanguage] = useState('javascript'); // 'javascript' | 'python' | 'cpp' | 'java'
+
   // Active Sandbox State
   const [activeProblem, setActiveProblem] = useState(null);
   const [code, setCode] = useState('');
@@ -195,18 +198,138 @@ export const CodingPractice = () => {
     return matchCat && matchDiff;
   });
 
+  const getLanguageStarterCode = (prob, lang) => {
+    if (!prob) return '';
+    if (lang === 'python') {
+      return `# Python 3 (Judge0 Sandbox)
+class Solution:
+    def ${prob.functionName}(self, *args):
+        # Write your solution here
+        pass
+
+# Example test run:
+print("Executing ${prob.title}...")
+s = Solution()
+`;
+    }
+    if (lang === 'cpp') {
+      return `// C++ (GCC 9.2.0 - Judge0)
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+class Solution {
+public:
+    void ${prob.functionName}() {
+        // Write your solution here
+    }
+};
+
+int main() {
+    cout << "Testing ${prob.title}..." << endl;
+    return 0;
+}
+`;
+    }
+    if (lang === 'java') {
+      return `// Java (OpenJDK 13.0.1 - Judge0)
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("Testing ${prob.title} in Java...");
+    }
+}
+`;
+    }
+    return prob.starterCode;
+  };
+
   const handleOpenProblem = (prob) => {
     setActiveProblem(prob);
-    setCode(prob.starterCode);
+    setCode(getLanguageStarterCode(prob, selectedLanguage));
     setShowHint(false);
     setRunResult(null);
+  };
+
+  const handleLanguageChange = (lang) => {
+    setSelectedLanguage(lang);
+    if (activeProblem) {
+      setCode(getLanguageStarterCode(activeProblem, lang));
+      setRunResult(null);
+    }
   };
 
   const handleRunCode = async () => {
     setIsRunning(true);
     setRunResult(null);
 
-    // Run client-side sandboxed execution engine
+    // If Python, C++, or Java: run via Judge0 RapidAPI engine
+    if (selectedLanguage !== 'javascript') {
+      const languageIds = {
+        python: 71,
+        cpp: 54,
+        java: 62
+      };
+
+      try {
+        const rapidKey = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_rapidapi_key') : '') || 'b3ac93ff96msh31c7e910f4e8feep199f63jsn5cf62a6a6c1e';
+        const startTime = performance.now();
+
+        const response = await fetch('https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=false&wait=true', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-rapidapi-key': rapidKey,
+            'x-rapidapi-host': 'judge0-ce.p.rapidapi.com'
+          },
+          body: JSON.stringify({
+            source_code: code,
+            language_id: languageIds[selectedLanguage] || 71,
+            stdin: ''
+          })
+        });
+
+        const totalTime = (performance.now() - startTime).toFixed(1);
+
+        if (response.ok) {
+          const data = await response.json();
+          const stdout = data.stdout || data.compile_output || (data.status ? data.status.description : 'Code executed successfully with no output.');
+          const stderr = data.stderr;
+          const isSuccess = data.status?.id === 3 || (!stderr && !data.compile_output);
+
+          setRunResult({
+            success: isSuccess,
+            allPassed: isSuccess,
+            runtime: `${data.time || totalTime} s`,
+            memory: `${data.memory || 0} KB`,
+            isJudge0: true,
+            language: selectedLanguage.toUpperCase(),
+            stdout: stdout,
+            stderr: stderr
+          });
+        } else {
+          // If rapidapi subscription pending or network error
+          setRunResult({
+            success: false,
+            allPassed: false,
+            error: "Judge0 compiler reached. Please ensure 'Subscribe to Test' (Free Plan) is activated on RapidAPI."
+          });
+        }
+      } catch (err) {
+        setRunResult({
+          success: false,
+          allPassed: false,
+          error: `Judge0 Connection Error: ${err.message}`
+        });
+      } finally {
+        setIsRunning(false);
+      }
+      return;
+    }
+
+    // JavaScript client-side automated test suites
     setTimeout(() => {
       try {
         const startTime = performance.now();
@@ -402,13 +525,42 @@ export const CodingPractice = () => {
                 <X size={16} />
               </button>
             </div>
-
             {/* Editor & Console */}
             <div className="p-4 flex-1 overflow-y-auto space-y-4 font-mono">
+              {/* Language Selector Bar */}
+              <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-2xl bg-black/40 border border-neutral-800">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {[
+                    { id: 'javascript', label: '⚡ JavaScript (ES6)' },
+                    { id: 'python', label: '🐍 Python 3' },
+                    { id: 'cpp', label: '⚡ C++ (GCC)' },
+                    { id: 'java', label: '☕ Java' }
+                  ].map((lang) => (
+                    <button
+                      key={lang.id}
+                      onClick={() => handleLanguageChange(lang.id)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
+                        selectedLanguage === lang.id
+                          ? (isDarkMode ? 'bg-white text-black font-bold border-white shadow' : 'bg-black text-white font-bold border-black shadow')
+                          : (isDarkMode ? 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white' : 'bg-neutral-100 border-neutral-300 text-neutral-600 hover:text-black')
+                      }`}
+                    >
+                      {lang.label}
+                    </button>
+                  ))}
+                </div>
+
+                {selectedLanguage !== 'javascript' && (
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    Judge0 Sandbox Active
+                  </span>
+                )}
+              </div>
+
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-xs text-neutral-400">
                   <div className="flex items-center gap-3">
-                    <span>JavaScript (ES6) Sandbox</span>
+                    <span className="capitalize">{selectedLanguage} Sandbox</span>
                     {activeProblem.hint && (
                       <button 
                         onClick={() => setShowHint(!showHint)}
@@ -424,7 +576,7 @@ export const CodingPractice = () => {
                     )}
                   </div>
                   <button 
-                    onClick={() => setCode(activeProblem.starterCode)}
+                    onClick={() => setCode(getLanguageStarterCode(activeProblem, selectedLanguage))}
                     className="text-[11px] flex items-center gap-1 text-neutral-400 hover:text-white cursor-pointer"
                   >
                     <RefreshCw size={11} />
@@ -447,10 +599,9 @@ export const CodingPractice = () => {
                   className="w-full p-4 rounded-2xl border text-xs leading-relaxed focus:outline-none font-mono resize-none shadow-inner"
                   style={{ 
                     backgroundColor: '#0a0a0a', 
-                    borderColor: 'var(--doap-border, #262626)', 
-                    color: '#e4e4e7' 
+                    borderColor: 'var(--doap-border, #333333)',
+                    color: '#f4f4f5'
                   }}
-                  placeholder="// Write your solution here..."
                   spellCheck={false}
                 />
               </div>
@@ -463,19 +614,42 @@ export const CodingPractice = () => {
                 <div className="flex items-center justify-between border-b pb-2" style={{ borderColor: '#222' }}>
                   <span className="flex items-center gap-1.5 font-bold text-neutral-300">
                     <Terminal size={14} />
-                    <span>Execution Results</span>
+                    <span>{runResult?.isJudge0 ? `Judge0 ${runResult.language} Compiler Output` : 'Execution Results'}</span>
                   </span>
                   {runResult && runResult.runtime && (
-                    <span className="text-[10px] text-neutral-400">Runtime: {runResult.runtime}</span>
+                    <span className="text-[10px] text-neutral-400">
+                      Runtime: {runResult.runtime} {runResult.memory ? `• Memory: ${runResult.memory}` : ''}
+                    </span>
                   )}
                 </div>
 
                 {!runResult ? (
-                  <p className="text-neutral-500 text-[11px]">Click "Run Code & Tests" to execute your solution against automated test cases.</p>
+                  <p className="text-neutral-500 text-[11px]">Click "Run Code & Tests" to execute your solution.</p>
                 ) : runResult.error ? (
                   <div className="flex items-start gap-2 text-rose-400 text-xs">
                     <AlertCircle size={15} className="shrink-0 mt-0.5" />
                     <span>{runResult.error}</span>
+                  </div>
+                ) : runResult.isJudge0 ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`font-bold flex items-center gap-1 ${runResult.success ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {runResult.success ? <Check size={14} /> : <AlertCircle size={14} />}
+                        <span>{runResult.success ? 'Compilation & Execution Succeeded' : 'Execution Returned Warning/Error'}</span>
+                      </span>
+                    </div>
+
+                    {runResult.stdout && (
+                      <div className="p-3 rounded-xl bg-black border border-neutral-800 text-emerald-300 font-mono text-xs whitespace-pre-wrap">
+                        {runResult.stdout}
+                      </div>
+                    )}
+
+                    {runResult.stderr && (
+                      <div className="p-3 rounded-xl bg-rose-950/20 border border-rose-800/40 text-rose-300 font-mono text-xs whitespace-pre-wrap">
+                        {runResult.stderr}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -494,7 +668,7 @@ export const CodingPractice = () => {
                     </div>
 
                     <div className="space-y-1.5 pt-1">
-                      {runResult.tests.map((t) => (
+                      {runResult.tests && runResult.tests.map((t) => (
                         <div key={t.id} className="p-2.5 rounded-xl bg-black/40 border border-neutral-800 text-[11px] flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             {t.passed ? (
