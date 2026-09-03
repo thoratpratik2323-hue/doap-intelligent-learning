@@ -113,6 +113,201 @@ const ASSESSMENT_QUIZZES = {
         correct: 1
       }
     ]
+  },
+  'c-systems': {
+    title: 'C Language & Systems Internals Exam',
+    questions: [
+      {
+        q: "What is the output of sizeof('A') in C, and why?",
+        options: [
+          "4 (Character literals have type int in C)",
+          "1 (Char size)",
+          "8 (Double size)",
+          "Undefined Behavior"
+        ],
+        correct: 0
+      },
+      {
+        q: "What does calling free(NULL) do according to the C standard?",
+        options: [
+          "Performs no operation and is guaranteed safe",
+          "Causes a Segmentation Fault",
+          "Causes a Memory Leak",
+          "Throws a NullPointerException"
+        ],
+        correct: 0
+      },
+      {
+        q: "If int *p = &x;, what does the expression *p++ do?",
+        options: [
+          "Dereferences current address, then advances the pointer to the next element",
+          "Increments the value stored at *p by 1",
+          "Increments both the address and the value",
+          "Compilation Error"
+        ],
+        correct: 0
+      },
+      {
+        q: "Why does the expression (n & (n - 1)) == 0 evaluate to true for positive n?",
+        options: [
+          "When n is a power of 2 (only one set bit)",
+          "When n is an odd number",
+          "When n is divisible by 3",
+          "When n is zero"
+        ],
+        correct: 0
+      },
+      {
+        q: "Why might sizeof(struct) be larger than the sum of its member sizes?",
+        options: [
+          "Due to compiler structure padding for CPU alignment requirements",
+          "Because of memory fragmentation",
+          "Because of garbage collection headers",
+          "Because C pointers always require 16 bytes"
+        ],
+        correct: 0
+      }
+    ]
+  },
+  'python-internals': {
+    title: 'Python Architecture & CPython Master Exam',
+    questions: [
+      {
+        q: "If a = [1, 2, 3] and b = a; b.append(4). What is the value of a?",
+        options: [
+          "[1, 2, 3, 4] (both share the same list reference)",
+          "[1, 2, 3]",
+          "TypeError: mutated alias",
+          "[4]"
+        ],
+        correct: 0
+      },
+      {
+        q: "Why does Python multithreading fail to speed up CPU-bound tasks in CPython?",
+        options: [
+          "Due to the Global Interpreter Lock (GIL) serializing bytecode execution",
+          "Because Python does not support multi-core CPUs",
+          "Due to recursion limit exhaustion",
+          "Because Python cannot allocate heap memory across threads"
+        ],
+        correct: 0
+      },
+      {
+        q: "What is the key difference between __new__ and __init__ in Python?",
+        options: [
+          "__new__ is the static constructor creating the instance; __init__ initializes fields",
+          "__new__ is for classes, __init__ is for functions",
+          "They are identical and interchangeable",
+          "__init__ runs before __new__"
+        ],
+        correct: 0
+      },
+      {
+        q: "What does the @property decorator do in Python?",
+        options: [
+          "Allows a method to be accessed like an attribute without ()",
+          "Converts a function to C bytecode",
+          "Makes the variable immutable forever",
+          "Registers a class in the global metaclass registry"
+        ],
+        correct: 0
+      },
+      {
+        q: "Why is `def add(item, bucket=[])` dangerous in Python?",
+        options: [
+          "The default list is created once at def-time and shared across all calls",
+          "Python raises a SyntaxError for mutable default arguments",
+          "It causes an immediate memory leak",
+          "It crashes during garbage collection"
+        ],
+        correct: 0
+      }
+    ]
+  },
+  'java-mastery': {
+    title: 'Java 21 & JVM Concurrency Master Assessment',
+    questions: [
+      {
+        q: "What are Virtual Threads (Project Loom) finalized in Java 21?",
+        options: [
+          "Lightweight JVM-managed threads scheduled onto carrier OS threads",
+          "GPU-based parallel compute units",
+          "A single-threaded event loop like Node.js",
+          "Thread pools with a fixed size of 1"
+        ],
+        correct: 0
+      },
+      {
+        q: "In Java Generics, what does PECS stand for?",
+        options: [
+          "Producer Extends, Consumer Super",
+          "Private Extends, Concrete Super",
+          "Polymorphic Extension, Class Super",
+          "Parameterized Encapsulation, Custom Scope"
+        ],
+        correct: 0
+      },
+      {
+        q: "Why does volatile not make i++ thread-safe?",
+        options: [
+          "Because increment is a 3-step read-modify-write compound operation",
+          "Because volatile is only for boolean variables",
+          "Because volatile is ignored by the JIT compiler",
+          "Because i++ runs exclusively in the CPU cache"
+        ],
+        correct: 0
+      },
+      {
+        q: "What optimization does JIT Escape Analysis perform when an object does not escape a method?",
+        options: [
+          "Scalar replacement — allocates fields on the stack/registers, avoiding heap allocation",
+          "Encrypts the object in RAM",
+          "Transfers the object to disk cache",
+          "Converts Java code to C++ at runtime"
+        ],
+        correct: 0
+      },
+      {
+        q: "Why is ArrayDeque preferred over legacy Stack in modern Java?",
+        options: [
+          "ArrayDeque is faster and avoids unnecessary Vector synchronized lock contention",
+          "Stack cannot store generic objects",
+          "ArrayDeque uses zero memory",
+          "Stack throws checked exceptions on pop"
+        ],
+        correct: 0
+      }
+    ]
+  },
+  'dsa-numericals': {
+    title: 'DSA Complexity & Numerical Benchmark',
+    questions: [
+      {
+        q: "A loop starts at n = 128 and divides n by 2 in every iteration until n = 1. How many iterations occur?",
+        options: ["7 iterations (log2(128) = 7)", "8 iterations", "6 iterations", "14 iterations"],
+        correct: 0
+      },
+      {
+        q: "An array contains 20 elements. How many total non-empty contiguous subarrays does it have?",
+        options: ["210 (Formula: n*(n+1)/2 = 20*21/2)", "400", "190", "1024"],
+        correct: 0
+      },
+      {
+        q: "A balanced BST contains 1,023 nodes. What is its height if the root is at level 0?",
+        options: ["9 (log2(1024) - 1)", "10", "11", "8"],
+        correct: 0
+      },
+      {
+        q: "A hash table has 100 slots and contains 75 elements. How many additional elements can be inserted before reaching a load factor of 0.9?",
+        options: ["15 (90 - 75 = 15)", "25", "10", "90"],
+        correct: 0
+      },
+      {
+        q: "For a recurrence relation T(n) = 2T(n/2) + n, what is its asymptotic time complexity (Master Theorem)?",
+        options: ["O(n log n)", "O(n)", "O(n²)", "O(log n)"],
+        correct: 0
+      }
+    ]
   }
 };
 
@@ -305,6 +500,146 @@ export const Assessments = () => {
                 </div>
                 <button 
                   onClick={() => handleStartQuiz('job-readiness')}
+                  className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover-glide shadow-sm"
+                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
+                >
+                  <Play size={13} />
+                  <span>Start Quiz</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Card 4: C Systems */}
+            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
+              isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
+            }`}>
+              <div className="space-y-1.5">
+                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                  isDarkMode ? 'bg-neutral-900 border-neutral-800 text-cyan-400' : 'bg-cyan-50 border-cyan-200 text-cyan-700'
+                }`}>
+                  C SYSTEMS EXAM
+                </span>
+                <h4 className="text-xs font-bold leading-snug">
+                  C Language & Memory Internals
+                </h4>
+              </div>
+
+              <div className={`space-y-2 pt-2 border-t ${
+                isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
+              }`}>
+                <div className={`text-[11px] font-mono space-y-0.5 ${
+                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
+                }`}>
+                  <p>⏱ 5 Questions</p>
+                  <p>📊 Systems & Pointers</p>
+                </div>
+                <button 
+                  onClick={() => handleStartQuiz('c-systems')}
+                  className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover-glide shadow-sm"
+                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
+                >
+                  <Play size={13} />
+                  <span>Start Quiz</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Card 5: Python Internals */}
+            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
+              isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
+            }`}>
+              <div className="space-y-1.5">
+                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                  isDarkMode ? 'bg-neutral-900 border-neutral-800 text-amber-400' : 'bg-amber-50 border-amber-200 text-amber-700'
+                }`}>
+                  PYTHON ARCHITECTURE
+                </span>
+                <h4 className="text-xs font-bold leading-snug">
+                  Python GIL, OOP & Metaclasses
+                </h4>
+              </div>
+
+              <div className={`space-y-2 pt-2 border-t ${
+                isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
+              }`}>
+                <div className={`text-[11px] font-mono space-y-0.5 ${
+                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
+                }`}>
+                  <p>⏱ 5 Questions</p>
+                  <p>📊 CPython Mastery</p>
+                </div>
+                <button 
+                  onClick={() => handleStartQuiz('python-internals')}
+                  className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover-glide shadow-sm"
+                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
+                >
+                  <Play size={13} />
+                  <span>Start Quiz</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Card 6: Java 21 & Concurrency */}
+            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
+              isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
+            }`}>
+              <div className="space-y-1.5">
+                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                  isDarkMode ? 'bg-neutral-900 border-neutral-800 text-red-400' : 'bg-red-50 border-red-200 text-red-700'
+                }`}>
+                  JAVA 21 & JVM
+                </span>
+                <h4 className="text-xs font-bold leading-snug">
+                  Java 21, Loom & JVM Internals
+                </h4>
+              </div>
+
+              <div className={`space-y-2 pt-2 border-t ${
+                isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
+              }`}>
+                <div className={`text-[11px] font-mono space-y-0.5 ${
+                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
+                }`}>
+                  <p>⏱ 5 Questions</p>
+                  <p>📊 JVM & Concurrency</p>
+                </div>
+                <button 
+                  onClick={() => handleStartQuiz('java-mastery')}
+                  className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover-glide shadow-sm"
+                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
+                >
+                  <Play size={13} />
+                  <span>Start Quiz</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Card 7: DSA Numericals */}
+            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
+              isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
+            }`}>
+              <div className="space-y-1.5">
+                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                  isDarkMode ? 'bg-neutral-900 border-neutral-800 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                }`}>
+                  NUMERICAL BENCHMARK
+                </span>
+                <h4 className="text-xs font-bold leading-snug">
+                  DSA Complexity & Math Calculations
+                </h4>
+              </div>
+
+              <div className={`space-y-2 pt-2 border-t ${
+                isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
+              }`}>
+                <div className={`text-[11px] font-mono space-y-0.5 ${
+                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
+                }`}>
+                  <p>⏱ 5 Questions</p>
+                  <p>📊 Big-O & Calculations</p>
+                </div>
+                <button 
+                  onClick={() => handleStartQuiz('dsa-numericals')}
                   className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover-glide shadow-sm"
                   style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
                 >

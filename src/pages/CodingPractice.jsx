@@ -159,6 +159,69 @@ function maxSubArray(nums) {
       { input: [[1]], expected: 1, display: "maxSubArray([1])" },
       { input: [[5, 4, -1, 7, 8]], expected: 23, display: "maxSubArray([5,4,-1,7,8])" }
     ]
+  },
+  {
+    id: 8,
+    title: "Trapping Rain Water",
+    difficulty: "Hard",
+    category: "Two Pointers",
+    functionName: "trap",
+    description: "Given `n` non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it can trap after raining.",
+    hint: "Use Two Pointers (left & right). Track leftMax and rightMax. Water trapped at each step is determined by min(leftMax, rightMax) - height.",
+    starterCode: `/**
+ * @param {number[]} height
+ * @return {number}
+ */
+function trap(height) {
+  // Write your solution here
+  
+}`,
+    tests: [
+      { input: [[0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]], expected: 6, display: "trap([0,1,0,2,1,0,1,3,2,1,2,1])" },
+      { input: [[4, 2, 0, 3, 2, 5]], expected: 9, display: "trap([4,2,0,3,2,5])" }
+    ]
+  },
+  {
+    id: 9,
+    title: "Sieve of Eratosthenes",
+    difficulty: "Medium",
+    category: "Algorithms & Math",
+    functionName: "sieve",
+    description: "Given an integer `n`, return an array of all prime numbers less than or equal to `n` in ascending order.",
+    hint: "Initialize a boolean array of size n+1 with true. Mark 0 and 1 as false. For i from 2 to sqrt(n), if isPrime[i] is true, mark all multiples i*i, i*(i+1)... as false.",
+    starterCode: `/**
+ * @param {number} n
+ * @return {number[]}
+ */
+function sieve(n) {
+  // Write your solution here
+  
+}`,
+    tests: [
+      { input: [10], expected: [2, 3, 5, 7], display: "sieve(10)" },
+      { input: [20], expected: [2, 3, 5, 7, 11, 13, 17, 19], display: "sieve(20)" }
+    ]
+  },
+  {
+    id: 10,
+    title: "Merge Intervals",
+    difficulty: "Medium",
+    category: "Arrays",
+    functionName: "merge",
+    description: "Given an array of `intervals` where `intervals[i] = [start, end]`, merge all overlapping intervals, and return an array of the non-overlapping intervals.",
+    hint: "Sort intervals by their start time. Iterate and merge with the previous interval if curr.start <= prev.end.",
+    starterCode: `/**
+ * @param {number[][]} intervals
+ * @return {number[][]}
+ */
+function merge(intervals) {
+  // Write your solution here
+  
+}`,
+    tests: [
+      { input: [[[1, 3], [2, 6], [8, 10], [15, 18]]], expected: [[1, 6], [8, 10], [15, 18]], display: "merge([[1,3],[2,6],[8,10],[15,18]])" },
+      { input: [[[1, 4], [4, 5]]], expected: [[1, 5]], display: "merge([[1,4],[4,5]])" }
+    ]
   }
 ];
 
