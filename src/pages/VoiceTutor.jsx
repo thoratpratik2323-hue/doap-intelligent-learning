@@ -144,9 +144,21 @@ export const VoiceTutor = () => {
     return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
-  const handleStartCall = () => {
+  const streamRef = useRef(null);
+
+  const handleStartCall = async () => {
     setIsCallActive(true);
     setIsMuted(false);
+
+    // Request microphone access across all browsers (including Firefox)
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        streamRef.current = stream;
+      }
+    } catch (micErr) {
+      console.warn("Microphone access prompt:", micErr);
+    }
     
     const greeting = `Hello ${profile?.name || 'there'}! I am your DOAP Live Voice Tutor. I am listening—what engineering topic or doubt would you like to discuss?`;
     
@@ -161,11 +173,15 @@ export const VoiceTutor = () => {
   const handleEndCall = () => {
     if (synthRef.current) synthRef.current.cancel();
     stopListening();
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
     setIsCallActive(false);
     setCallState('idle');
   };
 
-  const startListening = () => {
+  const startListening = async () => {
     if (isMuted || !isMountedRef.current) return;
     setCallState('listening');
     setUserTranscript('');
@@ -176,6 +192,13 @@ export const VoiceTutor = () => {
       } catch (err) {
         // already active
       }
+    } else {
+      try {
+        if (!streamRef.current && navigator.mediaDevices) {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          streamRef.current = stream;
+        }
+      } catch (e) {}
     }
   };
 

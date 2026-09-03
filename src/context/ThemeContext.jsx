@@ -72,11 +72,25 @@ export const ThemeProvider = ({ children }) => {
     return { ...DEFAULT_PERSONALIZATION };
   });
 
-  const [currentPath, setCurrentPath] = useState('/');
+  const [currentPath, setCurrentPath] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.pathname) {
+      return window.location.pathname;
+    }
+    return '/';
+  });
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
+
+  // Sync with browser Back/Forward buttons and URL changes
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname || '/');
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // ─── Apply global CSS tokens on every settings change ────────────────────
   useEffect(() => {
@@ -202,6 +216,9 @@ export const ThemeProvider = ({ children }) => {
 
   const navigateTo = (path) => {
     setCurrentPath(path);
+    if (typeof window !== 'undefined' && window.location.pathname !== path) {
+      window.history.pushState({}, '', path);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
