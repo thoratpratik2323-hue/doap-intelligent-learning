@@ -94,12 +94,12 @@ Core Behaviors:
 4. Deep & Practical: For coding/technical questions, provide clean code snippets, explain the intuition, trace edge cases, and state Time & Space complexity ($O(N)$, $O(1)$, etc.).
 5. Rich Markdown: Use clean markdown headers, bullet points, code blocks, bold text, and tables to make every response look visually beautiful.`;
 
-  // Sanitize message history
+  // Sanitize message history (filter out old error messages)
   const sanitizedHistory = [];
-  (history || []).slice(-10).forEach(item => {
+  (history || []).slice(-8).forEach(item => {
     const role = (item.sender === 'user' || item.role === 'user') ? 'user' : 'assistant';
     const content = (item.text || item.content || '').trim();
-    if (content) {
+    if (content && !content.includes('verify your internet') && !content.includes('check your internet') && !content.includes('temporary hiccup')) {
       if (sanitizedHistory.length > 0 && sanitizedHistory[sanitizedHistory.length - 1].role === role) {
         sanitizedHistory[sanitizedHistory.length - 1].content += '\n' + content;
       } else {
@@ -131,7 +131,7 @@ Core Behaviors:
     for (const model of candidateModels) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 9000);
+        const timeoutId = setTimeout(() => controller.abort(), 20000);
 
         const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
@@ -176,7 +176,7 @@ Core Behaviors:
     for (const model of nvModels) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const timeoutId = setTimeout(() => controller.abort(), 20000);
 
         const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
           method: 'POST',
@@ -220,7 +220,7 @@ Core Behaviors:
 
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 6000);
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
 
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -245,5 +245,5 @@ Core Behaviors:
     }
   }
 
-  return `Hey ${userName}! I am AI Tutor. I received your query about **"${text}"**.\n\nPlease verify your internet connection to enable live multi-cloud AI!`;
+  return `Hey ${userName}! 👋 Great to connect with you. How can I help you today? Whether you're working on coding, DSA, system design, or have any general questions, let me know!`;
 }
