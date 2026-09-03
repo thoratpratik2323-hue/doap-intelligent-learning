@@ -1,5 +1,5 @@
 /**
- * ElevenLabs Ultra-Realistic Studio Female Voice Service
+ * ElevenLabs Ultra-Realistic Voice Service with Unlocked Web Audio Playback
  */
 
 const ELEVEN_API_KEY = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_elevenlabs_key') : '') ||
@@ -7,30 +7,45 @@ const ELEVEN_API_KEY = (typeof localStorage !== 'undefined' ? localStorage.getIt
                        'sk_49242a8b562bd43cd0c8ff30db444b69216a64c89ef7d3d2';
 
 export const ELEVEN_VOICES = {
-  doap: { id: '9PvnT6XRzlljoaDG6Knu', name: 'DOAP AI' },
-  aria: { id: '9PvnT6XRzlljoaDG6Knu', name: 'DOAP AI' },
-  rachel: { id: '9PvnT6XRzlljoaDG6Knu', name: 'DOAP AI' },
-  sarah: { id: '9PvnT6XRzlljoaDG6Knu', name: 'DOAP AI' }
+  doap: { id: '9PvnT6XRzlljoaDG6Knu', name: 'Ranbir (Indian Male)' },
+  brian: { id: 'nPczCjzI2devNBz1zQrb', name: 'Brian (Deep & Warm)' }
 };
 
-let currentAudio = null;
+let sharedAudioCtx = null;
+let currentSource = null;
 
-export async function speakElevenLabs(text, voiceKey = 'aria', onComplete, onError) {
+export function unlockAudioContext() {
+  if (typeof window === 'undefined') return;
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return;
+  if (!sharedAudioCtx) {
+    sharedAudioCtx = new AudioCtx();
+  }
+  if (sharedAudioCtx.state === 'suspended') {
+    sharedAudioCtx.resume().catch(() => {});
+  }
+}
+
+export function stopElevenLabsAudio() {
+  if (currentSource) {
+    try {
+      currentSource.stop();
+      currentSource.disconnect();
+    } catch (e) {}
+    currentSource = null;
+  }
+}
+
+export async function speakElevenLabs(text, voiceKey = 'doap', onComplete, onError) {
   if (!text || !text.trim()) {
     if (onComplete) onComplete();
     return;
   }
 
-  // Stop any previous audio playback
-  if (currentAudio) {
-    try {
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
-    } catch (e) {}
-    currentAudio = null;
-  }
+  stopElevenLabsAudio();
+  unlockAudioContext();
 
-  const voiceId = (ELEVEN_VOICES[voiceKey] && ELEVEN_VOICES[voiceKey].id) || ELEVEN_VOICES.aria.id;
+  const voiceId = (ELEVEN_VOICES[voiceKey] && ELEVEN_VOICES[voiceKey].id) || '9PvnT6XRzlljoaDG6Knu';
 
   try {
     const cleanText = text
@@ -40,6 +55,7 @@ export async function speakElevenLabs(text, voiceKey = 'aria', onComplete, onErr
       .replace(/\n+/g, " ")
       .slice(0, 450);
 
+    // 1. Try Primary Voice (Ranbir - 9PvnT6XRzlljoaDG6Knu)
     let response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`, {
       method: 'POST',
       headers: {
@@ -49,19 +65,17 @@ export async function speakElevenLabs(text, voiceKey = 'aria', onComplete, onErr
       },
       body: JSON.stringify({
         text: cleanText,
-        model_id: 'eleven_turbo_v2_5',
+        model_id: 'eleven_flash_v2_5',
         voice_settings: {
           stability: 0.55,
-          similarity_boost: 0.85,
-          style: 0.35,
-          use_speaker_boost: true
+          similarity_boost: 0.85
         }
       })
     });
 
-    // If 402 (Free users cannot use library voices via API), fallback to ElevenLabs Studio Premade Voice (Brian - Deep & Warm)
+    // 2. If 402 (Free tier blocked from Community Library voices), fallback to ElevenLabs Studio Premade Voice
     if (!response.ok && response.status === 402 && voiceId !== 'nPczCjzI2devNBz1zQrb') {
-      console.warn('[ElevenLabs] Library voice requires paid tier. Falling back to ElevenLabs Premade Studio Voice (Brian)...');
+      console.warn('[ElevenLabs] 402 Payment Required for library voice. Streaming ElevenLabs Studio Voice (Brian)...');
       response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/nPczCjzI2devNBz1zQrb/stream`, {
         method: 'POST',
         headers: {
@@ -81,41 +95,35 @@ export async function speakElevenLabs(text, voiceKey = 'aria', onComplete, onErr
     }
 
     if (!response.ok) {
-      throw new Error(`ElevenLabs API Error: ${response.status}`);
+      throw new Error(`ElevenLabs API returned HTTP ${response.status}`);
     }
 
-    const audioBlob = await response.blob();
-    const audioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(audioUrl);
-    currentAudio = audio;
+    const arrayBuffer = await response.arrayBuffer();
 
-    audio.onended = () => {
-      URL.revokeObjectURL(audioUrl);
-      currentAudio = null;
-      if (onComplete) onComplete();
-    };
+    if (!sharedAudioCtx) unlockAudioContext();
+    if (sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
+      await sharedAudioCtx.resume();
+    }
 
-    audio.onerror = (e) => {
-      URL.revokeObjectURL(audioUrl);
-      currentAudio = null;
-      if (onError) onError(e);
-      else if (onComplete) onComplete();
-    };
+    if (sharedAudioCtx) {
+      const audioBuffer = await sharedAudioCtx.decodeAudioData(arrayBuffer);
+      const source = sharedAudioCtx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(sharedAudioCtx.destination);
+      currentSource = source;
 
-    await audio.play();
+      source.onended = () => {
+        currentSource = null;
+        if (onComplete) onComplete();
+      };
+
+      source.start(0);
+    } else {
+      throw new Error("Web AudioContext unavailable");
+    }
   } catch (err) {
-    console.warn('[ElevenLabs] Fallback to browser synthesis:', err);
+    console.warn('[ElevenLabs] Streaming fallback:', err);
     if (onError) onError(err);
     else if (onComplete) onComplete();
-  }
-}
-
-export function stopElevenLabsAudio() {
-  if (currentAudio) {
-    try {
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
-    } catch (e) {}
-    currentAudio = null;
   }
 }

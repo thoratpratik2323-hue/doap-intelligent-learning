@@ -12,7 +12,7 @@ import {
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { generateSmartTutorResponse } from '../services/aiTutorEngine';
-import { speakElevenLabs, stopElevenLabsAudio } from '../services/elevenLabsService';
+import { speakElevenLabs, stopElevenLabsAudio, unlockAudioContext } from '../services/elevenLabsService';
 
 // DOAP AI Acoustic Sound Synthesizers (Web Audio API)
 const playBootChime = () => {
@@ -172,6 +172,7 @@ export const VoiceTutor = () => {
   };
 
   const handleStartCall = async () => {
+    unlockAudioContext();
     playBootChime();
     setIsCallActive(true);
     setCallState('listening');
@@ -307,9 +308,23 @@ export const VoiceTutor = () => {
     }
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.04;
-    utterance.pitch = 1.05;
-    utterance.lang = 'en-US';
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.lang = 'en-IN';
+
+    try {
+      const voices = synthRef.current.getVoices();
+      const indianVoice = voices.find(v => 
+        v.name.includes('Ravi') || 
+        v.name.includes('Heera') || 
+        v.lang === 'en-IN' || 
+        v.lang === 'hi-IN' || 
+        v.name.includes('India')
+      );
+      if (indianVoice) {
+        utterance.voice = indianVoice;
+      }
+    } catch (e) {}
 
     utterance.onend = () => {
       if (onComplete && isMountedRef.current) onComplete();
