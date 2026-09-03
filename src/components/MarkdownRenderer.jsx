@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check, Terminal, Code } from 'lucide-react';
+import { Copy, Check, Code, ExternalLink } from 'lucide-react';
 
 export const MarkdownRenderer = ({ content, isDarkMode }) => {
   const [copiedIndex, setCopiedIndex] = useState(null);
@@ -16,7 +16,10 @@ export const MarkdownRenderer = ({ content, isDarkMode }) => {
   const parts = content.split(/(```[\s\S]*?```)/g);
 
   return (
-    <div className="space-y-4 leading-relaxed text-sm sm:text-[15px]">
+    <div 
+      className="space-y-3 leading-relaxed text-sm sm:text-[15px]"
+      style={{ color: 'var(--doap-text-prim, inherit)' }}
+    >
       {parts.map((part, pIdx) => {
         // Fenced Code Block
         if (part.startsWith('```') && part.endsWith('```')) {
@@ -29,17 +32,20 @@ export const MarkdownRenderer = ({ content, isDarkMode }) => {
           return (
             <div 
               key={pIdx} 
-              className="my-4 rounded-2xl overflow-hidden border font-mono text-xs sm:text-[13px] shadow-lg"
-              style={{ backgroundColor: '#09090b', borderColor: '#27272a' }}
+              className="my-3.5 rounded-2xl overflow-hidden border font-mono text-xs sm:text-[13px] shadow-lg"
+              style={{ 
+                backgroundColor: isDarkMode ? '#09090b' : '#18181b', 
+                borderColor: isDarkMode ? '#27272a' : '#3f3f46' 
+              }}
             >
-              <div className="px-4 py-2.5 bg-neutral-900/90 border-b border-neutral-800 flex items-center justify-between text-xs text-neutral-400">
+              <div className="px-4 py-2 bg-black/40 border-b border-white/10 flex items-center justify-between text-xs text-neutral-400">
                 <span className="flex items-center gap-1.5 uppercase font-bold text-neutral-200">
-                  <Code size={14} />
+                  <Code size={13} />
                   <span>{lang}</span>
                 </span>
                 <button
                   onClick={() => handleCopy(codeBody, pIdx)}
-                  className="flex items-center gap-1.5 hover:text-white px-2.5 py-1 rounded-lg border border-neutral-700/50 bg-neutral-800/60 transition-colors cursor-pointer text-xs font-semibold"
+                  className="flex items-center gap-1.5 hover:text-white px-2.5 py-1 rounded-lg border border-white/10 bg-white/5 transition-colors cursor-pointer text-xs font-semibold"
                 >
                   {copiedIndex === pIdx ? (
                     <>
@@ -55,7 +61,7 @@ export const MarkdownRenderer = ({ content, isDarkMode }) => {
                 </button>
               </div>
 
-              <pre className="p-4 sm:p-5 overflow-x-auto text-neutral-200 leading-relaxed scrollbar-thin text-xs sm:text-[13px] max-w-full whitespace-pre-wrap sm:whitespace-pre break-words">
+              <pre className="p-4 sm:p-5 overflow-x-auto text-neutral-100 leading-relaxed scrollbar-thin text-xs sm:text-[13px] max-w-full whitespace-pre-wrap sm:whitespace-pre break-words">
                 <code>{codeBody}</code>
               </pre>
             </div>
@@ -66,16 +72,57 @@ export const MarkdownRenderer = ({ content, isDarkMode }) => {
         const paragraphs = part.split('\n');
 
         return (
-          <div key={pIdx} className="space-y-2.5">
+          <div key={pIdx} className="space-y-2">
             {paragraphs.map((line, lIdx) => {
               const trimmed = line.trim();
               if (!trimmed) return null;
 
+              // Image format: ![alt](url)
+              const imgMatch = trimmed.match(/^!\[(.*?)\]\((.*?)\)$/);
+              if (imgMatch) {
+                const alt = imgMatch[1] || 'Generated Art';
+                const src = imgMatch[2];
+                return (
+                  <div key={lIdx} className="my-3 rounded-2xl overflow-hidden border border-neutral-700/50 shadow-xl max-w-2xl bg-black/30">
+                    <img 
+                      src={src} 
+                      alt={alt} 
+                      className="w-full h-auto object-cover max-h-[500px] hover:scale-[1.01] transition-transform duration-300" 
+                      loading="lazy" 
+                    />
+                  </div>
+                );
+              }
+
+              // Header 1/2: # Title or ## Title
+              if (trimmed.startsWith('# ') || trimmed.startsWith('## ')) {
+                const titleText = trimmed.replace(/^#+\s*/, '');
+                return (
+                  <h2 
+                    key={lIdx} 
+                    className="text-lg sm:text-xl font-black pt-3 pb-1 border-b"
+                    style={{ 
+                      color: 'var(--doap-text-prim, inherit)',
+                      borderColor: 'var(--doap-border, #333)'
+                    }}
+                  >
+                    {formatInline(titleText, isDarkMode)}
+                  </h2>
+                );
+              }
+
               // Header 3: ### Title
               if (trimmed.startsWith('### ')) {
                 return (
-                  <h3 key={lIdx} className="text-lg sm:text-xl font-extrabold pt-3 pb-1 text-white border-b border-neutral-800/80">
-                    {formatInline(trimmed.slice(4))}
+                  <h3 
+                    key={lIdx} 
+                    className="text-base sm:text-lg font-extrabold pt-2.5 pb-1 border-b"
+                    style={{ 
+                      color: 'var(--doap-text-prim, inherit)',
+                      borderColor: 'var(--doap-border, #333)'
+                    }}
+                  >
+                    {formatInline(trimmed.slice(4), isDarkMode)}
                   </h3>
                 );
               }
@@ -83,8 +130,12 @@ export const MarkdownRenderer = ({ content, isDarkMode }) => {
               // Header 4: #### Title
               if (trimmed.startsWith('#### ')) {
                 return (
-                  <h4 key={lIdx} className="text-base sm:text-lg font-bold pt-2 text-neutral-100">
-                    {formatInline(trimmed.slice(5))}
+                  <h4 
+                    key={lIdx} 
+                    className="text-sm sm:text-base font-bold pt-2"
+                    style={{ color: 'var(--doap-text-prim, inherit)' }}
+                  >
+                    {formatInline(trimmed.slice(5), isDarkMode)}
                   </h4>
                 );
               }
@@ -92,9 +143,14 @@ export const MarkdownRenderer = ({ content, isDarkMode }) => {
               // Bullet points: - or *
               if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
                 return (
-                  <div key={lIdx} className="flex items-start gap-3 pl-2 text-neutral-200">
-                    <span className="w-2 h-2 rounded-full bg-neutral-400 mt-2 shrink-0" />
-                    <span className="flex-1">{formatInline(trimmed.slice(2))}</span>
+                  <div key={lIdx} className="flex items-start gap-2.5 pl-2">
+                    <span 
+                      className="w-1.5 h-1.5 rounded-full mt-2 shrink-0" 
+                      style={{ backgroundColor: 'var(--doap-text-sec, #888)' }}
+                    />
+                    <span className="flex-1" style={{ color: 'var(--doap-text-prim, inherit)' }}>
+                      {formatInline(trimmed.slice(2), isDarkMode)}
+                    </span>
                   </div>
                 );
               }
@@ -103,21 +159,39 @@ export const MarkdownRenderer = ({ content, isDarkMode }) => {
               const numMatch = trimmed.match(/^(\d+)\.\s+(.*)/);
               if (numMatch) {
                 return (
-                  <div key={lIdx} className="flex items-start gap-3 pl-2 text-neutral-200">
-                    <span className="font-mono font-bold text-neutral-400 text-sm shrink-0 mt-0.5">{numMatch[1]}.</span>
-                    <span className="flex-1">{formatInline(numMatch[2])}</span>
+                  <div key={lIdx} className="flex items-start gap-2.5 pl-2">
+                    <span 
+                      className="font-mono font-bold text-xs shrink-0 mt-0.5"
+                      style={{ color: 'var(--doap-text-sec, #888)' }}
+                    >
+                      {numMatch[1]}.
+                    </span>
+                    <span className="flex-1" style={{ color: 'var(--doap-text-prim, inherit)' }}>
+                      {formatInline(numMatch[2], isDarkMode)}
+                    </span>
                   </div>
                 );
               }
 
               // Horizontal Rule: ---
               if (trimmed === '---') {
-                return <hr key={lIdx} className="my-4 border-neutral-800" />;
+                return (
+                  <hr 
+                    key={lIdx} 
+                    className="my-3" 
+                    style={{ borderColor: 'var(--doap-border, #333)' }} 
+                  />
+                );
               }
 
+              // Normal Paragraph
               return (
-                <p key={lIdx} className="leading-relaxed text-neutral-200">
-                  {formatInline(line)}
+                <p 
+                  key={lIdx} 
+                  className="leading-relaxed"
+                  style={{ color: 'var(--doap-text-prim, inherit)' }}
+                >
+                  {formatInline(line, isDarkMode)}
                 </p>
               );
             })}
@@ -128,36 +202,64 @@ export const MarkdownRenderer = ({ content, isDarkMode }) => {
   );
 };
 
-// Formats **bold**, `inline code`, and math symbols
-function formatInline(str) {
+// Formats **bold**, `inline code`, [links](url)
+function formatInline(str, isDarkMode) {
   if (!str) return '';
 
-  // Split by inline code `...`
-  const codeParts = str.split(/(`[^`]+`)/g);
-
-  return codeParts.map((cPart, cIdx) => {
-    if (cPart.startsWith('`') && cPart.endsWith('`')) {
+  // 1. Process Links [label](url)
+  const linkParts = str.split(/(\[[^\]]+\]\([^)]+\))/g);
+  return linkParts.map((lPart, lIdx) => {
+    const linkMatch = lPart.match(/^\[(.*?)\]\((.*?)\)$/);
+    if (linkMatch) {
       return (
-        <code 
-          key={cIdx} 
-          className="px-1.5 py-0.5 mx-0.5 rounded-md font-mono text-[11px] bg-neutral-800 text-amber-300 border border-neutral-700"
+        <a
+          key={lIdx}
+          href={linkMatch[2]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 font-semibold text-emerald-500 underline hover:text-emerald-400 transition-colors"
         >
-          {cPart.slice(1, -1)}
-        </code>
+          <span>{linkMatch[1]}</span>
+          <ExternalLink size={12} />
+        </a>
       );
     }
 
-    // Split by **bold**
-    const boldParts = cPart.split(/(\*\*[^*]+\*\*)/g);
-    return boldParts.map((bPart, bIdx) => {
-      if (bPart.startsWith('**') && bPart.endsWith('**')) {
+    // 2. Process inline code `...`
+    const codeParts = lPart.split(/(`[^`]+`)/g);
+    return codeParts.map((cPart, cIdx) => {
+      if (cPart.startsWith('`') && cPart.endsWith('`')) {
         return (
-          <strong key={bIdx} className="font-bold text-white">
-            {bPart.slice(2, -2)}
-          </strong>
+          <code 
+            key={`${lIdx}-${cIdx}`} 
+            className="px-1.5 py-0.5 mx-0.5 rounded-md font-mono text-xs border"
+            style={{
+              backgroundColor: isDarkMode ? '#27272a' : '#f4f4f5',
+              borderColor: isDarkMode ? '#3f3f46' : '#e4e4e7',
+              color: isDarkMode ? '#fde047' : '#b45309'
+            }}
+          >
+            {cPart.slice(1, -1)}
+          </code>
         );
       }
-      return bPart;
+
+      // 3. Process **bold**
+      const boldParts = cPart.split(/(\*\*[^*]+\*\*)/g);
+      return boldParts.map((bPart, bIdx) => {
+        if (bPart.startsWith('**') && bPart.endsWith('**')) {
+          return (
+            <strong 
+              key={`${lIdx}-${cIdx}-${bIdx}`} 
+              className="font-bold"
+              style={{ color: 'var(--doap-text-prim, inherit)' }}
+            >
+              {bPart.slice(2, -2)}
+            </strong>
+          );
+        }
+        return bPart;
+      });
     });
   });
 }
