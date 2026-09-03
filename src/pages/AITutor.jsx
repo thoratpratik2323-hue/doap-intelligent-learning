@@ -88,7 +88,7 @@ export const AITutor = () => {
           {
             id: '1',
             sender: 'ai',
-            text: `Hey ${userName}! 👋 I'm **DOAP AI Tutor**, your universal engineering mentor and AI assistant.\n\nAsk me anything about **coding**, **algorithms (DSA)**, **system design**, **math**, or generate images with \`/image <prompt>\`!\n\nType \`/help\` to view all commands.`
+            text: `Hey ${userName}! 👋 I'm **DOAP AI**, your universal AI assistant (powered by 120B Super-Brain).\n\nI can answer **anything from A to Z** — coding in any language, Machine Learning, math, science, essays, career advice, or generate images with \`/image <prompt>\`!\n\nWhat would you like to explore or solve right now?`
           }
         ]
       }
@@ -745,7 +745,7 @@ export const AITutor = () => {
             <div className="relative flex-1">
               <input 
                 type="text" 
-                placeholder={isListening ? "Listening to your voice..." : "Ask AI Tutor anything (coding, algorithms, GK, math, or /image <prompt>)..."}
+                placeholder={isListening ? "Listening to your voice..." : "Message DOAP AI (Ask anything from A to Z, coding, math, ideas, or /image <prompt>)..."}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 className="w-full pl-4 pr-10 py-2.5 sm:py-3 rounded-2xl border text-xs sm:text-sm focus:outline-none transition-all shadow-inner"

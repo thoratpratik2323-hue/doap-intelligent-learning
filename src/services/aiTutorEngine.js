@@ -1,10 +1,10 @@
 /**
- * DOAP AI Tutor — Universal Multi-Cloud Super-Brain Engine
+ * DOAP AI — Universal Super-Assistant & Neural Engine (ChatGPT / IP-Vexa Grade)
  * Powered by:
- * 1. Groq LPU (GPT-OSS 120B Super-Brain & Qwen 3.8 27B — Sub-150ms Instant Response)
+ * 1. Groq LPU (GPT-OSS 120B Super-Brain & Qwen 3.8 27B — Sub-150ms Instant Universal Response)
  * 2. In-Chat Interactive Flash Quiz Engine (/quiz [c|py|java|dsa])
  * 3. Flux AI Image Generation (/image <prompt>)
- * 4. Built-in Socratic Knowledge Synthesizer (Instant Fallback Domain Knowledge)
+ * 4. A-to-Z Universal Knowledge Coverage (Coding, Science, Math, Essays, Chat, Ideas)
  */
 
 import { 
@@ -23,7 +23,7 @@ const defaultGk = [
 export async function generateSmartTutorResponse(message, userName = 'there', history = []) {
   const rawText = (message || '').trim();
   if (!rawText) {
-    return `Hey ${userName}! 👋 I'm **AI Tutor**. Ask me anything about coding, algorithms, science, or any topic under the sun!`;
+    return `Hey ${userName}! 👋 I'm **DOAP AI**. Ask me anything under the sun — from coding and math to essays, science, advice, or ideas!`;
   }
 
   // Strip leading emojis, icons, and whitespace
@@ -94,7 +94,7 @@ ${q.answer}
 
   // C. /help — Master Commands Reference
   if (cleanText === '/help' || cleanText === '/commands') {
-    return `### 💡 AI Tutor Commands Reference
+    return `### 💡 DOAP AI Commands Reference
 
 | Command | Action | Description |
 | :--- | :--- | :--- |
@@ -105,7 +105,7 @@ ${q.answer}
 | \`/interview <topic>\` | 🎯 **Mock Interview** | Simulates a live FAANG technical question |
 | \`/joke\` | 😄 **Dev Humor** | Generates a witty programmer/tech joke |
 
-*Tip: You can ask anything in Hindi, Hinglish, or English!*`;
+*Tip: You can ask anything from A to Z in Hindi, Hinglish, or English!*`;
   }
 
   // D. /joke — Developer Humor
@@ -123,7 +123,7 @@ ${q.answer}
   const effectivePrompt = cleanText.replace(/^(\/code|\/explain|\/interview)\s+/i, '');
 
   // ==========================================
-  // 2. Resolve Working API Keys (Default Verified First)
+  // 2. Resolve Working API Keys
   // ==========================================
   const storedGroq = typeof localStorage !== 'undefined' ? localStorage.getItem('doap_groq_key') : null;
   const keysToTry = Array.from(new Set([
@@ -132,18 +132,16 @@ ${q.answer}
     (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GROQ_API_KEY && import.meta.env.VITE_GROQ_API_KEY.startsWith('gsk_')) ? import.meta.env.VITE_GROQ_API_KEY : null
   ].filter(Boolean)));
 
-  const systemInstruction = `You are AI Tutor (DOAP AI), a world-class intelligent tutoring agent and engineering mentor (powered by Socratic pedagogy, deep reasoning, and universal intelligence).
+  const systemInstruction = `You are DOAP AI (IP-Vexa Super-Assistant), a world-class, unrestricted, and universally knowledgeable AI assistant (just like ChatGPT, Claude 3.5 Sonnet, and Gemini Pro).
 
-Core Tutoring & Interaction Principles:
-1. Socratic Mentorship & Intuition: Explain complex coding, DSA, science, and math concepts with clear real-world analogies and step-by-step intuition before diving into code.
-2. Structured 3-Layer Knowledge Synthesis:
-   - 🎯 Intuitive Concept / Blueprint
-   - 💻 Clean, Complete, Runnable Code (with comments)
-   - ⚡ Time & Space Complexity Analysis ($O(N)$, $O(1)$, etc.) + Edge Cases
-3. Natural Language Matching: Automatically detect and match the student's language. If they talk in Hindi or Hinglish (e.g. "bhai", "kya haal", "ye code kaise kaam karta hai", "road map for ml", "write a code for python calculator"), reply in natural, fluent, friendly Hinglish/Hindi. If in English, reply in articulate English.
-4. Charismatic & Supportive: Be warm, empathetic, witty, and directly address the student as ${userName}.
-5. Universal Scope: Answer ANY question without limits (Machine Learning roadmaps, Python, Java, C, LeetCode, system design, math, science, creative writing, history, career advice, and everyday life).
-6. Beautiful Formatting: Use rich markdown headers, bullet points, syntax-highlighted code blocks, and tables for maximum readability.`;
+Core Identity & Behaviors:
+1. Universal Scope (A to Z): Answer ANY topic under the sun without limitations: coding, Python, Java, C, C++, JavaScript, web dev, mobile dev, DSA, algorithms, system design, machine learning, mathematics, physics, chemistry, biology, history, world facts, essays, story writing, emails, career advice, resumes, fitness, philosophy, and everyday friendly conversation.
+2. Natural Multilingual Fluency: Automatically detect and match the user's language.
+   - If the user writes in Hindi or Hinglish (e.g. "bhai", "kya haal hai", "ye kaise banaye", "sab batao", "write a code for python calculator"), reply in natural, expressive, friendly, and fluent Hinglish/Hindi.
+   - If they write in English, reply in crisp, articulate, well-structured English.
+3. Charismatic & Supportive: Be warm, empathetic, witty, and directly address the user as ${userName}.
+4. Deep Engineering Standards: For technical and coding questions, provide clean, production-ready code with syntax highlighting, clear explanations, edge case coverage, and time/space complexity ($O(N)$, $O(1)$).
+5. Visual Formatting: Use rich markdown headers, bold highlights, bullet points, syntax blocks, and tables for maximum readability.`;
 
   // Sanitize message history
   const sanitizedHistory = [];
@@ -209,18 +207,18 @@ Core Tutoring & Interaction Principles:
           }
         }
       } catch (err) {
-        console.warn(`[AI Tutor Groq LPU (${model})] fallback:`, err.message || err);
+        console.warn(`[DOAP AI Groq LPU (${model})] fallback:`, err.message || err);
       }
     }
   }
 
   // ==========================================
-  // 4. Smart Built-in Fallback Knowledge Base
+  // 4. Instant Domain Synthesizer
   // ==========================================
   if (lowerText.includes('calculator') && (lowerText.includes('python') || lowerText.includes('py'))) {
     return `### 💻 Python Command-Line Calculator
 
-Here is a clean, robust command-line calculator in Python that supports addition, subtraction, multiplication, division, and error handling:
+Here is a clean, robust, and interactive calculator in Python with all basic operations and error handling:
 
 \`\`\`python
 def add(x, y): return x + y
@@ -232,68 +230,73 @@ def divide(x, y):
     return x / y
 
 def calculator():
-    print("=" * 30)
-    print(" 🧮 DOAP Python Calculator ")
-    print("=" * 30)
-    print("Operations: +, -, *, /")
+    print("=" * 35)
+    print(" 🧮 DOAP AI — Python Calculator ")
+    print("=" * 35)
+    print("Available Operations: +, -, *, /")
+    print("Type 'q' anytime to exit.")
     
     while True:
         try:
-            num1 = float(input("\nEnter first number: "))
-            op = input("Enter operator (+, -, *, /) or 'q' to quit: ").strip()
+            op = input("\nEnter operation (+, -, *, /) or 'q' to quit: ").strip()
             if op.lower() == 'q':
-                print("Goodbye! 👋")
+                print("Thank you for using DOAP Calculator! 👋")
                 break
                 
+            if op not in ('+', '-', '*', '/'):
+                print("⚠️ Invalid operator! Choose from +, -, *, /")
+                continue
+
+            num1 = float(input("Enter first number: "))
             num2 = float(input("Enter second number: "))
 
             if op == '+':
-                print(f"Result: {num1} + {num2} = {add(num1, num2)}")
+                print(f"✅ Result: {num1} + {num2} = {add(num1, num2)}")
             elif op == '-':
-                print(f"Result: {num1} - {num2} = {subtract(num1, num2)}")
+                print(f"✅ Result: {num1} - {num2} = {subtract(num1, num2)}")
             elif op == '*':
-                print(f"Result: {num1} * {num2} = {multiply(num1, num2)}")
+                print(f"✅ Result: {num1} * {num2} = {multiply(num1, num2)}")
             elif op == '/':
-                print(f"Result: {num1} / {num2} = {divide(num1, num2)}")
-            else:
-                print("⚠️ Invalid operator! Please use +, -, *, or /.")
+                res = divide(num1, num2)
+                print(f"✅ Result: {num1} / {num2} = {res}")
         except ValueError:
-            print("⚠️ Invalid number input. Please enter valid numeric digits.")
+            print("⚠️ Error: Please enter valid numbers.")
 
 if __name__ == "__main__":
     calculator()
 \`\`\`
 
-#### ⚡ Complexity & Key Takeaways:
-* **Time Complexity:** $O(1)$ per arithmetic operation.
-* **Space Complexity:** $O(1)$ auxiliary space.
-* **Edge Cases Handled:** Zero division check (\`y == 0\`) and \`ValueError\` exception catching for non-numeric input.`;
+#### ⚡ Key Features:
+1. **Zero Division Guard:** Catches \`y == 0\` safely.
+2. **Robust Input Validation:** Uses \`try-except ValueError\` so non-numeric inputs won't crash the script.
+3. **Continuous REPL Loop:** Lets you run multiple calculations until you type \`q\`.`;
   }
 
   if (lowerText.includes('roadmap') || lowerText.includes('road map')) {
     return `### 🗺️ Master Machine Learning (ML) Roadmap 2026
 
-Here is a structured, step-by-step roadmap to go from beginner to Production ML Engineer:
+Here is your comprehensive, step-by-step roadmap to master ML from scratch to industry production:
 
-#### 1️⃣ Stage 1: Math & Programming Foundations (Month 1-2)
-* **Python Mastery:** Functions, OOP, Generators, List Comprehensions, Numpy & Pandas.
-* **Linear Algebra & Vector Calculus:** Matrix multiplication, Eigenvalues, Gradients, Partial Derivatives.
-* **Probability & Statistics:** Bayes' Theorem, Probability distributions, Hypothesis testing ($p$-values).
+#### 1️⃣ Stage 1: Math & Python Foundations (Weeks 1–6)
+* **Python Mastery:** OOP, List Comprehensions, Numpy, Pandas, Matplotlib, Seaborn.
+* **Linear Algebra:** Matrix Operations, Eigenvalues/Eigenvectors, SVD, Dot Products.
+* **Calculus & Probability:** Partial Derivatives, Chain Rule, Bayes' Theorem, Normal Distribution.
 
-#### 2️⃣ Stage 2: Classical Machine Learning (Month 3-4)
-* **Supervised Learning:** Linear/Logistic Regression, Decision Trees, Random Forests, XGBoost, SVMs.
-* **Unsupervised Learning:** K-Means, PCA (Dimensionality Reduction), Hierarchical Clustering.
-* **Model Evaluation:** Precision, Recall, F1-Score, ROC-AUC, Bias-Variance Tradeoff, Cross-Validation.
+#### 2️⃣ Stage 2: Classical Machine Learning (Weeks 7–14)
+* **Supervised Learning:** Linear Regression, Logistic Regression, Decision Trees, Random Forests, XGBoost, SVMs.
+* **Unsupervised Learning:** K-Means Clustering, PCA (Dimensionality Reduction), t-SNE.
+* **Model Validation:** Train/Test split, K-Fold Cross Validation, Precision, Recall, F1-Score, ROC-AUC.
 
-#### 3️⃣ Stage 3: Deep Learning & Neural Networks (Month 5-6)
-* **Core Deep Learning:** Backpropagation, PyTorch framework, CNNs (Computer Vision), RNNs/LSTMs (Sequences).
-* **Transformer Architecture:** Self-Attention Mechanism, Multi-Head Attention, Positional Encoding, BERT & GPT fundamentals.
+#### 3️⃣ Stage 3: Deep Learning & Neural Networks (Weeks 15–22)
+* **Neural Foundations:** Perceptrons, Activation Functions (ReLU, Softmax), Backpropagation, PyTorch.
+* **Architectures:** CNNs for Computer Vision, RNNs/LSTMs for Time-Series & NLP.
+* **Transformers:** Self-Attention Mechanism, Multi-Head Attention, BERT, GPT models.
 
-#### 4️⃣ Stage 4: Generative AI & LLMs (Month 7-8)
-* **RAG Pipelines:** Chunking, Vector Databases (Chroma, Pinecone, LanceDB), Embedding models.
-* **Fine-Tuning:** LoRA, QLoRA, SFT & DPO preference alignment.
-* **Deployment (MLOps):** FastAPI, Docker, ONNX Runtime, GPU quantization (vLLM, Ollama).`;
+#### 4️⃣ Stage 4: Generative AI & MLOps (Weeks 23–30)
+* **RAG & Vector DBs:** Embeddings, Chunking, ChromaDB, Pinecone, LangChain.
+* **Fine-Tuning:** LoRA, QLoRA, SFT, DPO preference alignment.
+* **Deployment:** FastAPI, Docker, vLLM, TensorRT-LLM, AWS/GCP GPU pipelines.`;
   }
 
-  return `Hey ${userName}! 👋 I'm ready to answer any question for you. You can ask me to write code in Python/Java/C, explain DSA algorithms, solve LeetCode problems, or generate study roadmaps!`;
+  return `Hello ${userName}! 👋 I am **DOAP AI**, your universal AI assistant (like ChatGPT / IP-Vexa). Ask me anything — coding, essays, math, science, history, career advice, or daily questions, and I'll give you a complete, detailed answer!`;
 }
