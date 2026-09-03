@@ -301,14 +301,12 @@ export const AuthProvider = ({ children }) => {
 
   // Update Profile across Memory, LocalStorage, and Firestore
   const updateProfileData = async (updatedFields) => {
-    if (!user) return;
-
-    const uid = user.uid;
-    const storageKey = `doap_user_profile_${uid}`;
+    const uid = user ? user.uid : 'guest';
+    const storageKey = user ? `doap_user_profile_${uid}` : 'doap_profile';
 
     let nextProfile = null;
     setProfile(prev => {
-      const next = { ...prev, ...updatedFields };
+      const next = { ...(prev || createCleanUserProfile({ uid: 'guest' })), ...updatedFields };
       if (updatedFields.name) {
         next.avatar = getInitials(updatedFields.name);
         next.full_name = updatedFields.name;
@@ -316,12 +314,13 @@ export const AuthProvider = ({ children }) => {
       nextProfile = next;
       try {
         localStorage.setItem(storageKey, JSON.stringify(next));
+        localStorage.setItem('doap_profile', JSON.stringify(next));
       } catch {}
       return next;
     });
 
-    // Save to Firestore Cloud Database so all devices see the changes
-    if (db && nextProfile) {
+    // Save to Firestore Cloud Database if user is logged in
+    if (db && user && nextProfile) {
       try {
         await setDoc(doc(db, 'users', uid), nextProfile, { merge: true });
       } catch (err) {
@@ -334,36 +333,36 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Update User Learning / Task / Quiz / Coding Progress across Cloud
+  // Update User Learning / Task / Quiz / Coding Progress across Cloud & Local
   const updateUserProgress = async (progressPatch, statsPatch = null) => {
-    if (!user) return;
-    const uid = user.uid;
-    const storageKey = `doap_user_profile_${uid}`;
+    const uid = user ? user.uid : 'guest';
+    const storageKey = user ? `doap_user_profile_${uid}` : 'doap_profile';
 
     let nextProfile = null;
     setProfile(prev => {
-      if (!prev) return prev;
-      const currentProgress = prev.progress || { ...DEFAULT_USER_PROGRESS };
+      const current = prev || createCleanUserProfile({ uid: 'guest' });
+      const currentProgress = current.progress || { ...DEFAULT_USER_PROGRESS };
       const nextProgress = { ...currentProgress, ...progressPatch };
-      const nextStats = statsPatch ? { ...(prev.stats || {}), ...statsPatch } : prev.stats;
+      const nextStats = statsPatch ? { ...(current.stats || {}), ...statsPatch } : current.stats;
       
       const next = {
-        ...prev,
+        ...current,
         stats: nextStats,
         progress: nextProgress
       };
       nextProfile = next;
       try {
         localStorage.setItem(storageKey, JSON.stringify(next));
+        localStorage.setItem('doap_profile', JSON.stringify(next));
       } catch {}
       return next;
     });
 
-    if (db && nextProfile) {
+    if (db && user && nextProfile) {
       try {
         await setDoc(doc(db, 'users', uid), nextProfile, { merge: true });
       } catch (err) {
-        console.warn('[Firestore Progress Save] Warning:', err.message);
+        console.warn('[Firestore] Progress save failed:', err.message);
       }
     }
   };
