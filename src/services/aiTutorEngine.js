@@ -16,49 +16,68 @@ export async function generateSmartTutorResponse(message, userName = 'there', hi
   const geminiKey = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_gemini_key') : '') || 
                     (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GEMINI_API_KEY) || '';
 
-  // A. Groq LPU Engine (Llama 3.3 70B - Ultra Intelligent Sub-150ms Speed)
+  // A. Groq LPU Engine (GPT-OSS 120B / Qwen 3.8 27B - Sub-150ms Speed)
   if (groqKey && groqKey.startsWith('gsk_')) {
-    try {
-      const systemInstruction = `You are DOAP AI, a super-intelligent, charismatic, and world-class AI mentor, coding genius, and software engineering tutor.
+    const groqModels = ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b', 'openai/gpt-oss-20b', 'groq/compound'];
+    
+    const systemInstruction = `You are DOAP AI, a super-intelligent, charismatic, and world-class AI mentor, coding genius, and software engineering tutor.
 You help students with DSA, LeetCode, System Design, Full-Stack Development, AI/ML, Career Guidance, and any technical or general query.
 
 Key Personalities & Rules:
 1. Match the user's language naturally: If the user talks in Hindi or Hinglish (e.g. "bhai", "kya haal", "ye code kaise kaam karta hai"), reply in natural, friendly, fluent Hinglish/Hindi. If they speak English, reply in professional English.
-2. Be crystal-clear, deep, and deeply helpful. Never give shallow or robotic generic answers.
+2. If the user is casual, funny, or frustrated, reply with warmth, wit, and friendly humor. Never output generic boilerplate or "Guidance for:" templates!
 3. For coding/DSA: Always provide clean code, explain the intuition, trace an example, and state Time & Space complexity (O(N), O(1), etc.).
 4. Be friendly, energetic, and address the student as ${userName}.
 5. Format with beautiful markdown, bullet points, and code blocks for maximum readability.`;
 
-      const messages = [
-        { role: 'system', content: systemInstruction },
-        ...history.slice(-6).map(item => ({
-          role: (item.sender === 'user' || item.role === 'user') ? 'user' : 'assistant',
-          content: item.text || item.content || ''
-        })),
-        { role: 'user', content: text }
-      ];
-
-      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${groqKey}`
-        },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages,
-          temperature: 0.7,
-          max_tokens: 1500
-        })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const reply = data?.choices?.[0]?.message?.content;
-        if (reply) return reply;
+    // Filter and sanitize chat history
+    const sanitizedHistory = [];
+    (history || []).slice(-8).forEach(item => {
+      const role = (item.sender === 'user' || item.role === 'user') ? 'user' : 'assistant';
+      const content = (item.text || item.content || '').trim();
+      if (content) {
+        // Avoid consecutive duplicate user messages
+        if (sanitizedHistory.length > 0 && sanitizedHistory[sanitizedHistory.length - 1].role === role) {
+          sanitizedHistory[sanitizedHistory.length - 1].content += '\n' + content;
+        } else {
+          sanitizedHistory.push({ role, content });
+        }
       }
-    } catch (err) {
-      console.warn('[Groq LPU Engine] Fast fallback:', err);
+    });
+
+    if (sanitizedHistory.length === 0 || sanitizedHistory[sanitizedHistory.length - 1].role !== 'user') {
+      sanitizedHistory.push({ role: 'user', content: text });
+    }
+
+    const messages = [
+      { role: 'system', content: systemInstruction },
+      ...sanitizedHistory
+    ];
+
+    for (const model of groqModels) {
+      try {
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${groqKey}`
+          },
+          body: JSON.stringify({
+            model,
+            messages,
+            temperature: 0.7,
+            max_tokens: 1500
+          })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const reply = data?.choices?.[0]?.message?.content;
+          if (reply && reply.trim()) return reply;
+        }
+      } catch (err) {
+        console.warn(`[Groq LPU Engine (${model})] fallback:`, err);
+      }
     }
   }
 
@@ -377,24 +396,9 @@ async function getUserData() {
   }
 
   // H. Default Fallback Conversational Response
-  return `### 💡 Guidance for: "${text}"
+  if (/^(hi|hello|hey|sup|kya haal|bhai)/i.test(lower)) {
+    return `Hey ${userName}! 👋 Kya haal hai? Main aapka DOAP AI coding mentor hoon. Aaj DSA, System Design, ya web development me kya explore karna chahte ho?`;
+  }
 
-Hey ${userName}! Here is a structured breakdown and guidance for your question:
-
----
-
-#### 🎯 Key Concept & Understanding
-- When approaching **${text.slice(0, 30)}**, the key is breaking it down into fundamental principles.
-- Focus on practical implementation and hands-on code examples.
-
----
-
-#### 🛠️ Recommended Action Steps
-1. **Start with the Core Principles:** Understand the syntax and theoretical foundation.
-2. **Write Working Code:** Test small snippets to see how data flows.
-3. **Practice on DOAP:**
-   - Use the **Coding Practice** tab to test algorithms live.
-   - Use the **My Learning** tab to track structured modules.
-
-Feel free to ask for a specific code example in Python, JavaScript, Java, or C++, or let me know what part you'd like to dive into!`;
+  return `Hey ${userName}! Main aapka DOAP AI mentor hoon. 🚀\n\nAapne pucha: **"${text}"**\n\nMujhe batayein ki aap is topic ka code dekhna chahte hain, deep theory/intuition samajhna chahte hain, ya direct interview questions practice karna chahte hain? Main pura detail me guide karunga!`;
 }

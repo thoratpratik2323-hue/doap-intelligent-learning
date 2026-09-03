@@ -381,9 +381,9 @@ export const AITutor = () => {
             >
               <Zap size={11} className="text-emerald-400 animate-pulse" />
               <span className="hidden sm:inline">
-                Groq LPU: Llama 3.3 70B Active
+                Groq LPU: GPT-OSS 120B Active
               </span>
-              <span className="sm:hidden">Groq Active</span>
+              <span className="sm:hidden">120B Active</span>
             </button>
           </div>
         </div>
