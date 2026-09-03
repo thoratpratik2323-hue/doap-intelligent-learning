@@ -145,11 +145,13 @@ const AppContent = () => {
 
           {/* Main Scrollable Content Window */}
           <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64 lg:ml-68'}`}>
-            <Header onOpenMobileSidebar={() => setIsMobileOpen(true)} />
+            {currentPath !== '/ai-tutor' && (
+              <Header onOpenMobileSidebar={() => setIsMobileOpen(true)} />
+            )}
             
-            <main className={`flex-1 overflow-y-auto ${currentPath === '/ai-tutor' ? 'p-2 sm:p-3 md:p-4' : 'p-3 md:p-6 lg:p-8'}`}>
+            <main className={`flex-1 min-w-0 ${currentPath === '/ai-tutor' ? 'p-0 h-[100dvh] md:h-[calc(100vh-2rem)] lg:h-[calc(100vh-3rem)] overflow-hidden flex flex-col' : 'p-3 md:p-6 lg:p-8 overflow-y-auto'}`}>
               <ErrorBoundary>
-                <div key={currentPath} className="animate-page-transition">
+                <div key={currentPath} className={`animate-page-transition ${currentPath === '/ai-tutor' ? 'h-full flex-1 flex flex-col min-h-0' : ''}`}>
                   {renderPage()}
                 </div>
               </ErrorBoundary>

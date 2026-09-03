@@ -257,7 +257,7 @@ export const AITutor = () => {
 
   return (
     <div 
-      className="w-full h-[calc(100vh-7.5rem)] md:h-[calc(100vh-8.5rem)] flex rounded-3xl overflow-hidden border shadow-xl transition-all select-none"
+      className="w-full h-full min-h-0 flex-1 flex rounded-none md:rounded-[28px] overflow-hidden border-0 md:border shadow-2xl transition-all select-none"
       style={{
         backgroundColor: 'var(--doap-surface, #111111)',
         borderColor: 'var(--doap-border, #262626)'
