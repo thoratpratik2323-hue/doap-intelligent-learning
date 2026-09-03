@@ -528,32 +528,17 @@ export const AITutor = () => {
             <span className="font-bold text-xs sm:text-sm tracking-tight" style={{ color: 'var(--doap-text-prim)' }}>
               AI Tutor
             </span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono border border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
-              ⚡ 120B Super-Brain
-            </span>
-            <span className="hidden md:inline px-2 py-0.5 rounded-full text-[10px] font-mono border border-purple-500/30 text-purple-400 bg-purple-500/10">
-              🎨 Flux AI
-            </span>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={handleNewChat}
-              className="px-2.5 py-1 rounded-xl border text-xs font-semibold flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer"
+              className="px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer shadow-xs"
               style={{ borderColor: 'var(--doap-border)', backgroundColor: 'var(--doap-surface-sec)', color: 'var(--doap-text-prim)' }}
               title="Start New Chat"
             >
-              <Plus size={12} />
-              <span className="hidden sm:inline">New Chat</span>
-            </button>
-
-            <button
-              onClick={() => setShowKeyModal(true)}
-              className="px-2.5 py-1 rounded-xl border text-[11px] font-mono flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-            >
-              <Zap size={11} className="text-emerald-400 animate-pulse" />
-              <span className="hidden sm:inline">Groq 120B Active</span>
-              <span className="sm:hidden">120B</span>
+              <Plus size={13} />
+              <span>New Chat</span>
             </button>
           </div>
         </div>
