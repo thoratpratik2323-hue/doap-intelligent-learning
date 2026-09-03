@@ -314,7 +314,7 @@ export const VoiceTutor = () => {
     // Request microphone first
     await initUniversalMicrophone();
 
-    const welcome = `Hello ${userName}! DOAP AI is online. I'm listening. Ask me anything or tell me what to do!`;
+    const welcome = `Haan ${userName} bhai! Ekdum online hoon, bol kya haal-chaal? Bata aaj kya kaam karna hai ya kya chal raha hai?`;
     setAiSpokenText(welcome);
 
     speakResponse(welcome, () => {
@@ -338,21 +338,21 @@ export const VoiceTutor = () => {
 
   const executeVoicePlugins = (cmd) => {
     const cleanCmd = cmd.toLowerCase().trim();
-    if (cleanCmd.includes('open coding') || cleanCmd.includes('go to coding') || cleanCmd.includes('coding practice')) {
+    if (cleanCmd.includes('open coding') || cleanCmd.includes('go to coding') || cleanCmd.includes('coding practice') || cleanCmd.includes('coding khol')) {
       navigateTo('/coding');
-      return "Navigating to Coding Practice.";
+      return "Theek hai bhai, Coding Practice khol raha hoon!";
     }
-    if (cleanCmd.includes('open learning') || cleanCmd.includes('my learning') || cleanCmd.includes('open courses')) {
+    if (cleanCmd.includes('open learning') || cleanCmd.includes('my learning') || cleanCmd.includes('open courses') || cleanCmd.includes('learning khol')) {
       navigateTo('/learning');
-      return "Opening My Learning engineering modules.";
+      return "Chal bhai, My Learning modules khol raha hoon!";
     }
-    if (cleanCmd.includes('open assessment') || cleanCmd.includes('open test') || cleanCmd.includes('assessments')) {
+    if (cleanCmd.includes('open assessment') || cleanCmd.includes('open test') || cleanCmd.includes('assessments') || cleanCmd.includes('test khol')) {
       navigateTo('/assessments');
-      return "Opening Assessments & Live Benchmark Exams.";
+      return "Haan bhai, Assessments aur Tests khol raha hoon!";
     }
-    if (cleanCmd.includes('open chat') || cleanCmd.includes('text ai') || cleanCmd.includes('switch to text')) {
+    if (cleanCmd.includes('open chat') || cleanCmd.includes('text ai') || cleanCmd.includes('switch to text') || cleanCmd.includes('chat khol')) {
       navigateTo('/ai-tutor');
-      return "Switching to DOAP Text AI Tutor.";
+      return "Sahi hai, Text Chat par switch kar raha hoon!";
     }
     return null;
   };
@@ -377,7 +377,7 @@ export const VoiceTutor = () => {
     try {
       const response = await generateSmartTutorResponse(spokenPrompt, userName);
       const speechCleaned = response
-        .replace(/```[\s\S]*?```/g, 'Code block generated.')
+        .replace(/```[\s\S]*?```/g, 'Code block generate kar diya hai.')
         .replace(/`([^`]+)`/g, '$1')
         .replace(/[#*_~>]/g, '')
         .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
@@ -393,7 +393,7 @@ export const VoiceTutor = () => {
         }
       });
     } catch (err) {
-      const fallback = "I understood your query. Let's explore that deeper—could you tell me more?";
+      const fallback = `Haan ${userName} bhai, sun raha hoon! Bata kya kaam karna hai ya kya chal raha hai dimag me?`;
       speakResponse(fallback, () => {
         if (isMountedRef.current && isCallActive && !isMuted) {
           setCallState('listening');
@@ -531,10 +531,10 @@ export const VoiceTutor = () => {
               {!isCallActive 
                 ? 'DOAP AI READY — TAP TO CALL' 
                 : callState === 'speaking' 
-                ? 'DOAP AI SPEAKING...' 
+                ? 'DOAP AI BOL RAHA HAI...' 
                 : callState === 'listening' 
-                ? 'LISTENING TO YOUR VOICE...' 
-                : 'THINKING...'}
+                ? 'SUN RAHA HOON BHAI, BOLO...' 
+                : 'SOCH RAHA HOON...'}
             </span>
           </div>
         </div>
@@ -617,8 +617,8 @@ export const VoiceTutor = () => {
               {aiSpokenText}
             </p>
           ) : (
-            <p className="text-xs font-mono text-neutral-500">
-              {isCallActive ? "Listening to your microphone — speak naturally anytime!" : "Tap Start Call for hands-free interactive voice with DOAP AI"}
+            <p className="text-xs font-mono text-neutral-400">
+              {isCallActive ? "Mic active hai bhai, jo bolna hai bejhijhak bolo!" : "Start Call dabao aur direct dost ki tarah baatein karo"}
             </p>
           )}
         </div>
