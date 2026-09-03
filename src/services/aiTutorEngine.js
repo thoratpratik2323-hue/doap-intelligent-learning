@@ -122,13 +122,13 @@ ${q.answer}
   const effectivePrompt = cleanText.replace(/^(\/code|\/explain|\/interview)\s+/i, '');
 
   // ==========================================
-  // 2. Resolve Working API Keys
+  // 2. Resolve Working API Keys (Default Verified First)
   // ==========================================
   const storedGroq = typeof localStorage !== 'undefined' ? localStorage.getItem('doap_groq_key') : null;
   const keysToTry = Array.from(new Set([
+    defaultGk,
     (storedGroq && storedGroq.startsWith('gsk_')) ? storedGroq : null,
-    (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GROQ_API_KEY && import.meta.env.VITE_GROQ_API_KEY.startsWith('gsk_')) ? import.meta.env.VITE_GROQ_API_KEY : null,
-    defaultGk
+    (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GROQ_API_KEY && import.meta.env.VITE_GROQ_API_KEY.startsWith('gsk_')) ? import.meta.env.VITE_GROQ_API_KEY : null
   ].filter(Boolean)));
 
   const systemInstruction = `You are AI Tutor (DOAP AI), a world-class intelligent tutoring agent and engineering mentor (powered by Socratic pedagogy, deep reasoning, and universal intelligence).
@@ -139,7 +139,7 @@ Core Tutoring & Interaction Principles:
    - 🎯 Intuitive Concept / Blueprint
    - 💻 Clean, Complete, Runnable Code (with comments)
    - ⚡ Time & Space Complexity Analysis ($O(N)$, $O(1)$, etc.) + Edge Cases
-3. Natural Language Matching: Automatically detect and match the student's language. If they talk in Hindi or Hinglish (e.g. "bhai", "kya haal", "ye code kaise kaam karta hai", "road map for ml"), reply in natural, fluent, friendly Hinglish/Hindi. If in English, reply in articulate English.
+3. Natural Language Matching: Automatically detect and match the student's language. If they talk in Hindi or Hinglish (e.g. "bhai", "kya haal", "ye code kaise kaam karta hai", "road map for ml", "write a code ffro python calcultor"), reply in natural, fluent, friendly Hinglish/Hindi. If in English, reply in articulate English.
 4. Charismatic & Supportive: Be warm, empathetic, witty, and directly address the student as ${userName}.
 5. Universal Scope: Answer ANY question without limits (Machine Learning roadmaps, Python, Java, C, LeetCode, system design, math, science, creative writing, history, career advice, and everyday life).
 6. Beautiful Formatting: Use rich markdown headers, bullet points, syntax-highlighted code blocks, and tables for maximum readability.`;
@@ -149,7 +149,7 @@ Core Tutoring & Interaction Principles:
   (history || []).slice(-8).forEach(item => {
     const role = (item.sender === 'user' || item.role === 'user') ? 'user' : 'assistant';
     const content = (item.text || item.content || '').trim();
-    if (content && !content.includes('verify your internet') && !content.includes('check your internet') && !content.includes('temporary hiccup') && !content.includes('Great to connect with you')) {
+    if (content && !content.includes('verify your internet') && !content.includes('check your internet') && !content.includes('temporary hiccup') && !content.includes('Great to connect with you') && !content.includes('Ask me about coding')) {
       if (sanitizedHistory.length > 0 && sanitizedHistory[sanitizedHistory.length - 1].role === role) {
         sanitizedHistory[sanitizedHistory.length - 1].content += '\n' + content;
       } else {
@@ -168,11 +168,12 @@ Core Tutoring & Interaction Principles:
   ];
 
   // ==========================================
-  // 3. Primary Engine: Groq LPU (GPT-OSS 120B / Qwen 3.8 27B)
+  // 3. Primary Engine: Groq LPU (GPT-OSS 120B / Qwen 3.8 / Qwen 3.6 / 20B)
   // ==========================================
   const candidateModels = [
     'openai/gpt-oss-120b',
     'qwen/qwen3.8-27b',
+    'qwen/qwen3.6-27b',
     'openai/gpt-oss-20b'
   ];
 
@@ -212,5 +213,5 @@ Core Tutoring & Interaction Principles:
     }
   }
 
-  return `Hey ${userName}! 👋 I'm here to help you. Ask me about coding, Machine Learning roadmaps, DSA, or system design, and I'll break it down step-by-step!`;
+  return `Hey ${userName}! 👋 I am ready to help you. Ask me about coding, Machine Learning roadmaps, DSA, or system design, and I'll break it down step-by-step!`;
 }
