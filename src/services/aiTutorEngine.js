@@ -8,8 +8,7 @@ export async function generateSmartTutorResponse(message, userName = 'there', hi
   const lower = text.toLowerCase();
 
   // 1. Check for live Groq API Key (gsk_...) or Gemini API Key (AIzaSy...)
-  const groqKey = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_groq_key') : '') || 
-                  (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_gemini_key') : '') || 
+  const groqKey = (typeof localStorage !== 'undefined' ? (localStorage.getItem('doap_groq_key') || localStorage.getItem('doap_gemini_key')) : '') || 
                   (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GROQ_API_KEY) || '';
 
   const geminiKey = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_gemini_key') : '') || 

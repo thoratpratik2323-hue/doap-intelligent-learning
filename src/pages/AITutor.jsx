@@ -377,13 +377,13 @@ export const AITutor = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowKeyModal(true)}
-              className="px-2.5 py-1 rounded-xl border text-[11px] font-mono flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer"
-              style={{ backgroundColor: 'var(--doap-surface-sec)', borderColor: 'var(--doap-border)' }}
+              className="px-2.5 py-1 rounded-xl border text-[11px] font-mono flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
             >
-              <Key size={11} style={{ color: accentHex }} />
+              <Zap size={11} className="text-emerald-400 animate-pulse" />
               <span className="hidden sm:inline">
-                {typeof localStorage !== 'undefined' && localStorage.getItem('doap_gemini_key') ? 'Gemini: Active' : '+ Gemini Key'}
+                Groq LPU: Llama 3.3 70B Active
               </span>
+              <span className="sm:hidden">Groq Active</span>
             </button>
           </div>
         </div>
