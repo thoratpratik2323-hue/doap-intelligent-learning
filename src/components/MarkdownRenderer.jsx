@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check, Code, ExternalLink } from 'lucide-react';
+import { Copy, Check, Code, ExternalLink, Download, Image as ImageIcon } from 'lucide-react';
 
 export const MarkdownRenderer = ({ content, isDarkMode }) => {
   const [copiedIndex, setCopiedIndex] = useState(null);
@@ -77,19 +77,35 @@ export const MarkdownRenderer = ({ content, isDarkMode }) => {
               const trimmed = line.trim();
               if (!trimmed) return null;
 
-              // Image format: ![alt](url)
-              const imgMatch = trimmed.match(/^!\[(.*?)\]\((.*?)\)$/);
+              // Image format: ![alt](url) anywhere in line
+              const imgRegex = /!\[(.*?)\]\((https?:\/\/[^\s)]+)\)/;
+              const imgMatch = trimmed.match(imgRegex);
               if (imgMatch) {
                 const alt = imgMatch[1] || 'Generated Art';
                 const src = imgMatch[2];
                 return (
-                  <div key={lIdx} className="my-3 rounded-2xl overflow-hidden border border-neutral-700/50 shadow-xl max-w-2xl bg-black/30">
+                  <div key={lIdx} className="my-3.5 rounded-2xl overflow-hidden border border-neutral-700/60 shadow-2xl max-w-2xl bg-black/40 group relative">
                     <img 
                       src={src} 
                       alt={alt} 
-                      className="w-full h-auto object-cover max-h-[500px] hover:scale-[1.01] transition-transform duration-300" 
+                      className="w-full h-auto object-cover max-h-[500px] transition-transform duration-300 group-hover:scale-[1.01]" 
                       loading="lazy" 
                     />
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-xs text-white/90 font-medium truncate max-w-[70%]">
+                        {alt}
+                      </span>
+                      <a
+                        href={src}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download="ai-generated-artwork.png"
+                        className="px-2.5 py-1 rounded-lg bg-white/20 backdrop-blur-md text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-white/30 transition-colors"
+                      >
+                        <Download size={12} />
+                        <span>Download</span>
+                      </a>
+                    </div>
                   </div>
                 );
               }
@@ -169,6 +185,21 @@ export const MarkdownRenderer = ({ content, isDarkMode }) => {
                     <span className="flex-1" style={{ color: 'var(--doap-text-prim, inherit)' }}>
                       {formatInline(numMatch[2], isDarkMode)}
                     </span>
+                  </div>
+                );
+              }
+
+              // Table row format: | col1 | col2 |
+              if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+                if (trimmed.includes('---')) return null; // Separator row
+                const cells = trimmed.split('|').filter((_, idx, arr) => idx > 0 && idx < arr.length - 1);
+                return (
+                  <div key={lIdx} className="grid grid-cols-3 gap-2 p-2 rounded-xl border text-xs font-mono my-1" style={{ borderColor: 'var(--doap-border)', backgroundColor: 'var(--doap-surface-sec, #161616)' }}>
+                    {cells.map((cell, cIdx) => (
+                      <div key={cIdx} className="truncate" style={{ color: 'var(--doap-text-prim)' }}>
+                        {formatInline(cell.trim(), isDarkMode)}
+                      </div>
+                    ))}
                   </div>
                 );
               }

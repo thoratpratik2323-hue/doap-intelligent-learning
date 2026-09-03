@@ -12,37 +12,91 @@ import {
   Key, 
   Zap, 
   Check, 
-  Terminal,
+  Copy,
+  Volume2,
+  RotateCcw,
+  Trash2,
+  Edit2,
+  Download,
   PanelLeftClose,
   PanelLeftOpen,
   MessageSquare,
-  Phone,
   PhoneCall
 } from 'lucide-react';
-import { INITIAL_CHAT_HISTORY } from '../data/mockData';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { generateSmartTutorResponse } from '../services/aiTutorEngine';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
 import { VoiceAICallModal } from '../components/Interview/VoiceAICallModal';
+import { speakElevenLabs } from '../services/elevenLabsService';
+
+const STORAGE_KEY = 'doap_ai_chat_sessions';
+
+const generateTitleFromPrompt = (prompt) => {
+  let clean = prompt.replace(/^(\/image|\/code|\/explain|\/interview)\s+/i, '').trim();
+  if (clean.length > 26) {
+    clean = clean.slice(0, 26) + '...';
+  }
+  if (prompt.startsWith('/image')) return `🎨 ${clean}`;
+  if (prompt.startsWith('/code')) return `💻 ${clean}`;
+  if (prompt.startsWith('/explain')) return `💡 ${clean}`;
+  if (prompt.startsWith('/interview')) return `🎯 ${clean}`;
+  return clean.charAt(0).toUpperCase() + clean.slice(1);
+};
 
 export const AITutor = () => {
   const { isDarkMode, activeAccentHex } = useTheme();
   const { profile } = useAuth();
   const accentHex = activeAccentHex || 'var(--doap-accent, #ffffff)';
+  const userName = profile?.name ? profile.name.split(' ')[0] : 'there';
 
-  const [chatHistory, setChatHistory] = useState(INITIAL_CHAT_HISTORY || []);
-  const [activeChatId, setActiveChatId] = useState('1');
+  // Initialize persistent chat sessions from localStorage
+  const [sessions, setSessions] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (e) {
+        console.error('Error loading chat sessions:', e);
+      }
+    }
+    const initialId = 'session-1';
+    return [
+      {
+        id: initialId,
+        title: "New Conversation",
+        createdAt: Date.now(),
+        category: "TODAY",
+        messages: [
+          {
+            id: '1',
+            sender: 'ai',
+            text: `Hey ${userName}! 👋 I'm **DOAP AI Tutor**, your universal engineering mentor and AI assistant.\n\nAsk me anything about **coding**, **algorithms (DSA)**, **system design**, **math**, or generate images with \`/image <prompt>\`!\n\nType \`/help\` to view all commands.`
+          }
+        ]
+      }
+    ];
+  });
+
+  const [activeSessionId, setActiveSessionId] = useState(() => sessions[0]?.id || 'session-1');
   const [searchQuery, setSearchQuery] = useState('');
   const [inputText, setInputText] = useState('');
   const [baseInputText, setBaseInputText] = useState('');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Collapsed by default for clean full-width chat
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [editingSessionId, setEditingSessionId] = useState(null);
+  const [editTitleInput, setEditTitleInput] = useState('');
+  const [copiedMsgId, setCopiedMsgId] = useState(null);
+  const [speakingMsgId, setSpeakingMsgId] = useState(null);
 
   const chipsScrollRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const activeStreamRef = useRef(null);
 
-  // Gemini API Key Modal State
+  // Settings / API Key Modal State
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [geminiKeyInput, setGeminiKeyInput] = useState(
     (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_gemini_key') : '') || ''
@@ -53,31 +107,23 @@ export const AITutor = () => {
   const {
     isListening,
     transcript,
-    error: speechError,
     stopListening,
-    toggleListening,
-    clearError: clearSpeechError
+    toggleListening
   } = useSpeechRecognition();
 
-  const handleSaveCallToChat = (logs) => {
-    if (!logs || logs.length === 0) return;
-    const newItems = logs.map((log, idx) => ({
-      id: `voice-${Date.now()}-${idx}`,
-      sender: log.role === 'user' ? 'user' : 'ai',
-      text: log.text,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    }));
+  // Current active session and messages
+  const currentSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
+  const messages = currentSession?.messages || [];
+  const [isThinking, setIsThinking] = useState(false);
 
-    setChatHistory(prev => prev.map(chat => {
-      if (chat.id === activeChatId) {
-        return {
-          ...chat,
-          messages: [...chat.messages, ...newItems]
-        };
-      }
-      return chat;
-    }));
-  };
+  // Sync sessions to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+    } catch (e) {
+      console.error('Error saving sessions:', e);
+    }
+  }, [sessions]);
 
   useEffect(() => {
     if (transcript) {
@@ -85,6 +131,10 @@ export const AITutor = () => {
       setInputText(combined);
     }
   }, [transcript, baseInputText]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isThinking]);
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -101,23 +151,7 @@ export const AITutor = () => {
     toggleListening();
   };
 
-  const [messages, setMessages] = useState([
-    {
-      id: '1',
-      sender: 'ai',
-      text: `Hey ${profile?.name ? profile.name.split(' ')[0] : 'there'}! 👋 I'm **DOAP AI Tutor**, your universal engineering mentor and AI assistant.\n\nAsk me anything about **coding**, **algorithms (DSA)**, **system design**, **math**, or generate images with \`/image <prompt>\`!\n\nType \`/help\` to view all commands.`
-    }
-  ]);
-
-  const [isThinking, setIsThinking] = useState(false);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, isThinking]);
-
-    const activeStreamRef = useRef(null);
-
-  const streamResponseText = (fullText) => {
+  const streamResponseText = (fullText, sessionId) => {
     if (activeStreamRef.current) {
       clearInterval(activeStreamRef.current);
     }
@@ -125,28 +159,38 @@ export const AITutor = () => {
     const aiMsgId = (Date.now() + 1).toString();
     setIsThinking(false);
 
-    setMessages(prev => [
-      ...prev,
-      {
-        id: aiMsgId,
-        sender: 'ai',
-        text: '',
-        isStreaming: true
+    // Append blank streaming message
+    setSessions(prev => prev.map(s => {
+      if (s.id === sessionId) {
+        return {
+          ...s,
+          messages: [
+            ...s.messages,
+            { id: aiMsgId, sender: 'ai', text: '', isStreaming: true }
+          ]
+        };
       }
-    ]);
+      return s;
+    }));
 
     let currentIndex = 0;
-    const speed = 10; // ms per tick
-    const charsPerTick = 4; // realistic smooth token stream
+    const speed = 12; // ms per tick
+    const charsPerTick = 4;
 
     activeStreamRef.current = setInterval(() => {
       currentIndex += charsPerTick;
       const currentChunk = fullText.slice(0, currentIndex);
       const isDone = currentIndex >= fullText.length;
 
-      setMessages(prev =>
-        prev.map(m => m.id === aiMsgId ? { ...m, text: currentChunk, isStreaming: !isDone } : m)
-      );
+      setSessions(prev => prev.map(s => {
+        if (s.id === sessionId) {
+          return {
+            ...s,
+            messages: s.messages.map(m => m.id === aiMsgId ? { ...m, text: currentChunk, isStreaming: !isDone } : m)
+          };
+        }
+        return s;
+      }));
 
       if (isDone) {
         clearInterval(activeStreamRef.current);
@@ -159,9 +203,7 @@ export const AITutor = () => {
     const currentInput = messageToSend.trim();
     if (!currentInput || isThinking) return;
 
-    if (isListening) {
-      stopListening();
-    }
+    if (isListening) stopListening();
 
     if (activeStreamRef.current) {
       clearInterval(activeStreamRef.current);
@@ -174,35 +216,57 @@ export const AITutor = () => {
       text: currentInput
     };
 
-    const newMessages = [...messages, userMsg];
-    setMessages(newMessages);
+    const targetSessionId = activeSessionId;
+    const isFirstUserMessage = (currentSession?.messages || []).filter(m => m.sender === 'user').length === 0;
+    const newTitle = isFirstUserMessage && (currentSession?.title === 'New Conversation' || !currentSession?.title)
+      ? generateTitleFromPrompt(currentInput)
+      : currentSession?.title || 'New Conversation';
+
+    const updatedMessages = [...(currentSession?.messages || []), userMsg];
+
+    setSessions(prev => prev.map(s => {
+      if (s.id === targetSessionId) {
+        return {
+          ...s,
+          title: newTitle,
+          messages: updatedMessages
+        };
+      }
+      return s;
+    }));
+
     setInputText('');
     setBaseInputText('');
     setIsThinking(true);
 
     try {
-      // Natural thinking delay (400ms) for realistic feel
-      await new Promise(resolve => setTimeout(resolve, 400));
-
+      await new Promise(resolve => setTimeout(resolve, 300));
       const smartReply = await generateSmartTutorResponse(
         currentInput, 
-        profile?.name ? profile.name.split(' ')[0] : 'there',
-        newMessages
+        userName,
+        updatedMessages
       );
-
-      streamResponseText(smartReply);
+      streamResponseText(smartReply, targetSessionId);
     } catch (err) {
       console.error('[AITutor] Error generating response:', err);
       setIsThinking(false);
-      setMessages(prev => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          sender: 'ai',
-          text: `I ran into a temporary hiccup processing that. Please try asking again!`,
-          isStreaming: false
+      setSessions(prev => prev.map(s => {
+        if (s.id === targetSessionId) {
+          return {
+            ...s,
+            messages: [
+              ...s.messages,
+              {
+                id: (Date.now() + 1).toString(),
+                sender: 'ai',
+                text: `I ran into a temporary hiccup processing that. Please try asking again!`,
+                isStreaming: false
+              }
+            ]
+          };
         }
-      ]);
+        return s;
+      }));
     }
   };
 
@@ -211,33 +275,89 @@ export const AITutor = () => {
     executeSend(inputText);
   };
 
+  // Create New Chat Session
   const handleNewChat = () => {
     if (isListening) stopListening();
-    const newChat = {
-      id: Date.now().toString(),
+    if (activeStreamRef.current) {
+      clearInterval(activeStreamRef.current);
+      activeStreamRef.current = null;
+    }
+    const newSession = {
+      id: 'session-' + Date.now(),
       title: "New Conversation",
+      createdAt: Date.now(),
       category: "TODAY",
-      date: "Today"
+      messages: [
+        {
+          id: '1',
+          sender: 'ai',
+          text: `Hey ${userName}! 👋 What would you like to explore or solve in this new session?`
+        }
+      ]
     };
-    setChatHistory([newChat, ...chatHistory]);
-    setActiveChatId(newChat.id);
-    setMessages([
-      {
-        id: '1',
-        sender: 'ai',
-        text: `Hello! What engineering challenge or concept should we solve today?`
-      }
-    ]);
+    setSessions([newSession, ...sessions]);
+    setActiveSessionId(newSession.id);
   };
 
-  const handleSaveGeminiKey = (e) => {
-    e.preventDefault();
-    localStorage.setItem('doap_gemini_key', geminiKeyInput.trim());
-    setKeySaved(true);
-    setTimeout(() => {
-      setKeySaved(false);
-      setShowKeyModal(false);
-    }, 1200);
+  // Delete Chat Session
+  const handleDeleteSession = (sessionId, e) => {
+    e.stopPropagation();
+    if (sessions.length <= 1) {
+      handleNewChat();
+      return;
+    }
+    const remaining = sessions.filter(s => s.id !== sessionId);
+    setSessions(remaining);
+    if (activeSessionId === sessionId) {
+      setActiveSessionId(remaining[0].id);
+    }
+  };
+
+  // Rename Session Title
+  const handleStartRename = (session, e) => {
+    e.stopPropagation();
+    setEditingSessionId(session.id);
+    setEditTitleInput(session.title);
+  };
+
+  const handleSaveRename = (sessionId) => {
+    if (editTitleInput.trim()) {
+      setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, title: editTitleInput.trim() } : s));
+    }
+    setEditingSessionId(null);
+  };
+
+  // Message Actions (Copy / Read Aloud / Regenerate)
+  const handleCopyMessage = (text, msgId) => {
+    navigator.clipboard.writeText(text);
+    setCopiedMsgId(msgId);
+    setTimeout(() => setCopiedMsgId(null), 2000);
+  };
+
+  const handleSpeakMessage = async (text, msgId) => {
+    if (speakingMsgId === msgId) {
+      setSpeakingMsgId(null);
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      return;
+    }
+    setSpeakingMsgId(msgId);
+    try {
+      const cleanText = text.replace(/[*_#`[\]()!]/g, '').replace(/https?:\/\/\S+/g, '');
+      await speakElevenLabs(cleanText);
+    } catch (e) {
+      console.warn('Speech error:', e);
+    } finally {
+      setSpeakingMsgId(null);
+    }
+  };
+
+  const handleRegenerate = (msgIndex) => {
+    const lastUserMsg = [...messages.slice(0, msgIndex)].reverse().find(m => m.sender === 'user');
+    if (lastUserMsg) {
+      executeSend(lastUserMsg.text);
+    }
   };
 
   const quickPrompts = [
@@ -249,10 +369,8 @@ export const AITutor = () => {
     "🚀 /help"
   ];
 
-  const categories = ["TODAY", "YESTERDAY", "PREVIOUS 7 DAYS", "OLDER"];
-
-  const filteredHistory = (chatHistory || []).filter(item => 
-    item && item.title && item.title.toLowerCase().includes((searchQuery || '').toLowerCase())
+  const filteredSessions = sessions.filter(s => 
+    s.title && s.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -266,7 +384,7 @@ export const AITutor = () => {
       {/* Left Conversation Drawer / Sidebar */}
       {isSidebarOpen && (
         <div 
-          className="w-64 sm:w-72 border-r flex flex-col justify-between shrink-0 animate-fade-in z-20"
+          className="w-68 sm:w-76 border-r flex flex-col justify-between shrink-0 animate-fade-in z-20"
           style={{
             backgroundColor: 'var(--doap-surface-sec, #0c0c0c)',
             borderColor: 'var(--doap-border, #262626)'
@@ -281,11 +399,12 @@ export const AITutor = () => {
               <div className="flex items-center gap-1">
                 <button 
                   onClick={handleNewChat}
-                  className="w-6 h-6 rounded-lg border flex items-center justify-center transition-colors cursor-pointer hover:opacity-80"
-                  style={{ borderColor: 'var(--doap-border)', color: 'var(--doap-text-prim)' }}
-                  title="New Chat"
+                  className="px-2 py-1 rounded-lg border text-xs font-semibold flex items-center gap-1 hover:opacity-80 transition-opacity cursor-pointer"
+                  style={{ borderColor: 'var(--doap-border)', color: 'var(--doap-text-prim)', backgroundColor: 'var(--doap-surface)' }}
+                  title="Start New Chat"
                 >
                   <Plus size={13} />
+                  <span>New</span>
                 </button>
                 <button 
                   onClick={() => setIsSidebarOpen(false)}
@@ -302,7 +421,7 @@ export const AITutor = () => {
               <Search size={12} className="absolute left-2.5 top-2.5 text-neutral-500" />
               <input 
                 type="text" 
-                placeholder="Search chats..."
+                placeholder="Search conversations..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-7 pr-2.5 py-1.5 rounded-xl text-xs font-medium focus:outline-none transition-colors border"
@@ -315,36 +434,76 @@ export const AITutor = () => {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-2.5 py-1 space-y-3 scrollbar-none">
-            {categories.map((cat) => {
-              const items = filteredHistory.filter(i => i.category === cat);
-              if (items.length === 0) return null;
-
-              return (
-                <div key={cat} className="space-y-1">
-                  <span className="px-2 text-[9px] font-mono uppercase tracking-widest block text-neutral-500">
-                    {cat}
+          {/* Sessions List */}
+          <div className="flex-1 overflow-y-auto px-2.5 py-1 space-y-1 scrollbar-none">
+            {filteredSessions.map((session) => (
+              <div
+                key={session.id}
+                onClick={() => {
+                  setActiveSessionId(session.id);
+                  if (isListening) stopListening();
+                }}
+                className="group relative flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all cursor-pointer border"
+                style={{
+                  backgroundColor: activeSessionId === session.id ? 'var(--doap-accent)' : 'transparent',
+                  borderColor: activeSessionId === session.id ? 'var(--doap-accent)' : 'transparent',
+                  color: activeSessionId === session.id ? '#000000' : 'var(--doap-text-sec)'
+                }}
+              >
+                {editingSessionId === session.id ? (
+                  <input
+                    type="text"
+                    value={editTitleInput}
+                    onChange={(e) => setEditTitleInput(e.target.value)}
+                    onBlur={() => handleSaveRename(session.id)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSaveRename(session.id)}
+                    autoFocus
+                    className="w-full bg-black/20 text-xs px-1.5 py-0.5 rounded outline-none"
+                  />
+                ) : (
+                  <span className="truncate flex-1 font-medium pr-1">
+                    {session.title || "New Conversation"}
                   </span>
-                  {items.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        setActiveChatId(item.id);
-                        if (isListening) stopListening();
-                      }}
-                      className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs truncate transition-colors block cursor-pointer border"
-                      style={{
-                        backgroundColor: activeChatId === item.id ? 'var(--doap-accent)' : 'transparent',
-                        borderColor: activeChatId === item.id ? 'var(--doap-accent)' : 'transparent',
-                        color: activeChatId === item.id ? '#000000' : 'var(--doap-text-sec)'
-                      }}
-                    >
-                      {item.title}
-                    </button>
-                  ))}
+                )}
+
+                {/* Session Action Buttons */}
+                <div className={`flex items-center gap-1 shrink-0 ${activeSessionId === session.id ? 'opacity-90' : 'opacity-0 group-hover:opacity-100 transition-opacity'}`}>
+                  <button
+                    onClick={(e) => handleStartRename(session, e)}
+                    className="p-1 hover:scale-110 transition-transform cursor-pointer"
+                    title="Rename"
+                  >
+                    <Edit2 size={11} />
+                  </button>
+                  <button
+                    onClick={(e) => handleDeleteSession(session.id, e)}
+                    className="p-1 hover:scale-110 hover:text-red-400 transition-transform cursor-pointer"
+                    title="Delete Chat"
+                  >
+                    <Trash2 size={11} />
+                  </button>
                 </div>
-              );
-            })}
+              </div>
+            ))}
+          </div>
+
+          {/* Drawer Footer */}
+          <div className="p-3 border-t flex items-center justify-between" style={{ borderColor: 'var(--doap-border)' }}>
+            <button
+              onClick={() => {
+                if (confirm('Clear all conversation history?')) {
+                  localStorage.removeItem(STORAGE_KEY);
+                  handleNewChat();
+                }
+              }}
+              className="text-[11px] text-neutral-500 hover:text-red-400 flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <Trash2 size={12} />
+              <span>Clear History</span>
+            </button>
+            <span className="text-[10px] font-mono text-neutral-500">
+              {sessions.length} Chats
+            </span>
           </div>
         </div>
       )}
@@ -379,23 +538,31 @@ export const AITutor = () => {
 
           <div className="flex items-center gap-2">
             <button
+              onClick={handleNewChat}
+              className="px-2.5 py-1 rounded-xl border text-xs font-semibold flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer"
+              style={{ borderColor: 'var(--doap-border)', backgroundColor: 'var(--doap-surface-sec)', color: 'var(--doap-text-prim)' }}
+              title="Start New Chat"
+            >
+              <Plus size={12} />
+              <span className="hidden sm:inline">New Chat</span>
+            </button>
+
+            <button
               onClick={() => setShowKeyModal(true)}
               className="px-2.5 py-1 rounded-xl border text-[11px] font-mono flex items-center gap-1.5 hover:opacity-80 transition-opacity cursor-pointer bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
             >
               <Zap size={11} className="text-emerald-400 animate-pulse" />
-              <span className="hidden sm:inline">
-                Groq 120B Active
-              </span>
-              <span className="sm:hidden">120B Active</span>
+              <span className="hidden sm:inline">Groq 120B Active</span>
+              <span className="sm:hidden">120B</span>
             </button>
           </div>
         </div>
 
         {/* Messages List Area */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 scrollbar-thin min-w-0">
-          {messages.map((msg) => (
+          {messages.map((msg, idx) => (
             <div 
-              key={msg.id} 
+              key={msg.id || idx} 
               className={`flex items-start gap-3.5 max-w-5xl w-full mx-auto ${
                 msg.sender === 'user' ? 'justify-end' : 'justify-start'
               }`}
@@ -429,20 +596,57 @@ export const AITutor = () => {
                     <Sparkles size={16} />
                   </div>
 
-                  <div 
-                    className="p-4 sm:p-6 rounded-3xl rounded-tl-xs text-sm sm:text-[15px] leading-relaxed border doap-card shadow-sm flex-1 max-w-full min-w-0"
-                    style={{
-                      backgroundColor: isDarkMode ? '#111111' : '#ffffff',
-                      borderColor: 'var(--doap-border, #262626)',
-                      color: 'var(--doap-text-prim)'
-                    }}
-                  >
-                    <div className="relative">
-                      <MarkdownRenderer content={msg.text} isDarkMode={isDarkMode} />
-                      {msg.isStreaming && (
-                        <span className="inline-block w-2 h-4 ml-1 bg-emerald-400 animate-pulse rounded-xs align-middle" />
-                      )}
+                  <div className="flex-1 max-w-full min-w-0 space-y-2 group">
+                    <div 
+                      className="p-4 sm:p-6 rounded-3xl rounded-tl-xs text-sm sm:text-[15px] leading-relaxed border doap-card shadow-sm"
+                      style={{
+                        backgroundColor: isDarkMode ? '#111111' : '#ffffff',
+                        borderColor: 'var(--doap-border, #262626)',
+                        color: 'var(--doap-text-prim)'
+                      }}
+                    >
+                      <div className="relative">
+                        <MarkdownRenderer content={msg.text} isDarkMode={isDarkMode} />
+                        {msg.isStreaming && (
+                          <span className="inline-block w-2 h-4 ml-1 bg-emerald-400 animate-pulse rounded-xs align-middle" />
+                        )}
+                      </div>
                     </div>
+
+                    {/* AI Message Action Toolbar */}
+                    {!msg.isStreaming && (
+                      <div className="flex items-center gap-2 pl-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => handleCopyMessage(msg.text, msg.id)}
+                          className="px-2 py-1 rounded-lg border text-xs flex items-center gap-1 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                          style={{ borderColor: 'var(--doap-border)', backgroundColor: 'var(--doap-surface-sec)' }}
+                          title="Copy message"
+                        >
+                          {copiedMsgId === msg.id ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                          <span className="text-[11px]">{copiedMsgId === msg.id ? 'Copied' : 'Copy'}</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleSpeakMessage(msg.text, msg.id)}
+                          className={`px-2 py-1 rounded-lg border text-xs flex items-center gap-1 transition-colors cursor-pointer ${speakingMsgId === msg.id ? 'text-purple-400 border-purple-500' : 'text-neutral-400 hover:text-white'}`}
+                          style={{ borderColor: 'var(--doap-border)', backgroundColor: 'var(--doap-surface-sec)' }}
+                          title="Read aloud"
+                        >
+                          <Volume2 size={12} className={speakingMsgId === msg.id ? 'animate-pulse' : ''} />
+                          <span className="text-[11px]">{speakingMsgId === msg.id ? 'Playing...' : 'Voice'}</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleRegenerate(idx)}
+                          className="px-2 py-1 rounded-lg border text-xs flex items-center gap-1 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                          style={{ borderColor: 'var(--doap-border)', backgroundColor: 'var(--doap-surface-sec)' }}
+                          title="Regenerate"
+                        >
+                          <RotateCcw size={12} />
+                          <span className="text-[11px]">Retry</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </>
               )}
@@ -455,16 +659,18 @@ export const AITutor = () => {
                 className="w-8 h-8 rounded-2xl flex items-center justify-center shrink-0 shadow-md"
                 style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000)' }}
               >
-                <Sparkles size={16} className="animate-spin" />
+                <Sparkles size={16} />
               </div>
               <div 
-                className="p-4 rounded-2xl text-xs sm:text-sm font-mono border rounded-tl-none flex items-center gap-2"
-                style={{ backgroundColor: 'var(--doap-surface-sec)', borderColor: 'var(--doap-border)', color: 'var(--doap-text-sec)' }}
+                className="p-4 rounded-3xl rounded-tl-xs border text-xs flex items-center gap-2"
+                style={{
+                  backgroundColor: 'var(--doap-surface-sec, #161616)',
+                  borderColor: 'var(--doap-border)',
+                  color: 'var(--doap-text-sec)'
+                }}
               >
-                <span className="w-2 h-2 rounded-full bg-current animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-2 h-2 rounded-full bg-current animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-2 h-2 rounded-full bg-current animate-bounce" style={{ animationDelay: '300ms' }} />
-                <span className="ml-2 font-medium">DOAP AI is generating solution...</span>
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <span className="font-mono">AI Tutor 120B is thinking...</span>
               </div>
             </div>
           )}
@@ -472,18 +678,16 @@ export const AITutor = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Messages List Area End */}
-
-        {/* Pinned Bottom Input Area */}
+        {/* Bottom Input Area & Quick Chips */}
         <div 
-          className="p-3 sm:p-4 space-y-2.5 border-t shrink-0"
+          className="p-3 sm:p-4 border-t shrink-0 space-y-2.5 backdrop-blur-md"
           style={{ 
             backgroundColor: 'var(--doap-surface, #111111)',
             borderColor: 'var(--doap-border)' 
           }}
         >
-          {/* Quick Action Chips with Left/Right Scroll */}
-          <div className="relative flex items-center gap-1.5 max-w-4xl mx-auto">
+          {/* Quick Prompts Chips Scroll */}
+          <div className="relative flex items-center gap-1 max-w-4xl mx-auto">
             <button
               type="button"
               onClick={() => {
@@ -500,25 +704,21 @@ export const AITutor = () => {
 
             <div 
               ref={chipsScrollRef}
-              onWheel={(e) => {
-                if (chipsScrollRef.current && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-                  chipsScrollRef.current.scrollLeft += e.deltaY;
-                }
-              }}
-              className="flex-1 flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none scroll-smooth touch-pan-x"
+              className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1 px-1 scroll-smooth"
             >
-              {quickPrompts.map((qp, idx) => (
+              {quickPrompts.map((prompt, idx) => (
                 <button
                   key={idx}
-                  onClick={() => executeSend(qp.replace(/^[^\s]+\s/, ''))}
-                  className="px-3 py-1 rounded-full text-[11px] font-medium whitespace-nowrap border transition-all cursor-pointer hover-glide shrink-0"
-                  style={{ 
-                    backgroundColor: 'var(--doap-surface-sec)', 
-                    borderColor: 'var(--doap-border)', 
-                    color: 'var(--doap-text-prim)' 
+                  type="button"
+                  onClick={() => executeSend(prompt)}
+                  className="px-3 py-1.5 rounded-full text-xs font-medium shrink-0 border transition-all hover:scale-105 cursor-pointer shadow-xs"
+                  style={{
+                    backgroundColor: 'var(--doap-surface-sec)',
+                    borderColor: 'var(--doap-border)',
+                    color: 'var(--doap-text-prim)'
                   }}
                 >
-                  {qp}
+                  {prompt}
                 </button>
               ))}
             </div>
@@ -543,7 +743,7 @@ export const AITutor = () => {
             <div className="relative flex-1">
               <input 
                 type="text" 
-                placeholder={isListening ? "Listening to your voice..." : "Ask DOAP anything (coding, algorithms, system design, interview prep)..."}
+                placeholder={isListening ? "Listening to your voice..." : "Ask AI Tutor anything (coding, algorithms, GK, math, or /image <prompt>)..."}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 className="w-full pl-4 pr-10 py-2.5 sm:py-3 rounded-2xl border text-xs sm:text-sm focus:outline-none transition-all shadow-inner"
@@ -582,68 +782,67 @@ export const AITutor = () => {
         </div>
       </div>
 
-      {/* AI Engine API Key Modal (Groq LPU / Gemini) */}
+      {/* Voice Call Floating Modal */}
+      {isVoiceCallOpen && (
+        <VoiceAICallModal
+          isOpen={isVoiceCallOpen}
+          onClose={() => setIsVoiceCallOpen(false)}
+          onSaveCallToChat={(logs) => {
+            if (!logs || logs.length === 0) return;
+            const newItems = logs.map((log, idx) => ({
+              id: `voice-${Date.now()}-${idx}`,
+              sender: log.role === 'user' ? 'user' : 'ai',
+              text: log.text
+            }));
+            setSessions(prev => prev.map(s => s.id === activeSessionId ? { ...s, messages: [...s.messages, ...newItems] } : s));
+          }}
+          userName={userName}
+        />
+      )}
+
+      {/* Key Modal */}
       {showKeyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 animate-fade-in">
           <div 
-            className="w-full max-w-md p-6 rounded-3xl border shadow-2xl space-y-4"
-            style={{ backgroundColor: 'var(--doap-surface, #111111)', borderColor: 'var(--doap-border, #333333)' }}
+            className="w-full max-w-md rounded-3xl border p-6 space-y-4 shadow-2xl relative"
+            style={{
+              backgroundColor: 'var(--doap-surface, #111111)',
+              borderColor: 'var(--doap-border, #262626)'
+            }}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Zap size={18} style={{ color: accentHex }} />
-                <h3 className="font-bold text-sm" style={{ color: 'var(--doap-text-prim)' }}>Connect AI Engine (Groq / Gemini)</h3>
+            <button 
+              onClick={() => setShowKeyModal(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-xl border hover:opacity-80 transition-opacity cursor-pointer"
+              style={{ borderColor: 'var(--doap-border)', color: 'var(--doap-text-sec)' }}
+            >
+              <X size={15} />
+            </button>
+
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <Zap size={18} />
               </div>
-              <button onClick={() => setShowKeyModal(false)} className="hover:opacity-80 cursor-pointer">
-                <X size={16} />
-              </button>
+              <div>
+                <h3 className="font-bold text-sm" style={{ color: 'var(--doap-text-prim)' }}>
+                  AI Tutor 120B Super-Brain Active
+                </h3>
+                <p className="text-xs" style={{ color: 'var(--doap-text-sec)' }}>
+                  Powered by Groq LPU (GPT-OSS 120B) & Flux Image AI
+                </p>
+              </div>
             </div>
 
-            <p className="text-xs text-neutral-400">
-              Paste your <strong>Groq API Key</strong> (<code>gsk_...</code> from <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer" className="text-emerald-400 underline">console.groq.com</a> for 500 tok/sec speed) or <strong>Gemini Key</strong> (<code>AIzaSy...</code>).
-            </p>
+            <div className="p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 text-xs text-emerald-400">
+              ⚡ <strong>120 Billion Parameters Active:</strong> Sub-150ms instant universal reasoning, coding tutor, and live image generation.
+            </div>
 
-            <form onSubmit={handleSaveGeminiKey} className="space-y-3">
-              <input 
-                type="password"
-                placeholder="gsk_... or AIzaSy..."
-                value={geminiKeyInput}
-                onChange={(e) => setGeminiKeyInput(e.target.value)}
-                className="w-full p-3 rounded-xl border text-xs font-mono focus:outline-none"
-                style={{ backgroundColor: 'var(--doap-surface-sec)', borderColor: 'var(--doap-border)', color: 'var(--doap-text-prim)' }}
-              />
-
-              <div className="flex gap-2">
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 rounded-xl text-xs font-bold shadow-md cursor-pointer hover-glide flex items-center justify-center gap-1.5"
-                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000)' }}
-                >
-                  {keySaved ? (
-                    <>
-                      <Check size={14} />
-                      <span>Connected Successfully!</span>
-                    </>
-                  ) : (
-                    <span>Save Key</span>
-                  )}
-                </button>
-
-                {localStorage.getItem('doap_gemini_key') && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      localStorage.removeItem('doap_gemini_key');
-                      setGeminiKeyInput('');
-                      setShowKeyModal(false);
-                    }}
-                    className="px-3 py-2.5 rounded-xl border text-xs font-bold text-rose-400 border-rose-800/40 hover:bg-rose-950/40 cursor-pointer"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-            </form>
+            <button
+              onClick={() => setShowKeyModal(false)}
+              className="w-full py-2.5 rounded-xl text-xs font-bold transition-opacity cursor-pointer"
+              style={{ backgroundColor: accentHex, color: '#000000' }}
+            >
+              Done
+            </button>
           </div>
         </div>
       )}
