@@ -400,9 +400,9 @@ export const AITutor = () => {
               {msg.sender === 'user' ? (
                 <>
                   <div 
-                    className="p-3.5 sm:p-4 rounded-3xl rounded-tr-xs text-sm sm:text-[15px] leading-relaxed border shadow-md max-w-[85%] sm:max-w-[70%]"
+                    className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl rounded-tr-xs text-xs sm:text-sm leading-relaxed border shadow-sm max-w-[85%] sm:max-w-[65%]"
                     style={{
-                      backgroundColor: 'var(--doap-surface-sec, #1c1c1c)',
+                      backgroundColor: 'var(--doap-surface-sec, #1e1e1e)',
                       borderColor: 'var(--doap-border, #333333)',
                       color: 'var(--doap-text-prim, #ffffff)'
                     }}
@@ -411,7 +411,7 @@ export const AITutor = () => {
                   </div>
 
                   <div 
-                    className="w-8 h-8 rounded-2xl font-bold text-xs flex items-center justify-center shrink-0 border shadow-sm"
+                    className="w-7 h-7 rounded-xl font-bold text-[10px] sm:text-[11px] flex items-center justify-center shrink-0 border shadow-xs"
                     style={{ backgroundColor: 'var(--doap-surface-sec)', borderColor: 'var(--doap-border)', color: 'var(--doap-text-prim)' }}
                   >
                     {profile?.avatar || 'PT'}
