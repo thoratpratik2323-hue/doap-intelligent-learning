@@ -76,6 +76,16 @@ export const VoiceTutor = () => {
 
   // Call States: 'idle' | 'listening' | 'thinking' | 'speaking'
   const [callState, setCallState] = useState('idle');
+  const callStateRef = useRef('idle');
+  const isProcessingSpeechRef = useRef(false);
+  const chromeSpeechTimerRef = useRef(null);
+  const lastSpokenTextRef = useRef('');
+
+  const updateCallState = (newState) => {
+    callStateRef.current = newState;
+    setCallState(newState);
+  };
+
   const [isCallActive, setIsCallActive] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
@@ -144,6 +154,10 @@ export const VoiceTutor = () => {
       clearTimeout(vadSilenceTimeoutRef.current);
       vadSilenceTimeoutRef.current = null;
     }
+    if (chromeSpeechTimerRef.current) {
+      clearTimeout(chromeSpeechTimerRef.current);
+      chromeSpeechTimerRef.current = null;
+    }
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       try { mediaRecorderRef.current.stop(); } catch(e) {}
     }
@@ -200,12 +214,15 @@ export const VoiceTutor = () => {
           const speechThresh = Math.max(13, noise + 6);
           const silenceThresh = Math.max(8, noise + 2.5);
 
+          const currentState = callStateRef.current;
+
           // 1. Natural Interruption / Barge-in:
           // If AI is currently speaking and user speaks up
-          if (callState === 'speaking' && avg > Math.max(22, speechThresh + 6)) {
+          if (currentState === 'speaking' && avg > Math.max(22, speechThresh + 6)) {
             stopElevenLabsAudio();
             if (synthRef.current) synthRef.current.cancel();
-            setCallState('listening');
+            updateCallState('listening');
+            isProcessingSpeechRef.current = false;
             hasSpokenInSessionRef.current = true;
             speechStartTimeRef.current = Date.now();
             startMediaRecording();
@@ -213,7 +230,7 @@ export const VoiceTutor = () => {
           }
 
           // 2. Adaptive Voice Activity Detection (VAD) during listening
-          if (callState === 'listening') {
+          if (currentState === 'listening' && !isProcessingSpeechRef.current) {
             if (avg > speechThresh) {
               if (!hasSpokenInSessionRef.current) {
                 hasSpokenInSessionRef.current = true;
@@ -231,7 +248,7 @@ export const VoiceTutor = () => {
                   vadSilenceTimeoutRef.current = null;
                   hasSpokenInSessionRef.current = false;
                   finalizeRecordedSpeech();
-                }, 1300);
+                }, 1200);
               }
             }
           }
@@ -254,12 +271,38 @@ export const VoiceTutor = () => {
           rec.lang = 'en-US';
 
           rec.onresult = (e) => {
+            if (callStateRef.current !== 'listening' || isProcessingSpeechRef.current) return;
             let interim = '';
             for (let i = e.resultIndex; i < e.results.length; i++) {
               interim += e.results[i][0].transcript;
             }
-            if (interim.trim()) {
-              setUserTranscript(interim.trim());
+            const cleanText = interim.trim();
+            if (cleanText) {
+              setUserTranscript(cleanText);
+              lastSpokenTextRef.current = cleanText;
+              hasSpokenInSessionRef.current = true;
+
+              if (chromeSpeechTimerRef.current) {
+                clearTimeout(chromeSpeechTimerRef.current);
+              }
+
+              // Chrome/Edge: Finalize user speech after 1.1s natural pause
+              chromeSpeechTimerRef.current = setTimeout(() => {
+                if (callStateRef.current === 'listening' && cleanText.length > 1 && !isProcessingSpeechRef.current) {
+                  updateCallState('thinking');
+                  handleUserSpeechComplete(cleanText);
+                }
+              }, 1100);
+            }
+          };
+
+          rec.onerror = (e) => {
+            console.warn('[SpeechRec] note:', e);
+          };
+
+          rec.onend = () => {
+            if (isMountedRef.current && isCallActive && callStateRef.current !== 'idle') {
+              try { rec.start(); } catch(e) {}
             }
           };
 
@@ -295,8 +338,8 @@ export const VoiceTutor = () => {
 
       recorder.onstop = async () => {
         if (audioChunksRef.current.length === 0) {
-          if (isCallActive && isMountedRef.current && !isMuted) {
-            setCallState('listening');
+          if (isCallActive && isMountedRef.current && !isMuted && !isProcessingSpeechRef.current) {
+            updateCallState('listening');
             startMediaRecording();
           }
           return;
@@ -306,21 +349,25 @@ export const VoiceTutor = () => {
         audioChunksRef.current = [];
 
         // Send to Groq Whisper for instant transcription (120ms)
-        if (blob.size > 1000) {
-          setCallState('thinking');
+        if (blob.size > 1000 && !isProcessingSpeechRef.current) {
+          updateCallState('thinking');
           const transcribed = await transcribeAudioWithGroq(blob);
-          if (transcribed && transcribed.trim().length > 1) {
+          if (transcribed && transcribed.trim().length > 1 && !isProcessingSpeechRef.current) {
             setUserTranscript(transcribed.trim());
             handleUserSpeechComplete(transcribed.trim());
           } else {
-            setCallState('listening');
+            if (!isProcessingSpeechRef.current) {
+              updateCallState('listening');
+              hasSpokenInSessionRef.current = false;
+              startMediaRecording();
+            }
+          }
+        } else {
+          if (!isProcessingSpeechRef.current) {
+            updateCallState('listening');
             hasSpokenInSessionRef.current = false;
             startMediaRecording();
           }
-        } else {
-          setCallState('listening');
-          hasSpokenInSessionRef.current = false;
-          startMediaRecording();
         }
       };
 
@@ -332,8 +379,10 @@ export const VoiceTutor = () => {
   };
 
   const finalizeRecordedSpeech = () => {
+    if (isProcessingSpeechRef.current) return;
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       try {
+        updateCallState('thinking');
         mediaRecorderRef.current.stop();
       } catch(e) {}
     }
@@ -343,7 +392,8 @@ export const VoiceTutor = () => {
     unlockAudioContext();
     playBootChime();
     setIsCallActive(true);
-    setCallState('speaking');
+    isProcessingSpeechRef.current = false;
+    updateCallState('speaking');
     setUserTranscript('');
     setAiSpokenText('');
 
@@ -355,7 +405,8 @@ export const VoiceTutor = () => {
 
     speakResponse(welcome, () => {
       if (isMountedRef.current && !isMuted) {
-        setCallState('listening');
+        updateCallState('listening');
+        isProcessingSpeechRef.current = false;
         hasSpokenInSessionRef.current = false;
         startMediaRecording();
       }
@@ -365,11 +416,13 @@ export const VoiceTutor = () => {
   const handleEndCall = () => {
     playShutdownChime();
     setIsCallActive(false);
-    setCallState('idle');
+    updateCallState('idle');
+    isProcessingSpeechRef.current = false;
     cleanupMediaStream();
     stopElevenLabsAudio();
     if (synthRef.current) synthRef.current.cancel();
     setUserTranscript('');
+    setAiSpokenText('');
   };
 
   const executeVoicePlugins = (cmd) => {
@@ -395,15 +448,19 @@ export const VoiceTutor = () => {
 
   const handleUserSpeechComplete = async (spokenPrompt) => {
     if (!spokenPrompt || !isMountedRef.current) return;
-    setCallState('thinking');
+    if (isProcessingSpeechRef.current && callStateRef.current === 'speaking') return;
+    isProcessingSpeechRef.current = true;
+    updateCallState('thinking');
+    setUserTranscript(spokenPrompt);
 
     const actionResult = executeVoicePlugins(spokenPrompt);
     if (actionResult) {
       setAiSpokenText(actionResult);
       speakResponse(actionResult, () => {
         if (isMountedRef.current && isCallActive && !isMuted) {
-          setCallState('listening');
+          isProcessingSpeechRef.current = false;
           hasSpokenInSessionRef.current = false;
+          updateCallState('listening');
           startMediaRecording();
         }
       });
@@ -423,8 +480,9 @@ export const VoiceTutor = () => {
 
       speakResponse(speechCleaned, () => {
         if (isMountedRef.current && isCallActive && !isMuted) {
-          setCallState('listening');
+          isProcessingSpeechRef.current = false;
           hasSpokenInSessionRef.current = false;
+          updateCallState('listening');
           startMediaRecording();
         }
       });
@@ -432,8 +490,9 @@ export const VoiceTutor = () => {
       const fallback = `I'm listening, buddy! Tell me what you'd like to work on or explore today.`;
       speakResponse(fallback, () => {
         if (isMountedRef.current && isCallActive && !isMuted) {
-          setCallState('listening');
+          isProcessingSpeechRef.current = false;
           hasSpokenInSessionRef.current = false;
+          updateCallState('listening');
           startMediaRecording();
         }
       });
@@ -441,7 +500,7 @@ export const VoiceTutor = () => {
   };
 
   const speakResponse = async (text, onComplete) => {
-    setCallState('speaking');
+    updateCallState('speaking');
     stopElevenLabsAudio();
     if (synthRef.current) synthRef.current.cancel();
 
@@ -463,7 +522,8 @@ export const VoiceTutor = () => {
 
   const fallbackBrowserSpeech = (text, onComplete) => {
     if (!synthRef.current) {
-      setCallState('listening');
+      updateCallState('listening');
+      isProcessingSpeechRef.current = false;
       if (onComplete) onComplete();
       return;
     }
@@ -488,10 +548,12 @@ export const VoiceTutor = () => {
     } catch (e) {}
 
     utterance.onend = () => {
+      isProcessingSpeechRef.current = false;
       if (onComplete && isMountedRef.current) onComplete();
     };
 
     utterance.onerror = () => {
+      isProcessingSpeechRef.current = false;
       if (onComplete && isMountedRef.current) onComplete();
     };
 
@@ -501,7 +563,8 @@ export const VoiceTutor = () => {
   const toggleMute = () => {
     if (isMuted) {
       setIsMuted(false);
-      setCallState('listening');
+      updateCallState('listening');
+      isProcessingSpeechRef.current = false;
       hasSpokenInSessionRef.current = false;
       startMediaRecording();
     } else {
@@ -511,7 +574,8 @@ export const VoiceTutor = () => {
       }
       stopElevenLabsAudio();
       if (synthRef.current) synthRef.current.cancel();
-      setCallState('idle');
+      updateCallState('idle');
+      isProcessingSpeechRef.current = false;
     }
   };
 
