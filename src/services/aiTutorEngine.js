@@ -4,7 +4,7 @@
  * 1. Groq LPU (GPT-OSS 120B Super-Brain & Qwen 3.8 27B — Sub-150ms Instant Response)
  * 2. In-Chat Interactive Flash Quiz Engine (/quiz [c|py|java|dsa])
  * 3. Flux AI Image Generation (/image <prompt>)
- * 4. Socratic Tutoring & 3-Layer Knowledge Synthesis
+ * 4. Built-in Socratic Knowledge Synthesizer (Instant Fallback Domain Knowledge)
  */
 
 import { 
@@ -28,6 +28,7 @@ export async function generateSmartTutorResponse(message, userName = 'there', hi
 
   // Strip leading emojis, icons, and whitespace
   const cleanText = rawText.replace(/^[\s\p{Extended_Pictographic}\p{Emoji}\u2000-\u3300]+/gu, '').trim();
+  const lowerText = cleanText.toLowerCase();
 
   // ==========================================
   // 1. Slash Commands Handling
@@ -139,7 +140,7 @@ Core Tutoring & Interaction Principles:
    - 🎯 Intuitive Concept / Blueprint
    - 💻 Clean, Complete, Runnable Code (with comments)
    - ⚡ Time & Space Complexity Analysis ($O(N)$, $O(1)$, etc.) + Edge Cases
-3. Natural Language Matching: Automatically detect and match the student's language. If they talk in Hindi or Hinglish (e.g. "bhai", "kya haal", "ye code kaise kaam karta hai", "road map for ml", "write a code ffro python calcultor"), reply in natural, fluent, friendly Hinglish/Hindi. If in English, reply in articulate English.
+3. Natural Language Matching: Automatically detect and match the student's language. If they talk in Hindi or Hinglish (e.g. "bhai", "kya haal", "ye code kaise kaam karta hai", "road map for ml", "write a code for python calculator"), reply in natural, fluent, friendly Hinglish/Hindi. If in English, reply in articulate English.
 4. Charismatic & Supportive: Be warm, empathetic, witty, and directly address the student as ${userName}.
 5. Universal Scope: Answer ANY question without limits (Machine Learning roadmaps, Python, Java, C, LeetCode, system design, math, science, creative writing, history, career advice, and everyday life).
 6. Beautiful Formatting: Use rich markdown headers, bullet points, syntax-highlighted code blocks, and tables for maximum readability.`;
@@ -149,7 +150,7 @@ Core Tutoring & Interaction Principles:
   (history || []).slice(-8).forEach(item => {
     const role = (item.sender === 'user' || item.role === 'user') ? 'user' : 'assistant';
     const content = (item.text || item.content || '').trim();
-    if (content && !content.includes('verify your internet') && !content.includes('check your internet') && !content.includes('temporary hiccup') && !content.includes('Great to connect with you') && !content.includes('Ask me about coding')) {
+    if (content && !content.includes('verify your internet') && !content.includes('check your internet') && !content.includes('temporary hiccup') && !content.includes('Great to connect with you') && !content.includes('Ask me about coding') && !content.includes('I am ready to help you')) {
       if (sanitizedHistory.length > 0 && sanitizedHistory[sanitizedHistory.length - 1].role === role) {
         sanitizedHistory[sanitizedHistory.length - 1].content += '\n' + content;
       } else {
@@ -213,5 +214,86 @@ Core Tutoring & Interaction Principles:
     }
   }
 
-  return `Hey ${userName}! 👋 I am ready to help you. Ask me about coding, Machine Learning roadmaps, DSA, or system design, and I'll break it down step-by-step!`;
+  // ==========================================
+  // 4. Smart Built-in Fallback Knowledge Base
+  // ==========================================
+  if (lowerText.includes('calculator') && (lowerText.includes('python') || lowerText.includes('py'))) {
+    return `### 💻 Python Command-Line Calculator
+
+Here is a clean, robust command-line calculator in Python that supports addition, subtraction, multiplication, division, and error handling:
+
+\`\`\`python
+def add(x, y): return x + y
+def subtract(x, y): return x - y
+def multiply(x, y): return x * y
+def divide(x, y): 
+    if y == 0:
+        return "Error: Division by zero!"
+    return x / y
+
+def calculator():
+    print("=" * 30)
+    print(" 🧮 DOAP Python Calculator ")
+    print("=" * 30)
+    print("Operations: +, -, *, /")
+    
+    while True:
+        try:
+            num1 = float(input("\nEnter first number: "))
+            op = input("Enter operator (+, -, *, /) or 'q' to quit: ").strip()
+            if op.lower() == 'q':
+                print("Goodbye! 👋")
+                break
+                
+            num2 = float(input("Enter second number: "))
+
+            if op == '+':
+                print(f"Result: {num1} + {num2} = {add(num1, num2)}")
+            elif op == '-':
+                print(f"Result: {num1} - {num2} = {subtract(num1, num2)}")
+            elif op == '*':
+                print(f"Result: {num1} * {num2} = {multiply(num1, num2)}")
+            elif op == '/':
+                print(f"Result: {num1} / {num2} = {divide(num1, num2)}")
+            else:
+                print("⚠️ Invalid operator! Please use +, -, *, or /.")
+        except ValueError:
+            print("⚠️ Invalid number input. Please enter valid numeric digits.")
+
+if __name__ == "__main__":
+    calculator()
+\`\`\`
+
+#### ⚡ Complexity & Key Takeaways:
+* **Time Complexity:** $O(1)$ per arithmetic operation.
+* **Space Complexity:** $O(1)$ auxiliary space.
+* **Edge Cases Handled:** Zero division check (\`y == 0\`) and \`ValueError\` exception catching for non-numeric input.`;
+  }
+
+  if (lowerText.includes('roadmap') || lowerText.includes('road map')) {
+    return `### 🗺️ Master Machine Learning (ML) Roadmap 2026
+
+Here is a structured, step-by-step roadmap to go from beginner to Production ML Engineer:
+
+#### 1️⃣ Stage 1: Math & Programming Foundations (Month 1-2)
+* **Python Mastery:** Functions, OOP, Generators, List Comprehensions, Numpy & Pandas.
+* **Linear Algebra & Vector Calculus:** Matrix multiplication, Eigenvalues, Gradients, Partial Derivatives.
+* **Probability & Statistics:** Bayes' Theorem, Probability distributions, Hypothesis testing ($p$-values).
+
+#### 2️⃣ Stage 2: Classical Machine Learning (Month 3-4)
+* **Supervised Learning:** Linear/Logistic Regression, Decision Trees, Random Forests, XGBoost, SVMs.
+* **Unsupervised Learning:** K-Means, PCA (Dimensionality Reduction), Hierarchical Clustering.
+* **Model Evaluation:** Precision, Recall, F1-Score, ROC-AUC, Bias-Variance Tradeoff, Cross-Validation.
+
+#### 3️⃣ Stage 3: Deep Learning & Neural Networks (Month 5-6)
+* **Core Deep Learning:** Backpropagation, PyTorch framework, CNNs (Computer Vision), RNNs/LSTMs (Sequences).
+* **Transformer Architecture:** Self-Attention Mechanism, Multi-Head Attention, Positional Encoding, BERT & GPT fundamentals.
+
+#### 4️⃣ Stage 4: Generative AI & LLMs (Month 7-8)
+* **RAG Pipelines:** Chunking, Vector Databases (Chroma, Pinecone, LanceDB), Embedding models.
+* **Fine-Tuning:** LoRA, QLoRA, SFT & DPO preference alignment.
+* **Deployment (MLOps):** FastAPI, Docker, ONNX Runtime, GPU quantization (vLLM, Ollama).`;
+  }
+
+  return `Hey ${userName}! 👋 I'm ready to answer any question for you. You can ask me to write code in Python/Java/C, explain DSA algorithms, solve LeetCode problems, or generate study roadmaps!`;
 }
