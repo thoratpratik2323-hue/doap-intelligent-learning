@@ -58,7 +58,7 @@ Guidelines:
   }
 
   // B. Google Gemini AI Engine
-  if (geminiKey && geminiKey.startsWith('AIzaSy') && geminiKey.length > 30) {
+  if (geminiKey && geminiKey.length > 20) {
     try {
       const systemInstruction = `You are DOAP AI, an elite, friendly, and world-class AI computer science mentor and software engineering tutor.
 You help students with programming, DSA, web development, AI/ML, system design, coding interviews, and career roadmaps.
