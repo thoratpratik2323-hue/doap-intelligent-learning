@@ -7,28 +7,25 @@ import {
   Volume2, 
   VolumeX, 
   Sparkles, 
-  RotateCcw, 
   MessageSquare, 
   Radio, 
-  Zap, 
   Send, 
-  Bot, 
-  User, 
-  CheckCircle2,
   RefreshCw,
   Clock,
   ArrowRight,
-  Headphones
+  Headphones,
+  Check
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { generateSmartTutorResponse } from '../services/aiTutorEngine';
-import { speakElevenLabs, stopElevenLabsAudio, ELEVEN_VOICES } from '../services/elevenLabsService';
+import { speakElevenLabs, stopElevenLabsAudio } from '../services/elevenLabsService';
 
 export const VoiceTutor = () => {
   const { isDarkMode, activeAccentHex, navigateTo } = useTheme();
   const { profile } = useAuth();
   const accentHex = activeAccentHex || 'var(--doap-accent, #ffffff)';
+  const userName = profile?.name ? profile.name.split(' ')[0] : 'there';
 
   // Call States: 'idle' | 'listening' | 'thinking' | 'speaking'
   const [callState, setCallState] = useState('idle');
@@ -41,6 +38,7 @@ export const VoiceTutor = () => {
   const [conversationLogs, setConversationLogs] = useState([]);
   const [manualInput, setManualInput] = useState('');
   const [isSpeechSupported, setIsSpeechSupported] = useState(true);
+  const [selectedVoicePersona, setSelectedVoicePersona] = useState('aria'); // 'aria' | 'jenny' | 'samantha'
 
   const recognitionRef = useRef(null);
   const synthRef = useRef(typeof window !== 'undefined' ? window.speechSynthesis : null);
@@ -49,11 +47,11 @@ export const VoiceTutor = () => {
   const logsEndRef = useRef(null);
 
   const QUICK_VOICE_TOPICS = [
-    { title: "Explain Dynamic Programming", prompt: "Explain Dynamic Programming in simple terms with a real-world example." },
-    { title: "System Design Scalability", prompt: "How do big tech companies like Netflix and Uber scale their systems?" },
-    { title: "Mock Interview Question", prompt: "Give me a technical interview question on arrays and evaluate my thought process." },
-    { title: "Time Complexity (Big O)", prompt: "Teach me how to calculate Time and Space complexity easily." },
-    { title: "Clean Code Principles", prompt: "What are the most important clean code practices for junior to senior engineers?" }
+    { title: "Explain Dynamic Programming", prompt: "Explain Dynamic Programming in simple terms with an intuitive analogy." },
+    { title: "System Design Scalability", prompt: "How do big tech architectures like Netflix and Uber handle massive scale?" },
+    { title: "Mock FAANG Interview", prompt: "Give me a technical interview question on arrays and evaluate my thought process." },
+    { title: "Time Complexity (Big O)", prompt: "Teach me how to analyze Time and Space complexity step-by-step." },
+    { title: "Clean Code Principles", prompt: "What are the most essential clean code practices for modern software engineers?" }
   ];
 
   // Initialize Speech Recognition
@@ -97,7 +95,7 @@ export const VoiceTutor = () => {
     };
 
     recognition.onerror = (e) => {
-      console.warn("Voice Tutor Speech Recognition event:", e.error);
+      console.warn("Voice Recognition event:", e.error);
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
         setIsSpeechSupported(false);
       }
@@ -113,6 +111,7 @@ export const VoiceTutor = () => {
       if (synthRef.current) {
         synthRef.current.cancel();
       }
+      stopElevenLabsAudio();
     };
   }, []);
 
@@ -145,113 +144,88 @@ export const VoiceTutor = () => {
     return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
-  const streamRef = useRef(null);
-
   const handleStartCall = async () => {
     setIsCallActive(true);
-    setIsMuted(false);
+    setCallState('listening');
+    setUserTranscript('');
+    setAiSpokenText('');
 
-    // Request microphone access across all browsers (including Firefox)
-    try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        streamRef.current = stream;
+    // Welcome greeting
+    const welcome = `Hey ${userName}! I am your DOAP Voice Assistant. Ask me anything or pick any topic to discuss hands-free!`;
+    setAiSpokenText(welcome);
+    setConversationLogs([{ sender: 'ai', text: welcome, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+
+    speakResponse(welcome, () => {
+      if (isMountedRef.current && !isMuted) {
+        startListening();
       }
-    } catch (micErr) {
-      console.warn("Microphone access prompt:", micErr);
-    }
-    
-    const greeting = `Hello ${profile?.name || 'there'}! I am your DOAP Live Voice Tutor. I am listening—what engineering topic or doubt would you like to discuss?`;
-    
-    setAiSpokenText(greeting);
-    setConversationLogs([{ role: 'assistant', text: greeting, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
-    
-    speakResponse(greeting, () => {
-      startListening();
     });
   };
 
   const handleEndCall = () => {
-    stopElevenLabsAudio();
-    if (synthRef.current) synthRef.current.cancel();
-    stopListening();
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(t => t.stop());
-      streamRef.current = null;
-    }
     setIsCallActive(false);
     setCallState('idle');
+    stopListening();
+    stopElevenLabsAudio();
+    if (synthRef.current) synthRef.current.cancel();
+    setUserTranscript('');
   };
 
-  const startListening = async () => {
-    if (isMuted || !isMountedRef.current) return;
-    setCallState('listening');
-    setUserTranscript('');
-
-    if (recognitionRef.current && isSpeechSupported) {
-      try {
-        recognitionRef.current.start();
-      } catch (err) {
-        // already active
-      }
-    } else {
-      try {
-        if (!streamRef.current && navigator.mediaDevices) {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          streamRef.current = stream;
-        }
-      } catch (e) {}
-    }
+  const startListening = () => {
+    if (!recognitionRef.current || isMuted) return;
+    try {
+      setCallState('listening');
+      recognitionRef.current.start();
+    } catch(err) {}
   };
 
   const stopListening = () => {
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch (err) {}
-    }
+    if (!recognitionRef.current) return;
+    try {
+      recognitionRef.current.stop();
+    } catch(err) {}
   };
 
-  const handleUserSpeechComplete = async (spokenText) => {
-    if (!spokenText || !spokenText.trim()) return;
-
+  const handleUserSpeechComplete = async (spokenPrompt) => {
+    if (!spokenPrompt || !isMountedRef.current) return;
     stopListening();
     setCallState('thinking');
-    setUserTranscript(spokenText);
 
-    const userEntry = { 
-      role: 'user', 
-      text: spokenText, 
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+    const newLog = {
+      sender: 'user',
+      text: spokenPrompt,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
-    setConversationLogs(prev => [...prev, userEntry]);
+    setConversationLogs(prev => [...prev, newLog]);
+    setUserTranscript('');
 
     try {
-      const response = await generateSmartTutorResponse(spokenText, conversationLogs);
-      
-      // Vocal speech sanitizer (removes raw markdown formatting for smooth natural speech)
-      const vocalSpeech = response
-        .replace(/```[\s\S]*?```/g, "I have outlined the detailed code implementation for you.")
-        .replace(/`([^`]+)`/g, "$1")
-        .replace(/[*#_>]/g, "")
-        .replace(/\n+/g, " ")
-        .slice(0, 480);
+      const response = await generateSmartTutorResponse(spokenPrompt, userName);
+      // Clean markdown tags for natural speech synthesis
+      const speechCleaned = response
+        .replace(/```[\s\S]*?```/g, 'Here is the code block.')
+        .replace(/`([^`]+)`/g, '$1')
+        .replace(/[#*_~>]/g, '')
+        .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+        .trim();
 
-      setAiSpokenText(response);
-      setConversationLogs(prev => [...prev, { 
-        role: 'assistant', 
-        text: response, 
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-      }]);
+      const aiLog = {
+        sender: 'ai',
+        text: response,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
 
-      speakResponse(vocalSpeech, () => {
-        if (isMountedRef.current && isCallActive) {
+      setConversationLogs(prev => [...prev, aiLog]);
+      setAiSpokenText(speechCleaned);
+
+      speakResponse(speechCleaned, () => {
+        if (isMountedRef.current && isCallActive && !isMuted) {
           startListening();
         }
       });
     } catch (err) {
-      const fallback = "I understood your query. Let's explore that deeper—could you specify which part you'd like to dive into?";
+      const fallback = "I understood your query. Let's explore that deeper—could you tell me more?";
       speakResponse(fallback, () => {
         if (isMountedRef.current && isCallActive) {
           startListening();
@@ -260,71 +234,11 @@ export const VoiceTutor = () => {
     }
   };
 
-  // Humanoid Female Voice Selector
-  const [selectedVoicePersona, setSelectedVoicePersona] = useState('aria'); // 'aria' | 'jenny' | 'samantha' | 'google_female'
-  const [availableVoices, setAvailableVoices] = useState([]);
-
-  // Load browser voices & filter humanoid female profiles
-  useEffect(() => {
-    const updateVoices = () => {
-      if (synthRef.current) {
-        const voices = synthRef.current.getVoices();
-        setAvailableVoices(voices);
-      }
-    };
-
-    updateVoices();
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-      window.speechSynthesis.onvoiceschanged = updateVoices;
-    }
-  }, []);
-
-  const getHumanoidFemaleVoice = (persona = selectedVoicePersona) => {
-    if (!synthRef.current) return null;
-    const voices = synthRef.current.getVoices();
-    if (!voices || voices.length === 0) return null;
-
-    // Female voice match filters based on OS and browser
-    let matchedVoice = null;
-
-    if (persona === 'aria') {
-      matchedVoice = voices.find(v => v.name.includes('Aria') || v.name.includes('Natural') && v.name.includes('Female'));
-    } else if (persona === 'jenny') {
-      matchedVoice = voices.find(v => v.name.includes('Jenny') || v.name.includes('Zira'));
-    } else if (persona === 'samantha') {
-      matchedVoice = voices.find(v => v.name.includes('Samantha') || v.name.includes('Victoria') || v.name.includes('Karen'));
-    } else {
-      matchedVoice = voices.find(v => v.name.includes('Google UK English Female') || (v.name.includes('Google') && v.lang.includes('en')));
-    }
-
-    // Fallback: search for any female / high-quality English voice
-    if (!matchedVoice) {
-      matchedVoice = voices.find(v => 
-        (v.name.toLowerCase().includes('female') || 
-         v.name.includes('Aria') || 
-         v.name.includes('Jenny') || 
-         v.name.includes('Samantha') || 
-         v.name.includes('Zira') ||
-         v.name.includes('Victoria') ||
-         v.name.includes('Karen') ||
-         v.name.includes('Google UK English Female')) && v.lang.startsWith('en')
-      );
-    }
-
-    // General English fallback
-    if (!matchedVoice) {
-      matchedVoice = voices.find(v => v.lang.startsWith('en'));
-    }
-
-    return matchedVoice;
-  };
-
   const speakResponse = async (text, onComplete) => {
     setCallState('speaking');
     stopElevenLabsAudio();
     if (synthRef.current) synthRef.current.cancel();
 
-    // 1. Try ElevenLabs Ultra-Realistic Studio Female Voice
     try {
       await speakElevenLabs(
         text, 
@@ -333,7 +247,6 @@ export const VoiceTutor = () => {
           if (onComplete && isMountedRef.current) onComplete();
         },
         () => {
-          // Fallback to browser neural voice
           fallbackBrowserSpeech(text, onComplete);
         }
       );
@@ -351,38 +264,18 @@ export const VoiceTutor = () => {
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 1.04;
-    utterance.pitch = 1.10;
+    utterance.pitch = 1.05;
     utterance.lang = 'en-US';
 
-    const femaleVoice = getHumanoidFemaleVoice(selectedVoicePersona);
-    if (femaleVoice) {
-      utterance.voice = femaleVoice;
-    }
-
     utterance.onend = () => {
-      if (onComplete && isMountedRef.current) {
-        onComplete();
-      }
+      if (onComplete && isMountedRef.current) onComplete();
     };
 
-    utterance.onerror = (e) => {
-      console.warn("Speech synthesis fallback event:", e);
-      if (onComplete && isMountedRef.current) {
-        onComplete();
-      }
+    utterance.onerror = () => {
+      if (onComplete && isMountedRef.current) onComplete();
     };
 
     synthRef.current.speak(utterance);
-  };
-
-  const testFemaleVoice = () => {
-    const testPhrases = {
-      aria: "Hi Pratik! I'm Aria, your studio humanoid voice mentor. I am powered by ElevenLabs and Groq LPU!",
-      jenny: "Hello! I'm Rachel. My voice is tuned for zero latency interview preparation and coding mentorship.",
-      samantha: "Hey there! I'm Sarah. Let's discuss algorithms, dynamic programming, and system design hands-free!",
-      google_female: "Greetings! I am DOAP Voice AI, ready to help you master software engineering."
-    };
-    speakResponse(testPhrases[selectedVoicePersona] || testPhrases.aria);
   };
 
   const toggleMute = () => {
@@ -410,24 +303,26 @@ export const VoiceTutor = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 md:py-8 space-y-8 animate-fade-in select-none">
+    <div className="max-w-5xl mx-auto px-4 py-6 md:py-8 space-y-8 animate-fade-in select-none">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
-              <Radio size={12} className="animate-pulse" />
-              <span>Real-Time Voice AI</span>
+              <Radio size={12} className={isCallActive ? "animate-pulse" : ""} />
+              <span>{isCallActive ? "Live Session" : "Voice AI Assistant"}</span>
             </span>
-            <span className="text-[11px] font-mono text-neutral-400">
-              • Hands-Free Interactive Calling
-            </span>
+            {isCallActive && (
+              <span className="text-[11px] font-mono text-neutral-400 flex items-center gap-1">
+                <Clock size={11} /> {formatDuration(callDuration)}
+              </span>
+            )}
           </div>
-          <h1 className={`text-3xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-[#0a0a0a]'}`}>
-            Voice Tutor
+          <h1 className={`text-3xl font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-[#0a0a0a]'}`}>
+            Voice Assistant
           </h1>
           <p className={`text-xs font-mono uppercase tracking-wider ${isDarkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>
-            Live conversational audio mentor powered by Gemini AI
+            Real-time neural audio conversation powered by 120B Super-Brain
           </p>
         </div>
 
@@ -445,355 +340,188 @@ export const VoiceTutor = () => {
         </button>
       </div>
 
-      {/* Humanoid Female Voice Selector Strip */}
+      {/* Main Futuristic Voice Stage */}
       <div 
-        className="p-3.5 sm:p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 doap-card"
+        className="p-8 sm:p-12 rounded-3xl border flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-2xl"
         style={{ 
-          backgroundColor: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-          borderColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' 
+          backgroundColor: isDarkMode ? '#0d0d0d' : '#ffffff',
+          borderColor: 'var(--doap-border, #222222)',
+          minHeight: '420px'
         }}
       >
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <Sparkles size={16} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold">Humanoid Female Voice:</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                Zero Latency Neural
-              </span>
-            </div>
-            <p className="text-[11px] text-neutral-400">Natural conversational human inflection & warm vocal pitch.</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-1.5 flex-wrap self-stretch sm:self-auto">
-          {[
-            { id: 'aria', label: '👩 Aria (Natural)' },
-            { id: 'jenny', label: '👩 Jenny (Crisp)' },
-            { id: 'samantha', label: '👩 Samantha (Expressive)' },
-            { id: 'google_female', label: '👩 Google Neural' }
-          ].map((persona) => (
-            <button
-              key={persona.id}
-              onClick={() => setSelectedVoicePersona(persona.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
-                selectedVoicePersona === persona.id
-                  ? (isDarkMode ? 'bg-white text-black font-bold border-white shadow' : 'bg-black text-white font-bold border-black shadow')
-                  : (isDarkMode ? 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white' : 'bg-neutral-100 border-neutral-300 text-neutral-600 hover:text-black')
-              }`}
-            >
-              {persona.label}
-            </button>
-          ))}
-
-          <button
-            onClick={testFemaleVoice}
-            className="px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors flex items-center gap-1.5 cursor-pointer hover:opacity-80"
-            style={{ borderColor: accentHex, color: accentHex }}
-            title="Hear Humanoid Voice Sample"
-          >
-            <Volume2 size={13} />
-            <span>Test Voice</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Main Voice Calling Studio Canvas */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left / Center: Interactive Voice Orb Calling Stage */}
+        {/* Subtle Ambient Glow */}
         <div 
-          className={`lg:col-span-7 p-6 sm:p-10 rounded-3xl border flex flex-col items-center text-center justify-between min-h-[480px] sm:min-h-[540px] relative overflow-hidden doap-card ${
-            isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black shadow-lg'
-          }`}
-        >
-          {/* Ambient Glow */}
-          <div 
-            className="absolute w-72 h-72 rounded-full blur-[100px] pointer-events-none opacity-20 transition-all duration-700"
-            style={{ 
-              backgroundColor: isCallActive 
-                ? (callState === 'speaking' ? '#10b981' : callState === 'thinking' ? '#a855f7' : accentHex) 
-                : '#71717a' 
-            }}
-          />
+          className="absolute w-72 h-72 rounded-full blur-3xl opacity-20 pointer-events-none transition-all duration-700"
+          style={{
+            backgroundColor: callState === 'speaking' ? '#10b981' : callState === 'listening' ? '#3b82f6' : callState === 'thinking' ? '#f59e0b' : '#6366f1',
+            transform: isCallActive ? 'scale(1.3)' : 'scale(0.8)'
+          }}
+        />
 
-          {/* Top Status Bar */}
-          <div className="w-full flex items-center justify-between z-10">
-            <div className="flex items-center gap-2">
-              <span className={`w-3 h-3 rounded-full ${isCallActive ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-600'}`} />
-              <span className="text-xs font-mono font-bold uppercase tracking-wider">
-                {isCallActive ? `Live Call • ${formatDuration(callDuration)}` : 'Voice Studio Offline'}
-              </span>
-            </div>
-
-            {isCallActive && (
-              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase border ${
-                callState === 'speaking' 
-                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
-                  : callState === 'thinking'
-                  ? 'bg-purple-500/10 text-purple-400 border-purple-500/30'
-                  : 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
-              }`}>
-                {callState === 'speaking' ? '🔊 AI Speaking' : callState === 'thinking' ? '🧠 Thinking...' : '🎙️ Listening to You'}
-              </span>
-            )}
-          </div>
-
-          {/* Center: Glowing Concentric Voice Orb */}
-          <div className="relative flex items-center justify-center my-8 z-10">
-            {isCallActive && (
-              <>
-                <div 
-                  className={`absolute w-60 h-60 rounded-full pointer-events-none transition-all duration-700 opacity-20 ${
-                    callState === 'speaking' 
-                      ? 'animate-ping scale-125 bg-emerald-400' 
-                      : callState === 'listening' 
-                      ? 'animate-pulse scale-110 bg-cyan-400' 
-                      : 'bg-purple-500 animate-spin'
-                  }`}
-                />
-                <div 
-                  className={`absolute w-44 h-44 rounded-full pointer-events-none transition-all duration-500 opacity-30 ${
-                    callState === 'speaking' ? 'scale-110 bg-emerald-500' : 'bg-cyan-500'
-                  }`}
-                />
-              </>
-            )}
-
-            {/* Interactive Voice Sphere */}
-            <div 
-              onClick={!isCallActive ? handleStartCall : undefined}
-              className={`w-36 h-36 rounded-full flex flex-col items-center justify-center shadow-2xl relative z-10 border transition-all duration-500 ${
-                !isCallActive ? 'cursor-pointer hover:scale-105 active:scale-95' : ''
-              }`}
-              style={{ 
-                backgroundColor: isDarkMode ? '#141414' : '#f4f4f5',
-                borderColor: isCallActive 
-                  ? (callState === 'speaking' ? '#10b981' : callState === 'thinking' ? '#a855f7' : accentHex)
-                  : 'var(--doap-border)',
-                boxShadow: isCallActive 
-                  ? `0 0 50px ${callState === 'speaking' ? '#10b98160' : callState === 'thinking' ? '#a855f760' : `${accentHex}60`}`
-                  : 'none'
-              }}
-            >
-              {!isCallActive ? (
-                <div className="flex flex-col items-center gap-1.5">
-                  <Phone size={36} style={{ color: accentHex }} className="animate-bounce" />
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-neutral-400">
-                    Tap to Call
-                  </span>
-                </div>
-              ) : callState === 'speaking' ? (
-                <div className="flex flex-col items-center gap-1">
-                  <Volume2 size={40} className="text-emerald-400 animate-bounce" />
-                  <span className="text-[10px] font-mono font-bold uppercase text-emerald-400">Speaking</span>
-                </div>
-              ) : callState === 'thinking' ? (
-                <div className="flex flex-col items-center gap-1">
-                  <Sparkles size={38} className="text-purple-400 animate-spin" />
-                  <span className="text-[10px] font-mono font-bold uppercase text-purple-400">Reasoning</span>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-1">
-                  <Mic size={38} style={{ color: accentHex }} className="animate-pulse" />
-                  <span className="text-[10px] font-mono font-bold uppercase" style={{ color: accentHex }}>Listening</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Real-Time Live Subtitle Captions */}
-          <div 
-            className="w-full min-h-[90px] p-4 rounded-2xl border text-sm leading-relaxed flex flex-col items-center justify-center space-y-1 z-10"
-            style={{ 
-              backgroundColor: isDarkMode ? 'rgba(0,0,0,0.4)' : 'rgba(240,240,240,0.8)',
-              borderColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'
-            }}
-          >
-            {isCallActive ? (
-              callState === 'speaking' ? (
-                <p className="text-neutral-200 font-medium line-clamp-3 italic">
-                  "{aiSpokenText}"
-                </p>
-              ) : callState === 'thinking' ? (
-                <div className="flex items-center gap-2 text-neutral-400 font-mono text-xs">
-                  <RefreshCw size={13} className="animate-spin text-purple-400" />
-                  <span>DOAP Voice AI is processing your answer...</span>
-                </div>
-              ) : userTranscript ? (
-                <p className="text-neutral-300 font-medium">
-                  "{userTranscript}"
-                </p>
-              ) : (
-                <p className="text-neutral-500 font-mono text-xs">
-                  Listening to your microphone... Speak naturally
-                </p>
-              )
-            ) : (
-              <p className="text-neutral-400 text-xs font-mono">
-                Click "Start Live Call" below to begin real-time interactive voice practice.
-              </p>
-            )}
-          </div>
-
-          {/* Call Controls Footer */}
-          <div className="w-full flex items-center justify-center gap-4 pt-6 z-10">
-            {!isCallActive ? (
-              <button
-                onClick={handleStartCall}
-                className="px-8 py-3.5 rounded-2xl font-bold text-sm shadow-xl transition-all cursor-pointer hover:scale-105 active:scale-95 flex items-center gap-2.5 bg-emerald-500 hover:bg-emerald-400 text-black"
-              >
-                <Phone size={18} />
-                <span>Start Live Voice Call</span>
-              </button>
-            ) : (
-              <>
-                {/* Mute Button */}
-                <button
-                  onClick={toggleMute}
-                  className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all cursor-pointer shadow-lg hover:scale-105 ${
-                    isMuted ? 'bg-rose-500/20 border-rose-500 text-rose-400' : 'bg-neutral-800 border-neutral-700 text-neutral-200 hover:text-white'
-                  }`}
-                  title={isMuted ? "Unmute Microphone" : "Mute Microphone"}
-                >
-                  {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
-                </button>
-
-                {/* Big End Call Button */}
-                <button
-                  onClick={handleEndCall}
-                  className="px-6 py-3 rounded-full bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-xl hover:scale-105 active:scale-95"
-                  title="End Call"
-                >
-                  <PhoneOff size={18} />
-                  <span>End Call</span>
-                </button>
-
-                {/* Interrupt AI Button */}
-                <button
-                  onClick={() => {
-                    stopElevenLabsAudio();
-                    if (synthRef.current) synthRef.current.cancel();
-                    startListening();
-                  }}
-                  className="w-12 h-12 rounded-full border bg-neutral-800 border-neutral-700 text-neutral-200 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-lg hover:scale-105"
-                  title="Interrupt AI & Speak"
-                >
-                  <VolumeX size={20} />
-                </button>
-              </>
-            )}
+        {/* Status Pill */}
+        <div className="mb-8 z-10">
+          <div className={`px-4 py-1.5 rounded-full text-xs font-mono font-bold border flex items-center gap-2 transition-all ${
+            isCallActive 
+              ? (callState === 'speaking' ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400' : callState === 'listening' ? 'bg-blue-500/10 border-blue-500/40 text-blue-400' : 'bg-amber-500/10 border-amber-500/40 text-amber-400')
+              : 'bg-neutral-900 border-neutral-800 text-neutral-400'
+          }`}>
+            <span className={`w-2 h-2 rounded-full ${
+              isCallActive ? (callState === 'speaking' ? 'bg-emerald-400 animate-pulse' : callState === 'listening' ? 'bg-blue-400 animate-ping' : 'bg-amber-400 animate-bounce') : 'bg-neutral-600'
+            }`} />
+            <span>
+              {!isCallActive 
+                ? 'Ready to Connect' 
+                : callState === 'speaking' 
+                ? 'DOAP AI Speaking...' 
+                : callState === 'listening' 
+                ? 'Listening to your voice...' 
+                : 'Thinking...'}
+            </span>
           </div>
         </div>
 
-        {/* Right: Spoken Topics & Real-Time Call Transcript */}
-        <div className="lg:col-span-5 space-y-6">
-          {/* Quick Voice Discussion Starters */}
-          <div 
-            className={`p-5 rounded-3xl border space-y-3 doap-card ${
-              isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black shadow-sm'
+        {/* Central Neural Voice Orb */}
+        <div className="relative flex items-center justify-center my-4 z-10">
+          {/* Outer Pulsing Soundwave Rings */}
+          {isCallActive && (
+            <>
+              <div 
+                className="absolute w-44 h-44 rounded-full border border-white/20 animate-ping opacity-40 pointer-events-none"
+                style={{ animationDuration: callState === 'speaking' ? '1.2s' : '2.5s' }}
+              />
+              <div 
+                className="absolute w-56 h-56 rounded-full border border-white/10 animate-pulse opacity-30 pointer-events-none"
+              />
+            </>
+          )}
+
+          {/* Core Interactive Calling Orb Button */}
+          <button
+            onClick={isCallActive ? handleEndCall : handleStartCall}
+            className={`w-32 h-32 rounded-full flex flex-col items-center justify-center cursor-pointer transition-all duration-500 shadow-2xl hover:scale-105 active:scale-95 z-20 ${
+              isCallActive 
+                ? 'bg-rose-600 hover:bg-rose-500 text-white ring-8 ring-rose-500/20' 
+                : 'bg-white text-black hover:bg-neutral-100 ring-8 ring-white/10'
             }`}
           >
-            <div className="flex items-center justify-between border-b pb-2.5" style={{ borderColor: isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }}>
-              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-neutral-400">
-                1-Tap Voice Discussion Topics
-              </span>
-              <Sparkles size={13} style={{ color: accentHex }} />
-            </div>
+            {isCallActive ? (
+              <>
+                <PhoneOff size={32} className="animate-bounce" />
+                <span className="text-[10px] font-mono font-bold mt-1 uppercase">End Call</span>
+              </>
+            ) : (
+              <>
+                <Phone size={32} />
+                <span className="text-[10px] font-mono font-bold mt-1 uppercase">Start Call</span>
+              </>
+            )}
+          </button>
+        </div>
 
-            <div className="space-y-2">
-              {QUICK_VOICE_TOPICS.map((topic, idx) => (
+        {/* Live Subtitle / Transcript Pill */}
+        <div className="w-full max-w-xl text-center mt-8 min-h-[48px] flex items-center justify-center z-10">
+          {userTranscript ? (
+            <p className="text-sm font-medium text-neutral-300 italic animate-fade-in bg-white/5 px-4 py-2 rounded-2xl border border-white/10">
+              "{userTranscript}"
+            </p>
+          ) : aiSpokenText ? (
+            <p className="text-xs sm:text-sm font-medium text-neutral-300 line-clamp-2 px-4 py-2 rounded-2xl bg-neutral-900/80 border border-neutral-800">
+              {aiSpokenText}
+            </p>
+          ) : (
+            <p className="text-xs font-mono text-neutral-500">
+              {isCallActive ? "Speak naturally — DOAP AI answers in real-time" : "Tap Start Call for hands-free voice conversations"}
+            </p>
+          )}
+        </div>
+
+        {/* In-Call Controls Floating Bar */}
+        {isCallActive && (
+          <div className="flex items-center gap-4 mt-6 z-10 animate-fade-in">
+            <button
+              onClick={toggleMute}
+              className={`p-3 rounded-full border transition-all cursor-pointer ${
+                isMuted 
+                  ? 'bg-rose-500/20 border-rose-500/40 text-rose-300' 
+                  : 'bg-neutral-900 border-neutral-700 text-neutral-300 hover:text-white'
+              }`}
+              title={isMuted ? "Unmute Microphone" : "Mute Microphone"}
+            >
+              {isMuted ? <MicOff size={18} /> : <Mic size={18} />}
+            </button>
+
+            {/* Voice Persona Selector */}
+            <div className="flex items-center gap-1.5 p-1 rounded-full bg-neutral-900 border border-neutral-800 text-xs">
+              {['aria', 'jenny', 'samantha'].map(persona => (
                 <button
-                  key={idx}
-                  onClick={() => {
-                    if (!isCallActive) setIsCallActive(true);
-                    handleUserSpeechComplete(topic.prompt);
-                  }}
-                  className={`w-full p-2.5 rounded-xl border text-left text-xs font-semibold transition-all flex items-center justify-between group cursor-pointer ${
-                    isDarkMode 
-                      ? 'bg-neutral-900/60 border-neutral-800 hover:border-neutral-700 hover:bg-neutral-900 text-neutral-200' 
-                      : 'bg-neutral-50 border-neutral-200 hover:border-neutral-300 text-neutral-800'
+                  key={persona}
+                  onClick={() => setSelectedVoicePersona(persona)}
+                  className={`px-3 py-1 rounded-full text-[11px] font-mono capitalize transition-all cursor-pointer ${
+                    selectedVoicePersona === persona 
+                      ? 'bg-white text-black font-bold' 
+                      : 'text-neutral-400 hover:text-white'
                   }`}
                 >
-                  <div className="flex items-center gap-2 truncate">
-                    <Headphones size={13} style={{ color: accentHex }} className="shrink-0" />
-                    <span className="truncate">{topic.title}</span>
-                  </div>
-                  <ArrowRight size={13} className="shrink-0 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                  {persona === 'aria' ? 'Aria (Studio)' : persona === 'jenny' ? 'Rachel' : 'Sarah'}
                 </button>
               ))}
             </div>
           </div>
+        )}
+      </div>
 
-          {/* Live Call Transcript Log */}
-          <div 
-            className={`p-5 rounded-3xl border space-y-3 flex flex-col h-[340px] doap-card ${
-              isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black shadow-sm'
-            }`}
-          >
-            <div className="flex items-center justify-between border-b pb-2.5 shrink-0" style={{ borderColor: isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }}>
-              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-neutral-400">
-                Live Conversation Audio Log
-              </span>
-              <span className="text-[10px] font-mono text-neutral-500">
-                {conversationLogs.length} Exchanges
-              </span>
-            </div>
-
-            <div className="flex-1 overflow-y-auto space-y-3 font-sans text-xs scrollbar-thin pr-1">
-              {conversationLogs.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center text-neutral-500 space-y-1">
-                  <Radio size={24} className="opacity-30 mb-1" />
-                  <p className="font-mono text-[11px]">No spoken exchanges yet.</p>
-                  <p className="text-[10px]">Start call or speak into microphone.</p>
-                </div>
-              ) : (
-                conversationLogs.map((log, idx) => (
-                  <div 
-                    key={idx}
-                    className={`p-3 rounded-2xl border space-y-1 ${
-                      log.role === 'user' 
-                        ? (isDarkMode ? 'bg-neutral-900 border-neutral-800 ml-4' : 'bg-neutral-100 border-neutral-300 ml-4')
-                        : (isDarkMode ? 'bg-black/60 border-neutral-800 mr-4' : 'bg-neutral-50 border-neutral-200 mr-4')
-                    }`}
-                  >
-                    <div className="flex items-center justify-between text-[10px] font-mono text-neutral-400">
-                      <span className="font-bold flex items-center gap-1">
-                        {log.role === 'user' ? <User size={10} /> : <Bot size={10} />}
-                        <span>{log.role === 'user' ? 'You' : 'DOAP Voice AI'}</span>
-                      </span>
-                      <span>{log.time}</span>
-                    </div>
-                    <p className={`text-xs leading-relaxed ${isDarkMode ? 'text-neutral-200' : 'text-neutral-800'}`}>
-                      {log.text}
-                    </p>
-                  </div>
-                ))
-              )}
-              <div ref={logsEndRef} />
-            </div>
-
-            {/* Fallback Question Input */}
-            <form onSubmit={handleManualSubmit} className="pt-2 border-t flex items-center gap-2 shrink-0" style={{ borderColor: isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }}>
-              <input 
-                type="text"
-                value={manualInput}
-                onChange={(e) => setManualInput(e.target.value)}
-                placeholder="Ask voice tutor by typing..."
-                className="flex-1 px-3 py-2 rounded-xl border text-xs focus:outline-none bg-neutral-900 border-neutral-800 text-white"
-              />
-              <button
-                type="submit"
-                className="px-3.5 py-2 rounded-xl font-bold text-xs shadow cursor-pointer hover:opacity-90 shrink-0"
-                style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
-              >
-                <Send size={12} />
-              </button>
-            </form>
-          </div>
+      {/* Quick Voice Discussion Starter Chips */}
+      <div className="space-y-3">
+        <span className="text-xs font-mono uppercase tracking-wider text-neutral-500 block">
+          💡 1-Tap Voice Discussion Topics
+        </span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          {QUICK_VOICE_TOPICS.map((topic, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                if (!isCallActive) setIsCallActive(true);
+                handleUserSpeechComplete(topic.prompt);
+              }}
+              className={`p-3.5 rounded-2xl border text-left flex items-center justify-between gap-3 transition-all cursor-pointer hover-glide ${
+                isDarkMode 
+                  ? 'bg-[#111111] border-neutral-800 text-neutral-200 hover:border-neutral-700 hover:text-white' 
+                  : 'bg-white border-neutral-200 text-neutral-800 hover:border-neutral-300'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Headphones size={15} style={{ color: accentHex }} className="shrink-0" />
+                <span className="text-xs font-semibold">{topic.title}</span>
+              </div>
+              <ArrowRight size={13} className="text-neutral-500 shrink-0" />
+            </button>
+          ))}
         </div>
       </div>
+
+      {/* Manual Input Fallback */}
+      <form onSubmit={handleManualSubmit} className="relative flex items-center gap-2">
+        <input 
+          type="text"
+          placeholder="Or type what you want to say in voice..."
+          value={manualInput}
+          onChange={(e) => setManualInput(e.target.value)}
+          className="w-full pl-4 pr-12 py-3 rounded-2xl border text-xs sm:text-sm focus:outline-none transition-all shadow-inner"
+          style={{
+            backgroundColor: 'var(--doap-surface-sec, #0c0c0c)',
+            borderColor: 'var(--doap-border)',
+            color: 'var(--doap-text-prim)'
+          }}
+        />
+        <button
+          type="submit"
+          disabled={!manualInput.trim()}
+          className="absolute right-2.5 top-2.5 w-8 h-8 rounded-xl flex items-center justify-center transition-all cursor-pointer disabled:opacity-40"
+          style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
+        >
+          <Send size={14} />
+        </button>
+      </form>
     </div>
   );
 };
