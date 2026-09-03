@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TrendingUp, ChevronRight, Target, Zap, Award, ArrowRight, Play, Code, BookOpen, Video, MessageSquare, ExternalLink } from 'lucide-react';
 import { WeakAreasAnalyzer } from '../components/Common/WeakAreasAnalyzer';
+import { IPArmySuite } from '../components/JobReadiness/IPArmySuite';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -346,6 +347,9 @@ export const JobReadiness = () => {
             Click any task to execute directly
           </span>
         </div>
+
+        {/* IP Army Autonomous Career Agents Suite (LinkedIn Agent + Rez-AI) */}
+        <IPArmySuite userName={profile?.displayName || 'Pratik'} isDarkMode={isDarkMode} accentHex={accentHex} />
 
         {/* Role Tabs */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">

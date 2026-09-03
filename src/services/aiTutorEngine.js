@@ -13,6 +13,7 @@ import {
   JAVA_BANK, 
   DSA_NUMERICALS_BANK 
 } from '../data/questionBanks';
+import { memoryBrain } from './memoryBrain';
 
 const defaultGk = [
   'gsk',
@@ -134,8 +135,12 @@ ${q.answer}
     (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GROQ_API_KEY && import.meta.env.VITE_GROQ_API_KEY.startsWith('gsk_')) ? import.meta.env.VITE_GROQ_API_KEY : null
   ].filter(Boolean)));
 
+  const workingMemory = memoryBrain.getSynthesizedWorkingMemory();
+
   const systemInstruction = options.voiceMode
     ? `You are DOAP AI, ${userName}'s trusted best friend and personal ultra-smart voice companion.
+
+${workingMemory}
 
 CRITICAL VOICE INTELLIGENCE & SPOKEN CADENCE RULES:
 1. ALWAYS GENERATE NATURAL, CRISP, SPOKEN ENGLISH:
@@ -153,6 +158,8 @@ CRITICAL VOICE INTELLIGENCE & SPOKEN CADENCE RULES:
    - Be engaging, warm, supportive, and sharp ("Hey buddy!", "Got it, ${userName}!", "Great question!").
    - Keep spoken answers punchy and conversational: 2 to 4 sentences for quick questions, or a concise explanatory paragraph for deeper concepts.`
     : `You are DOAP AI, ${userName}'s trusted best friend, coding buddy, and personal ultra-smart AI assistant.
+
+${workingMemory}
 
 CRITICAL RULE — STRICT LANGUAGE MATCHING (Same In, Same Out):
 You must ALWAYS respond in the EXACT SAME LANGUAGE and dialect that ${userName} used in their latest message:

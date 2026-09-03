@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
-import { Code, CheckCircle2, Circle, Play, ArrowRight, X, Terminal, Sparkles, Check, AlertCircle, RefreshCw, ExternalLink } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Code, CheckCircle2, Circle, Play, ArrowRight, X, Terminal, Sparkles, Check, AlertCircle, RefreshCw, ExternalLink, Bot, Zap } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { pushSolutionToGitHub } from '../services/githubService';
+import { runCodemakerAgent } from '../services/ipArmyAgents';
+import { localConnector } from '../services/localSystemConnector';
+import { memoryBrain } from '../services/memoryBrain';
 
 const PROBLEM_DEFINITIONS = [
   {
@@ -198,6 +201,41 @@ export const CodingPractice = () => {
   const [isPushingToGit, setIsPushingToGit] = useState(false);
   const [gitPushResult, setGitPushResult] = useState(null);
 
+  // IP Prime OS Local Connector State
+  const [localStatus, setLocalStatus] = useState({ isConnected: false });
+
+  // IP Codemaker Co-Pilot State
+  const [codemakerOutput, setCodemakerOutput] = useState('');
+  const [isCodemakerLoading, setIsCodemakerLoading] = useState(false);
+  const [codemakerMode, setCodemakerMode] = useState(null);
+
+  useEffect(() => {
+    const unsub = localConnector.subscribe(status => {
+      setLocalStatus(status);
+    });
+    return () => unsub();
+  }, []);
+
+  const handleRunCodemaker = async (mode) => {
+    if (!activeProblem) return;
+    setIsCodemakerLoading(true);
+    setCodemakerMode(mode);
+    setCodemakerOutput('');
+    try {
+      const res = await runCodemakerAgent({
+        code,
+        language: selectedLanguage,
+        problemTitle: activeProblem.title,
+        mode
+      });
+      setCodemakerOutput(res);
+    } catch (e) {
+      setCodemakerOutput('Error getting insights from IP Codemaker Agent.');
+    } finally {
+      setIsCodemakerLoading(false);
+    }
+  };
+
   const categories = [
     "All", "Arrays", "Strings", "Linked Lists", "Trees", "Graphs", 
     "Dynamic Programming", "Sorting", "Searching"
@@ -291,7 +329,34 @@ public:
     setIsRunning(true);
     setRunResult(null);
 
-    // If Python, C++, or Java: run via Judge0 RapidAPI engine
+    // 1. If IP Prime OS is connected locally, run natively on your machine with 0ms latency!
+    if (localStatus.isConnected) {
+      try {
+        const localRes = await localConnector.executeLocalCode(selectedLanguage, code);
+        if (localRes) {
+          const isSuccess = localRes.exitCode === 0;
+          setRunResult({
+            success: isSuccess,
+            allPassed: isSuccess,
+            totalTests: 1,
+            passedCount: isSuccess ? 1 : 0,
+            time: localRes.duration,
+            isMultiLang: true,
+            runtime: localRes.runtime,
+            stdout: localRes.stdout || (isSuccess ? 'Executed natively on your Windows PC via IP Prime OS!' : ''),
+            stderr: localRes.stderr || null
+          });
+          if (isSuccess && activeProblem) {
+            memoryBrain.updateKnowledge(activeProblem.title, 'mastered');
+            memoryBrain.recordEpisodic(`Solved Problem: ${activeProblem.title}`, `Mastered ${activeProblem.category} algorithm in ${selectedLanguage}.`);
+          }
+          setIsRunning(false);
+          return;
+        }
+      } catch (e) {}
+    }
+
+    // 2. If Python, C++, or Java: run via Judge0 RapidAPI engine
     if (selectedLanguage !== 'javascript') {
       const languageIds = {
         python: 71,
@@ -401,12 +466,16 @@ public:
           tests: testResults
         });
 
-        // If all tests passed, save to cloud progress
+        // If all tests passed, save to cloud progress and 8-layer memory brain
         if (allPassed) {
           if (!solvedProblems.includes(activeProblem.id)) {
             const updated = [...solvedProblems, activeProblem.id];
             updateUserProgress({ solvedProblems: updated });
+            memoryBrain.updateKnowledge(activeProblem.title, 'mastered');
+            memoryBrain.recordEpisodic(`Solved Challenge: ${activeProblem.title}`, `Mastered ${activeProblem.category} problem in ${selectedLanguage}.`);
           }
+        } else {
+          memoryBrain.recordWeakness(`${activeProblem.title} (${activeProblem.category})`);
         }
       } catch (err) {
         setRunResult({
@@ -579,12 +648,83 @@ public:
                   ))}
                 </div>
 
-                {selectedLanguage !== 'javascript' && (
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    Judge0 Sandbox Active
+                <div className="flex items-center gap-2">
+                  {localStatus.isConnected ? (
+                    <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 flex items-center gap-1.5 font-bold shadow-sm shadow-cyan-500/10">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                      IP Prime Native OS (0ms)
+                    </span>
+                  ) : (
+                    selectedLanguage !== 'javascript' && (
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        Judge0 Sandbox Active
+                      </span>
+                    )
+                  )}
+                </div>
+              </div>
+
+              {/* IP Codemaker Co-Pilot Action Bar */}
+              <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-black/60 border border-neutral-800 text-xs">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-bold flex items-center gap-1">
+                    <Bot size={11} /> IP Codemaker
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleRunCodemaker('optimize')}
+                    disabled={isCodemakerLoading}
+                    className="px-2.5 py-1 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-cyan-300 border border-neutral-700/60 flex items-center gap-1 cursor-pointer transition-colors text-[11px]"
+                  >
+                    <Zap size={11} className="text-amber-400" />
+                    <span>Optimize O(N)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRunCodemaker('find_bugs')}
+                    disabled={isCodemakerLoading}
+                    className="px-2.5 py-1 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-cyan-300 border border-neutral-700/60 flex items-center gap-1 cursor-pointer transition-colors text-[11px]"
+                  >
+                    <AlertCircle size={11} className="text-rose-400" />
+                    <span>Find Edge Bugs</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRunCodemaker('tests')}
+                    disabled={isCodemakerLoading}
+                    className="px-2.5 py-1 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-cyan-300 border border-neutral-700/60 flex items-center gap-1 cursor-pointer transition-colors text-[11px]"
+                  >
+                    <Terminal size={11} className="text-emerald-400" />
+                    <span>Generate Tests</span>
+                  </button>
+                </div>
+                {isCodemakerLoading && (
+                  <span className="text-[10px] font-mono text-cyan-400 animate-pulse flex items-center gap-1">
+                    <Sparkles size={11} className="animate-spin" /> IP Agent analyzing...
                   </span>
                 )}
               </div>
+
+              {/* Collapsible Codemaker Output Drawer */}
+              {codemakerOutput && (
+                <div className="p-3.5 rounded-2xl bg-[#090b10] border border-cyan-500/30 text-xs space-y-2 animate-fade-in shadow-xl">
+                  <div className="flex items-center justify-between border-b border-neutral-800 pb-2">
+                    <span className="font-mono font-bold text-cyan-400 flex items-center gap-1.5">
+                      <Bot size={13} /> IP Codemaker Co-Pilot ({codemakerMode}):
+                    </span>
+                    <button 
+                      type="button" 
+                      onClick={() => setCodemakerOutput('')} 
+                      className="text-neutral-400 hover:text-white cursor-pointer"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                  <div className="text-xs text-neutral-200 whitespace-pre-wrap leading-relaxed max-h-56 overflow-y-auto font-mono">
+                    {codemakerOutput}
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-xs text-neutral-400">
