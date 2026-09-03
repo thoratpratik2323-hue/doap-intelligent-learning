@@ -4,18 +4,14 @@ import {
   MicOff, 
   Phone, 
   PhoneOff, 
-  Sparkles, 
   MessageSquare, 
   Radio, 
   Send, 
   Clock, 
   ArrowRight, 
   Headphones, 
-  Maximize2, 
-  Minimize2, 
   Cpu, 
   Activity, 
-  ShieldCheck, 
   Zap 
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
@@ -31,7 +27,6 @@ const playBootChime = () => {
     const ctx = new AudioCtx();
     const now = ctx.currentTime;
 
-    // Harmonic Bass Pulse
     const osc1 = ctx.createOscillator();
     const gain1 = ctx.createGain();
     osc1.type = 'sine';
@@ -44,7 +39,6 @@ const playBootChime = () => {
     osc1.start(now);
     osc1.stop(now + 0.5);
 
-    // Arc-Reactor High Energy Resonance
     const osc2 = ctx.createOscillator();
     const gain2 = ctx.createGain();
     osc2.type = 'triangle';
@@ -90,11 +84,9 @@ export const VoiceTutor = () => {
   const [isCallActive, setIsCallActive] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
-  const [isHudFullscreen, setIsHudFullscreen] = useState(false);
 
   const [userTranscript, setUserTranscript] = useState('');
   const [aiSpokenText, setAiSpokenText] = useState('');
-  const [conversationLogs, setConversationLogs] = useState([]);
   const [manualInput, setManualInput] = useState('');
   const [isSpeechSupported, setIsSpeechSupported] = useState(true);
   const [selectedVoicePersona, setSelectedVoicePersona] = useState('aria'); // 'aria' | 'jenny' | 'samantha'
@@ -108,8 +100,7 @@ export const VoiceTutor = () => {
     { title: "Explain Dynamic Programming", prompt: "Explain Dynamic Programming in simple terms with an intuitive analogy." },
     { title: "System Design Scalability", prompt: "How do big tech architectures like Netflix and Uber handle massive scale?" },
     { title: "Mock FAANG Interview", prompt: "Give me a technical interview question on arrays and evaluate my thought process." },
-    { title: "Time Complexity (Big O)", prompt: "Teach me how to analyze Time and Space complexity step-by-step." },
-    { title: "Clean Code Principles", prompt: "What are the most essential clean code practices for modern software engineers?" }
+    { title: "Time Complexity (Big O)", prompt: "Teach me how to analyze Time and Space complexity step-by-step." }
   ];
 
   // Initialize Speech Recognition
@@ -203,7 +194,6 @@ export const VoiceTutor = () => {
 
     const welcome = `Mark L-II online. Hello ${userName}! All neural systems optimal. How can I assist your engineering today?`;
     setAiSpokenText(welcome);
-    setConversationLogs([{ sender: 'ai', text: welcome, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
 
     speakResponse(welcome, () => {
       if (isMountedRef.current && !isMuted) {
@@ -237,7 +227,6 @@ export const VoiceTutor = () => {
     } catch(err) {}
   };
 
-  // Mark-LII Action Plugin Engine: Detects voice commands & triggers actions
   const executeVoicePlugins = (cmd) => {
     const cleanCmd = cmd.toLowerCase().trim();
     if (cleanCmd.includes('open coding') || cleanCmd.includes('go to coding') || cleanCmd.includes('coding practice')) {
@@ -263,16 +252,8 @@ export const VoiceTutor = () => {
     if (!spokenPrompt || !isMountedRef.current) return;
     stopListening();
     setCallState('thinking');
-
-    const newLog = {
-      sender: 'user',
-      text: spokenPrompt,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    setConversationLogs(prev => [...prev, newLog]);
     setUserTranscript('');
 
-    // Check if user requested an automated system action
     const actionResult = executeVoicePlugins(spokenPrompt);
     if (actionResult) {
       setAiSpokenText(actionResult);
@@ -293,13 +274,6 @@ export const VoiceTutor = () => {
         .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
         .trim();
 
-      const aiLog = {
-        sender: 'ai',
-        text: response,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-
-      setConversationLogs(prev => [...prev, aiLog]);
       setAiSpokenText(speechCleaned);
 
       speakResponse(speechCleaned, () => {
@@ -386,87 +360,50 @@ export const VoiceTutor = () => {
   };
 
   return (
-    <div className={`max-w-5xl mx-auto px-4 py-6 md:py-8 space-y-8 animate-fade-in select-none ${
-      isHudFullscreen ? 'fixed inset-0 z-50 bg-[#050505] p-6 max-w-none overflow-y-auto' : ''
-    }`}>
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 flex items-center gap-1.5 shadow-sm">
-              <Zap size={11} className={isCallActive ? "animate-bounce text-cyan-300" : ""} />
-              <span>Mark L-II • Neural Voice Engine</span>
-            </span>
-            {isCallActive && (
-              <span className="text-[11px] font-mono text-neutral-400 flex items-center gap-1">
-                <Clock size={11} /> {formatDuration(callDuration)}
-              </span>
-            )}
+    <div className="h-full w-full flex-1 flex flex-col justify-between p-4 sm:p-6 select-none bg-[#05070c] text-white animate-fade-in relative overflow-hidden">
+      {/* 1. Minimalist Sleek Top Bar (No Header Clutter) */}
+      <div className="flex items-center justify-between z-20 pb-2 border-b border-white/10">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono font-bold">
+            <Zap size={13} className={isCallActive ? "animate-bounce text-cyan-300" : ""} />
+            <span>Mark L-II Neural Core</span>
           </div>
-          <h1 className={`text-3xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-[#0a0a0a]'}`}>
-            Voice Assistant
-          </h1>
-          <p className={`text-xs font-mono uppercase tracking-wider ${isDarkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>
-            JARVIS-inspired interactive audio HUD powered by 120B Super-Brain
-          </p>
+
+          <div className="hidden sm:flex items-center gap-2 text-[11px] font-mono text-neutral-400">
+            <Activity size={12} className="text-cyan-400 animate-pulse" />
+            <span>44.1 kHz</span>
+            <span>•</span>
+            <Cpu size={12} className="text-cyan-400" />
+            <span>{isCallActive ? "ACTIVE" : "STANDBY"}</span>
+          </div>
+
+          {isCallActive && (
+            <span className="text-xs font-mono text-cyan-300 flex items-center gap-1 bg-cyan-950/40 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
+              <Clock size={11} /> {formatDuration(callDuration)}
+            </span>
+          )}
         </div>
 
-        {/* Top Actions: HUD Fullscreen & Text Chat */}
-        <div className="flex items-center gap-2.5 self-start sm:self-auto">
-          <button
-            onClick={() => setIsHudFullscreen(!isHudFullscreen)}
-            className="px-3.5 py-2 rounded-xl text-xs font-mono border transition-all flex items-center gap-1.5 cursor-pointer hover:opacity-80"
-            style={{ 
-              backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-              borderColor: 'var(--doap-border)' 
-            }}
-            title="Toggle Mark-LII Fullscreen HUD Mode"
-          >
-            {isHudFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
-            <span>{isHudFullscreen ? 'Exit HUD' : 'HUD Mode'}</span>
-          </button>
-
-          <button
-            onClick={() => navigateTo('/ai-tutor')}
-            className="px-4 py-2 rounded-xl text-xs font-semibold border transition-all flex items-center gap-2 cursor-pointer hover:opacity-80"
-            style={{ 
-              backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-              borderColor: 'var(--doap-border)' 
-            }}
-          >
-            <MessageSquare size={14} style={{ color: accentHex }} />
-            <span>Text AI Chat</span>
-          </button>
-        </div>
+        {/* Switch to Text AI Chat */}
+        <button
+          onClick={() => navigateTo('/ai-tutor')}
+          className="px-3.5 py-1.5 rounded-xl text-xs font-semibold border border-white/15 bg-white/5 hover:bg-white/10 transition-all flex items-center gap-2 cursor-pointer"
+        >
+          <MessageSquare size={13} className="text-cyan-400" />
+          <span>Text AI Chat</span>
+        </button>
       </div>
 
-      {/* Main Mark-LII Arc-Reactor Stage */}
-      <div 
-        className="p-8 sm:p-12 rounded-3xl border flex flex-col items-center justify-center relative overflow-hidden transition-all shadow-2xl"
-        style={{ 
-          backgroundColor: '#07090e',
-          borderColor: isCallActive ? 'rgba(6,182,212,0.4)' : 'rgba(255,255,255,0.1)',
-          minHeight: isHudFullscreen ? '620px' : '440px'
-        }}
-      >
-        {/* Subtle Cyber Grid Lines & Arc Reactor Glow */}
+      {/* 2. Main Expansive Arc-Reactor Visualizer (Maximum Viewport Space) */}
+      <div className="flex-1 flex flex-col items-center justify-center relative my-4 overflow-hidden">
+        {/* Hypnotic Ambient Radial Glow */}
         <div 
-          className="absolute w-96 h-96 rounded-full blur-3xl opacity-25 pointer-events-none transition-all duration-700"
+          className="absolute w-[450px] h-[450px] rounded-full blur-3xl opacity-20 pointer-events-none transition-all duration-700"
           style={{
             backgroundColor: callState === 'speaking' ? '#06b6d4' : callState === 'listening' ? '#3b82f6' : callState === 'thinking' ? '#f59e0b' : '#6366f1',
-            transform: isCallActive ? 'scale(1.4)' : 'scale(0.8)'
+            transform: isCallActive ? 'scale(1.4)' : 'scale(0.85)'
           }}
         />
-
-        {/* Telemetry Corner Badges */}
-        <div className="absolute top-4 left-5 flex items-center gap-2 text-[10px] font-mono text-cyan-400/80">
-          <Activity size={12} className="animate-pulse" />
-          <span>FREQ: 44.1 KHZ • PROTOCOL: GEMINI-LII</span>
-        </div>
-        <div className="absolute top-4 right-5 flex items-center gap-2 text-[10px] font-mono text-cyan-400/80">
-          <Cpu size={12} />
-          <span>ARC CORE: {isCallActive ? "ACTIVE" : "STANDBY"}</span>
-        </div>
 
         {/* Status Pill */}
         <div className="mb-6 z-10">
@@ -480,37 +417,36 @@ export const VoiceTutor = () => {
             }`} />
             <span>
               {!isCallActive 
-                ? 'ARC CORE STANDBY — TAP TO ENGAGE' 
+                ? 'ARC REACTOR STANDBY — TAP TO ENGAGE' 
                 : callState === 'speaking' 
-                ? 'MARK-LII TRANSMITTING AUDIO...' 
+                ? 'TRANSMITTING AUDIO...' 
                 : callState === 'listening' 
-                ? 'RECEPTIVE • LISTENING TO VOICE...' 
+                ? 'LISTENING TO YOUR VOICE...' 
                 : 'SYNAPSE PROCESSING...'}
             </span>
           </div>
         </div>
 
-        {/* Arc-Reactor Futuristic SVG/Orb Visualizer */}
-        <div className="relative flex items-center justify-center my-6 z-10">
-          {/* Rotating Outer Reactor Tech Rings */}
+        {/* Rotating Concentric Arc-Reactor Rings */}
+        <div className="relative flex items-center justify-center my-4 z-10">
           <div 
-            className="absolute w-60 h-60 rounded-full border border-dashed border-cyan-500/30 pointer-events-none transition-all duration-700"
+            className="absolute w-72 h-72 sm:w-80 sm:h-80 rounded-full border border-dashed border-cyan-500/30 pointer-events-none transition-all duration-700"
             style={{ 
               animation: isCallActive ? 'spin 14s linear infinite' : 'none',
-              borderColor: isCallActive ? 'rgba(6,182,212,0.4)' : 'rgba(255,255,255,0.1)'
+              borderColor: isCallActive ? 'rgba(6,182,212,0.5)' : 'rgba(255,255,255,0.1)'
             }}
           />
 
           <div 
-            className="absolute w-52 h-52 rounded-full border border-cyan-400/20 pointer-events-none transition-all duration-700"
+            className="absolute w-60 h-60 sm:w-68 sm:h-68 rounded-full border border-cyan-400/20 pointer-events-none transition-all duration-700"
             style={{ 
-              animation: isCallActive ? 'spin 8s linear infinite reverse' : 'none'
+              animation: isCallActive ? 'spin 9s linear infinite reverse' : 'none'
             }}
           />
 
           {isCallActive && (
             <div 
-              className="absolute w-44 h-44 rounded-full border-2 border-cyan-400/40 animate-ping pointer-events-none"
+              className="absolute w-52 h-52 sm:w-60 sm:h-60 rounded-full border-2 border-cyan-400/40 animate-ping pointer-events-none"
               style={{ animationDuration: callState === 'speaking' ? '1.2s' : '2.4s' }}
             />
           )}
@@ -518,7 +454,7 @@ export const VoiceTutor = () => {
           {/* Central Glowing Reactor Core Button */}
           <button
             onClick={isCallActive ? handleEndCall : handleStartCall}
-            className={`w-36 h-36 rounded-full flex flex-col items-center justify-center cursor-pointer transition-all duration-500 shadow-2xl hover:scale-105 active:scale-95 z-20 ${
+            className={`w-40 h-40 sm:w-44 sm:h-44 rounded-full flex flex-col items-center justify-center cursor-pointer transition-all duration-500 shadow-2xl hover:scale-105 active:scale-95 z-20 ${
               isCallActive 
                 ? 'bg-gradient-to-tr from-cyan-600 to-blue-500 text-white ring-8 ring-cyan-500/20 shadow-cyan-500/50' 
                 : 'bg-neutral-900 text-white hover:bg-neutral-800 ring-8 ring-white/5 border border-white/20'
@@ -526,13 +462,13 @@ export const VoiceTutor = () => {
           >
             {isCallActive ? (
               <>
-                <PhoneOff size={34} className="animate-pulse" />
-                <span className="text-[10px] font-mono font-bold mt-1.5 uppercase tracking-wider text-cyan-100">Disengage</span>
+                <PhoneOff size={38} className="animate-pulse" />
+                <span className="text-xs font-mono font-bold mt-2 uppercase tracking-wider text-cyan-100">Disengage</span>
               </>
             ) : (
               <>
-                <Phone size={34} className="text-cyan-400" />
-                <span className="text-[10px] font-mono font-bold mt-1.5 uppercase tracking-wider text-cyan-400">Engage Core</span>
+                <Phone size={38} className="text-cyan-400" />
+                <span className="text-xs font-mono font-bold mt-2 uppercase tracking-wider text-cyan-400">Engage Core</span>
               </>
             )}
           </button>
@@ -540,14 +476,14 @@ export const VoiceTutor = () => {
 
         {/* Live Audio Equalizer Wave Bars */}
         {isCallActive && (
-          <div className="flex items-center gap-1.5 mt-2 h-7 z-10">
-            {[40, 70, 95, 60, 85, 100, 75, 50, 90, 65, 45].map((h, i) => (
+          <div className="flex items-center gap-1.5 mt-4 h-8 z-10">
+            {[35, 65, 90, 55, 80, 100, 70, 45, 85, 60, 40].map((h, i) => (
               <div 
                 key={i} 
-                className="w-1 rounded-full bg-cyan-400 transition-all duration-150"
+                className="w-1.5 rounded-full bg-cyan-400 transition-all duration-150"
                 style={{
                   height: callState === 'speaking' ? `${(h * (Math.sin(Date.now() / 200 + i) + 1.2)) / 2}%` : callState === 'listening' ? `${h * 0.35}%` : '4px',
-                  opacity: callState === 'speaking' ? 0.9 : 0.4
+                  opacity: callState === 'speaking' ? 0.95 : 0.4
                 }}
               />
             ))}
@@ -555,23 +491,23 @@ export const VoiceTutor = () => {
         )}
 
         {/* Live Subtitles & Captions */}
-        <div className="w-full max-w-xl text-center mt-6 min-h-[48px] flex items-center justify-center z-10">
+        <div className="w-full max-w-2xl text-center mt-6 min-h-[50px] flex items-center justify-center z-10 px-4">
           {userTranscript ? (
-            <p className="text-sm font-medium text-cyan-200 italic animate-fade-in bg-cyan-950/40 px-4 py-2 rounded-2xl border border-cyan-500/30">
+            <p className="text-sm sm:text-base font-medium text-cyan-200 italic animate-fade-in bg-cyan-950/40 px-5 py-2.5 rounded-2xl border border-cyan-500/30 shadow-lg">
               "{userTranscript}"
             </p>
           ) : aiSpokenText ? (
-            <p className="text-xs sm:text-sm font-medium text-neutral-200 line-clamp-2 px-4 py-2 rounded-2xl bg-black/60 border border-neutral-800">
+            <p className="text-xs sm:text-sm font-medium text-neutral-200 line-clamp-2 px-5 py-2.5 rounded-2xl bg-black/70 border border-neutral-800 shadow-lg">
               {aiSpokenText}
             </p>
           ) : (
             <p className="text-xs font-mono text-neutral-500">
-              {isCallActive ? "Speak naturally — say 'Open Coding' or ask any engineering query" : "Tap Engage Core for hands-free voice command & Socratic discussions"}
+              {isCallActive ? "Speak naturally — say 'Open Coding' or ask any engineering query" : "Tap Engage Core for hands-free voice command & live Socratic discussions"}
             </p>
           )}
         </div>
 
-        {/* Floating Controls Bar */}
+        {/* Floating In-Call Controls */}
         {isCallActive && (
           <div className="flex items-center gap-4 mt-6 z-10 animate-fade-in">
             <button
@@ -586,7 +522,6 @@ export const VoiceTutor = () => {
               {isMuted ? <MicOff size={18} /> : <Mic size={18} />}
             </button>
 
-            {/* Voice Persona Selector */}
             <div className="flex items-center gap-1.5 p-1 rounded-full bg-neutral-900 border border-neutral-800 text-xs">
               {['aria', 'jenny', 'samantha'].map(persona => (
                 <button
@@ -606,12 +541,9 @@ export const VoiceTutor = () => {
         )}
       </div>
 
-      {/* Quick Voice Discussion Starter Chips */}
-      <div className="space-y-3">
-        <span className="text-xs font-mono uppercase tracking-wider text-neutral-500 block">
-          ⚡ Mark-LII Quick Voice Discussion Topics
-        </span>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+      {/* 3. Bottom Starter Topics & Fast Text Transmission */}
+      <div className="space-y-2.5 z-10 pt-2 border-t border-white/10">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           {QUICK_VOICE_TOPICS.map((topic, idx) => (
             <button
               key={idx}
@@ -619,45 +551,34 @@ export const VoiceTutor = () => {
                 if (!isCallActive) setIsCallActive(true);
                 handleUserSpeechComplete(topic.prompt);
               }}
-              className={`p-3.5 rounded-2xl border text-left flex items-center justify-between gap-3 transition-all cursor-pointer hover-glide ${
-                isDarkMode 
-                  ? 'bg-[#111111] border-neutral-800 text-neutral-200 hover:border-cyan-500/40 hover:text-white' 
-                  : 'bg-white border-neutral-200 text-neutral-800 hover:border-neutral-300'
-              }`}
+              className="p-2.5 rounded-xl border border-white/10 bg-white/5 hover:border-cyan-500/40 hover:bg-white/10 text-left flex items-center justify-between gap-2 transition-all cursor-pointer"
             >
-              <div className="flex items-center gap-2.5">
-                <Headphones size={15} style={{ color: '#06b6d4' }} className="shrink-0" />
-                <span className="text-xs font-semibold">{topic.title}</span>
+              <div className="flex items-center gap-2 truncate">
+                <Headphones size={13} className="text-cyan-400 shrink-0" />
+                <span className="text-[11px] font-medium truncate">{topic.title}</span>
               </div>
-              <ArrowRight size={13} className="text-neutral-500 shrink-0" />
+              <ArrowRight size={11} className="text-neutral-500 shrink-0" />
             </button>
           ))}
         </div>
-      </div>
 
-      {/* Manual Input Fallback */}
-      <form onSubmit={handleManualSubmit} className="relative flex items-center gap-2">
-        <input 
-          type="text"
-          placeholder="Or type what you want to transmit to Mark-LII..."
-          value={manualInput}
-          onChange={(e) => setManualInput(e.target.value)}
-          className="w-full pl-4 pr-12 py-3 rounded-2xl border text-xs sm:text-sm focus:outline-none transition-all shadow-inner"
-          style={{
-            backgroundColor: 'var(--doap-surface-sec, #0c0c0c)',
-            borderColor: 'var(--doap-border)',
-            color: 'var(--doap-text-prim)'
-          }}
-        />
-        <button
-          type="submit"
-          disabled={!manualInput.trim()}
-          className="absolute right-2.5 top-2.5 w-8 h-8 rounded-xl flex items-center justify-center transition-all cursor-pointer disabled:opacity-40"
-          style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
-        >
-          <Send size={14} />
-        </button>
-      </form>
+        <form onSubmit={handleManualSubmit} className="relative flex items-center gap-2">
+          <input 
+            type="text"
+            placeholder="Type voice query manually..."
+            value={manualInput}
+            onChange={(e) => setManualInput(e.target.value)}
+            className="w-full pl-4 pr-12 py-2.5 rounded-xl border border-white/15 bg-white/5 text-xs focus:outline-none focus:border-cyan-500 transition-all text-white placeholder:text-neutral-500"
+          />
+          <button
+            type="submit"
+            disabled={!manualInput.trim()}
+            className="absolute right-2 top-2 w-7 h-7 rounded-lg flex items-center justify-center bg-cyan-400 text-black font-bold cursor-pointer disabled:opacity-30"
+          >
+            <Send size={13} />
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
