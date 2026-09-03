@@ -673,6 +673,7 @@ export const VoiceTutor = () => {
                 {/* Interrupt AI Button */}
                 <button
                   onClick={() => {
+                    stopElevenLabsAudio();
                     if (synthRef.current) synthRef.current.cancel();
                     startListening();
                   }}
