@@ -35,53 +35,11 @@ export const Home = () => {
         </p>
       </div>
 
-      {/* Main Action Cards */}
-      <div className="space-y-3 max-w-2xl mx-auto">
-        {actions.map((act, index) => {
-          const Icon = act.icon;
-          return (
-            <button
-              key={index}
-              onClick={() => navigateTo(act.path)}
-              className={`w-full p-4.5 rounded-full flex items-center justify-between transition-all border cursor-pointer group ${
-                isDarkMode 
-                  ? 'bg-[#111111] border-neutral-800 text-white hover:bg-neutral-900 hover:border-neutral-700' 
-                  : 'bg-white border-neutral-200 text-black hover:bg-neutral-50 hover:border-neutral-300'
-              }`}
-            >
-              <div className="flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                  isDarkMode ? 'bg-neutral-800 text-white' : 'bg-neutral-100 text-black'
-                }`}>
-                  <Icon size={18} />
-                </div>
-                <div className="text-left">
-                  <h3 className="font-bold text-base leading-snug">
-                    {act.title}
-                  </h3>
-                  <p className={`text-xs font-normal ${
-                    isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
-                  }`}>
-                    {act.desc}
-                  </p>
-                </div>
-              </div>
-
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors mr-1 ${
-                isDarkMode ? 'text-neutral-400 group-hover:text-white' : 'text-neutral-500 group-hover:text-black'
-              }`}>
-                <ArrowRight size={18} />
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Bottom 2 Feature Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-2xl mx-auto pt-2">
+      {/* Top 2 Feature Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-2xl mx-auto">
         {/* Continue Learning Card */}
-        <div className={`p-6 rounded-3xl border space-y-4 flex flex-col justify-between transition-colors ${
-          isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
+        <div className={`p-6 rounded-3xl border space-y-4 flex flex-col justify-between transition-colors doap-card ${
+          isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black shadow-sm'
         }`}>
           <div className="space-y-2">
             <span className={`text-[11px] font-mono uppercase tracking-widest block ${
@@ -122,8 +80,8 @@ export const Home = () => {
         </div>
 
         {/* Today's Focus Card */}
-        <div className={`p-6 rounded-3xl border space-y-4 flex flex-col justify-between transition-colors ${
-          isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
+        <div className={`p-6 rounded-3xl border space-y-4 flex flex-col justify-between transition-colors doap-card ${
+          isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black shadow-sm'
         }`}>
           <div className="space-y-2">
             <span className={`text-[11px] font-mono uppercase tracking-widest block ${
@@ -161,6 +119,48 @@ export const Home = () => {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Main Action Card (Ask DOAP below cards) */}
+      <div className="space-y-3 max-w-2xl mx-auto pt-2">
+        {actions.map((act, index) => {
+          const Icon = act.icon;
+          return (
+            <button
+              key={index}
+              onClick={() => navigateTo(act.path)}
+              className={`w-full p-4.5 rounded-full flex items-center justify-between transition-all border cursor-pointer group doap-card ${
+                isDarkMode 
+                  ? 'bg-[#111111] border-neutral-800 text-white hover:bg-neutral-900 hover:border-neutral-700' 
+                  : 'bg-white border-neutral-200 text-black hover:bg-neutral-50 hover:border-neutral-300 shadow-sm'
+              }`}
+            >
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                  isDarkMode ? 'bg-neutral-800 text-white' : 'bg-neutral-100 text-black'
+                }`}>
+                  <Icon size={18} />
+                </div>
+                <div className="text-left">
+                  <h3 className="font-bold text-base leading-snug">
+                    {act.title}
+                  </h3>
+                  <p className={`text-xs font-normal ${
+                    isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
+                  }`}>
+                    {act.desc}
+                  </p>
+                </div>
+              </div>
+
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors mr-1 ${
+                isDarkMode ? 'text-neutral-400 group-hover:text-white' : 'text-neutral-500 group-hover:text-black'
+              }`}>
+                <ArrowRight size={18} />
+              </div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
