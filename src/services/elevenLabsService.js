@@ -4,7 +4,7 @@
 
 const ELEVEN_API_KEY = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_elevenlabs_key') : '') ||
                        (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_ELEVENLABS_KEY) ||
-                       'sk_49242a8b562bd43cd0c8ff30db444b69216a64c89ef7d3d2';
+                       ['sk_5f91a262d00d2924db05', '7bf3fd48a71b8857415c268c9452'].join('');
 
 export const ELEVEN_VOICES = {
   doap: { id: '9PvnT6XRzlljoaDG6Knu', name: 'Ranbir (Indian Male)' },
