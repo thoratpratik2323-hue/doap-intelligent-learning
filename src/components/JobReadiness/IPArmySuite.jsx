@@ -93,7 +93,7 @@ export const IPArmySuite = ({ userName = 'Pratik', isDarkMode, accentHex }) => {
             }`}
           >
             <Linkedin size={14} />
-            <span>IP LinkedIn Agent</span>
+            <span>LinkedIn Agent</span>
           </button>
           <button
             onClick={() => setActiveTab('rezai')}
@@ -104,7 +104,7 @@ export const IPArmySuite = ({ userName = 'Pratik', isDarkMode, accentHex }) => {
             }`}
           >
             <FileText size={14} />
-            <span>IP Rez-AI Auditor</span>
+            <span>Resume Builder</span>
           </button>
         </div>
       </div>
@@ -166,13 +166,13 @@ export const IPArmySuite = ({ userName = 'Pratik', isDarkMode, accentHex }) => {
             className="w-full py-3 rounded-xl text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-black flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/10 transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-50"
           >
             <Sparkles size={14} className={isLiLoading ? "animate-spin" : ""} />
-            <span>{isLiLoading ? "IP LinkedIn Agent is Drafting..." : "Generate LinkedIn Content with IP Agent"}</span>
+            <span>{isLiLoading ? "LinkedIn Agent is Drafting..." : "Generate Outreach with LinkedIn Agent"}</span>
           </button>
 
           {liResult && (
             <div className="p-4 rounded-2xl bg-black/60 border border-neutral-800 space-y-3 animate-fade-in">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono text-cyan-400 font-bold">Generated Outreach Copy:</span>
+                <span className="text-xs font-mono text-cyan-400 font-bold">LinkedIn Agent Outreach Copy:</span>
                 <button
                   onClick={() => copyToClipboard(liResult, setLiCopied)}
                   className="px-3 py-1 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 cursor-pointer"
@@ -189,7 +189,7 @@ export const IPArmySuite = ({ userName = 'Pratik', isDarkMode, accentHex }) => {
         </div>
       )}
 
-      {/* Tab 2: IP Rez-AI Auditor */}
+      {/* Tab 2: Resume Builder */}
       {activeTab === 'rezai' && (
         <div className="space-y-4 animate-fade-in">
           <div>
@@ -219,13 +219,13 @@ export const IPArmySuite = ({ userName = 'Pratik', isDarkMode, accentHex }) => {
             className="w-full py-3 rounded-xl text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-black flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/10 transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-50"
           >
             <Sparkles size={14} className={isRezLoading ? "animate-spin" : ""} />
-            <span>{isRezLoading ? "IP Rez-AI is Auditing..." : "Audit Resume with IP Rez-AI"}</span>
+            <span>{isRezLoading ? "Resume Builder is Analyzing..." : "Build & Optimize Resume with AI"}</span>
           </button>
 
           {rezResult && (
             <div className="p-4 rounded-2xl bg-black/60 border border-neutral-800 space-y-3 animate-fade-in">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono text-cyan-400 font-bold">Rez-AI Audit Report & Upgrades:</span>
+                <span className="text-xs font-mono text-cyan-400 font-bold">Resume Builder Audit & Upgrades:</span>
                 <button
                   onClick={() => copyToClipboard(rezResult, setRezCopied)}
                   className="px-3 py-1 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 cursor-pointer"
