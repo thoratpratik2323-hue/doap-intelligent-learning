@@ -457,20 +457,7 @@ export const AITutor = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Speech Error Banner */}
-        {speechError && (
-          <div className="px-3 sm:px-5">
-            <div className="p-2.5 border rounded-xl text-xs font-mono flex items-center justify-between gap-2 bg-neutral-900 border-neutral-800 text-neutral-300">
-              <div className="flex items-center gap-2">
-                <AlertCircle size={14} className="shrink-0 text-rose-400" />
-                <span className="text-[11px]">{speechError}</span>
-              </div>
-              <button onClick={clearSpeechError} className="p-1 hover:opacity-80 cursor-pointer">
-                <X size={13} />
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Messages List Area End */}
 
         {/* Pinned Bottom Input Area */}
         <div 

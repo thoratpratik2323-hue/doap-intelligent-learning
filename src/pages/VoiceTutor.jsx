@@ -235,6 +235,65 @@ export const VoiceTutor = () => {
     }
   };
 
+  // Humanoid Female Voice Selector
+  const [selectedVoicePersona, setSelectedVoicePersona] = useState('aria'); // 'aria' | 'jenny' | 'samantha' | 'google_female'
+  const [availableVoices, setAvailableVoices] = useState([]);
+
+  // Load browser voices & filter humanoid female profiles
+  useEffect(() => {
+    const updateVoices = () => {
+      if (synthRef.current) {
+        const voices = synthRef.current.getVoices();
+        setAvailableVoices(voices);
+      }
+    };
+
+    updateVoices();
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = updateVoices;
+    }
+  }, []);
+
+  const getHumanoidFemaleVoice = (persona = selectedVoicePersona) => {
+    if (!synthRef.current) return null;
+    const voices = synthRef.current.getVoices();
+    if (!voices || voices.length === 0) return null;
+
+    // Female voice match filters based on OS and browser
+    let matchedVoice = null;
+
+    if (persona === 'aria') {
+      matchedVoice = voices.find(v => v.name.includes('Aria') || v.name.includes('Natural') && v.name.includes('Female'));
+    } else if (persona === 'jenny') {
+      matchedVoice = voices.find(v => v.name.includes('Jenny') || v.name.includes('Zira'));
+    } else if (persona === 'samantha') {
+      matchedVoice = voices.find(v => v.name.includes('Samantha') || v.name.includes('Victoria') || v.name.includes('Karen'));
+    } else {
+      matchedVoice = voices.find(v => v.name.includes('Google UK English Female') || (v.name.includes('Google') && v.lang.includes('en')));
+    }
+
+    // Fallback: search for any female / high-quality English voice
+    if (!matchedVoice) {
+      matchedVoice = voices.find(v => 
+        (v.name.toLowerCase().includes('female') || 
+         v.name.includes('Aria') || 
+         v.name.includes('Jenny') || 
+         v.name.includes('Samantha') || 
+         v.name.includes('Zira') ||
+         v.name.includes('Victoria') ||
+         v.name.includes('Karen') ||
+         v.name.includes('Google UK English Female')) && v.lang.startsWith('en')
+      );
+    }
+
+    // General English fallback
+    if (!matchedVoice) {
+      matchedVoice = voices.find(v => v.lang.startsWith('en'));
+    }
+
+    return matchedVoice;
+  };
+
   const speakResponse = (text, onComplete) => {
     if (!synthRef.current) {
       setCallState('listening');
@@ -246,13 +305,16 @@ export const VoiceTutor = () => {
     synthRef.current.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.05;
-    utterance.pitch = 1.0;
+    
+    // Natural Humanoid Female Audio Characteristics
+    utterance.rate = 1.04;      // Natural human conversational pacing
+    utterance.pitch = 1.10;     // Warm, friendly female vocal resonance
     utterance.lang = 'en-US';
 
-    const voices = synthRef.current.getVoices();
-    const naturalVoice = voices.find(v => (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha') || v.name.includes('Daniel')) && v.lang.includes('en'));
-    if (naturalVoice) utterance.voice = naturalVoice;
+    const femaleVoice = getHumanoidFemaleVoice(selectedVoicePersona);
+    if (femaleVoice) {
+      utterance.voice = femaleVoice;
+    }
 
     utterance.onend = () => {
       if (onComplete && isMountedRef.current) {
@@ -260,13 +322,24 @@ export const VoiceTutor = () => {
       }
     };
 
-    utterance.onerror = () => {
+    utterance.onerror = (e) => {
+      console.warn("Speech synthesis error:", e);
       if (onComplete && isMountedRef.current) {
         onComplete();
       }
     };
 
     synthRef.current.speak(utterance);
+  };
+
+  const testFemaleVoice = () => {
+    const testPhrases = {
+      aria: "Hi Pratik! I'm Aria, your humanoid voice mentor. I'm ready for our real-time coding call!",
+      jenny: "Hello! I'm Jenny. My neural voice is tuned for zero latency interview preparation.",
+      samantha: "Hey there! I'm Samantha. Let's discuss data structures and algorithms hands-free!",
+      google_female: "Greetings! I am DOAP Voice AI, ready to help you master system architecture."
+    };
+    speakResponse(testPhrases[selectedVoicePersona] || testPhrases.aria);
   };
 
   const toggleMute = () => {
@@ -326,6 +399,61 @@ export const VoiceTutor = () => {
           <MessageSquare size={14} style={{ color: accentHex }} />
           <span>Switch to Text AI Chat</span>
         </button>
+      </div>
+
+      {/* Humanoid Female Voice Selector Strip */}
+      <div 
+        className="p-3.5 sm:p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 doap-card"
+        style={{ 
+          backgroundColor: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+          borderColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' 
+        }}
+      >
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <Sparkles size={16} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold">Humanoid Female Voice:</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                Zero Latency Neural
+              </span>
+            </div>
+            <p className="text-[11px] text-neutral-400">Natural conversational human inflection & warm vocal pitch.</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 flex-wrap self-stretch sm:self-auto">
+          {[
+            { id: 'aria', label: '👩 Aria (Natural)' },
+            { id: 'jenny', label: '👩 Jenny (Crisp)' },
+            { id: 'samantha', label: '👩 Samantha (Expressive)' },
+            { id: 'google_female', label: '👩 Google Neural' }
+          ].map((persona) => (
+            <button
+              key={persona.id}
+              onClick={() => setSelectedVoicePersona(persona.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
+                selectedVoicePersona === persona.id
+                  ? (isDarkMode ? 'bg-white text-black font-bold border-white shadow' : 'bg-black text-white font-bold border-black shadow')
+                  : (isDarkMode ? 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white' : 'bg-neutral-100 border-neutral-300 text-neutral-600 hover:text-black')
+              }`}
+            >
+              {persona.label}
+            </button>
+          ))}
+
+          <button
+            onClick={testFemaleVoice}
+            className="px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors flex items-center gap-1.5 cursor-pointer hover:opacity-80"
+            style={{ borderColor: accentHex, color: accentHex }}
+            title="Hear Humanoid Voice Sample"
+          >
+            <Volume2 size={13} />
+            <span>Test Voice</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Voice Calling Studio Canvas */}
