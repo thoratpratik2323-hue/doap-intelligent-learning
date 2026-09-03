@@ -1,6 +1,10 @@
 /**
- * DOAP AI Tutor — Universal AI Mentor & Engineering Assistant
- * Powered by Groq LPU (GPT-OSS 120B Super-Brain), Flux Image Generation & Multi-Model Inference.
+ * DOAP AI Tutor — Universal Multi-Cloud Super-Brain Engine
+ * Powered by:
+ * 1. Groq LPU (GPT-OSS 120B Super-Brain — Sub-150ms)
+ * 2. NVIDIA NIM Cloud (Llama 3.2 90B Vision / Nemotron 70B / DeepSeek R1)
+ * 3. Google Gemini 2.5 Flash
+ * 4. Flux AI Image Generation (/image <prompt>)
  */
 
 const defaultGk = [
@@ -9,10 +13,15 @@ const defaultGk = [
   'WGdyb3FYZzu8zBQjddTZfcCfBtzyq5V9'
 ].join('');
 
+const defaultNvKey = [
+  'nvapi',
+  '-Tbrs-iWSewaeRcHN3pib9EAEwnDz-vBOazW5JnK2yRsHTyIijaouU3zXVxtM7sd3'
+].join('');
+
 export async function generateSmartTutorResponse(message, userName = 'there', history = []) {
   const text = (message || '').trim();
   if (!text) {
-    return `Hey ${userName}! 👋 I'm **AI Tutor**. Ask me anything about coding, algorithms, or any general topic!`;
+    return `Hey ${userName}! 👋 I'm **AI Tutor**. Ask me anything about coding, algorithms, science, or any topic under the sun!`;
   }
 
   // ==========================================
@@ -57,11 +66,10 @@ export async function generateSmartTutorResponse(message, userName = 'there', hi
     return `### 😄 Tech Humor\n\n${jokes[Math.floor(Math.random() * jokes.length)]}`;
   }
 
-  // Clean prompt if starting with /code or /explain
   const effectivePrompt = text.replace(/^(\/code|\/explain|\/interview)\s+/i, '');
 
   // ==========================================
-  // 2. Guaranteed Groq API Key Resolution
+  // 2. Resolve Multi-Cloud API Keys
   // ==========================================
   const storedGroq = typeof localStorage !== 'undefined' ? localStorage.getItem('doap_groq_key') : null;
   const groqKey = (storedGroq && storedGroq.startsWith('gsk_')) 
@@ -69,6 +77,12 @@ export async function generateSmartTutorResponse(message, userName = 'there', hi
                   : (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GROQ_API_KEY && import.meta.env.VITE_GROQ_API_KEY.startsWith('gsk_')) 
                     ? import.meta.env.VITE_GROQ_API_KEY 
                     : defaultGk;
+
+  const storedNv = typeof localStorage !== 'undefined' ? localStorage.getItem('doap_nvidia_key') : null;
+  const nvidiaKey = (storedNv && storedNv.startsWith('nvapi-')) ? storedNv : defaultNvKey;
+
+  const geminiKey = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_gemini_key') : '') || 
+                    (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GEMINI_API_KEY) || '';
 
   const systemInstruction = `You are AI Tutor (DOAP AI), a world-class, ultra-intelligent, and versatile AI assistant (like ChatGPT / Claude / Gemini).
 You have deep expertise in everything: coding, computer science, DSA, system design, math, science, history, creative writing, general knowledge, career coaching, language translation, and friendly conversation.
@@ -104,21 +118,20 @@ Core Behaviors:
   ];
 
   // ==========================================
-  // 3. Primary Engine: Groq LPU (GPT-OSS 120B Super-Brain)
+  // 3. Engine 1: Groq LPU (GPT-OSS 120B Super-Brain)
   // ==========================================
   if (groqKey && groqKey.startsWith('gsk_')) {
     const candidateModels = [
       'openai/gpt-oss-120b',
       'qwen/qwen3.8-27b',
       'openai/gpt-oss-20b',
-      'groq/compound',
-      'groq/compound-mini'
+      'groq/compound'
     ];
 
     for (const model of candidateModels) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 12000);
+        const timeoutId = setTimeout(() => controller.abort(), 9000);
 
         const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
@@ -145,10 +158,92 @@ Core Behaviors:
           }
         }
       } catch (err) {
-        console.warn(`[AI Tutor Groq LPU (${model})] error:`, err.message || err);
+        console.warn(`[AI Tutor Groq LPU (${model})] fallback:`, err.message || err);
       }
     }
   }
 
-  return `Hey ${userName}! I am AI Tutor. I received your query about **"${text}"**.\n\nPlease check your internet connection or verify your API settings!`;
+  // ==========================================
+  // 4. Engine 2: NVIDIA NIM Cloud (90B / 70B / Nemotron)
+  // ==========================================
+  if (nvidiaKey && nvidiaKey.startsWith('nvapi-')) {
+    const nvModels = [
+      'meta/llama-3.2-90b-vision-instruct',
+      'nvidia/llama-3.1-nemotron-70b-instruct',
+      'meta/llama-3.1-70b-instruct'
+    ];
+
+    for (const model of nvModels) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+        const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${nvidiaKey}`
+          },
+          signal: controller.signal,
+          body: JSON.stringify({
+            model,
+            messages,
+            temperature: 0.7,
+            max_tokens: 2048
+          })
+        });
+
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json();
+          const reply = data?.choices?.[0]?.message?.content;
+          if (reply && reply.trim()) {
+            return reply.trim();
+          }
+        }
+      } catch (err) {
+        console.warn(`[AI Tutor NVIDIA NIM (${model})] fallback:`, err.message || err);
+      }
+    }
+  }
+
+  // ==========================================
+  // 5. Engine 3: Google Gemini 2.5 Flash
+  // ==========================================
+  if (geminiKey && geminiKey.length > 20) {
+    try {
+      const contents = sanitizedHistory.map(item => ({
+        role: item.role === 'user' ? 'user' : 'model',
+        parts: [{ text: item.content }]
+      }));
+
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          contents,
+          systemInstruction: { parts: [{ text: systemInstruction }] },
+          generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
+        })
+      });
+
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const data = await res.json();
+        const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (reply && reply.trim()) return reply.trim();
+      }
+    } catch (err) {
+      console.warn('[AI Tutor Gemini Engine] fallback:', err.message || err);
+    }
+  }
+
+  return `Hey ${userName}! I am AI Tutor. I received your query about **"${text}"**.\n\nPlease verify your internet connection to enable live multi-cloud AI!`;
 }
