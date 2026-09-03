@@ -21,18 +21,21 @@ const defaultGk = [
 ].join('');
 
 export async function generateSmartTutorResponse(message, userName = 'there', history = []) {
-  const text = (message || '').trim();
-  if (!text) {
+  const rawText = (message || '').trim();
+  if (!rawText) {
     return `Hey ${userName}! 👋 I'm **AI Tutor**. Ask me anything about coding, algorithms, science, or any topic under the sun!`;
   }
+
+  // Strip leading emojis, icons, and whitespace
+  const cleanText = rawText.replace(/^[\s\p{Extended_Pictographic}\p{Emoji}\u2000-\u3300]+/gu, '').trim();
 
   // ==========================================
   // 1. Slash Commands Handling
   // ==========================================
   
   // A. /image <prompt> — Instant AI Image Generation
-  if (text.startsWith('/image ') || /^generate (an? )?image (of|for) /i.test(text)) {
-    const prompt = text.replace(/^\/image\s+/i, '').replace(/^generate (an? )?image (of|for) /i, '').trim();
+  if (cleanText.startsWith('/image') || /^generate (an? )?image (of|for) /i.test(cleanText)) {
+    const prompt = cleanText.replace(/^\/image\s*/i, '').replace(/^generate (an? )?image (of|for) /i, '').trim();
     if (!prompt) {
       return `### 🎨 AI Image Generator\n\nPlease provide a prompt! Example: \`/image a futuristic cybernetic workstation 8k\``;
     }
@@ -42,8 +45,8 @@ export async function generateSmartTutorResponse(message, userName = 'there', hi
   }
 
   // B. /quiz [topic] — Interactive In-Chat Flash Quiz
-  if (text.startsWith('/quiz')) {
-    const topic = text.replace(/^\/quiz\s*/i, '').trim().toLowerCase();
+  if (cleanText.startsWith('/quiz') || /^quiz\b/i.test(cleanText)) {
+    const topic = cleanText.replace(/^(\/quiz|quiz)\s*/i, '').trim().toLowerCase();
     let bank = [...DSA_NUMERICALS_BANK, ...PYTHON_BANK, ...JAVA_BANK, ...C_LANGUAGE_BANK];
     let domainName = "Computer Science & Engineering";
 
@@ -89,7 +92,7 @@ ${q.answer}
   }
 
   // C. /help — Master Commands Reference
-  if (text === '/help' || text === '/commands') {
+  if (cleanText === '/help' || cleanText === '/commands') {
     return `### 💡 AI Tutor Commands Reference
 
 | Command | Action | Description |
@@ -105,7 +108,7 @@ ${q.answer}
   }
 
   // D. /joke — Developer Humor
-  if (text === '/joke') {
+  if (cleanText === '/joke') {
     const jokes = [
       "Why do programmers prefer dark mode? Because light attracts bugs! 🐛😂",
       "There are 10 types of people in the world: those who understand binary, and those who don't. 🤖",
@@ -116,7 +119,7 @@ ${q.answer}
     return `### 😄 Tech Humor\n\n${jokes[Math.floor(Math.random() * jokes.length)]}`;
   }
 
-  const effectivePrompt = text.replace(/^(\/code|\/explain|\/interview)\s+/i, '');
+  const effectivePrompt = cleanText.replace(/^(\/code|\/explain|\/interview)\s+/i, '');
 
   // ==========================================
   // 2. Resolve Working API Keys

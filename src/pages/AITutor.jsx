@@ -704,21 +704,25 @@ export const AITutor = () => {
               ref={chipsScrollRef}
               className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1 px-1 scroll-smooth"
             >
-              {QUICK_PROMPTS.map((prompt, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => executeSend(prompt)}
-                  className="px-3 py-1.5 rounded-full text-xs font-medium shrink-0 border transition-all hover:scale-105 cursor-pointer shadow-xs"
-                  style={{
-                    backgroundColor: 'var(--doap-surface-sec)',
-                    borderColor: 'var(--doap-border)',
-                    color: 'var(--doap-text-prim)'
-                  }}
-                >
-                  {prompt}
-                </button>
-              ))}
+              {QUICK_PROMPTS.map((item, idx) => {
+                const prompt = typeof item === 'string' ? item : item.prompt;
+                const label = typeof item === 'string' ? item : item.label;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => executeSend(prompt)}
+                    className="px-3 py-1.5 rounded-full text-xs font-medium shrink-0 border transition-all hover:scale-105 cursor-pointer shadow-xs"
+                    style={{
+                      backgroundColor: 'var(--doap-surface-sec)',
+                      borderColor: 'var(--doap-border)',
+                      color: 'var(--doap-text-prim)'
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
 
             <button
