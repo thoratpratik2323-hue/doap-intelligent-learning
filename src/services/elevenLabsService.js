@@ -7,9 +7,10 @@ const ELEVEN_API_KEY = (typeof localStorage !== 'undefined' ? localStorage.getIt
                        'sk_49242a8b562bd43cd0c8ff30db444b69216a64c89ef7d3d2';
 
 export const ELEVEN_VOICES = {
-  aria: { id: '9BWtsMINqrJLrRacOk9x', name: '👩 Aria (Studio Humanoid)' },
-  rachel: { id: '21m00Tcm4TlvDq8ikWAM', name: '👩 Rachel (Calm Mentor)' },
-  sarah: { id: 'EXAVITQu4vr4xnSDxMaL', name: '👩 Sarah (Conversational)' }
+  doap: { id: '9PvnT6XRzlljoaDG6Knu', name: 'DOAP AI' },
+  aria: { id: '9PvnT6XRzlljoaDG6Knu', name: 'DOAP AI' },
+  rachel: { id: '9PvnT6XRzlljoaDG6Knu', name: 'DOAP AI' },
+  sarah: { id: '9PvnT6XRzlljoaDG6Knu', name: 'DOAP AI' }
 };
 
 let currentAudio = null;
