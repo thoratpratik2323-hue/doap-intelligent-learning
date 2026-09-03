@@ -40,7 +40,7 @@ export async function speakElevenLabs(text, voiceKey = 'aria', onComplete, onErr
       .replace(/\n+/g, " ")
       .slice(0, 450);
 
-    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`, {
+    let response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`, {
       method: 'POST',
       headers: {
         'Accept': 'audio/mpeg',
@@ -58,6 +58,27 @@ export async function speakElevenLabs(text, voiceKey = 'aria', onComplete, onErr
         }
       })
     });
+
+    // If 402 (Free users cannot use library voices via API), fallback to ElevenLabs Studio Premade Voice (Brian - Deep & Warm)
+    if (!response.ok && response.status === 402 && voiceId !== 'nPczCjzI2devNBz1zQrb') {
+      console.warn('[ElevenLabs] Library voice requires paid tier. Falling back to ElevenLabs Premade Studio Voice (Brian)...');
+      response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/nPczCjzI2devNBz1zQrb/stream`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'audio/mpeg',
+          'Content-Type': 'application/json',
+          'xi-api-key': ELEVEN_API_KEY
+        },
+        body: JSON.stringify({
+          text: cleanText,
+          model_id: 'eleven_turbo_v2_5',
+          voice_settings: {
+            stability: 0.55,
+            similarity_boost: 0.85
+          }
+        })
+      });
+    }
 
     if (!response.ok) {
       throw new Error(`ElevenLabs API Error: ${response.status}`);
