@@ -528,13 +528,16 @@ public:
 
       {/* Interactive Code Sandbox Modal Drawer */}
       {activeProblem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-md animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-fade-in">
           <div 
-            className="w-full max-w-4xl rounded-3xl border shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
-            style={{ backgroundColor: 'var(--doap-surface, #111111)', borderColor: 'var(--doap-border, #333333)' }}
+            className={`w-full max-w-4xl rounded-3xl border shadow-2xl overflow-hidden flex flex-col max-h-[92vh] ${
+              isDarkMode ? 'bg-[#0d0f14] border-neutral-800 text-white' : 'bg-white border-neutral-300 text-neutral-900'
+            }`}
           >
             {/* Header */}
-            <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--doap-border)' }}>
+            <div className={`p-4 border-b flex items-center justify-between ${
+              isDarkMode ? 'bg-[#141720] border-neutral-800' : 'bg-neutral-50 border-neutral-200'
+            }`}>
               <div className="flex items-center gap-3">
                 <span className="px-2 py-1 rounded-lg text-xs font-mono font-bold bg-white/10">#{activeProblem.id}</span>
                 <div>
