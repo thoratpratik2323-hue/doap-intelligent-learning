@@ -727,30 +727,6 @@ public:
             </div>
 
             {/* GitHub Push Result Alert */}
-            {gitPushResult && (
-              <div className={`mx-4 p-3 rounded-xl border text-xs flex items-center justify-between gap-2 ${
-                gitPushResult.success 
-                  ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300' 
-                  : 'bg-rose-950/30 border-rose-500/40 text-rose-300'
-              }`}>
-                <div className="flex items-center gap-2">
-                  {gitPushResult.success ? <CheckCircle2 size={15} className="text-emerald-400 shrink-0" /> : <AlertCircle size={15} className="text-rose-400 shrink-0" />}
-                  <span>{gitPushResult.message}</span>
-                </div>
-                {gitPushResult.url && (
-                  <a 
-                    href={gitPushResult.url} 
-                    target="_blank" 
-                    rel="noreferrer"
-                    className="underline font-bold flex items-center gap-1 hover:opacity-80 shrink-0"
-                  >
-                    <span>View File on GitHub</span>
-                    <ExternalLink size={12} />
-                  </a>
-                )}
-              </div>
-            )}
-
             {/* Footer Buttons */}
             <div className="p-4 border-t flex flex-wrap items-center justify-between gap-3" style={{ borderColor: 'var(--doap-border)' }}>
               <div className="flex items-center gap-2">
@@ -766,25 +742,6 @@ public:
                 >
                   <Check size={14} />
                   <span>{solvedProblems.includes(activeProblem.id) ? 'Marked as Solved' : 'Mark as Solved'}</span>
-                </button>
-
-                <button
-                  onClick={handlePushToGitHub}
-                  disabled={isPushingToGit}
-                  className="px-4 py-2.5 rounded-xl text-xs font-bold border flex items-center gap-1.5 cursor-pointer transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
-                  style={{ backgroundColor: 'var(--doap-surface-sec, #1e1e1e)', borderColor: 'var(--doap-border, #333333)', color: 'var(--doap-text-prim, #ffffff)' }}
-                  title="Export solution to your personal GitHub repository"
-                >
-                  {isPushingToGit ? (
-                    <>
-                      <RefreshCw size={13} className="animate-spin" />
-                      <span>Pushing to GitHub...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>🐙 Push to My GitHub</span>
-                    </>
-                  )}
                 </button>
               </div>
 
