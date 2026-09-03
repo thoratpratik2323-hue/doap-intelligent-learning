@@ -328,9 +328,7 @@ export const Assessments = () => {
 
   const categories = ["All", "Academic", "AI Readiness", "Skill", "Practice Test", "Mock Exam", "Job Readiness"];
 
-  const filteredAssessments = assessments.filter(a => 
-    activeCategory === 'All' || a.category === activeCategory
-  );
+  const filteredAssessments = assessments;
 
   const handleStartQuiz = (quizKey) => {
     setActiveQuizKey(quizKey);
@@ -669,24 +667,7 @@ export const Assessments = () => {
         </div>
       </div>
 
-      {/* Category Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={`
-              px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border
-              ${activeCategory === cat 
-                ? (isDarkMode ? 'bg-white text-black border-white' : 'bg-black text-white border-black') 
-                : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
-              }
-            `}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
+
 
       {/* Assessment History List */}
       <div className="space-y-3">
