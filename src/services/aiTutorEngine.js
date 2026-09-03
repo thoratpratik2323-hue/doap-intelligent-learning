@@ -7,13 +7,59 @@ export async function generateSmartTutorResponse(message, userName = 'there', hi
   const text = (message || '').trim();
   const lower = text.toLowerCase();
 
-  // 1. Check for live Gemini API Key
-  const apiKey = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_gemini_key') : '') || 
-                 (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GEMINI_API_KEY) || 
-                 '';
+  // 1. Check for live Groq API Key (gsk_...) or Gemini API Key (AIzaSy...)
+  const groqKey = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_groq_key') : '') || 
+                  (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_gemini_key') : '') || 
+                  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GROQ_API_KEY) || '';
 
-  // Only call Gemini REST API if key looks like an official Gemini key (AIzaSy...)
-  if (apiKey && apiKey.startsWith('AIzaSy') && apiKey.length > 30) {
+  const geminiKey = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_gemini_key') : '') || 
+                    (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GEMINI_API_KEY) || '';
+
+  // A. Groq LPU Engine (Llama 3.3 70B - Sub-150ms Speed)
+  if (groqKey && groqKey.startsWith('gsk_')) {
+    try {
+      const systemInstruction = `You are DOAP AI, an elite, friendly, and world-class AI computer science mentor and software engineering tutor.
+You help students with programming, DSA, web development, AI/ML, system design, coding interviews, and career roadmaps.
+Guidelines:
+- Explain clearly, warmly, and practically with markdown formatting and real code snippets.
+- Address the user as ${userName}.
+- Provide direct, concise, and highly actionable answers with zero fluff.`;
+
+      const messages = [
+        { role: 'system', content: systemInstruction },
+        ...history.slice(-4).map(item => ({
+          role: item.sender === 'user' ? 'user' : 'assistant',
+          content: item.text
+        })),
+        { role: 'user', content: text }
+      ];
+
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${groqKey}`
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages,
+          temperature: 0.6,
+          max_tokens: 1024
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const reply = data?.choices?.[0]?.message?.content;
+        if (reply) return reply;
+      }
+    } catch (err) {
+      console.warn('[Groq LPU Engine] Fast fallback:', err);
+    }
+  }
+
+  // B. Google Gemini AI Engine
+  if (geminiKey && geminiKey.startsWith('AIzaSy') && geminiKey.length > 30) {
     try {
       const systemInstruction = `You are DOAP AI, an elite, friendly, and world-class AI computer science mentor and software engineering tutor.
 You help students with programming, DSA, web development, AI/ML, system design, coding interviews, and career roadmaps.
@@ -32,10 +78,10 @@ Guidelines:
         parts: [{ text: text }]
       });
 
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
       
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
 
       const res = await fetch(endpoint, {
         method: 'POST',

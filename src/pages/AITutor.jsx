@@ -567,7 +567,7 @@ export const AITutor = () => {
         </div>
       </div>
 
-      {/* Gemini API Key Modal */}
+      {/* AI Engine API Key Modal (Groq LPU / Gemini) */}
       {showKeyModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
           <div 
@@ -577,7 +577,7 @@ export const AITutor = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Zap size={18} style={{ color: accentHex }} />
-                <h3 className="font-bold text-sm" style={{ color: 'var(--doap-text-prim)' }}>Connect Google Gemini AI</h3>
+                <h3 className="font-bold text-sm" style={{ color: 'var(--doap-text-prim)' }}>Connect AI Engine (Groq / Gemini)</h3>
               </div>
               <button onClick={() => setShowKeyModal(false)} className="hover:opacity-80 cursor-pointer">
                 <X size={16} />
@@ -585,13 +585,13 @@ export const AITutor = () => {
             </div>
 
             <p className="text-xs text-neutral-400">
-              Paste your Gemini API Key from <strong>Google AI Studio</strong> (aistudio.google.com) for real-time generative reasoning.
+              Paste your <strong>Groq API Key</strong> (<code>gsk_...</code> from <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer" className="text-emerald-400 underline">console.groq.com</a> for 500 tok/sec speed) or <strong>Gemini Key</strong> (<code>AIzaSy...</code>).
             </p>
 
             <form onSubmit={handleSaveGeminiKey} className="space-y-3">
               <input 
                 type="password"
-                placeholder="AIzaSy..."
+                placeholder="gsk_... or AIzaSy..."
                 value={geminiKeyInput}
                 onChange={(e) => setGeminiKeyInput(e.target.value)}
                 className="w-full p-3 rounded-xl border text-xs font-mono focus:outline-none"

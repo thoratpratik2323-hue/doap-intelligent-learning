@@ -8,33 +8,9 @@ export const Home = () => {
   const actions = [
     {
       title: "Ask DOAP",
-      desc: "Chat with your AI tutor",
+      desc: "Chat with your AI mentor & solve coding doubts",
       icon: MessageSquare,
       path: "/ai-tutor"
-    },
-    {
-      title: "Continue Learning",
-      desc: "Pick up where you left off",
-      icon: BookOpen,
-      path: "/learning"
-    },
-    {
-      title: "Practice Coding",
-      desc: "Sharpen your problem solving",
-      icon: Code,
-      path: "/coding"
-    },
-    {
-      title: "Prepare for Interview",
-      desc: "Practice with AI interviewer",
-      icon: Video,
-      path: "/interview"
-    },
-    {
-      title: "Review Progress",
-      desc: "See your analytics",
-      icon: BarChart2,
-      path: "/dashboard"
     }
   ];
 
