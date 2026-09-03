@@ -1,21 +1,15 @@
 /**
  * DOAP AI Tutor — Universal Multi-Cloud Super-Brain Engine
  * Powered by:
- * 1. Groq LPU (GPT-OSS 120B Super-Brain — Sub-150ms)
- * 2. NVIDIA NIM Cloud (Llama 3.2 90B Vision / Nemotron 70B / DeepSeek R1)
- * 3. Google Gemini 2.5 Flash
- * 4. Flux AI Image Generation (/image <prompt>)
+ * 1. Groq LPU (GPT-OSS 120B Super-Brain & Qwen 3.8 27B — Sub-150ms Instant Response)
+ * 2. Flux AI Image Generation (/image <prompt>)
+ * 3. Socratic Tutoring & 3-Layer Knowledge Synthesis
  */
 
 const defaultGk = [
   'gsk',
   '_15WoQKTz6UaWI4I1QoSh',
   'WGdyb3FYZzu8zBQjddTZfcCfBtzyq5V9'
-].join('');
-
-const defaultNvKey = [
-  'nvapi',
-  '-Tbrs-iWSewaeRcHN3pib9EAEwnDz-vBOazW5JnK2yRsHTyIijaouU3zXVxtM7sd3'
 ].join('');
 
 export async function generateSmartTutorResponse(message, userName = 'there', history = []) {
@@ -69,20 +63,14 @@ export async function generateSmartTutorResponse(message, userName = 'there', hi
   const effectivePrompt = text.replace(/^(\/code|\/explain|\/interview)\s+/i, '');
 
   // ==========================================
-  // 2. Resolve Multi-Cloud API Keys
+  // 2. Resolve Working API Keys
   // ==========================================
   const storedGroq = typeof localStorage !== 'undefined' ? localStorage.getItem('doap_groq_key') : null;
-  const groqKey = (storedGroq && storedGroq.startsWith('gsk_')) 
-                  ? storedGroq 
-                  : (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GROQ_API_KEY && import.meta.env.VITE_GROQ_API_KEY.startsWith('gsk_')) 
-                    ? import.meta.env.VITE_GROQ_API_KEY 
-                    : defaultGk;
-
-  const storedNv = typeof localStorage !== 'undefined' ? localStorage.getItem('doap_nvidia_key') : null;
-  const nvidiaKey = (storedNv && storedNv.startsWith('nvapi-')) ? storedNv : defaultNvKey;
-
-  const geminiKey = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_gemini_key') : '') || 
-                    (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GEMINI_API_KEY) || '';
+  const keysToTry = Array.from(new Set([
+    (storedGroq && storedGroq.startsWith('gsk_')) ? storedGroq : null,
+    (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GROQ_API_KEY && import.meta.env.VITE_GROQ_API_KEY.startsWith('gsk_')) ? import.meta.env.VITE_GROQ_API_KEY : null,
+    defaultGk
+  ].filter(Boolean)));
 
   const systemInstruction = `You are AI Tutor (DOAP AI), a world-class intelligent tutoring agent and engineering mentor (powered by Socratic pedagogy, deep reasoning, and universal intelligence).
 
@@ -92,17 +80,17 @@ Core Tutoring & Interaction Principles:
    - 🎯 Intuitive Concept / Blueprint
    - 💻 Clean, Complete, Runnable Code (with comments)
    - ⚡ Time & Space Complexity Analysis ($O(N)$, $O(1)$, etc.) + Edge Cases
-3. Natural Language Matching: Automatically detect and match the student's language. If they talk in Hindi or Hinglish (e.g. "bhai", "kya haal", "ye code kaise kaam karta hai"), reply in natural, fluent, friendly Hinglish/Hindi. If in English, reply in articulate English.
+3. Natural Language Matching: Automatically detect and match the student's language. If they talk in Hindi or Hinglish (e.g. "bhai", "kya haal", "ye code kaise kaam karta hai", "road map for ml"), reply in natural, fluent, friendly Hinglish/Hindi. If in English, reply in articulate English.
 4. Charismatic & Supportive: Be warm, empathetic, witty, and directly address the student as ${userName}.
-5. Universal Scope: Answer ANY question without limits (programming, LeetCode, system design, math, science, creative writing, history, career advice, and everyday life).
+5. Universal Scope: Answer ANY question without limits (Machine Learning, DSA, programming, system design, math, science, creative writing, history, career advice, and everyday life).
 6. Beautiful Formatting: Use rich markdown headers, bullet points, syntax-highlighted code blocks, and tables for maximum readability.`;
 
-  // Sanitize message history (filter out old error messages)
+  // Sanitize message history
   const sanitizedHistory = [];
   (history || []).slice(-8).forEach(item => {
     const role = (item.sender === 'user' || item.role === 'user') ? 'user' : 'assistant';
     const content = (item.text || item.content || '').trim();
-    if (content && !content.includes('verify your internet') && !content.includes('check your internet') && !content.includes('temporary hiccup')) {
+    if (content && !content.includes('verify your internet') && !content.includes('check your internet') && !content.includes('temporary hiccup') && !content.includes('Great to connect with you')) {
       if (sanitizedHistory.length > 0 && sanitizedHistory[sanitizedHistory.length - 1].role === role) {
         sanitizedHistory[sanitizedHistory.length - 1].content += '\n' + content;
       } else {
@@ -121,16 +109,15 @@ Core Tutoring & Interaction Principles:
   ];
 
   // ==========================================
-  // 3. Engine 1: Groq LPU (GPT-OSS 120B Super-Brain)
+  // 3. Primary Engine: Groq LPU (GPT-OSS 120B / Qwen 3.8 27B)
   // ==========================================
-  if (groqKey && groqKey.startsWith('gsk_')) {
-    const candidateModels = [
-      'openai/gpt-oss-120b',
-      'qwen/qwen3.8-27b',
-      'openai/gpt-oss-20b',
-      'groq/compound'
-    ];
+  const candidateModels = [
+    'openai/gpt-oss-120b',
+    'qwen/qwen3.8-27b',
+    'openai/gpt-oss-20b'
+  ];
 
+  for (const activeKey of keysToTry) {
     for (const model of candidateModels) {
       try {
         const controller = new AbortController();
@@ -140,7 +127,7 @@ Core Tutoring & Interaction Principles:
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${groqKey}`
+            'Authorization': `Bearer ${activeKey}`
           },
           signal: controller.signal,
           body: JSON.stringify({
@@ -166,87 +153,5 @@ Core Tutoring & Interaction Principles:
     }
   }
 
-  // ==========================================
-  // 4. Engine 2: NVIDIA NIM Cloud (90B / 70B / Nemotron)
-  // ==========================================
-  if (nvidiaKey && nvidiaKey.startsWith('nvapi-')) {
-    const nvModels = [
-      'meta/llama-3.2-90b-vision-instruct',
-      'nvidia/llama-3.1-nemotron-70b-instruct',
-      'meta/llama-3.1-70b-instruct'
-    ];
-
-    for (const model of nvModels) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 20000);
-
-        const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${nvidiaKey}`
-          },
-          signal: controller.signal,
-          body: JSON.stringify({
-            model,
-            messages,
-            temperature: 0.7,
-            max_tokens: 2048
-          })
-        });
-
-        clearTimeout(timeoutId);
-
-        if (res.ok) {
-          const data = await res.json();
-          const reply = data?.choices?.[0]?.message?.content;
-          if (reply && reply.trim()) {
-            return reply.trim();
-          }
-        }
-      } catch (err) {
-        console.warn(`[AI Tutor NVIDIA NIM (${model})] fallback:`, err.message || err);
-      }
-    }
-  }
-
-  // ==========================================
-  // 5. Engine 3: Google Gemini 2.5 Flash
-  // ==========================================
-  if (geminiKey && geminiKey.length > 20) {
-    try {
-      const contents = sanitizedHistory.map(item => ({
-        role: item.role === 'user' ? 'user' : 'model',
-        parts: [{ text: item.content }]
-      }));
-
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000);
-
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({
-          contents,
-          systemInstruction: { parts: [{ text: systemInstruction }] },
-          generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
-        })
-      });
-
-      clearTimeout(timeoutId);
-
-      if (res.ok) {
-        const data = await res.json();
-        const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (reply && reply.trim()) return reply.trim();
-      }
-    } catch (err) {
-      console.warn('[AI Tutor Gemini Engine] fallback:', err.message || err);
-    }
-  }
-
-  return `Hey ${userName}! 👋 Great to connect with you. How can I help you today? Whether you're working on coding, DSA, system design, or have any general questions, let me know!`;
+  return `Hey ${userName}! 👋 I'm here to help you. Ask me about coding, Machine Learning roadmaps, DSA, or system design, and I'll break it down step-by-step!`;
 }
