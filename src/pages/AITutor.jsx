@@ -105,7 +105,7 @@ export const AITutor = () => {
     {
       id: '1',
       sender: 'ai',
-      text: `Hey ${profile?.name ? profile.name.split(' ')[0] : 'there'}! 👋 I'm **✦ IP VEXA ✦**, your universal AI assistant & coding companion.\n\nI can answer **anything** (coding, DSA, math, science, general advice) and generate AI art with \`/image <prompt>\`!\n\nType \`/help\` to see all slash commands.`
+      text: `Hey ${profile?.name ? profile.name.split(' ')[0] : 'there'}! 👋 I'm **DOAP AI Tutor**, your universal engineering mentor and AI assistant.\n\nAsk me anything about **coding**, **algorithms (DSA)**, **system design**, **math**, or generate images with \`/image <prompt>\`!\n\nType \`/help\` to view all commands.`
     }
   ]);
 
@@ -366,14 +366,14 @@ export const AITutor = () => {
               {isSidebarOpen ? <PanelLeftClose size={15} /> : <PanelLeftOpen size={15} />}
             </button>
 
-            <span className="font-black text-xs sm:text-sm tracking-tight" style={{ color: 'var(--doap-text-prim)' }}>
-              ✦ IP VEXA AI ✦
+            <span className="font-bold text-xs sm:text-sm tracking-tight" style={{ color: 'var(--doap-text-prim)' }}>
+              AI Tutor
             </span>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-mono border border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
               ⚡ 120B Super-Brain
             </span>
             <span className="hidden md:inline px-2 py-0.5 rounded-full text-[10px] font-mono border border-purple-500/30 text-purple-400 bg-purple-500/10">
-              🎨 Flux AI Art
+              🎨 Flux AI
             </span>
           </div>
 
