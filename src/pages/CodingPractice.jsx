@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Code, CheckCircle2, Circle, Play, ArrowRight, X, Terminal, Sparkles, Check, AlertCircle, RefreshCw } from 'lucide-react';
+import { Code, CheckCircle2, Circle, Play, ArrowRight, X, Terminal, Sparkles, Check, AlertCircle, RefreshCw, ExternalLink } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { pushSolutionToGitHub } from '../services/githubService';
 
 const PROBLEM_DEFINITIONS = [
   {
@@ -184,6 +185,8 @@ export const CodingPractice = () => {
   const [showHint, setShowHint] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [runResult, setRunResult] = useState(null);
+  const [isPushingToGit, setIsPushingToGit] = useState(false);
+  const [gitPushResult, setGitPushResult] = useState(null);
 
   const categories = [
     "All", "Arrays", "Strings", "Linked Lists", "Trees", "Graphs", 
@@ -251,6 +254,37 @@ public class Main {
     setCode(getLanguageStarterCode(prob, selectedLanguage));
     setShowHint(false);
     setRunResult(null);
+    setGitPushResult(null);
+  };
+
+  const handlePushToGitHub = async () => {
+    if (!activeProblem || !code) return;
+    setIsPushingToGit(true);
+    setGitPushResult(null);
+
+    try {
+      const slug = activeProblem.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const res = await pushSolutionToGitHub({
+        problemTitle: activeProblem.title,
+        problemSlug: slug,
+        language: selectedLanguage,
+        code,
+        difficulty: activeProblem.difficulty
+      });
+
+      setGitPushResult({
+        success: true,
+        message: `Successfully pushed to ${res.username}/${res.repoName}!`,
+        url: res.fileUrl
+      });
+    } catch (err) {
+      setGitPushResult({
+        success: false,
+        message: err.message || 'Failed to push to GitHub.'
+      });
+    } finally {
+      setIsPushingToGit(false);
+    }
   };
 
   const handleLanguageChange = (lang) => {
@@ -258,6 +292,7 @@ public class Main {
     if (activeProblem) {
       setCode(getLanguageStarterCode(activeProblem, lang));
       setRunResult(null);
+      setGitPushResult(null);
     }
   };
 
@@ -689,21 +724,67 @@ public class Main {
               </div>
             </div>
 
+            {/* GitHub Push Result Alert */}
+            {gitPushResult && (
+              <div className={`mx-4 p-3 rounded-xl border text-xs flex items-center justify-between gap-2 ${
+                gitPushResult.success 
+                  ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300' 
+                  : 'bg-rose-950/30 border-rose-500/40 text-rose-300'
+              }`}>
+                <div className="flex items-center gap-2">
+                  {gitPushResult.success ? <CheckCircle2 size={15} className="text-emerald-400 shrink-0" /> : <AlertCircle size={15} className="text-rose-400 shrink-0" />}
+                  <span>{gitPushResult.message}</span>
+                </div>
+                {gitPushResult.url && (
+                  <a 
+                    href={gitPushResult.url} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="underline font-bold flex items-center gap-1 hover:opacity-80 shrink-0"
+                  >
+                    <span>View File on GitHub</span>
+                    <ExternalLink size={12} />
+                  </a>
+                )}
+              </div>
+            )}
+
             {/* Footer Buttons */}
-            <div className="p-4 border-t flex items-center justify-between" style={{ borderColor: 'var(--doap-border)' }}>
-              <button
-                onClick={() => {
-                  const updated = solvedProblems.includes(activeProblem.id)
-                    ? solvedProblems.filter(id => id !== activeProblem.id)
-                    : [...solvedProblems, activeProblem.id];
-                  updateUserProgress({ solvedProblems: updated });
-                }}
-                className="px-4 py-2.5 rounded-xl text-xs font-semibold border cursor-pointer hover:opacity-80 flex items-center gap-1.5"
-                style={{ borderColor: 'var(--doap-border)' }}
-              >
-                <Check size={14} />
-                <span>{solvedProblems.includes(activeProblem.id) ? 'Marked as Solved' : 'Mark as Solved'}</span>
-              </button>
+            <div className="p-4 border-t flex flex-wrap items-center justify-between gap-3" style={{ borderColor: 'var(--doap-border)' }}>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const updated = solvedProblems.includes(activeProblem.id)
+                      ? solvedProblems.filter(id => id !== activeProblem.id)
+                      : [...solvedProblems, activeProblem.id];
+                    updateUserProgress({ solvedProblems: updated });
+                  }}
+                  className="px-4 py-2.5 rounded-xl text-xs font-semibold border cursor-pointer hover:opacity-80 flex items-center gap-1.5"
+                  style={{ borderColor: 'var(--doap-border)' }}
+                >
+                  <Check size={14} />
+                  <span>{solvedProblems.includes(activeProblem.id) ? 'Marked as Solved' : 'Mark as Solved'}</span>
+                </button>
+
+                <button
+                  onClick={handlePushToGitHub}
+                  disabled={isPushingToGit}
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold border flex items-center gap-1.5 cursor-pointer transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                  style={{ backgroundColor: 'var(--doap-surface-sec, #1e1e1e)', borderColor: 'var(--doap-border, #333333)', color: 'var(--doap-text-prim, #ffffff)' }}
+                  title="Export solution to your personal GitHub repository"
+                >
+                  {isPushingToGit ? (
+                    <>
+                      <RefreshCw size={13} className="animate-spin" />
+                      <span>Pushing to GitHub...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>🐙 Push to My GitHub</span>
+                    </>
+                  )}
+                </button>
+              </div>
 
               <button
                 onClick={handleRunCode}
