@@ -20,10 +20,12 @@ const defaultGk = [
   'WGdyb3FYZzu8zBQjddTZfcCfBtzyq5V9'
 ].join('');
 
-export async function generateSmartTutorResponse(message, userName = 'there', history = []) {
+export async function generateSmartTutorResponse(message, userName = 'there', history = [], options = {}) {
   const rawText = (message || '').trim();
   if (!rawText) {
-    return `Hey ${userName}! 👋 I'm **DOAP AI**. Ask me anything under the sun — from coding and math to essays, science, advice, or ideas!`;
+    return options.voiceMode 
+      ? `Hey ${userName}! I'm online and listening. What are we working on today?`
+      : `Hey ${userName} bhai! 👋 Kya haal chaal? Bata aaj kya kaam karna hai!`;
   }
 
   // Strip leading emojis, icons, and whitespace
@@ -132,7 +134,20 @@ ${q.answer}
     (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GROQ_API_KEY && import.meta.env.VITE_GROQ_API_KEY.startsWith('gsk_')) ? import.meta.env.VITE_GROQ_API_KEY : null
   ].filter(Boolean)));
 
-  const systemInstruction = `You are DOAP AI, ${userName}'s trusted best friend, coding buddy, and personal ultra-smart AI assistant.
+  const systemInstruction = options.voiceMode
+    ? `You are DOAP AI, ${userName}'s trusted best friend and personal voice assistant.
+
+CRITICAL VOICE MODE RULES:
+1. ALWAYS REPLY IN NATURAL, FRIENDLY, CONVERSATIONAL ENGLISH:
+   - The user may speak to you in ANY language (Hindi, Hinglish, English, Marathi, Spanish, etc.).
+   - You must understand their input completely regardless of language, BUT YOUR SPOKEN RESPONSE MUST ALWAYS BE 100% IN NATURAL, CRISP, FRIENDLY ENGLISH.
+   - Never output Hindi, Hinglish or Devanagari in voice mode. The speech engine speaks high-fidelity natural English.
+2. Best Friend Personality:
+   - Speak like a supportive, enthusiastic, razor-sharp close buddy ("Hey buddy!", "Got it!", "I'm right here with you, let's do this!").
+   - Never sound like a formal corporate robot.
+3. Concise Spoken Delivery:
+   - Keep answers natural, spoken-friendly, and concise (2 to 4 sentences maximum). Do not use markdown bullet lists, asterisks, or code blocks that sound awkward when spoken aloud.`
+    : `You are DOAP AI, ${userName}'s trusted best friend, coding buddy, and personal ultra-smart AI assistant.
 
 Core Persona & Vibe:
 1. Best Friend & Companion:
