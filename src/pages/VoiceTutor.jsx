@@ -7,7 +7,12 @@ import {
   MessageSquare, 
   Clock, 
   Sparkles,
-  Zap
+  Zap,
+  Copy,
+  Check,
+  RotateCcw,
+  AlertCircle,
+  ArrowRight
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -117,16 +122,37 @@ export const VoiceTutor = () => {
   const isMutedRef = useRef(false);
   const [callDuration, setCallDuration] = useState(0);
 
-  // Ensure legacy voice settings are cleared so DOAP AI uses pure studio voice
-  useEffect(() => {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem('doap_selected_voice');
-    }
-  }, []);
+  const [voiceMode, setVoiceMode] = useState(() => {
+    return (typeof localStorage !== 'undefined' && localStorage.getItem('doap_voice_accent')) || 'studio';
+  });
 
+  const handleVoiceModeChange = (mode) => {
+    setVoiceMode(mode);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('doap_voice_accent', mode);
+    }
+  };
+
+  const [micError, setMicError] = useState('');
+  const [hasCopied, setHasCopied] = useState(false);
   const [userTranscript, setUserTranscript] = useState('');
   const [aiSpokenText, setAiSpokenText] = useState('');
   const [liveVolume, setLiveVolume] = useState(0);
+
+  const handleCopyText = (text) => {
+    if (!text) return;
+    navigator.clipboard?.writeText(text).then(() => {
+      setHasCopied(true);
+      setTimeout(() => setHasCopied(false), 2000);
+    }).catch(() => {});
+  };
+
+  const handleReplay = () => {
+    if (!aiSpokenText) return;
+    speakResponse(aiSpokenText, () => {
+      resumeListeningCycle();
+    });
+  };
 
   const synthRef = useRef(typeof window !== 'undefined' ? window.speechSynthesis : null);
   const durationTimerRef = useRef(null);
@@ -134,6 +160,19 @@ export const VoiceTutor = () => {
   const activeUtteranceRef = useRef(null);
   const speechWatchdogTimerRef = useRef(null);
   const isStartingRecognitionRef = useRef(false);
+  const hasFatalMicErrorRef = useRef(false);
+
+  // Pre-load voices on Chrome/Edge as soon as speech engine fires onvoiceschanged
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    const loadVoices = () => {
+      if (synthRef.current) synthRef.current.getVoices();
+    };
+    loadVoices();
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }, []);
 
   // Microphone & MediaRecorder references for universal STT (Firefox + Chrome)
   const mediaStreamRef = useRef(null);
@@ -213,6 +252,8 @@ export const VoiceTutor = () => {
 
   // Start universal microphone recording with safe constraints
   const initUniversalMicrophone = async () => {
+    setMicError('');
+    hasFatalMicErrorRef.current = false;
     try {
       let stream = null;
       try {
@@ -261,12 +302,14 @@ export const VoiceTutor = () => {
       return true;
     } catch(err) {
       console.warn("Microphone access permission error:", err);
+      hasFatalMicErrorRef.current = true;
+      setMicError('Microphone permission blocked. Please allow microphone access in your browser to speak with DOAP AI.');
       return false;
     }
   };
 
   const startRecognition = () => {
-    if (!isMountedRef.current || !isCallActiveRef.current || isMutedRef.current || callStateRef.current !== 'listening') return;
+    if (!isMountedRef.current || !isCallActiveRef.current || isMutedRef.current || callStateRef.current !== 'listening' || hasFatalMicErrorRef.current) return;
     const SpeechRec = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
     if (!SpeechRec) {
       console.warn('[SpeechRec] Web Speech API not supported in this browser');
@@ -291,7 +334,7 @@ export const VoiceTutor = () => {
       const rec = new SpeechRec();
       rec.continuous = true;
       rec.interimResults = true;
-      rec.lang = navigator.language || 'en-IN';
+      rec.lang = 'en-IN'; // Explicit Indian English recognition for authentic phonetic match
 
       rec.onresult = (e) => {
         if (callStateRef.current !== 'listening' || isProcessingSpeechRef.current) return;
@@ -323,21 +366,32 @@ export const VoiceTutor = () => {
       };
 
       rec.onerror = (e) => {
-        if (e.error !== 'no-speech' && e.error !== 'aborted') {
-          console.warn('[SpeechRec] Status:', e.error);
+        if (e.error === 'no-speech' || e.error === 'aborted') {
+          return;
+        }
+        console.warn('[SpeechRec] Status:', e.error);
+        if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+          hasFatalMicErrorRef.current = true;
+          setMicError('Microphone permission blocked. Click the lock/mic icon in your address bar to allow mic access.');
+        } else if (e.error === 'audio-capture') {
+          hasFatalMicErrorRef.current = true;
+          setMicError('Microphone not detected. Please verify your microphone is plugged in.');
+        } else if (e.error === 'network') {
+          setMicError('Speech recognition network timeout. Reconnecting...');
         }
       };
 
       rec.onend = () => {
         recognitionRef.current = null;
         isStartingRecognitionRef.current = false;
+        if (hasFatalMicErrorRef.current) return; // Do NOT loop indefinitely on permission errors
         // Auto-revive recognition immediately if the session is still active and in listening state
         if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening' && !isProcessingSpeechRef.current) {
           setTimeout(() => {
-            if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening' && !isProcessingSpeechRef.current) {
+            if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening' && !isProcessingSpeechRef.current && !hasFatalMicErrorRef.current) {
               startRecognition();
             }
-          }, 100);
+          }, 150);
         }
       };
 
@@ -346,12 +400,14 @@ export const VoiceTutor = () => {
       isStartingRecognitionRef.current = false;
     } catch(err) {
       isStartingRecognitionRef.current = false;
-      console.warn('[SpeechRec] Start error, retrying in 250ms:', err);
-      setTimeout(() => {
-        if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
-          startRecognition();
-        }
-      }, 250);
+      console.warn('[SpeechRec] Start error:', err);
+      if (!hasFatalMicErrorRef.current) {
+        setTimeout(() => {
+          if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening' && !hasFatalMicErrorRef.current) {
+            startRecognition();
+          }
+        }, 500);
+      }
     }
   };
 
@@ -379,25 +435,35 @@ export const VoiceTutor = () => {
     setUserTranscript('');
     updateCallState('listening');
     setTimeout(() => {
-      if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
+      if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening' && !hasFatalMicErrorRef.current) {
         startRecognition();
       }
-    }, 100);
+    }, 120);
   };
 
-  const handleStartCall = async () => {
+  const handleStartCall = async (initialPrompt = null) => {
+    hasFatalMicErrorRef.current = false;
+    setMicError('');
     unlockAudioContext();
     playBootChime();
     setIsCallActive(true);
     isCallActiveRef.current = true;
     isProcessingSpeechRef.current = false;
-    updateCallState('speaking');
-    setUserTranscript('');
+    setUserTranscript(typeof initialPrompt === 'string' ? initialPrompt : '');
     setAiSpokenText('');
 
     // Initialize microphone stream
-    await initUniversalMicrophone();
+    const micGranted = await initUniversalMicrophone();
+    if (!micGranted) {
+      hasFatalMicErrorRef.current = true;
+    }
 
+    if (typeof initialPrompt === 'string' && initialPrompt.trim()) {
+      handleUserSpeechComplete(initialPrompt);
+      return;
+    }
+
+    updateCallState('speaking');
     const welcome = `Hey ${userName}! I'm DOAP AI, online and listening. What are we working on today, buddy?`;
     setAiSpokenText(welcome);
 
@@ -510,22 +576,20 @@ export const VoiceTutor = () => {
       safeComplete();
     }, estimatedDurationMs);
 
-    // Prioritize authentic Indian English Neural Voice (Google English India / Microsoft Neerja / Prabhat)
-    const indianVoice = synthRef.current ? getBestNaturalVoice(synthRef.current) : null;
-    if (indianVoice && (
-      (indianVoice.lang || '').toLowerCase().includes('in') || 
-      (indianVoice.name || '').toLowerCase().includes('india') || 
-      (indianVoice.name || '').toLowerCase().includes('neerja') || 
-      (indianVoice.name || '').toLowerCase().includes('prabhat')
-    )) {
-      fallbackBrowserSpeech(text, safeComplete);
-      return;
+    // 1. If Indian Accent mode is active, check if browser has a genuine, non-robotic Indian voice (Edge Neerja/Prabhat, Google Indian English)
+    if (voiceMode === 'indian') {
+      const indianVoice = synthRef.current ? getBestNaturalVoice(synthRef.current, 'indian') : null;
+      if (indianVoice) {
+        fallbackBrowserSpeech(text, safeComplete, indianVoice);
+        return;
+      }
     }
 
+    // 2. Default to ElevenLabs Studio HD (or conversational Antoni) with phonetic Indian English humanization
     try {
       await speakElevenLabs(
         text, 
-        'doap',
+        voiceMode === 'indian' ? 'conversational' : 'doap',
         () => {
           safeComplete();
         },
@@ -538,7 +602,7 @@ export const VoiceTutor = () => {
     }
   };
 
-  const fallbackBrowserSpeech = (text, onComplete) => {
+  const fallbackBrowserSpeech = (text, onComplete, specificVoice = null) => {
     if (!synthRef.current) {
       if (onComplete) onComplete();
       return;
@@ -548,15 +612,15 @@ export const VoiceTutor = () => {
       synthRef.current.cancel();
       const spokenHumanText = humanizeTextForSpeech(text);
       const utterance = new SpeechSynthesisUtterance(spokenHumanText);
-      utterance.rate = 0.98;
+      utterance.rate = 1.0;
       utterance.pitch = 1.0;
 
-      const naturalVoice = getBestNaturalVoice(synthRef.current);
-      if (naturalVoice) {
-        utterance.voice = naturalVoice;
-        utterance.lang = naturalVoice.lang || 'en-IN';
+      const chosenVoice = specificVoice || getBestNaturalVoice(synthRef.current, voiceMode) || getBestNaturalVoice(synthRef.current, 'studio');
+      if (chosenVoice) {
+        utterance.voice = chosenVoice;
+        utterance.lang = chosenVoice.lang || 'en-IN';
       } else {
-        utterance.lang = 'en-IN';
+        utterance.lang = 'en-US'; // Never use en-IN without a voice as it triggers robotic Microsoft Ravi on Windows
       }
 
       // Keep live reference so Chrome does not garbage-collect utterance mid-speech
@@ -598,175 +662,393 @@ export const VoiceTutor = () => {
     }
   };
 
+  const CONVERSATION_STARTERS = [
+    {
+      title: "Binary Search Trees",
+      prompt: "Explain Binary Search Trees with a real world analogy, buddy!",
+      badge: "DSA Concept"
+    },
+    {
+      title: "Python vs JavaScript",
+      prompt: "What is the key difference between Python and JavaScript, and which should I master first?",
+      badge: "Web & Tech"
+    },
+    {
+      title: "Sanjivani University",
+      prompt: "Tell me about Sanjivani University, Kopargaon and Chairman Hon. Shri Nitindada Kolhe Saheb.",
+      badge: "Campus Info"
+    },
+    {
+      title: "Mock Interview Drill",
+      prompt: "Give me a quick 1-minute FAANG coding interview problem to solve right now.",
+      badge: "Interview Prep"
+    }
+  ];
+
   return (
-    <div className="h-full w-full flex-1 flex flex-col justify-between p-4 sm:p-8 select-none bg-[#05070c] text-white animate-fade-in relative overflow-hidden">
-      {/* 1. Clean Minimal Top Bar: "DOAP AI" */}
-      <div className="flex items-center justify-between z-20 pb-3 border-b border-white/10">
+    <div className="h-full w-full flex-1 flex flex-col justify-between p-3 sm:p-6 select-none bg-[#030712] text-white animate-fade-in relative overflow-hidden">
+      {/* Dynamic Ambient Mesh Glow */}
+      <div 
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[140px] pointer-events-none transition-all duration-1000 opacity-25"
+        style={{
+          background: callState === 'speaking' 
+            ? 'radial-gradient(circle, rgba(6,182,212,0.8) 0%, rgba(14,165,233,0.3) 50%, transparent 70%)'
+            : callState === 'listening'
+            ? 'radial-gradient(circle, rgba(59,130,246,0.8) 0%, rgba(99,102,241,0.3) 50%, transparent 70%)'
+            : callState === 'thinking'
+            ? 'radial-gradient(circle, rgba(245,158,11,0.8) 0%, rgba(217,119,6,0.3) 50%, transparent 70%)'
+            : 'radial-gradient(circle, rgba(99,102,241,0.6) 0%, rgba(6,182,212,0.2) 50%, transparent 70%)',
+          transform: isCallActive ? `translate(-50%, -50%) scale(${1 + (liveVolume / 90)})` : 'translate(-50%, -50%) scale(0.85)'
+        }}
+      />
+
+      {/* 1. Sleek Modern Header Bar */}
+      <div className="flex items-center justify-between z-20 pb-3 border-b border-white/10 gap-2">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-sm font-bold tracking-wide shadow-sm">
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs sm:text-sm font-bold tracking-wide shadow-sm">
             <span className={`w-2.5 h-2.5 rounded-full bg-cyan-400 ${isCallActive ? "animate-ping" : ""}`} />
             <span>DOAP AI</span>
           </div>
 
           {isCallActive && (
-            <span className="text-xs font-mono text-cyan-300 flex items-center gap-1.5 bg-cyan-950/50 px-3 py-1 rounded-full border border-cyan-500/30">
+            <span className="text-xs font-mono text-cyan-300 flex items-center gap-1.5 bg-cyan-950/60 px-3 py-1 rounded-full border border-cyan-500/30 shadow-inner">
               <Clock size={12} /> {formatDuration(callDuration)}
             </span>
           )}
         </div>
 
+        {/* Accent / Engine Mode Selector + Switch to Text Chat */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Switch to Text AI Chat */}
+          <div className="flex items-center p-0.5 rounded-xl bg-neutral-900/90 border border-white/10 shadow-inner">
+            <button
+              onClick={() => handleVoiceModeChange('indian')}
+              className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                voiceMode === 'indian'
+                  ? 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
+                  : 'text-neutral-400 hover:text-neutral-200'
+              }`}
+              title="Authentic Indian English natural accent"
+            >
+              🇮🇳 Indian
+            </button>
+            <button
+              onClick={() => handleVoiceModeChange('studio')}
+              className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                voiceMode === 'studio'
+                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                  : 'text-neutral-400 hover:text-neutral-200'
+              }`}
+              title="Studio HD ultra-crisp voice with broadcast warmth"
+            >
+              💎 Studio
+            </button>
+          </div>
+
           <button
             onClick={() => navigateTo('/ai-tutor')}
-            className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-semibold border border-white/15 bg-white/5 hover:bg-white/10 transition-all flex items-center gap-2 cursor-pointer hover:scale-105"
+            className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-white/15 bg-white/5 hover:bg-white/10 transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
+            title="Switch to Text Chat"
           >
             <MessageSquare size={13} className="text-cyan-400" />
-            <span className="hidden sm:inline">Text AI Chat</span>
+            <span className="hidden sm:inline">Text Chat</span>
           </button>
         </div>
       </div>
 
-      {/* 2. Main Expansive Arc-Reactor Core (Maximum Screen Area) */}
-      <div className="flex-1 flex flex-col items-center justify-center relative my-auto overflow-hidden">
-        {/* Hypnotic Ambient Radial Glow */}
-        <div 
-          className="absolute w-[500px] h-[500px] rounded-full blur-3xl opacity-25 pointer-events-none transition-all duration-700"
-          style={{
-            backgroundColor: callState === 'speaking' ? '#06b6d4' : callState === 'listening' ? '#3b82f6' : callState === 'thinking' ? '#f59e0b' : '#6366f1',
-            transform: isCallActive ? `scale(${1.2 + (liveVolume / 80)})` : 'scale(0.85)'
-          }}
-        />
+      {/* Mic Error Banner (Dismissible with Retry) */}
+      {micError && (
+        <div className="z-30 my-2 w-full max-w-2xl mx-auto p-3.5 rounded-2xl bg-rose-950/80 border border-rose-500/40 text-rose-200 text-xs flex items-center justify-between gap-3 shadow-2xl animate-fade-in backdrop-blur-md">
+          <div className="flex items-center gap-2.5">
+            <AlertCircle size={18} className="text-rose-400 shrink-0" />
+            <span>{micError}</span>
+          </div>
+          <button
+            onClick={() => {
+              hasFatalMicErrorRef.current = false;
+              setMicError('');
+              initUniversalMicrophone().then(ok => {
+                if (ok && isCallActiveRef.current && callStateRef.current === 'listening') {
+                  startRecognition();
+                }
+              });
+            }}
+            className="px-3 py-1 rounded-lg bg-rose-500 hover:bg-rose-600 text-white font-semibold text-xs transition-all cursor-pointer shrink-0"
+          >
+            Retry Mic
+          </button>
+        </div>
+      )}
 
+      {/* 2. Main Expansive Stage */}
+      <div className="flex-1 flex flex-col items-center justify-center relative my-auto overflow-y-auto z-10 w-full max-w-4xl mx-auto px-2 py-4">
         {/* Status Pill */}
-        <div className="mb-8 z-10">
-          <div className={`px-5 py-2 rounded-full text-xs font-mono font-bold border flex items-center gap-2.5 transition-all shadow-md ${
+        <div className="mb-6 z-10">
+          <div className={`px-5 py-2 rounded-full text-xs font-mono font-bold border flex items-center gap-2.5 transition-all shadow-lg ${
             isCallActive 
-              ? (callState === 'speaking' ? 'bg-cyan-500/10 border-cyan-500/40 text-cyan-400' : callState === 'listening' ? 'bg-blue-500/10 border-blue-500/40 text-blue-400' : 'bg-amber-500/10 border-amber-500/40 text-amber-400')
-              : 'bg-neutral-900 border-neutral-800 text-neutral-400'
+              ? (callState === 'speaking' 
+                  ? 'bg-cyan-500/15 border-cyan-500/50 text-cyan-300 shadow-cyan-500/20' 
+                  : callState === 'listening' 
+                  ? 'bg-blue-500/15 border-blue-500/50 text-blue-300 shadow-blue-500/20' 
+                  : 'bg-amber-500/15 border-amber-500/50 text-amber-300 shadow-amber-500/20')
+              : 'bg-neutral-900/90 border-neutral-800 text-neutral-400'
           }`}>
             <span className={`w-2 h-2 rounded-full ${
-              isCallActive ? (callState === 'speaking' ? 'bg-cyan-400 animate-pulse' : callState === 'listening' ? 'bg-blue-400 animate-ping' : 'bg-amber-400 animate-bounce') : 'bg-neutral-600'
+              isCallActive 
+                ? (callState === 'speaking' 
+                    ? 'bg-cyan-400 animate-pulse' 
+                    : callState === 'listening' 
+                    ? 'bg-blue-400 animate-ping' 
+                    : 'bg-amber-400 animate-bounce') 
+                : 'bg-neutral-600'
             }`} />
             <span>
               {!isCallActive 
-                ? 'DOAP AI READY — TAP TO CALL' 
+                ? 'DOAP AI READY — TAP OR PICK A TOPIC' 
                 : callState === 'speaking' 
                 ? 'DOAP AI SPEAKING...' 
                 : callState === 'listening' 
-                ? 'LISTENING TO YOU, BUDDY...' 
+                ? 'LISTENING TO YOU (SPEAK FREELY)...' 
                 : 'THINKING...'}
             </span>
           </div>
         </div>
 
-        {/* Rotating Concentric Arc-Reactor Rings */}
+        {/* The DOAP AI Luminous Living Voice Orb */}
         <div className="relative flex items-center justify-center my-4 z-10">
+          {/* Reactive Ambient Outer Rings */}
           <div 
-            className="absolute w-80 h-80 sm:w-96 sm:h-96 rounded-full border border-dashed border-cyan-500/30 pointer-events-none transition-all duration-700"
+            className="absolute w-72 h-72 sm:w-88 sm:h-88 rounded-full border border-dashed pointer-events-none transition-all duration-700"
             style={{ 
-              animation: isCallActive ? 'spin 14s linear infinite' : 'none',
-              borderColor: isCallActive ? 'rgba(6,182,212,0.5)' : 'rgba(255,255,255,0.1)'
+              animation: isCallActive ? 'spin 18s linear infinite' : 'none',
+              borderColor: isCallActive ? 'rgba(6,182,212,0.35)' : 'rgba(255,255,255,0.08)',
+              transform: `scale(${1 + (liveVolume / 140)})`
             }}
           />
 
           <div 
-            className="absolute w-68 h-68 sm:w-80 sm:h-80 rounded-full border border-cyan-400/20 pointer-events-none transition-all duration-700"
+            className="absolute w-60 h-60 sm:w-72 sm:h-72 rounded-full border pointer-events-none transition-all duration-500"
             style={{ 
-              animation: isCallActive ? 'spin 9s linear infinite reverse' : 'none'
+              animation: isCallActive ? 'spin 12s linear infinite reverse' : 'none',
+              borderColor: isCallActive ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.05)'
             }}
           />
 
           {isCallActive && (
             <div 
-              className="absolute w-56 h-56 sm:w-68 sm:h-68 rounded-full border-2 border-cyan-400/40 animate-ping pointer-events-none"
+              className="absolute w-48 h-48 sm:w-56 sm:h-56 rounded-full border-2 border-cyan-400/40 animate-ping pointer-events-none"
               style={{ animationDuration: callState === 'speaking' ? '1.2s' : '2.4s' }}
             />
           )}
 
-          {/* Central Glowing Reactor Core Button */}
+          {/* Central Luminous Sphere Button */}
           <button
-            onClick={isCallActive ? handleEndCall : handleStartCall}
-            className={`w-44 h-44 sm:w-48 sm:h-48 rounded-full flex flex-col items-center justify-center cursor-pointer transition-all duration-500 shadow-2xl hover:scale-105 active:scale-95 z-20 ${
+            onClick={isCallActive ? handleEndCall : () => handleStartCall()}
+            className={`w-40 h-40 sm:w-48 sm:h-48 rounded-full flex flex-col items-center justify-center cursor-pointer transition-all duration-500 shadow-2xl hover:scale-105 active:scale-95 z-20 relative overflow-hidden group ${
               isCallActive 
-                ? 'bg-gradient-to-tr from-cyan-600 to-blue-500 text-white ring-8 ring-cyan-500/20 shadow-cyan-500/50' 
-                : 'bg-neutral-900 text-white hover:bg-neutral-800 ring-8 ring-white/5 border border-white/20'
+                ? (callState === 'speaking'
+                    ? 'bg-gradient-to-tr from-cyan-600 via-teal-600 to-blue-600 text-white ring-8 ring-cyan-500/30 shadow-cyan-500/50'
+                    : callState === 'listening'
+                    ? 'bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-600 text-white ring-8 ring-blue-500/30 shadow-blue-500/50'
+                    : 'bg-gradient-to-tr from-amber-600 via-orange-600 to-yellow-600 text-white ring-8 ring-amber-500/30 shadow-amber-500/50')
+                : 'bg-gradient-to-b from-neutral-900 to-neutral-950 text-white hover:from-neutral-850 hover:to-neutral-900 ring-8 ring-white/5 border border-white/15 hover:border-cyan-500/40'
             }`}
+            title={isCallActive ? 'Tap to End Call' : 'Tap to Start Call with DOAP AI'}
           >
+            {/* Sphere Highlight Sheen */}
+            <div className="absolute top-0 left-1/4 w-1/2 h-1/3 bg-white/20 rounded-full blur-sm pointer-events-none" />
+
             {isCallActive ? (
               <>
-                <PhoneOff size={42} className="animate-pulse" />
-                <span className="text-xs font-mono font-bold mt-2 uppercase tracking-wider text-cyan-100">End Call</span>
+                <PhoneOff size={38} className="animate-pulse drop-shadow-md text-rose-200" />
+                <span className="text-[11px] font-mono font-bold mt-2 uppercase tracking-wider text-rose-100 drop-shadow">End Call</span>
               </>
             ) : (
               <>
-                <Phone size={42} className="text-cyan-400" />
-                <span className="text-xs font-mono font-bold mt-2 uppercase tracking-wider text-cyan-400">Start Call</span>
+                <div className="relative">
+                  <Phone size={38} className="text-cyan-400 group-hover:scale-110 transition-transform drop-shadow" />
+                  <Sparkles size={16} className="text-amber-400 absolute -top-1 -right-2 animate-bounce" />
+                </div>
+                <span className="text-[11px] font-mono font-bold mt-2 uppercase tracking-wider text-cyan-300 group-hover:text-cyan-200">Start Call</span>
               </>
             )}
           </button>
         </div>
 
-        {/* Live Audio Equalizer Wave Bars (Reacts to Real Voice Volume) */}
+        {/* 16-Band Dynamic Acoustic Soundwave Visualizer */}
         {isCallActive && (
-          <div className="flex items-center gap-2 mt-6 h-9 z-10">
-            {[35, 65, 90, 55, 80, 100, 70, 45, 85, 60, 40].map((h, i) => (
+          <div className="flex items-center gap-1.5 sm:gap-2 mt-4 h-9 z-10">
+            {[25, 45, 75, 95, 60, 85, 100, 70, 50, 90, 65, 80, 40, 70, 55, 30].map((h, i) => (
               <div 
                 key={i} 
-                className="w-1.5 rounded-full bg-cyan-400 transition-all duration-100"
+                className="w-1 sm:w-1.5 rounded-full transition-all duration-100"
                 style={{
+                  background: callState === 'speaking' 
+                    ? 'linear-gradient(to top, #06b6d4, #3b82f6)' 
+                    : 'linear-gradient(to top, #3b82f6, #6366f1)',
                   height: callState === 'speaking' 
-                    ? `${(h * (Math.sin(Date.now() / 200 + i) + 1.2)) / 2}%` 
+                    ? `${Math.max(6, (h * (Math.sin(Date.now() / 180 + i) + 1.2)) / 2)}%` 
                     : callState === 'listening' 
-                    ? `${Math.max(6, Math.min(100, liveVolume * 1.8 + (h * 0.2)))}%` 
+                    ? `${Math.max(6, Math.min(100, liveVolume * 2.0 + (h * 0.15)))}%` 
                     : '4px',
-                  opacity: callState === 'speaking' || liveVolume > 10 ? 0.95 : 0.4
+                  opacity: callState === 'speaking' || liveVolume > 8 ? 0.95 : 0.35
                 }}
               />
             ))}
           </div>
         )}
 
-        {/* Live Subtitles & Captions (Scrollable Popup Box) */}
-        <div className="w-full max-w-3xl mt-6 z-10 px-4 flex flex-col items-center">
-          {userTranscript ? (
-            <div className="w-full max-h-48 overflow-y-auto px-6 py-3.5 rounded-2xl bg-cyan-950/50 backdrop-blur-md border border-cyan-500/30 shadow-xl animate-fade-in text-center select-text">
-              <p className="text-base sm:text-lg font-medium text-cyan-200 italic">
-                "{userTranscript}"
-              </p>
+        {/* Pre-Call State: Topic Starter Chips */}
+        {!isCallActive && (
+          <div className="w-full max-w-2xl mt-8 z-10 px-2 animate-fade-in">
+            <div className="flex items-center justify-center gap-2 mb-3 text-xs font-mono font-semibold text-neutral-400 uppercase tracking-wider">
+              <Sparkles size={13} className="text-amber-400" />
+              <span>Tap any topic to talk right away</span>
             </div>
-          ) : aiSpokenText ? (
-            <div className="w-full max-h-48 sm:max-h-60 overflow-y-auto px-6 py-4 rounded-2xl bg-black/80 backdrop-blur-md border border-neutral-800 shadow-2xl animate-fade-in text-left sm:text-center select-text">
-              <p className="text-sm sm:text-base font-medium text-neutral-100 leading-relaxed whitespace-pre-wrap">
-                {aiSpokenText}
-              </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {CONVERSATION_STARTERS.map((starter, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleStartCall(starter.prompt)}
+                  className="p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-cyan-500/40 transition-all text-left group cursor-pointer shadow-sm hover:shadow-cyan-500/10 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-between gap-3"
+                >
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 inline-block mb-1">
+                      {starter.badge}
+                    </span>
+                    <p className="text-xs sm:text-sm font-semibold text-neutral-200 group-hover:text-white truncate">
+                      {starter.title}
+                    </p>
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-white/5 group-hover:bg-cyan-500/20 border border-white/10 group-hover:border-cyan-500/30 flex items-center justify-center shrink-0 transition-colors">
+                    <ArrowRight size={14} className="text-neutral-400 group-hover:text-cyan-300 group-hover:translate-x-0.5 transition-all" />
+                  </div>
+                </button>
+              ))}
             </div>
-          ) : (
-            <p className="text-xs font-mono text-neutral-400 text-center py-2">
-              {isCallActive ? "Mic active — speak naturally in Indian English or Hindi, DOAP AI is listening!" : "Tap Start Call to talk with DOAP AI in hands-free voice"}
-            </p>
-          )}
-        </div>
-
-
-
-        {/* Floating In-Call Mute Button */}
-        {isCallActive && (
-          <div className="flex items-center gap-4 mt-8 z-10 animate-fade-in">
-            <button
-              onClick={toggleMute}
-              className={`p-3.5 rounded-full border transition-all cursor-pointer flex items-center gap-2 text-xs font-semibold ${
-                isMuted 
-                  ? 'bg-rose-500/20 border-rose-500/40 text-rose-300' 
-                  : 'bg-neutral-900 border-neutral-700 text-neutral-300 hover:text-white hover:border-white/30'
-              }`}
-            >
-              {isMuted ? <MicOff size={18} /> : <Mic size={18} />}
-              <span>{isMuted ? 'Muted' : 'Mic Active'}</span>
-            </button>
           </div>
         )}
+
+        {/* In-Call Dialogue Card (Scrollable & Non-Truncated with Copy & Replay) */}
+        {isCallActive && (userTranscript || aiSpokenText) && (
+          <div className="w-full max-w-2xl mt-6 z-10 px-2 flex flex-col gap-3 animate-fade-in">
+            {/* User Spoken Prompt Bubble */}
+            {userTranscript && (
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-cyan-950/50 backdrop-blur-xl border border-cyan-500/30 shadow-lg text-left select-text">
+                <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-cyan-400 mb-1 flex items-center gap-1.5">
+                  <Mic size={11} />
+                  <span>You Spoke:</span>
+                </div>
+                <p className="text-xs sm:text-sm font-medium text-cyan-100 italic leading-relaxed">
+                  "{userTranscript}"
+                </p>
+              </div>
+            )}
+
+            {/* DOAP AI Spoken Response Card */}
+            {aiSpokenText && (
+              <div className="p-4 sm:p-5 rounded-2xl bg-neutral-900/90 backdrop-blur-xl border border-white/10 shadow-2xl text-left select-text flex flex-col gap-2">
+                <div className="flex items-center justify-between pb-2 border-b border-white/10 gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center">
+                      <Sparkles size={12} className="text-cyan-400" />
+                    </div>
+                    <span className="text-xs font-bold text-neutral-200">DOAP AI</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-neutral-800 text-neutral-400 border border-neutral-700">
+                      {voiceMode === 'indian' ? '🇮🇳 Indian Accent' : '💎 Studio HD'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    {/* Copy Text Button */}
+                    <button
+                      onClick={() => handleCopyText(aiSpokenText)}
+                      className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition-all cursor-pointer flex items-center gap-1 text-[11px]"
+                      title="Copy response text"
+                    >
+                      {hasCopied ? (
+                        <>
+                          <Check size={12} className="text-emerald-400" />
+                          <span className="text-emerald-400 font-medium">Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={12} />
+                          <span className="hidden sm:inline">Copy</span>
+                        </>
+                      )}
+                    </button>
+
+                    {/* Replay Audio Button */}
+                    <button
+                      onClick={handleReplay}
+                      className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition-all cursor-pointer flex items-center gap-1 text-[11px]"
+                      title="Replay speech"
+                    >
+                      <RotateCcw size={12} />
+                      <span className="hidden sm:inline">Replay</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Fully Scrollable Dialogue Content — No Truncation */}
+                <div className="max-h-52 sm:max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                  <p className="text-xs sm:text-sm font-normal text-neutral-100 leading-relaxed whitespace-pre-wrap">
+                    {aiSpokenText}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Idle Instructions Footer */}
+        {isCallActive && !userTranscript && !aiSpokenText && (
+          <p className="text-xs font-mono text-neutral-400 text-center py-4 z-10">
+            Mic active — speak naturally in Indian English or Hindi, DOAP AI is listening!
+          </p>
+        )}
       </div>
+
+      {/* 3. Floating Bottom Dock (In-Call Controls) */}
+      {isCallActive && (
+        <div className="flex items-center justify-center gap-3 z-30 pb-2 animate-fade-in">
+          <div className="flex items-center gap-2.5 p-2 rounded-full bg-neutral-900/90 backdrop-blur-2xl border border-white/15 shadow-2xl">
+            {/* Mute / Unmute Button */}
+            <button
+              onClick={toggleMute}
+              className={`p-3 rounded-full border transition-all cursor-pointer flex items-center gap-2 text-xs font-semibold ${
+                isMuted 
+                  ? 'bg-rose-500/20 border-rose-500/50 text-rose-300 hover:bg-rose-500/30' 
+                  : 'bg-white/5 border-white/10 text-neutral-200 hover:bg-white/10 hover:text-white'
+              }`}
+              title={isMuted ? 'Unmute microphone' : 'Mute microphone'}
+            >
+              {isMuted ? <MicOff size={16} /> : <Mic size={16} />}
+              <span className="hidden sm:inline">{isMuted ? 'Muted' : 'Mute'}</span>
+            </button>
+
+            {/* Accent Mode Switcher in Dock */}
+            <button
+              onClick={() => handleVoiceModeChange(voiceMode === 'indian' ? 'studio' : 'indian')}
+              className="p-3 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-neutral-200 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
+              title="Toggle between Indian accent and Studio HD"
+            >
+              <span>{voiceMode === 'indian' ? '🇮🇳' : '💎'}</span>
+              <span className="hidden sm:inline">{voiceMode === 'indian' ? 'Indian Accent' : 'Studio HD'}</span>
+            </button>
+
+            {/* End Call Button */}
+            <button
+              onClick={handleEndCall}
+              className="px-5 py-3 rounded-full bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shadow-lg shadow-rose-600/30 hover:scale-105 active:scale-95"
+              title="End Voice Call"
+            >
+              <PhoneOff size={16} />
+              <span>End Call</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -6,18 +6,15 @@ const ELEVEN_API_KEY = (typeof localStorage !== 'undefined' ? localStorage.getIt
                        (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_ELEVENLABS_KEY) ||
                        ['sk_5f91a262d00d2924db05', '7bf3fd48a71b8857415c268c9452'].join('');
 
-/// Official ElevenLabs Studio Voices configured for Mark LII J.A.R.V.I.S. & Native AI Personas
+/// Official ElevenLabs Studio Voices configured for DOAP AI Voice Engine
 export const ELEVEN_VOICES = {
-  jarvis: { id: 'pNInz6obpgDQGcFmaJgB', name: 'J.A.R.V.I.S. (Mark LII - Deep, Calm & Resonant)' },
-  charon: { id: 'pNInz6obpgDQGcFmaJgB', name: 'Charon (Mark LII J.A.R.V.I.S. Core)' },
-  doap: { id: 'pNInz6obpgDQGcFmaJgB', name: 'J.A.R.V.I.S. (Mark LII Core)' },
-  adam: { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam (Mark LII J.A.R.V.I.S. Voice)' },
-  fenrir: { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'Fenrir (Mark LII - Technical & Crisp)' },
-  puck: { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'Puck (Mark LII - Energetic Tech Buddy)' },
-  kore: { id: 'Xb7hH8MSUJpSbSDYk0k2', name: 'Kore (Mark LII - Warm & Empathetic)' },
-  aoede: { id: 'Xb7hH8MSUJpSbSDYk0k2', name: 'Aoede (Mark LII - Melodic & Clear)' },
-  antoni: { id: 'ErXwobaYiN019PkySvjV', name: 'Antoni (Warm Conversational Tutor)' },
-  brian: { id: 'nPczCjzI2devNBz1zQrb', name: 'Brian (British Studio Mentor)' }
+  doap: { id: 'pNInz6obpgDQGcFmaJgB', name: 'DOAP AI Studio Voice (Warm, Articulate & Resonant)' },
+  conversational: { id: 'ErXwobaYiN019PkySvjV', name: 'DOAP AI Natural Tutor (Warm & Empathetic)' },
+  studio: { id: 'pNInz6obpgDQGcFmaJgB', name: 'DOAP AI Studio HD' },
+  antoni: { id: 'ErXwobaYiN019PkySvjV', name: 'DOAP AI Conversational' },
+  fenrir: { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'DOAP AI Technical' },
+  kore: { id: 'Xb7hH8MSUJpSbSDYk0k2', name: 'DOAP AI Empathetic' },
+  brian: { id: 'nPczCjzI2devNBz1zQrb', name: 'DOAP AI Academic Mentor' }
 };
 
 let sharedAudioCtx = null;
@@ -48,65 +45,62 @@ export function stopElevenLabsAudio() {
 /**
  * Intelligent Neural Voice Selector for Browser SpeechSynthesis
  * Prioritizes Authentic Indian English Natural & Neural Voices (Neerja, Prabhat, Google English India)
+ * Strictly excludes legacy Windows SAPI5 robotic voices (Microsoft Ravi, Heera).
  */
-export function getBestNaturalVoice(synth) {
+export function getBestNaturalVoice(synth, mode = 'indian') {
   if (!synth) return null;
   const voices = synth.getVoices ? synth.getVoices() : [];
   if (!voices || voices.length === 0) return null;
 
-  // 1. Authentic Indian English Natural & Neural Voices (Microsoft Neerja, Microsoft Prabhat, Google English India)
-  const indianNaturalVoice = voices.find(v => {
-    const name = (v.name || '').toLowerCase();
-    const lang = (v.lang || '').toLowerCase().replace('_', '-');
-    const isIndian = lang === 'en-in' || name.includes('india') || name.includes('neerja') || name.includes('prabhat');
-    const isNatural = name.includes('online (natural)') || name.includes('natural') || name.includes('google') || name.includes('neural');
-    return isIndian && isNatural;
-  });
-  if (indianNaturalVoice) return indianNaturalVoice;
+  // Strict check: exclude robotic, low-quality desktop/SAPI5 synthesizers
+  const isRobotic = (name) => {
+    const n = (name || '').toLowerCase();
+    return (
+      n.includes('ravi') || 
+      n.includes('heera') || 
+      n.includes('desktop') || 
+      n.includes('sapi') || 
+      n.includes('espeak') ||
+      n.includes('sam')
+    );
+  };
 
-  // 2. Any Standard Indian English voice (Google English (India), Neerja, Prabhat, Heera, Ravi)
-  const indianVoice = voices.find(v => {
-    const name = (v.name || '').toLowerCase();
-    const lang = (v.lang || '').toLowerCase().replace('_', '-');
-    return lang === 'en-in' || name.includes('india') || name.includes('neerja') || name.includes('prabhat') || name.includes('heera') || name.includes('ravi');
-  });
-  if (indianVoice) return indianVoice;
+  if (mode === 'indian') {
+    // 1. Prioritize authentic Indian English Neural/Natural Voices (Edge Neerja/Prabhat, Google Indian English)
+    const indianNaturalVoice = voices.find(v => {
+      const name = (v.name || '').toLowerCase();
+      const lang = (v.lang || '').toLowerCase().replace('_', '-');
+      const isIndian = lang === 'en-in' || name.includes('india') || name.includes('neerja') || name.includes('prabhat');
+      return isIndian && !isRobotic(name);
+    });
+    if (indianNaturalVoice) return indianNaturalVoice;
 
-  // 3. Indian Hindi Natural Voice Fallback if user speaks Hindi/Hinglish
-  const hindiVoice = voices.find(v => {
-    const name = (v.name || '').toLowerCase();
-    const lang = (v.lang || '').toLowerCase().replace('_', '-');
-    return lang === 'hi-in' || name.includes('hindi') || name.includes('हिन्दी');
-  });
-  if (hindiVoice) return hindiVoice;
+    // If only robotic Indian voices exist on this machine, return null to delegate to ElevenLabs Multilingual v2
+    return null;
+  }
 
-  // 4. Natural / Neural Online Voices (Edge / Windows 11 / Chrome Natural)
-  const preferredNatural = voices.find(v => 
+  // 2. High-Quality Natural Online Voices (Edge / Chrome Natural)
+  const naturalOnline = voices.find(v => 
     (v.name.includes('Online (Natural)') || v.name.includes('Natural')) &&
-    (v.lang.startsWith('en') || v.lang.startsWith('hi'))
+    !isRobotic(v.name)
   );
-  if (preferredNatural) return preferredNatural;
+  if (naturalOnline) return naturalOnline;
 
-  // 5. Google High-Quality Voices (Chrome)
-  const googleNatural = voices.find(v => 
-    v.name.includes('Google US English') ||
-    v.name.includes('Google UK English Male') ||
-    v.name.includes('Google UK English Female')
+  // 3. Google High-Quality Voices (Chrome)
+  const googleVoice = voices.find(v => 
+    (v.name.includes('Google') && (v.lang || '').startsWith('en')) &&
+    !isRobotic(v.name)
   );
-  if (googleNatural) return googleNatural;
+  if (googleVoice) return googleVoice;
 
-  // 6. Non-robotic English voice
-  const nonRoboticEn = voices.find(v => 
-    v.lang.startsWith('en') && 
-    !v.name.toLowerCase().includes('desktop') && 
-    !v.name.toLowerCase().includes('espeak') && 
-    !v.name.toLowerCase().includes('sapi')
+  // 4. Any clean non-robotic English voice
+  const cleanEnglish = voices.find(v => 
+    (v.lang || '').toLowerCase().startsWith('en') && 
+    !isRobotic(v.name)
   );
-  if (nonRoboticEn) return nonRoboticEn;
+  if (cleanEnglish) return cleanEnglish;
 
-  // 7. Fallback to any English voice
-  const anyEn = voices.find(v => v.lang.startsWith('en'));
-  return anyEn || voices[0];
+  return null;
 }
 
 /**
