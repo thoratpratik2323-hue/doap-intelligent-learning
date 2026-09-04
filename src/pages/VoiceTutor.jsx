@@ -7,8 +7,7 @@ import {
   MessageSquare, 
   Clock, 
   Sparkles,
-  Zap,
-  Send
+  Zap
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -128,7 +127,6 @@ export const VoiceTutor = () => {
   const [userTranscript, setUserTranscript] = useState('');
   const [aiSpokenText, setAiSpokenText] = useState('');
   const [liveVolume, setLiveVolume] = useState(0);
-  const [manualInput, setManualInput] = useState('');
 
   const synthRef = useRef(typeof window !== 'undefined' ? window.speechSynthesis : null);
   const durationTimerRef = useRef(null);
@@ -665,38 +663,7 @@ export const VoiceTutor = () => {
           )}
         </div>
 
-        {/* Quick Interactive Input (Type or Speak) */}
-        {isCallActive && (
-          <form 
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!manualInput.trim()) return;
-              const text = manualInput.trim();
-              setManualInput('');
-              stopRecognition();
-              handleUserSpeechComplete(text);
-            }}
-            className="w-full max-w-md flex items-center gap-2 mt-4 px-4 z-20 animate-fade-in"
-          >
-            <div className="flex-1 relative flex items-center">
-              <input
-                type="text"
-                value={manualInput}
-                onChange={(e) => setManualInput(e.target.value)}
-                placeholder="Or type here if mic isn't available..."
-                className="w-full bg-white/5 border border-white/15 focus:border-cyan-500/60 rounded-full py-2 pl-4 pr-9 text-xs text-white placeholder-neutral-500 outline-none backdrop-blur-md transition-all shadow-inner"
-              />
-              {manualInput.trim() && (
-                <button
-                  type="submit"
-                  className="absolute right-1.5 p-1.5 rounded-full bg-cyan-500 text-black hover:bg-cyan-400 transition-all cursor-pointer"
-                >
-                  <Send size={12} />
-                </button>
-              )}
-            </div>
-          </form>
-        )}
+
 
         {/* Floating In-Call Mute Button */}
         {isCallActive && (
