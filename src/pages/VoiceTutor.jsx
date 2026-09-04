@@ -131,6 +131,9 @@ export const VoiceTutor = () => {
   const synthRef = useRef(typeof window !== 'undefined' ? window.speechSynthesis : null);
   const durationTimerRef = useRef(null);
   const isMountedRef = useRef(true);
+  const activeUtteranceRef = useRef(null);
+  const speechWatchdogTimerRef = useRef(null);
+  const isStartingRecognitionRef = useRef(false);
 
   // Microphone & MediaRecorder references for universal STT (Firefox + Chrome)
   const mediaStreamRef = useRef(null);
@@ -152,6 +155,12 @@ export const VoiceTutor = () => {
     return () => {
       isMountedRef.current = false;
       cleanupMediaStream();
+      if (speechWatchdogTimerRef.current) {
+        clearTimeout(speechWatchdogTimerRef.current);
+        speechWatchdogTimerRef.current = null;
+      }
+      activeUtteranceRef.current = null;
+      if (typeof window !== 'undefined') window._doapActiveUtterance = null;
       if (synthRef.current) synthRef.current.cancel();
       stopElevenLabsAudio();
     };
@@ -257,15 +266,26 @@ export const VoiceTutor = () => {
   };
 
   const startRecognition = () => {
-    if (!isMountedRef.current || !isCallActiveRef.current || isMutedRef.current) return;
+    if (!isMountedRef.current || !isCallActiveRef.current || isMutedRef.current || callStateRef.current !== 'listening') return;
     const SpeechRec = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
     if (!SpeechRec) {
       console.warn('[SpeechRec] Web Speech API not supported in this browser');
       return;
     }
 
-    // Stop and clean any previous instance
-    stopRecognition();
+    if (isStartingRecognitionRef.current) return;
+    isStartingRecognitionRef.current = true;
+
+    // Clean up any existing active recognition instance safely
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.abort();
+      } catch(e) {}
+      recognitionRef.current = null;
+    }
 
     try {
       const rec = new SpeechRec();
@@ -290,7 +310,7 @@ export const VoiceTutor = () => {
             clearTimeout(chromeSpeechTimerRef.current);
           }
 
-          // Trigger answer after 1.1s natural pause
+          // Trigger answer after 1.0s natural pause
           chromeSpeechTimerRef.current = setTimeout(() => {
             if (callStateRef.current === 'listening' && clean.length > 0 && !isProcessingSpeechRef.current) {
               isProcessingSpeechRef.current = true;
@@ -298,7 +318,7 @@ export const VoiceTutor = () => {
               stopRecognition();
               handleUserSpeechComplete(clean);
             }
-          }, 1100);
+          }, 1000);
         }
       };
 
@@ -309,20 +329,29 @@ export const VoiceTutor = () => {
       };
 
       rec.onend = () => {
-        // Auto-revive recognition if the session is still active and listening
-        if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
+        recognitionRef.current = null;
+        isStartingRecognitionRef.current = false;
+        // Auto-revive recognition immediately if the session is still active and in listening state
+        if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening' && !isProcessingSpeechRef.current) {
           setTimeout(() => {
-            if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
+            if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening' && !isProcessingSpeechRef.current) {
               startRecognition();
             }
-          }, 150);
+          }, 100);
         }
       };
 
       rec.start();
       recognitionRef.current = rec;
+      isStartingRecognitionRef.current = false;
     } catch(err) {
-      console.warn('[SpeechRec] Start error:', err);
+      isStartingRecognitionRef.current = false;
+      console.warn('[SpeechRec] Start error, retrying in 250ms:', err);
+      setTimeout(() => {
+        if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
+          startRecognition();
+        }
+      }, 250);
     }
   };
 
@@ -336,10 +365,11 @@ export const VoiceTutor = () => {
         recognitionRef.current.onresult = null;
         recognitionRef.current.onend = null;
         recognitionRef.current.onerror = null;
-        recognitionRef.current.stop();
+        recognitionRef.current.abort();
       } catch(e) {}
       recognitionRef.current = null;
     }
+    isStartingRecognitionRef.current = false;
   };
 
   const resumeListeningCycle = () => {
@@ -348,7 +378,11 @@ export const VoiceTutor = () => {
     lastSpokenTextRef.current = '';
     setUserTranscript('');
     updateCallState('listening');
-    startRecognition();
+    setTimeout(() => {
+      if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
+        startRecognition();
+      }
+    }, 100);
   };
 
   const handleStartCall = async () => {
@@ -453,52 +487,85 @@ export const VoiceTutor = () => {
     stopElevenLabsAudio();
     if (synthRef.current) synthRef.current.cancel();
 
+    let finished = false;
+    const safeComplete = () => {
+      if (finished) return;
+      finished = true;
+      if (speechWatchdogTimerRef.current) {
+        clearTimeout(speechWatchdogTimerRef.current);
+        speechWatchdogTimerRef.current = null;
+      }
+      activeUtteranceRef.current = null;
+      if (typeof window !== 'undefined') window._doapActiveUtterance = null;
+      if (onComplete && isMountedRef.current) {
+        onComplete();
+      }
+    };
+
+    // Watchdog timer: guarantees listening cycle ALWAYS resumes even on audio stutter
+    const estimatedDurationMs = Math.min(22000, Math.max(3500, (text || '').length * 95));
+    speechWatchdogTimerRef.current = setTimeout(() => {
+      stopElevenLabsAudio();
+      if (synthRef.current) synthRef.current.cancel();
+      safeComplete();
+    }, estimatedDurationMs);
+
     try {
       await speakElevenLabs(
         text, 
         'doap',
         () => {
-          if (onComplete && isMountedRef.current) onComplete();
+          safeComplete();
         },
         () => {
-          fallbackBrowserSpeech(text, onComplete);
+          fallbackBrowserSpeech(text, safeComplete);
         }
       );
     } catch (err) {
-      fallbackBrowserSpeech(text, onComplete);
+      fallbackBrowserSpeech(text, safeComplete);
     }
   };
 
   const fallbackBrowserSpeech = (text, onComplete) => {
     if (!synthRef.current) {
-      updateCallState('listening');
-      isProcessingSpeechRef.current = false;
       if (onComplete) onComplete();
       return;
     }
 
-    const spokenHumanText = humanizeTextForSpeech(text);
-    const utterance = new SpeechSynthesisUtterance(spokenHumanText);
-    utterance.rate = 0.98;
-    utterance.pitch = 1.0;
+    try {
+      synthRef.current.cancel();
+      const spokenHumanText = humanizeTextForSpeech(text);
+      const utterance = new SpeechSynthesisUtterance(spokenHumanText);
+      utterance.rate = 0.98;
+      utterance.pitch = 1.0;
 
-    const naturalVoice = getBestNaturalVoice(synthRef.current);
-    if (naturalVoice) {
-      utterance.voice = naturalVoice;
-      utterance.lang = naturalVoice.lang || 'en-US';
+      const naturalVoice = getBestNaturalVoice(synthRef.current);
+      if (naturalVoice) {
+        utterance.voice = naturalVoice;
+        utterance.lang = naturalVoice.lang || 'en-US';
+      }
+
+      // Keep live reference so Chrome does not garbage-collect utterance mid-speech
+      activeUtteranceRef.current = utterance;
+      if (typeof window !== 'undefined') window._doapActiveUtterance = utterance;
+
+      utterance.onend = () => {
+        activeUtteranceRef.current = null;
+        if (typeof window !== 'undefined') window._doapActiveUtterance = null;
+        if (onComplete && isMountedRef.current) onComplete();
+      };
+
+      utterance.onerror = () => {
+        activeUtteranceRef.current = null;
+        if (typeof window !== 'undefined') window._doapActiveUtterance = null;
+        if (onComplete && isMountedRef.current) onComplete();
+      };
+
+      synthRef.current.speak(utterance);
+    } catch(err) {
+      console.warn('[BrowserSpeech] Speak error:', err);
+      if (onComplete && isMountedRef.current) onComplete();
     }
-
-    utterance.onend = () => {
-      isProcessingSpeechRef.current = false;
-      if (onComplete && isMountedRef.current) onComplete();
-    };
-
-    utterance.onerror = () => {
-      isProcessingSpeechRef.current = false;
-      if (onComplete && isMountedRef.current) onComplete();
-    };
-
-    synthRef.current.speak(utterance);
   };
 
   const toggleMute = () => {
