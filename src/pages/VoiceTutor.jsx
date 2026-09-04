@@ -87,7 +87,9 @@ export const VoiceTutor = () => {
   };
 
   const [isCallActive, setIsCallActive] = useState(false);
+  const isCallActiveRef = useRef(false);
   const [isMuted, setIsMuted] = useState(false);
+  const isMutedRef = useRef(false);
   const [callDuration, setCallDuration] = useState(0);
 
   const [userTranscript, setUserTranscript] = useState('');
@@ -301,12 +303,16 @@ export const VoiceTutor = () => {
           };
 
           rec.onend = () => {
-            if (isMountedRef.current && isCallActive && callStateRef.current !== 'idle') {
-              try { rec.start(); } catch(e) {}
+            if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current !== 'idle') {
+              setTimeout(() => {
+                if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
+                  try { rec.start(); } catch(e) {}
+                }
+              }, 150);
             }
           };
 
-          rec.start();
+          try { rec.start(); } catch(e) {}
           recognitionRef.current = rec;
         } catch(e) {}
       }
@@ -338,7 +344,7 @@ export const VoiceTutor = () => {
 
       recorder.onstop = async () => {
         if (audioChunksRef.current.length === 0) {
-          if (isCallActive && isMountedRef.current && !isMuted && !isProcessingSpeechRef.current) {
+          if (isCallActiveRef.current && isMountedRef.current && !isMutedRef.current && !isProcessingSpeechRef.current) {
             updateCallState('listening');
             startMediaRecording();
           }
@@ -388,10 +394,28 @@ export const VoiceTutor = () => {
     }
   };
 
+  const resumeListeningCycle = () => {
+    if (!isMountedRef.current || !isCallActiveRef.current || isMutedRef.current) return;
+    isProcessingSpeechRef.current = false;
+    hasSpokenInSessionRef.current = false;
+    lastSpokenTextRef.current = '';
+    setUserTranscript('');
+    updateCallState('listening');
+    startMediaRecording();
+    if (recognitionRef.current) {
+      setTimeout(() => {
+        if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
+          try { recognitionRef.current.start(); } catch(e) {}
+        }
+      }, 150);
+    }
+  };
+
   const handleStartCall = async () => {
     unlockAudioContext();
     playBootChime();
     setIsCallActive(true);
+    isCallActiveRef.current = true;
     isProcessingSpeechRef.current = false;
     updateCallState('speaking');
     setUserTranscript('');
@@ -404,18 +428,14 @@ export const VoiceTutor = () => {
     setAiSpokenText(welcome);
 
     speakResponse(welcome, () => {
-      if (isMountedRef.current && !isMuted) {
-        updateCallState('listening');
-        isProcessingSpeechRef.current = false;
-        hasSpokenInSessionRef.current = false;
-        startMediaRecording();
-      }
+      resumeListeningCycle();
     });
   };
 
   const handleEndCall = () => {
     playShutdownChime();
     setIsCallActive(false);
+    isCallActiveRef.current = false;
     updateCallState('idle');
     isProcessingSpeechRef.current = false;
     cleanupMediaStream();
@@ -457,12 +477,7 @@ export const VoiceTutor = () => {
     if (actionResult) {
       setAiSpokenText(actionResult);
       speakResponse(actionResult, () => {
-        if (isMountedRef.current && isCallActive && !isMuted) {
-          isProcessingSpeechRef.current = false;
-          hasSpokenInSessionRef.current = false;
-          updateCallState('listening');
-          startMediaRecording();
-        }
+        resumeListeningCycle();
       });
       return;
     }
@@ -479,22 +494,12 @@ export const VoiceTutor = () => {
       setAiSpokenText(speechCleaned);
 
       speakResponse(speechCleaned, () => {
-        if (isMountedRef.current && isCallActive && !isMuted) {
-          isProcessingSpeechRef.current = false;
-          hasSpokenInSessionRef.current = false;
-          updateCallState('listening');
-          startMediaRecording();
-        }
+        resumeListeningCycle();
       });
     } catch (err) {
       const fallback = `I'm listening, buddy! Tell me what you'd like to work on or explore today.`;
       speakResponse(fallback, () => {
-        if (isMountedRef.current && isCallActive && !isMuted) {
-          isProcessingSpeechRef.current = false;
-          hasSpokenInSessionRef.current = false;
-          updateCallState('listening');
-          startMediaRecording();
-        }
+        resumeListeningCycle();
       });
     }
   };
@@ -503,6 +508,11 @@ export const VoiceTutor = () => {
     updateCallState('speaking');
     stopElevenLabsAudio();
     if (synthRef.current) synthRef.current.cancel();
+
+    // Abort speech recognition while AI is speaking so mic does not transcribe AI speech
+    if (recognitionRef.current) {
+      try { recognitionRef.current.abort(); } catch(e) {}
+    }
 
     try {
       await speakElevenLabs(
@@ -563,17 +573,19 @@ export const VoiceTutor = () => {
   const toggleMute = () => {
     if (isMuted) {
       setIsMuted(false);
-      updateCallState('listening');
-      isProcessingSpeechRef.current = false;
-      hasSpokenInSessionRef.current = false;
-      startMediaRecording();
+      isMutedRef.current = false;
+      resumeListeningCycle();
     } else {
       setIsMuted(true);
+      isMutedRef.current = true;
       if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
         try { mediaRecorderRef.current.pause(); } catch(e){}
       }
       stopElevenLabsAudio();
       if (synthRef.current) synthRef.current.cancel();
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch(e){}
+      }
       updateCallState('idle');
       isProcessingSpeechRef.current = false;
     }

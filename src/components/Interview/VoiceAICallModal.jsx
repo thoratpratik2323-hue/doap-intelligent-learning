@@ -20,15 +20,23 @@ import { speakElevenLabs, stopElevenLabsAudio } from '../../services/elevenLabsS
 
 export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode, accentHex }) => {
   const [callState, setCallState] = useState('idle'); // 'listening' | 'thinking' | 'speaking'
+  const callStateRef = useRef('idle');
   const [userTranscript, setUserTranscript] = useState('');
   const [aiResponseText, setAiResponseText] = useState('');
   const [isMuted, setIsMuted] = useState(false);
+  const isMutedRef = useRef(false);
   const [callDuration, setCallDuration] = useState(0);
   const [conversationLogs, setConversationLogs] = useState([]);
   const [manualInput, setManualInput] = useState('');
   const [isVoiceSupported, setIsVoiceSupported] = useState(true);
 
+  const updateCallState = (newState) => {
+    callStateRef.current = newState;
+    setCallState(newState);
+  };
+
   const recognitionRef = useRef(null);
+  const isCallActiveRef = useRef(false);
   const synthRef = useRef(typeof window !== 'undefined' ? window.speechSynthesis : null);
   const durationTimerRef = useRef(null);
   const modalSpeechTimerRef = useRef(null);
@@ -38,6 +46,7 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
   useEffect(() => {
     return () => {
       isComponentMounted.current = false;
+      isCallActiveRef.current = false;
       stopElevenLabsAudio();
       if (modalSpeechTimerRef.current) {
         clearTimeout(modalSpeechTimerRef.current);
@@ -66,6 +75,7 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
     recognition.lang = 'en-US';
 
     recognition.onresult = (event) => {
+      if (callStateRef.current !== 'listening') return;
       let interim = '';
       let final = '';
 
@@ -88,7 +98,7 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
 
         // Debounce trigger after 1.1s natural pause
         modalSpeechTimerRef.current = setTimeout(() => {
-          if (isComponentMounted.current && fullSpoken.length > 2) {
+          if (isComponentMounted.current && fullSpoken.length > 2 && callStateRef.current === 'listening') {
             handleUserSpeechComplete(fullSpoken);
           }
         }, 1100);
@@ -99,6 +109,16 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
       console.warn("Speech recognition error:", e.error);
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
         setIsVoiceSupported(false);
+      }
+    };
+
+    recognition.onend = () => {
+      if (isComponentMounted.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
+        setTimeout(() => {
+          if (isComponentMounted.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
+            try { recognition.start(); } catch(e){}
+          }
+        }, 150);
       }
     };
 
@@ -117,6 +137,7 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
 
   // Call duration stopwatch
   useEffect(() => {
+    isCallActiveRef.current = isOpen;
     if (isOpen) {
       setCallDuration(0);
       durationTimerRef.current = setInterval(() => {
@@ -126,11 +147,11 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
       // Start initial greeting & listening
       startInitialGreeting();
     } else {
+      updateCallState('idle');
       if (durationTimerRef.current) clearInterval(durationTimerRef.current);
+      stopElevenLabsAudio();
       if (synthRef.current) synthRef.current.cancel();
-      if (recognitionRef.current) {
-        try { recognitionRef.current.stop(); } catch(err){}
-      }
+      stopListening();
     }
 
     return () => {
@@ -152,8 +173,8 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
   };
 
   const startListening = () => {
-    if (isMuted) return;
-    setCallState('listening');
+    if (isMutedRef.current) return;
+    updateCallState('listening');
     setUserTranscript('');
     
     if (recognitionRef.current && isVoiceSupported) {
@@ -168,7 +189,7 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
   const stopListening = () => {
     if (recognitionRef.current) {
       try {
-        recognitionRef.current.stop();
+        recognitionRef.current.abort();
       } catch (err) {}
     }
   };
@@ -177,7 +198,7 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
     if (!spokenText.trim()) return;
 
     stopListening();
-    setCallState('thinking');
+    updateCallState('thinking');
     setUserTranscript(spokenText);
 
     // Save to conversation log
@@ -200,20 +221,23 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
 
       speakAIResponse(vocalText, () => {
         // After speaking finished, automatically resume listening for hands-free flow
-        if (isComponentMounted.current) {
+        if (isComponentMounted.current && isCallActiveRef.current) {
           startListening();
         }
       });
     } catch (err) {
       const fallback = "I understood your point. Let's break this down step-by-step. What specific part should we focus on?";
       speakAIResponse(fallback, () => {
-        startListening();
+        if (isComponentMounted.current && isCallActiveRef.current) {
+          startListening();
+        }
       });
     }
   };
 
   const speakAIResponse = async (text, onFinished) => {
-    setCallState('speaking');
+    updateCallState('speaking');
+    stopListening();
     stopElevenLabsAudio();
     if (synthRef.current) synthRef.current.cancel();
 
@@ -235,7 +259,7 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
 
   const fallbackModalSpeech = (text, onFinished) => {
     if (!synthRef.current) {
-      setCallState('listening');
+      updateCallState('listening');
       if (onFinished) onFinished();
       return;
     }
@@ -275,16 +299,22 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
   const toggleMute = () => {
     if (isMuted) {
       setIsMuted(false);
+      isMutedRef.current = false;
       startListening();
     } else {
       setIsMuted(true);
+      isMutedRef.current = true;
       stopListening();
+      stopElevenLabsAudio();
       if (synthRef.current) synthRef.current.cancel();
-      setCallState('idle');
+      updateCallState('idle');
     }
   };
 
   const handleEndCall = () => {
+    isCallActiveRef.current = false;
+    updateCallState('idle');
+    stopElevenLabsAudio();
     if (synthRef.current) synthRef.current.cancel();
     stopListening();
     
