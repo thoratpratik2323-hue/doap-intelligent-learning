@@ -100,6 +100,7 @@ const AppContent = () => {
       case '/study-plan':
         return <StudyPlan />;
       case '/coding':
+      case '/coding-practice':
         return <CodingPractice />;
       case '/interview':
         return <AIInterview />;

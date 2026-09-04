@@ -80,7 +80,7 @@ export const SmartCoachRecommendation = ({ className = '' }) => {
         primaryAction: {
           label: 'Launch Coding Sandbox',
           icon: Code,
-          onClick: () => navigateTo('/coding-practice')
+          onClick: () => navigateTo('/coding')
         },
         secondaryAction: {
           label: 'Ask AI Tutor for Code Sample',

@@ -28,12 +28,21 @@ class LocalSystemConnector {
 
   checkConnection() {
     if (typeof window === 'undefined') return;
+    // Only attempt WebSocket connection if explicitly enabled or opted into
+    // This prevents red net::ERR_CONNECTION_REFUSED in browser DevTools on default page loads
+    const isBridgeEnabled = typeof localStorage !== 'undefined' && localStorage.getItem('doap_enable_local_bridge') === 'true';
+    if (!isBridgeEnabled) {
+      this.isConnected = false;
+      this.notify();
+      return;
+    }
+
     try {
       const ws = new WebSocket(this.wsUrl);
 
       const timer = setTimeout(() => {
         if (ws.readyState !== WebSocket.OPEN) {
-          ws.close();
+          try { ws.close(); } catch (e) {}
           this.isConnected = false;
           this.notify();
         }
@@ -60,6 +69,25 @@ class LocalSystemConnector {
       this.isConnected = false;
       this.notify();
     }
+  }
+
+  enableAndConnect() {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('doap_enable_local_bridge', 'true');
+    }
+    this.checkConnection();
+  }
+
+  disableBridge() {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('doap_enable_local_bridge');
+    }
+    if (this.socket) {
+      try { this.socket.close(); } catch (e) {}
+      this.socket = null;
+    }
+    this.isConnected = false;
+    this.notify();
   }
 
   /**

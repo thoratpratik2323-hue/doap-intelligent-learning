@@ -22,6 +22,20 @@ const defaultGk = [
 ].join('');
 
 export async function generateSmartTutorResponse(message, userName = 'there', history = [], options = {}) {
+  // Normalize polymorphic argument calling patterns (e.g. generateSmartTutorResponse(msg, history) or generateSmartTutorResponse(msg, userName, options))
+  if (Array.isArray(userName)) {
+    options = typeof history === 'object' && !Array.isArray(history) ? history : options;
+    history = userName;
+    userName = 'there';
+  } else if (typeof userName === 'object' && userName !== null) {
+    options = userName;
+    userName = 'there';
+  }
+  if (typeof history === 'object' && !Array.isArray(history) && history !== null) {
+    options = history;
+    history = [];
+  }
+
   const rawText = (message || '').trim();
   if (!rawText) {
     return options.voiceMode 

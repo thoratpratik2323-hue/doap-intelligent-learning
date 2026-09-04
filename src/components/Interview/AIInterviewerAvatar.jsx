@@ -29,7 +29,7 @@ export const AIInterviewerAvatar = ({ questionText = '', isAiSpeaking = false, o
     try {
       await speakElevenLabs(
         cleanSpeech,
-        'jarvis',
+        'doap',
         () => {
           setSpeakingState('listening');
           if (onSpeechComplete) onSpeechComplete();
@@ -55,10 +55,12 @@ export const AIInterviewerAvatar = ({ questionText = '', isAiSpeaking = false, o
     utterance.rate = 0.98;
     utterance.pitch = 1.0;
 
-    const naturalVoice = getBestNaturalVoice(synthRef.current);
+    const naturalVoice = getBestNaturalVoice(synthRef.current, 'indian');
     if (naturalVoice) {
       utterance.voice = naturalVoice;
-      utterance.lang = naturalVoice.lang || 'en-US';
+      utterance.lang = naturalVoice.lang || 'en-IN';
+    } else {
+      utterance.lang = 'en-IN';
     }
 
     utterance.onend = () => {
@@ -93,8 +95,8 @@ export const AIInterviewerAvatar = ({ questionText = '', isAiSpeaking = false, o
           <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
           <div>
             <h4 className="text-xs font-bold text-white flex items-center gap-1.5 font-sans">
-              <span>Alex Vance</span>
-              <span className="text-[10px] font-normal text-neutral-400 font-mono">• Principal AI Lead</span>
+              <span>DOAP AI Interviewer</span>
+              <span className="text-[10px] font-normal text-neutral-400 font-mono">• Technical Hiring Lead</span>
             </h4>
           </div>
         </div>

@@ -13,7 +13,8 @@ import {
   Zap,
   Radio,
   X,
-  Send
+  Send,
+  AlertCircle
 } from 'lucide-react';
 import { generateSmartTutorResponse } from '../../services/aiTutorEngine';
 import { speakElevenLabs, stopElevenLabsAudio, getBestNaturalVoice, humanizeTextForSpeech } from '../../services/elevenLabsService';
@@ -29,6 +30,8 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
   const [conversationLogs, setConversationLogs] = useState([]);
   const [manualInput, setManualInput] = useState('');
   const [isVoiceSupported, setIsVoiceSupported] = useState(true);
+  const [micErrorMessage, setMicErrorMessage] = useState('');
+  const hasFatalMicErrorRef = useRef(false);
 
   const updateCallState = (newState) => {
     callStateRef.current = newState;
@@ -81,6 +84,8 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
   useEffect(() => {
     isCallActiveRef.current = isOpen;
     if (isOpen) {
+      hasFatalMicErrorRef.current = false;
+      setMicErrorMessage('');
       setCallDuration(0);
       durationTimerRef.current = setInterval(() => {
         setCallDuration(prev => prev + 1);
@@ -115,7 +120,7 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
   };
 
   const startListening = () => {
-    if (!isComponentMounted.current || isMutedRef.current || !isCallActiveRef.current) return;
+    if (!isComponentMounted.current || isMutedRef.current || !isCallActiveRef.current || hasFatalMicErrorRef.current) return;
     updateCallState('listening');
     setUserTranscript('');
 
@@ -133,7 +138,7 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
       const recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = navigator.language || 'en-IN';
+      recognition.lang = 'en-IN';
 
       recognition.onresult = (event) => {
         if (callStateRef.current !== 'listening') return;
@@ -161,15 +166,19 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
       };
 
       recognition.onerror = (e) => {
+        if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+          hasFatalMicErrorRef.current = true;
+          setMicErrorMessage("Microphone access was denied. Please allow microphone permissions in your browser to speak.");
+        }
         if (e.error !== 'no-speech' && e.error !== 'aborted') {
           console.warn("Modal speech error:", e.error);
         }
       };
 
       recognition.onend = () => {
-        if (isComponentMounted.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
+        if (!hasFatalMicErrorRef.current && isComponentMounted.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
           setTimeout(() => {
-            if (isComponentMounted.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
+            if (!hasFatalMicErrorRef.current && isComponentMounted.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
               startListening();
             }
           }, 150);
@@ -211,7 +220,7 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
 
     try {
       // Generate AI response
-      const aiReply = await generateSmartTutorResponse(spokenText, conversationLogs);
+      const aiReply = await generateSmartTutorResponse(spokenText, 'Friend', conversationLogs, { voiceMode: true });
       
       // Clean markdown code blocks and reasoning tags for vocal reading
       const vocalText = aiReply
@@ -252,7 +261,7 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
     try {
       await speakElevenLabs(
         text,
-        'jarvis',
+        'doap',
         () => {
           if (onFinished && isComponentMounted.current) onFinished();
         },
@@ -277,10 +286,12 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
     utterance.rate = 0.98;
     utterance.pitch = 1.0;
 
-    const naturalVoice = getBestNaturalVoice(synthRef.current);
+    const naturalVoice = getBestNaturalVoice(synthRef.current, 'indian');
     if (naturalVoice) {
       utterance.voice = naturalVoice;
-      utterance.lang = naturalVoice.lang || 'en-US';
+      utterance.lang = naturalVoice.lang || 'en-IN';
+    } else {
+      utterance.lang = 'en-IN';
     }
 
     utterance.onend = () => {
@@ -365,6 +376,26 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
             <X size={18} />
           </button>
         </div>
+
+        {/* Mic Permission Warning Banner */}
+        {micErrorMessage && (
+          <div className="w-full p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center justify-between gap-2 animate-fade-in">
+            <span className="flex items-center gap-2 text-left">
+              <AlertCircle size={15} className="shrink-0 text-rose-400" />
+              <span>{micErrorMessage}</span>
+            </span>
+            <button
+              onClick={() => {
+                hasFatalMicErrorRef.current = false;
+                setMicErrorMessage('');
+                startListening();
+              }}
+              className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 cursor-pointer shrink-0 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        )}
 
         {/* Central Glowing Waveform Orb */}
         <div className="relative flex items-center justify-center my-6">

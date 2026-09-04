@@ -69,9 +69,16 @@ Please return valid JSON ONLY with no markdown backticks:
           const aiRaw = await generateSmartTutorResponse(evalPrompt, 'Interviewer', []);
           const jsonMatch = aiRaw.match(/\{[\s\S]*\}/);
           if (jsonMatch && isMounted) {
-            const parsed = JSON.parse(jsonMatch[0]);
-            setEvaluation(parsed);
-            return;
+            try {
+              const cleaned = jsonMatch[0]
+                .replace(/,\s*([\]}])/g, '$1')
+                .replace(/[\u0000-\u001F]+/g, ' ');
+              const parsed = JSON.parse(cleaned);
+              setEvaluation(parsed);
+              return;
+            } catch (jsonErr) {
+              console.warn('Evaluation json parse retry failed:', jsonErr);
+            }
           }
         }
       } catch (e) {
