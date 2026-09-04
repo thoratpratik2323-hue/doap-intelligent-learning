@@ -19,6 +19,9 @@ export const ELEVEN_VOICES = {
 
 let sharedAudioCtx = null;
 let currentSource = null;
+let currentAudioElement = null;
+let currentUtterance = null;
+let isAudioCancelled = false;
 
 export function unlockAudioContext() {
   if (typeof window === 'undefined') return;
@@ -33,6 +36,15 @@ export function unlockAudioContext() {
 }
 
 export function stopElevenLabsAudio() {
+  isAudioCancelled = true;
+  if (currentAudioElement) {
+    try {
+      currentAudioElement.pause();
+      currentAudioElement.currentTime = 0;
+      currentAudioElement.src = '';
+    } catch (e) {}
+    currentAudioElement = null;
+  }
   if (currentSource) {
     try {
       currentSource.stop();
@@ -40,11 +52,18 @@ export function stopElevenLabsAudio() {
     } catch (e) {}
     currentSource = null;
   }
+  if (typeof window !== 'undefined' && window.speechSynthesis) {
+    try {
+      window.speechSynthesis.cancel();
+    } catch (e) {}
+  }
+  currentUtterance = null;
+  if (typeof window !== 'undefined') window._doapActiveUtterance = null;
 }
 
 /**
  * Intelligent Neural Voice Selector for Browser SpeechSynthesis
- * Prioritizes Authentic Indian English Natural & Neural Voices (Neerja, Prabhat, Google English India)
+ * Prioritizes Authentic Indian English & Hindi Natural & Neural Voices (Edge Neerja/Prabhat, Swara, Google English India, Google Hindi)
  * Strictly excludes legacy Windows SAPI5 robotic voices (Microsoft Ravi, Heera).
  */
 export function getBestNaturalVoice(synth, mode = 'indian') {
@@ -65,19 +84,19 @@ export function getBestNaturalVoice(synth, mode = 'indian') {
     );
   };
 
-  if (mode === 'indian') {
-    // 1. Prioritize authentic Indian English Neural/Natural Voices (Edge Neerja/Prabhat, Google Indian English)
-    const indianNaturalVoice = voices.find(v => {
-      const name = (v.name || '').toLowerCase();
-      const lang = (v.lang || '').toLowerCase().replace('_', '-');
-      const isIndian = lang === 'en-in' || name.includes('india') || name.includes('neerja') || name.includes('prabhat');
-      return isIndian && !isRobotic(name);
-    });
-    if (indianNaturalVoice) return indianNaturalVoice;
-
-    // If only robotic Indian voices exist on this machine, return null to delegate to ElevenLabs Multilingual v2
-    return null;
-  }
+  // 1. Prioritize authentic Indian English / Hindi Neural Voices
+  const indianNaturalVoice = voices.find(v => {
+    const name = (v.name || '').toLowerCase();
+    const lang = (v.lang || '').toLowerCase().replace('_', '-');
+    const isIndian = lang === 'en-in' || lang === 'hi-in' || 
+                     name.includes('india') || name.includes('neerja') || 
+                     name.includes('prabhat') || name.includes('swara') || 
+                     name.includes('madhur') || name.includes('rishi') ||
+                     name.includes('lekha') || name.includes('हिन्दी') ||
+                     name.includes('hindi');
+    return isIndian && !isRobotic(name);
+  });
+  if (indianNaturalVoice) return indianNaturalVoice;
 
   // 2. High-Quality Natural Online Voices (Edge / Chrome Natural)
   const naturalOnline = voices.find(v => 
@@ -243,6 +262,41 @@ export function humanizeTextForSpeech(rawText) {
     text = text.replace(pattern, replacement);
   }
 
+  // 9.5. Hinglish & Conversational Indian Phonetic Normalization
+  // Ensures Hindi words written in English (Hinglish) and Indian phrases are pronounced with native clarity
+  const hinglishReplacements = [
+    [/\bsamjhe\s*kya\b/gi, 'samjhay kya'],
+    [/\bsamjhe\b/gi, 'samjhay'],
+    [/\bsamjha\b/gi, 'samjhaa'],
+    [/\bkaise\s*ho\b/gi, 'kaisay ho'],
+    [/\bkaise\b/gi, 'kaisay'],
+    [/\bkya\s*haal\s*chaal\b/gi, 'kya haal chaal'],
+    [/\bshuru\s*karte\s*hain\b/gi, 'shuru kartay hain'],
+    [/\bshuru\s*karein\b/gi, 'shuru karein'],
+    [/\bkarte\b/gi, 'kartay'],
+    [/\bkarenge\b/gi, 'karengay'],
+    [/\bseekhenge\b/gi, 'seekhengay'],
+    [/\bpadhai\b/gi, 'padhaayee'],
+    [/\bpehle\b/gi, 'pehlay'],
+    [/\bsabse\s*pehle\b/gi, 'sabsay pehlay'],
+    [/\bsabse\b/gi, 'sabsay'],
+    [/\baccha\b|\bachha\b|\bacha\b/gi, 'achha'],
+    [/\barre\b|\bare\b/gi, 'arey'],
+    [/\btheek\s*hai\b|\bthik\s*hai\b/gi, 'theek hai'],
+    [/\bhota\s*hai\b/gi, 'hotaa hai'],
+    [/\btension\s*mat\s*lo\b/gi, 'tension mat lo'],
+    [/\bchalo\b/gi, 'chalo'],
+    [/\bbatao\b/gi, 'bataao'],
+    [/\bdekho\b/gi, 'dekho'],
+    [/\bsuno\b/gi, 'suno'],
+    [/\bbilkul\b/gi, 'bilkul'],
+    [/\bzaroor\b/gi, 'zaroor']
+  ];
+
+  for (const [pat, rep] of hinglishReplacements) {
+    text = text.replace(pat, rep);
+  }
+
   // 10. Natural conversational micro-pauses (inhale / breathing cadence)
   text = text
     .replace(/\b(Hey buddy|Hey there|Hello|Alright|Awesome|Got it|Sure thing|Well|Basically|Essentially|In fact|First|Second|Third)\s*([A-Za-z])/g, '$1, $2')
@@ -260,117 +314,163 @@ export function humanizeTextForSpeech(rawText) {
   return text;
 }
 
-export async function speakElevenLabs(text, voiceKey = 'doap', onComplete, onError) {
+/**
+ * Splits text into natural sentence/clause audio chunks (<150 chars) for seamless streaming
+ */
+export function splitTextIntoSpokenChunks(text) {
+  if (!text) return [];
+  const clean = text.trim();
+  const rawParts = clean.split(/(?<=[.!?\n])\s+/);
+  const result = [];
+  for (const part of rawParts) {
+    const p = part.trim();
+    if (!p) continue;
+    if (p.length <= 150) {
+      result.push(p);
+    } else {
+      const sub = p.split(/(?<=[,;])\s+/);
+      let buf = '';
+      for (const s of sub) {
+        if ((buf + ' ' + s).trim().length <= 150) {
+          buf = (buf + ' ' + s).trim();
+        } else {
+          if (buf) result.push(buf);
+          buf = s.trim();
+        }
+      }
+      if (buf) result.push(buf);
+    }
+  }
+  return result;
+}
+
+/**
+ * Fallback to browser native SpeechSynthesis with authentic Indian English / Hindi voice
+ */
+export function fallbackBrowserSpeech(text, onComplete) {
+  if (typeof window === 'undefined' || !window.speechSynthesis) {
+    if (onComplete) onComplete();
+    return;
+  }
+
+  try {
+    window.speechSynthesis.cancel();
+    const spokenHumanText = humanizeTextForSpeech(text);
+    const utterance = new SpeechSynthesisUtterance(spokenHumanText);
+    utterance.rate = 0.98;
+    utterance.pitch = 1.0;
+    utterance.lang = 'en-IN';
+
+    const naturalVoice = getBestNaturalVoice(window.speechSynthesis, 'indian');
+    if (naturalVoice) {
+      utterance.voice = naturalVoice;
+      utterance.lang = naturalVoice.lang || 'en-IN';
+    }
+
+    currentUtterance = utterance;
+    if (typeof window !== 'undefined') window._doapActiveUtterance = utterance;
+
+    utterance.onend = () => {
+      currentUtterance = null;
+      if (typeof window !== 'undefined') window._doapActiveUtterance = null;
+      if (onComplete) onComplete();
+    };
+
+    utterance.onerror = () => {
+      currentUtterance = null;
+      if (typeof window !== 'undefined') window._doapActiveUtterance = null;
+      if (onComplete) onComplete();
+    };
+
+    window.speechSynthesis.speak(utterance);
+  } catch (e) {
+    if (onComplete) onComplete();
+  }
+}
+
+/**
+ * Unified DOAP AI Indian English Voice Engine
+ * Speaks crystal-clear English with natural Indian accent and authentic Hinglish pronunciation.
+ */
+export async function speakDOAPVoice(text, onComplete, onError) {
   if (!text || !text.trim()) {
     if (onComplete) onComplete();
     return;
   }
 
   stopElevenLabsAudio();
-  unlockAudioContext();
+  isAudioCancelled = false;
 
-  // Direct high-fidelity DOAP AI Voice
-  const targetVoice = ELEVEN_VOICES[voiceKey] || ELEVEN_VOICES.doap;
-  const voiceId = targetVoice.id;
+  const cleanText = humanizeTextForSpeech(text);
+  const chunks = splitTextIntoSpokenChunks(cleanText);
 
-  try {
-    const cleanText = humanizeTextForSpeech(text);
+  if (chunks.length === 0) {
+    if (onComplete) onComplete();
+    return;
+  }
 
-    // Request ElevenLabs Multilingual v2 with human warmth & emotional inflection
-    let response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'audio/mpeg',
-        'Content-Type': 'application/json',
-        'xi-api-key': ELEVEN_API_KEY
-      },
-      body: JSON.stringify({
-        text: cleanText,
-        model_id: 'eleven_multilingual_v2',
-        voice_settings: {
-          stability: 0.38,            // Natural human pitch variation (not monotone/robotic)
-          similarity_boost: 0.90,     // Studio vocal clarity
-          style: 0.40,                // Dynamic, warm conversational inflection
-          use_speaker_boost: true     // Rich presence
-        }
-      })
-    });
+  let chunkIndex = 0;
 
-    // Fallback to Adam if primary voice has temporary issue
-    if (!response.ok && voiceId !== 'pNInz6obpgDQGcFmaJgB') {
-      response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/pNInz6obpgDQGcFmaJgB/stream`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'audio/mpeg',
-          'Content-Type': 'application/json',
-          'xi-api-key': ELEVEN_API_KEY
-        },
-        body: JSON.stringify({
-          text: cleanText,
-          model_id: 'eleven_multilingual_v2',
-          voice_settings: {
-            stability: 0.38,
-            similarity_boost: 0.90,
-            style: 0.40,
-            use_speaker_boost: true
-          }
-        })
+  function playNext() {
+    if (isAudioCancelled) return;
+
+    if (chunkIndex >= chunks.length) {
+      currentAudioElement = null;
+      if (onComplete) onComplete();
+      return;
+    }
+
+    const currentChunk = chunks[chunkIndex];
+    chunkIndex++;
+
+    const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(currentChunk)}&tl=en-IN&client=tw-ob`;
+    const audio = new Audio(audioUrl);
+    currentAudioElement = audio;
+
+    // Preload next chunk audio if available for zero-latency seamless speech
+    if (chunkIndex < chunks.length) {
+      try {
+        const nextUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunks[chunkIndex])}&tl=en-IN&client=tw-ob`;
+        const nextAudio = new Audio(nextUrl);
+        nextAudio.preload = 'auto';
+      } catch (e) {}
+    }
+
+    audio.onended = () => {
+      if (!isAudioCancelled) {
+        playNext();
+      }
+    };
+
+    audio.onerror = (e) => {
+      console.warn('[DOAP Voice] Audio stream error, falling back to browser neural voice:', e);
+      fallbackBrowserSpeech(cleanText, onComplete);
+    };
+
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((err) => {
+        console.warn('[DOAP Voice] Audio play error, falling back:', err);
+        fallbackBrowserSpeech(cleanText, onComplete);
       });
     }
-
-    if (!response.ok) {
-      throw new Error(`ElevenLabs API returned HTTP ${response.status}`);
-    }
-
-    const arrayBuffer = await response.arrayBuffer();
-
-    if (!sharedAudioCtx) unlockAudioContext();
-    if (sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
-      await sharedAudioCtx.resume();
-    }
-
-    if (sharedAudioCtx) {
-      const audioBuffer = await sharedAudioCtx.decodeAudioData(arrayBuffer);
-      const source = sharedAudioCtx.createBufferSource();
-      source.buffer = audioBuffer;
-
-      // Studio Radio DSP: Warmth Low-Shelf + High-Shelf De-Essing + Broadcast Compressor
-      const compressor = sharedAudioCtx.createDynamicsCompressor();
-      compressor.threshold.setValueAtTime(-22, sharedAudioCtx.currentTime);
-      compressor.knee.setValueAtTime(25, sharedAudioCtx.currentTime);
-      compressor.ratio.setValueAtTime(3.5, sharedAudioCtx.currentTime);
-      compressor.attack.setValueAtTime(0.003, sharedAudioCtx.currentTime);
-      compressor.release.setValueAtTime(0.20, sharedAudioCtx.currentTime);
-
-      const bassWarmth = sharedAudioCtx.createBiquadFilter();
-      bassWarmth.type = 'lowshelf';
-      bassWarmth.frequency.setValueAtTime(220, sharedAudioCtx.currentTime);
-      bassWarmth.gain.setValueAtTime(2.2, sharedAudioCtx.currentTime);
-
-      const trebleSmooth = sharedAudioCtx.createBiquadFilter();
-      trebleSmooth.type = 'highshelf';
-      trebleSmooth.frequency.setValueAtTime(7500, sharedAudioCtx.currentTime);
-      trebleSmooth.gain.setValueAtTime(-1.2, sharedAudioCtx.currentTime);
-
-      source.connect(bassWarmth);
-      bassWarmth.connect(trebleSmooth);
-      trebleSmooth.connect(compressor);
-      compressor.connect(sharedAudioCtx.destination);
-
-      currentSource = source;
-
-      source.onended = () => {
-        currentSource = null;
-        if (onComplete) onComplete();
-      };
-
-      source.start(0);
-    } else {
-      throw new Error("Web AudioContext unavailable");
-    }
-  } catch (err) {
-    console.warn('[ElevenLabs] Studio streaming fallback:', err);
-    if (onError) onError(err);
-    else if (onComplete) onComplete();
   }
+
+  try {
+    playNext();
+  } catch (err) {
+    fallbackBrowserSpeech(cleanText, onComplete);
+  }
+}
+
+/**
+ * Backward-compatible alias for all components
+ */
+export async function speakElevenLabs(text, voiceKey = 'doap', onComplete, onError) {
+  if (typeof voiceKey === 'function') {
+    onError = onComplete;
+    onComplete = voiceKey;
+    voiceKey = 'doap';
+  }
+  return speakDOAPVoice(text, onComplete, onError);
 }

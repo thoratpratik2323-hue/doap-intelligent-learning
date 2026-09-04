@@ -122,17 +122,6 @@ export const VoiceTutor = () => {
   const isMutedRef = useRef(false);
   const [callDuration, setCallDuration] = useState(0);
 
-  const [voiceMode, setVoiceMode] = useState(() => {
-    return (typeof localStorage !== 'undefined' && localStorage.getItem('doap_voice_accent')) || 'studio';
-  });
-
-  const handleVoiceModeChange = (mode) => {
-    setVoiceMode(mode);
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('doap_voice_accent', mode);
-    }
-  };
-
   const [micError, setMicError] = useState('');
   const [hasCopied, setHasCopied] = useState(false);
   const [userTranscript, setUserTranscript] = useState('');
@@ -576,20 +565,10 @@ export const VoiceTutor = () => {
       safeComplete();
     }, estimatedDurationMs);
 
-    // 1. If Indian Accent mode is active, check if browser has a genuine, non-robotic Indian voice (Edge Neerja/Prabhat, Google Indian English)
-    if (voiceMode === 'indian') {
-      const indianVoice = synthRef.current ? getBestNaturalVoice(synthRef.current, 'indian') : null;
-      if (indianVoice) {
-        fallbackBrowserSpeech(text, safeComplete, indianVoice);
-        return;
-      }
-    }
-
-    // 2. Default to ElevenLabs Studio HD (or conversational Antoni) with phonetic Indian English humanization
     try {
       await speakElevenLabs(
         text, 
-        voiceMode === 'indian' ? 'conversational' : 'doap',
+        'doap',
         () => {
           safeComplete();
         },
@@ -615,12 +594,12 @@ export const VoiceTutor = () => {
       utterance.rate = 1.0;
       utterance.pitch = 1.0;
 
-      const chosenVoice = specificVoice || getBestNaturalVoice(synthRef.current, voiceMode) || getBestNaturalVoice(synthRef.current, 'studio');
+      const chosenVoice = specificVoice || getBestNaturalVoice(synthRef.current, 'indian');
       if (chosenVoice) {
         utterance.voice = chosenVoice;
         utterance.lang = chosenVoice.lang || 'en-IN';
       } else {
-        utterance.lang = 'en-US'; // Never use en-IN without a voice as it triggers robotic Microsoft Ravi on Windows
+        utterance.lang = 'en-IN';
       }
 
       // Keep live reference so Chrome does not garbage-collect utterance mid-speech
