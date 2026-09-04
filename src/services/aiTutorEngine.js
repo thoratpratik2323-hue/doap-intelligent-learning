@@ -69,30 +69,23 @@ export async function generateSmartTutorResponse(message, userName = 'there', hi
     }
 
     const q = bank[Math.floor(Math.random() * bank.length)];
-    const optionsText = q.options.map((opt, i) => `* **(${String.fromCharCode(65 + i)})** ${opt}`).join('\n');
-    const correctLetter = String.fromCharCode(65 + q.correctIndex);
+    const quizData = {
+      domain: domainName,
+      topic: q.topic,
+      level: q.level,
+      question: q.question,
+      options: q.options,
+      correctIndex: q.correctIndex,
+      explanation: q.answer
+    };
 
-    return `### 📝 Flash Quiz: ${domainName}
-**Topic:** \`${q.topic}\` &nbsp;|&nbsp; **Level:** \`${q.level}\`
+    return `### 📝 Interactive Flash Quiz: ${domainName}
 
-**Question:**
-> ${q.question}
+\`\`\`quiz
+${JSON.stringify(quizData, null, 2)}
+\`\`\`
 
-**Options:**
-${optionsText}
-
----
-
-<details>
-<summary>💡 <b>Click to Reveal Answer & Detailed Explanation</b></summary>
-
-**Correct Answer:** \`(${correctLetter}) ${q.options[q.correctIndex]}\`
-
-**Detailed Explanation:**
-${q.answer}
-</details>
-
-*Type \`/quiz\` for another question or try \`/quiz python\`, \`/quiz java\`, \`/quiz c\`, \`/quiz dsa\`!*`;
+*Tap your answer above to test your knowledge! Type \`/quiz\` for another question or try \`/quiz python\`, \`/quiz java\`, \`/quiz c\`, \`/quiz dsa\`!*`;
   }
 
   // C. /help — Master Commands Reference
