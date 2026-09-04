@@ -31,6 +31,7 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
   const recognitionRef = useRef(null);
   const synthRef = useRef(typeof window !== 'undefined' ? window.speechSynthesis : null);
   const durationTimerRef = useRef(null);
+  const modalSpeechTimerRef = useRef(null);
   const isComponentMounted = useRef(true);
 
   // Stop audio on unmount or close
@@ -38,6 +39,9 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
     return () => {
       isComponentMounted.current = false;
       stopElevenLabsAudio();
+      if (modalSpeechTimerRef.current) {
+        clearTimeout(modalSpeechTimerRef.current);
+      }
       if (synthRef.current) synthRef.current.cancel();
       if (recognitionRef.current) {
         try { recognitionRef.current.stop(); } catch(e){}
@@ -77,11 +81,17 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
       const fullSpoken = (final || interim).trim();
       if (fullSpoken) {
         setUserTranscript(fullSpoken);
-      }
 
-      // If final statement reached, trigger AI response
-      if (final.trim().length > 2) {
-        handleUserSpeechComplete(final.trim());
+        if (modalSpeechTimerRef.current) {
+          clearTimeout(modalSpeechTimerRef.current);
+        }
+
+        // Debounce trigger after 1.1s natural pause
+        modalSpeechTimerRef.current = setTimeout(() => {
+          if (isComponentMounted.current && fullSpoken.length > 2) {
+            handleUserSpeechComplete(fullSpoken);
+          }
+        }, 1100);
       }
     };
 

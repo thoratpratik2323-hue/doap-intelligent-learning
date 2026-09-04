@@ -163,3 +163,30 @@ input[type="range"]::-webkit-slider-thumb {
 input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.2);
 }
+
+/* ── Print Styles (Clean ATS PDF Export) ─────────────────── */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-ats-resume, #printable-ats-resume * {
+    visibility: visible;
+  }
+  #printable-ats-resume {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0.4in !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+    color: black !important;
+  }
+  @page {
+    size: letter portrait;
+    margin: 0.2in;
+  }
+}

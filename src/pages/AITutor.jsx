@@ -29,7 +29,6 @@ import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { generateSmartTutorResponse } from '../services/aiTutorEngine';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
 import { VoiceAICallModal } from '../components/Interview/VoiceAICallModal';
-import { speakElevenLabs } from '../services/elevenLabsService';
 
 const STORAGE_KEY = 'doap_ai_chat_sessions';
 

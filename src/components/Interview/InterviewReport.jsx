@@ -13,6 +13,7 @@ import {
   Target 
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { generateSmartTutorResponse } from '../../services/aiTutorEngine';
 
 export const InterviewReport = ({ resultData, onRestart }) => {
   const { activeAccent, activeAccentHex, navigateTo, isDarkMode } = useTheme();
@@ -29,24 +30,32 @@ export const InterviewReport = ({ resultData, onRestart }) => {
 
     async function fetchEvaluation() {
       try {
-        const res = await fetch('/api/ai/evaluate-interview', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            answers,
-            violations,
-            strikeCount,
-            positionTitle: 'Software Engineer',
-            difficulty: 'Intermediate'
-          })
-        });
+        if (answers && answers.length > 0) {
+          const evalPrompt = `Evaluate this technical interview session:
+Answers given by candidate:
+${answers.map((a, i) => `Q${i+1}: ${a.questionTitle || a.question || 'Question'}\nAnswer: ${a.text || a.answerText || 'No answer recorded.'}`).join('\n\n')}
+Proctoring Strikes: ${strikeCount}
 
-        if (res.ok) {
-          const data = await res.json();
-          if (isMounted) setEvaluation(data.evaluation);
+Please return valid JSON ONLY with no markdown backticks:
+{
+  "overallScore": 85,
+  "technicalScore": 88,
+  "communicationScore": 84,
+  "problemSolvingScore": 85,
+  "summary": "2-3 sentence executive assessment",
+  "strengths": ["Strength 1", "Strength 2", "Strength 3"],
+  "areasForImprovement": ["Area 1", "Area 2", "Area 3"]
+}`;
+          const aiRaw = await generateSmartTutorResponse(evalPrompt, 'Interviewer', []);
+          const jsonMatch = aiRaw.match(/\{[\s\S]*\}/);
+          if (jsonMatch && isMounted) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            setEvaluation(parsed);
+            return;
+          }
         }
       } catch (e) {
-        console.warn('Evaluation API call fallback:', e);
+        console.warn('Evaluation fallback to calibrated benchmark:', e);
       } finally {
         if (isMounted) setLoading(false);
       }
