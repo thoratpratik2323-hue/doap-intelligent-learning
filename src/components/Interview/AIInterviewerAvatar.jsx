@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Volume2, VolumeX, Sparkles, Bot, Mic, CheckCircle2 } from 'lucide-react';
-import { speakElevenLabs, stopElevenLabsAudio } from '../../services/elevenLabsService';
+import { speakElevenLabs, stopElevenLabsAudio, getBestNaturalVoice } from '../../services/elevenLabsService';
 
 export const AIInterviewerAvatar = ({ questionText = '', isAiSpeaking = false, onSpeechComplete }) => {
   const [isMuted, setIsMuted] = useState(false);
@@ -54,9 +54,14 @@ export const AIInterviewerAvatar = ({ questionText = '', isAiSpeaking = false, o
     }
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.0;
+    utterance.rate = 0.98;
     utterance.pitch = 1.0;
-    utterance.lang = 'en-US';
+
+    const naturalVoice = getBestNaturalVoice(synthRef.current);
+    if (naturalVoice) {
+      utterance.voice = naturalVoice;
+      utterance.lang = naturalVoice.lang || 'en-US';
+    }
 
     utterance.onend = () => {
       setSpeakingState('listening');

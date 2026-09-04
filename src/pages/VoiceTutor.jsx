@@ -7,12 +7,13 @@ import {
   MessageSquare, 
   Clock, 
   Sparkles,
-  Zap 
+  Zap,
+  Volume2
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { generateSmartTutorResponse } from '../services/aiTutorEngine';
-import { speakElevenLabs, stopElevenLabsAudio, unlockAudioContext } from '../services/elevenLabsService';
+import { speakElevenLabs, stopElevenLabsAudio, unlockAudioContext, getBestNaturalVoice, ELEVEN_VOICES } from '../services/elevenLabsService';
 import { transcribeAudioWithGroq } from '../services/whisperService';
 
 // DOAP AI Acoustic Sound Synthesizers (Web Audio API)
@@ -91,6 +92,17 @@ export const VoiceTutor = () => {
   const [isMuted, setIsMuted] = useState(false);
   const isMutedRef = useRef(false);
   const [callDuration, setCallDuration] = useState(0);
+
+  const [selectedVoice, setSelectedVoice] = useState(() => {
+    return (typeof localStorage !== 'undefined' && localStorage.getItem('doap_selected_voice')) || 'antoni';
+  });
+
+  const handleVoiceChange = (voiceKey) => {
+    setSelectedVoice(voiceKey);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('doap_selected_voice', voiceKey);
+    }
+  };
 
   const [userTranscript, setUserTranscript] = useState('');
   const [aiSpokenText, setAiSpokenText] = useState('');
@@ -517,7 +529,7 @@ export const VoiceTutor = () => {
     try {
       await speakElevenLabs(
         text, 
-        'doap',
+        selectedVoice,
         () => {
           if (onComplete && isMountedRef.current) onComplete();
         },
@@ -539,23 +551,14 @@ export const VoiceTutor = () => {
     }
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.0;
+    utterance.rate = 0.98;
     utterance.pitch = 1.0;
-    utterance.lang = 'en-IN';
 
-    try {
-      const voices = synthRef.current.getVoices();
-      const indianVoice = voices.find(v => 
-        v.name.includes('Ravi') || 
-        v.name.includes('Heera') || 
-        v.lang === 'en-IN' || 
-        v.lang === 'hi-IN' || 
-        v.name.includes('India')
-      );
-      if (indianVoice) {
-        utterance.voice = indianVoice;
-      }
-    } catch (e) {}
+    const naturalVoice = getBestNaturalVoice(synthRef.current);
+    if (naturalVoice) {
+      utterance.voice = naturalVoice;
+      utterance.lang = naturalVoice.lang || 'en-US';
+    }
 
     utterance.onend = () => {
       isProcessingSpeechRef.current = false;
@@ -608,14 +611,33 @@ export const VoiceTutor = () => {
           )}
         </div>
 
-        {/* Switch to Text AI Chat */}
-        <button
-          onClick={() => navigateTo('/ai-tutor')}
-          className="px-4 py-2 rounded-xl text-xs font-semibold border border-white/15 bg-white/5 hover:bg-white/10 transition-all flex items-center gap-2 cursor-pointer hover:scale-105"
-        >
-          <MessageSquare size={14} className="text-cyan-400" />
-          <span>Text AI Chat</span>
-        </button>
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* AI Voice Persona Selector */}
+          <div className="relative flex items-center">
+            <Volume2 size={13} className="text-cyan-400 absolute left-2.5 pointer-events-none" />
+            <select
+              value={selectedVoice}
+              onChange={(e) => handleVoiceChange(e.target.value)}
+              className="bg-white/5 hover:bg-white/10 text-white/90 text-xs font-medium pl-7 pr-3 py-1.5 rounded-xl border border-white/15 outline-none cursor-pointer transition-all focus:border-cyan-500/50"
+              title="Select AI Voice Persona"
+            >
+              <option value="antoni" className="bg-neutral-900 text-white">Antoni (Warm & Natural)</option>
+              <option value="adam" className="bg-neutral-900 text-white">Adam (Deep & Engaging)</option>
+              <option value="liam" className="bg-neutral-900 text-white">Liam (Tech Buddy)</option>
+              <option value="alice" className="bg-neutral-900 text-white">Alice (Clear Female)</option>
+              <option value="brian" className="bg-neutral-900 text-white">Brian (Studio Narrator)</option>
+            </select>
+          </div>
+
+          {/* Switch to Text AI Chat */}
+          <button
+            onClick={() => navigateTo('/ai-tutor')}
+            className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-semibold border border-white/15 bg-white/5 hover:bg-white/10 transition-all flex items-center gap-2 cursor-pointer hover:scale-105"
+          >
+            <MessageSquare size={13} className="text-cyan-400" />
+            <span className="hidden sm:inline">Text AI Chat</span>
+          </button>
+        </div>
       </div>
 
       {/* 2. Main Expansive Arc-Reactor Core (Maximum Screen Area) */}

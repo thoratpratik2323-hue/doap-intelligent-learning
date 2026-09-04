@@ -16,7 +16,7 @@ import {
   Send
 } from 'lucide-react';
 import { generateSmartTutorResponse } from '../../services/aiTutorEngine';
-import { speakElevenLabs, stopElevenLabsAudio } from '../../services/elevenLabsService';
+import { speakElevenLabs, stopElevenLabsAudio, getBestNaturalVoice } from '../../services/elevenLabsService';
 
 export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode, accentHex }) => {
   const [callState, setCallState] = useState('idle'); // 'listening' | 'thinking' | 'speaking'
@@ -265,13 +265,14 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
     }
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.04;
-    utterance.pitch = 1.10;
-    utterance.lang = 'en-US';
+    utterance.rate = 0.98;
+    utterance.pitch = 1.0;
 
-    const voices = synthRef.current.getVoices();
-    const femaleVoice = voices.find(v => (v.name.includes('Aria') || v.name.includes('Jenny') || v.name.includes('Samantha') || v.name.includes('Female')) && v.lang.includes('en'));
-    if (femaleVoice) utterance.voice = femaleVoice;
+    const naturalVoice = getBestNaturalVoice(synthRef.current);
+    if (naturalVoice) {
+      utterance.voice = naturalVoice;
+      utterance.lang = naturalVoice.lang || 'en-US';
+    }
 
     utterance.onend = () => {
       if (onFinished && isComponentMounted.current) {
