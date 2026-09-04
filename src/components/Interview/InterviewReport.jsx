@@ -455,10 +455,12 @@ Please return valid JSON ONLY with no markdown backticks:
           <div style={{ borderBottom: '2px solid #0f172a', paddingBottom: '16px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
               <div style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '-0.5px' }}>
-                DOAP INTELLIGENT LEARNING
+                {companyTrackId === 'sanjivani_campus' ? 'SANJIVANI COLLEGE OF ENGINEERING, KOPARGAON' : 'DOAP INTELLIGENT LEARNING'}
               </div>
               <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1.5px', color: '#64748b', fontWeight: '700', marginTop: '2px' }}>
-                Verified Executive Technical Interview Audit Certificate
+                {companyTrackId === 'sanjivani_campus' 
+                  ? 'SRES • Training & Placement Cell (T&P) • Verified Technical Competency Audit' 
+                  : 'Verified Executive Technical Interview Audit Certificate'}
               </div>
             </div>
             <div style={{ textAlign: 'right' }}>
@@ -579,10 +581,12 @@ Please return valid JSON ONLY with no markdown backticks:
           {/* Verification Footer */}
           <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ fontSize: '9px', color: '#64748b' }}>
-              DOAP AI Super-Brain Multi-Modal Proctoring & LLM Evaluation Engine • https://doap-1908.web.app
+              {companyTrackId === 'sanjivani_campus'
+                ? 'Sanjivani Rural Education Society • Autonomous Placement Evaluation Engine • https://doap-1908.web.app'
+                : 'DOAP AI Super-Brain Multi-Modal Proctoring & LLM Evaluation Engine • https://doap-1908.web.app'}
             </div>
             <div style={{ fontSize: '9px', fontFamily: 'monospace', color: '#059669', fontWeight: '700' }}>
-              AUTHENTICATED CERTIFICATE
+              {companyTrackId === 'sanjivani_campus' ? 'SRES VERIFIED AUDIT' : 'AUTHENTICATED CERTIFICATE'}
             </div>
           </div>
         </div>

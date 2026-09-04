@@ -243,6 +243,36 @@ export const QUESTION_BANK = {
 // Company-Specific Interview Tracks
 export const COMPANY_TRACKS = [
   {
+    id: 'sanjivani_campus',
+    name: 'Sanjivani T&P Drive',
+    badge: 'TCS • Persistent • Cognizant • Juspay',
+    color: '#F59E0B',
+    rubric: 'Sanjivani COE Training & Placement Benchmark: Core CS fundamentals, DSA efficiency, OOP design patterns, and clear technical communication.',
+    questions: [
+      {
+        id: 'sres_1',
+        title: 'Explain the internal working of HashMaps in Java/C++. How are collisions resolved, and how does Java 8 treeify high-collision buckets?',
+        category: 'Sanjivani T&P • Core CS & Data Structures',
+        hint: 'Separate chaining, open addressing, O(1) average lookup, and Red-Black Tree conversion beyond threshold 8.',
+        expectedDuration: '3 min'
+      },
+      {
+        id: 'sres_2',
+        title: 'Design a normalized relational schema versus a NoSQL document store for a high-traffic College Placement Portal. Contrast ACID versus BASE.',
+        category: 'Sanjivani T&P • Database Design & Systems',
+        hint: 'ACID for student registrations and company eligibility; indexing roll numbers; eventual consistency for notifications.',
+        expectedDuration: '3 min'
+      },
+      {
+        id: 'sres_3',
+        title: 'Walk through an optimal algorithm to find the Longest Substring Without Repeating Characters with optimal Time and Space complexity.',
+        category: 'Sanjivani T&P • Algorithmic Problem Solving (DSA)',
+        hint: 'Sliding window technique with two pointers or Hash Map storing the most recent index. Time: O(N), Space: O(min(N, M)).',
+        expectedDuration: '3 min'
+      }
+    ]
+  },
+  {
     id: 'google',
     name: 'Google Track',
     badge: 'O(N) Algorithmic Rigor',
