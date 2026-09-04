@@ -213,13 +213,16 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
       // Generate AI response
       const aiReply = await generateSmartTutorResponse(spokenText, conversationLogs);
       
-      // Clean markdown code blocks for vocal reading
+      // Clean markdown code blocks and reasoning tags for vocal reading
       const vocalText = aiReply
+        .replace(/<think>[\s\S]*?<\/think>/gi, '')
+        .replace(/<details[\s\S]*?<\/details>/gi, '')
+        .replace(/\*\*Reasoning\*\*[\s\S]*?\*\*Final Answer\*\*/i, '')
         .replace(/```[\s\S]*?```/g, "I have generated the code snippet for this in your chat summary.")
         .replace(/`([^`]+)`/g, "$1")
-        .replace(/[*#_]/g, "")
+        .replace(/[*#_~>|]/g, "")
         .replace(/\n+/g, " ")
-        .slice(0, 450); // Keep voice answer concise and conversational
+        .slice(0, 500);
 
       setAiResponseText(aiReply);
       setConversationLogs(prev => [...prev, { role: 'assistant', text: aiReply }]);

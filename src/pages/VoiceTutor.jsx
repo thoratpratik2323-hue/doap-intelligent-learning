@@ -251,14 +251,6 @@ export const VoiceTutor = () => {
           const avg = sum / bufferLength;
           setLiveVolume(avg);
 
-          // Natural Interruption / Barge-in: If AI is currently speaking and user speaks loud
-          if (callStateRef.current === 'speaking' && avg > 32) {
-            stopElevenLabsAudio();
-            if (synthRef.current) synthRef.current.cancel();
-            resumeListeningCycle();
-            return;
-          }
-
           animationFrameRef.current = requestAnimationFrame(checkAudioVolume);
         };
         checkAudioVolume();
@@ -440,9 +432,12 @@ export const VoiceTutor = () => {
     try {
       const response = await generateSmartTutorResponse(spokenPrompt, userName, [], { voiceMode: true });
       const speechCleaned = response
-        .replace(/```[\s\S]*?```/g, 'Code block generated.')
+        .replace(/<think>[\s\S]*?<\/think>/gi, '')
+        .replace(/<details[\s\S]*?<\/details>/gi, '')
+        .replace(/\*\*Reasoning\*\*[\s\S]*?\*\*Final Answer\*\*/i, '')
+        .replace(/```[\s\S]*?```/g, 'Code block outlined on screen.')
         .replace(/`([^`]+)`/g, '$1')
-        .replace(/[#*_~>]/g, '')
+        .replace(/[#*_~>|]/g, '')
         .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
         .trim();
 
