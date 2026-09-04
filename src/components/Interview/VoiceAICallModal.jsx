@@ -58,7 +58,7 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
     };
   }, []);
 
-  // Initialize Web Speech API
+  // Check Web Speech API Support
   useEffect(() => {
     isComponentMounted.current = true;
     const SpeechRecognition = typeof window !== 'undefined' && 
@@ -66,69 +66,11 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
 
     if (!SpeechRecognition) {
       setIsVoiceSupported(false);
-      return;
     }
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
-
-    recognition.onresult = (event) => {
-      if (callStateRef.current !== 'listening') return;
-      let interim = '';
-      let final = '';
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const text = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          final += text + ' ';
-        } else {
-          interim += text;
-        }
-      }
-
-      const fullSpoken = (final || interim).trim();
-      if (fullSpoken) {
-        setUserTranscript(fullSpoken);
-
-        if (modalSpeechTimerRef.current) {
-          clearTimeout(modalSpeechTimerRef.current);
-        }
-
-        // Debounce trigger after 1.1s natural pause
-        modalSpeechTimerRef.current = setTimeout(() => {
-          if (isComponentMounted.current && fullSpoken.length > 2 && callStateRef.current === 'listening') {
-            handleUserSpeechComplete(fullSpoken);
-          }
-        }, 1100);
-      }
-    };
-
-    recognition.onerror = (e) => {
-      console.warn("Speech recognition error:", e.error);
-      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-        setIsVoiceSupported(false);
-      }
-    };
-
-    recognition.onend = () => {
-      if (isComponentMounted.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
-        setTimeout(() => {
-          if (isComponentMounted.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
-            try { recognition.start(); } catch(e){}
-          }
-        }, 150);
-      }
-    };
-
-    recognitionRef.current = recognition;
 
     return () => {
       isComponentMounted.current = false;
-      if (recognitionRef.current) {
-        try { recognitionRef.current.stop(); } catch(err){}
-      }
+      stopListening();
       if (synthRef.current) {
         synthRef.current.cancel();
       }
@@ -173,24 +115,87 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
   };
 
   const startListening = () => {
-    if (isMutedRef.current) return;
+    if (!isComponentMounted.current || isMutedRef.current || !isCallActiveRef.current) return;
     updateCallState('listening');
     setUserTranscript('');
-    
-    if (recognitionRef.current && isVoiceSupported) {
-      try {
-        recognitionRef.current.start();
-      } catch (err) {
-        // already started
-      }
+
+    const SpeechRecognition = typeof window !== 'undefined' && 
+      (window.SpeechRecognition || window.webkitSpeechRecognition);
+
+    if (!SpeechRecognition) {
+      setIsVoiceSupported(false);
+      return;
+    }
+
+    stopListening();
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = navigator.language || 'en-IN';
+
+      recognition.onresult = (event) => {
+        if (callStateRef.current !== 'listening') return;
+        let fullSpoken = '';
+
+        for (let i = 0; i < event.results.length; i++) {
+          fullSpoken += event.results[i][0].transcript + ' ';
+        }
+
+        const cleanText = fullSpoken.trim();
+        if (cleanText) {
+          setUserTranscript(cleanText);
+
+          if (modalSpeechTimerRef.current) {
+            clearTimeout(modalSpeechTimerRef.current);
+          }
+
+          modalSpeechTimerRef.current = setTimeout(() => {
+            if (isComponentMounted.current && cleanText.length > 0 && callStateRef.current === 'listening') {
+              stopListening();
+              handleUserSpeechComplete(cleanText);
+            }
+          }, 1100);
+        }
+      };
+
+      recognition.onerror = (e) => {
+        if (e.error !== 'no-speech' && e.error !== 'aborted') {
+          console.warn("Modal speech error:", e.error);
+        }
+      };
+
+      recognition.onend = () => {
+        if (isComponentMounted.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
+          setTimeout(() => {
+            if (isComponentMounted.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
+              startListening();
+            }
+          }, 150);
+        }
+      };
+
+      recognition.start();
+      recognitionRef.current = recognition;
+    } catch (err) {
+      console.warn("Speech recognition start failed:", err);
     }
   };
 
   const stopListening = () => {
+    if (modalSpeechTimerRef.current) {
+      clearTimeout(modalSpeechTimerRef.current);
+      modalSpeechTimerRef.current = null;
+    }
     if (recognitionRef.current) {
       try {
-        recognitionRef.current.abort();
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.stop();
       } catch (err) {}
+      recognitionRef.current = null;
     }
   };
 

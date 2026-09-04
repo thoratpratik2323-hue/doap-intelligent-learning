@@ -8,7 +8,8 @@ import {
   Clock, 
   Sparkles,
   Zap,
-  Volume2
+  Volume2,
+  Send
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -107,6 +108,7 @@ export const VoiceTutor = () => {
   const [userTranscript, setUserTranscript] = useState('');
   const [aiSpokenText, setAiSpokenText] = useState('');
   const [liveVolume, setLiveVolume] = useState(0);
+  const [manualInput, setManualInput] = useState('');
 
   const synthRef = useRef(typeof window !== 'undefined' ? window.speechSynthesis : null);
   const durationTimerRef = useRef(null);
@@ -179,26 +181,28 @@ export const VoiceTutor = () => {
       mediaStreamRef.current.getTracks().forEach(t => t.stop());
       mediaStreamRef.current = null;
     }
-    if (recognitionRef.current) {
-      try { recognitionRef.current.stop(); } catch(e) {}
-    }
+    stopRecognition();
   };
 
-  // Start universal microphone recording (Firefox + Chrome) with Adaptive VAD
+  // Start universal microphone recording with safe constraints
   const initUniversalMicrophone = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: { 
-          echoCancellation: true, 
-          noiseSuppression: true, 
-          autoGainControl: true,
-          sampleRate: 48000,
-          channelCount: 1
-        } 
-      });
+      let stream = null;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          audio: { 
+            echoCancellation: true, 
+            noiseSuppression: true, 
+            autoGainControl: true 
+          } 
+        });
+      } catch (err1) {
+        console.warn("Primary mic constraints rejected, fallback to basic audio:", err1);
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      }
       mediaStreamRef.current = stream;
 
-      // Audio frequency analyzer for real-time visualizer & VAD
+      // Audio frequency analyzer for real-time visualizer
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) {
         const audioCtx = new AudioCtx();
@@ -222,111 +226,17 @@ export const VoiceTutor = () => {
           const avg = sum / bufferLength;
           setLiveVolume(avg);
 
-          // Update rolling ambient noise baseline
-          noiseFloorRef.current = noiseFloorRef.current * 0.96 + avg * 0.04;
-          const noise = noiseFloorRef.current;
-          const speechThresh = Math.max(13, noise + 6);
-          const silenceThresh = Math.max(8, noise + 2.5);
-
-          const currentState = callStateRef.current;
-
-          // 1. Natural Interruption / Barge-in:
-          // If AI is currently speaking and user speaks up
-          if (currentState === 'speaking' && avg > Math.max(22, speechThresh + 6)) {
+          // Natural Interruption / Barge-in: If AI is currently speaking and user speaks loud
+          if (callStateRef.current === 'speaking' && avg > 32) {
             stopElevenLabsAudio();
             if (synthRef.current) synthRef.current.cancel();
-            updateCallState('listening');
-            isProcessingSpeechRef.current = false;
-            hasSpokenInSessionRef.current = true;
-            speechStartTimeRef.current = Date.now();
-            startMediaRecording();
+            resumeListeningCycle();
             return;
-          }
-
-          // 2. Adaptive Voice Activity Detection (VAD) during listening
-          if (currentState === 'listening' && !isProcessingSpeechRef.current) {
-            if (avg > speechThresh) {
-              if (!hasSpokenInSessionRef.current) {
-                hasSpokenInSessionRef.current = true;
-                speechStartTimeRef.current = Date.now();
-              }
-              if (vadSilenceTimeoutRef.current) {
-                clearTimeout(vadSilenceTimeoutRef.current);
-                vadSilenceTimeoutRef.current = null;
-              }
-            } else if (hasSpokenInSessionRef.current && avg <= silenceThresh) {
-              const speechDuration = Date.now() - speechStartTimeRef.current;
-              // Reject accidental taps or brief coughs (< 350ms)
-              if (speechDuration > 350 && !vadSilenceTimeoutRef.current) {
-                vadSilenceTimeoutRef.current = setTimeout(() => {
-                  vadSilenceTimeoutRef.current = null;
-                  hasSpokenInSessionRef.current = false;
-                  finalizeRecordedSpeech();
-                }, 1200);
-              }
-            }
           }
 
           animationFrameRef.current = requestAnimationFrame(checkAudioVolume);
         };
         checkAudioVolume();
-      }
-
-      // Initialize MediaRecorder for Groq Whisper transcription
-      startMediaRecording();
-
-      // If browser supports webkitSpeechRecognition (Chrome/Edge), run it for instant words
-      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SpeechRec) {
-        try {
-          const rec = new SpeechRec();
-          rec.continuous = true;
-          rec.interimResults = true;
-          rec.lang = 'en-US';
-
-          rec.onresult = (e) => {
-            if (callStateRef.current !== 'listening' || isProcessingSpeechRef.current) return;
-            let interim = '';
-            for (let i = e.resultIndex; i < e.results.length; i++) {
-              interim += e.results[i][0].transcript;
-            }
-            const cleanText = interim.trim();
-            if (cleanText) {
-              setUserTranscript(cleanText);
-              lastSpokenTextRef.current = cleanText;
-              hasSpokenInSessionRef.current = true;
-
-              if (chromeSpeechTimerRef.current) {
-                clearTimeout(chromeSpeechTimerRef.current);
-              }
-
-              // Chrome/Edge: Finalize user speech after 1.1s natural pause
-              chromeSpeechTimerRef.current = setTimeout(() => {
-                if (callStateRef.current === 'listening' && cleanText.length > 1 && !isProcessingSpeechRef.current) {
-                  updateCallState('thinking');
-                  handleUserSpeechComplete(cleanText);
-                }
-              }, 1100);
-            }
-          };
-
-          rec.onerror = (e) => {
-            console.warn('[SpeechRec] note:', e);
-          };
-
-          rec.onend = () => {
-            if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current !== 'idle') {
-              setTimeout(() => {
-                if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
-                  try { rec.start(); } catch(e) {}
-                }
-              }, 150);
-            }
-          };
-
-          try { rec.start(); } catch(e) {}
-          recognitionRef.current = rec;
-        } catch(e) {}
       }
 
       return true;
@@ -336,91 +246,99 @@ export const VoiceTutor = () => {
     }
   };
 
-  const startMediaRecording = () => {
-    if (!mediaStreamRef.current) return;
+  const startRecognition = () => {
+    if (!isMountedRef.current || !isCallActiveRef.current || isMutedRef.current) return;
+    const SpeechRec = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
+    if (!SpeechRec) {
+      console.warn('[SpeechRec] Web Speech API not supported in this browser');
+      return;
+    }
+
+    // Stop and clean any previous instance
+    stopRecognition();
+
     try {
-      audioChunksRef.current = [];
-      const options = MediaRecorder.isTypeSupported('audio/webm') 
-        ? { mimeType: 'audio/webm' } 
-        : MediaRecorder.isTypeSupported('audio/ogg')
-        ? { mimeType: 'audio/ogg' }
-        : {};
+      const rec = new SpeechRec();
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = navigator.language || 'en-IN';
 
-      const recorder = new MediaRecorder(mediaStreamRef.current, options);
+      rec.onresult = (e) => {
+        if (callStateRef.current !== 'listening' || isProcessingSpeechRef.current) return;
 
-      recorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) {
-          audioChunksRef.current.push(e.data);
+        let fullTranscript = '';
+        for (let i = 0; i < e.results.length; i++) {
+          fullTranscript += e.results[i][0].transcript + ' ';
         }
-      };
 
-      recorder.onstop = async () => {
-        if (audioChunksRef.current.length === 0) {
-          if (isCallActiveRef.current && isMountedRef.current && !isMutedRef.current && !isProcessingSpeechRef.current) {
-            updateCallState('listening');
-            startMediaRecording();
+        const clean = fullTranscript.trim();
+        if (clean) {
+          setUserTranscript(clean);
+          lastSpokenTextRef.current = clean;
+
+          if (chromeSpeechTimerRef.current) {
+            clearTimeout(chromeSpeechTimerRef.current);
           }
-          return;
-        }
-        const mime = recorder.mimeType || 'audio/webm';
-        const blob = new Blob(audioChunksRef.current, { type: mime });
-        audioChunksRef.current = [];
 
-        // Send to Groq Whisper for instant transcription (120ms)
-        if (blob.size > 1000 && !isProcessingSpeechRef.current) {
-          updateCallState('thinking');
-          const transcribed = await transcribeAudioWithGroq(blob);
-          if (transcribed && transcribed.trim().length > 1 && !isProcessingSpeechRef.current) {
-            setUserTranscript(transcribed.trim());
-            handleUserSpeechComplete(transcribed.trim());
-          } else {
-            if (!isProcessingSpeechRef.current) {
-              updateCallState('listening');
-              hasSpokenInSessionRef.current = false;
-              startMediaRecording();
+          // Trigger answer after 1.1s natural pause
+          chromeSpeechTimerRef.current = setTimeout(() => {
+            if (callStateRef.current === 'listening' && clean.length > 0 && !isProcessingSpeechRef.current) {
+              isProcessingSpeechRef.current = true;
+              updateCallState('thinking');
+              stopRecognition();
+              handleUserSpeechComplete(clean);
             }
-          }
-        } else {
-          if (!isProcessingSpeechRef.current) {
-            updateCallState('listening');
-            hasSpokenInSessionRef.current = false;
-            startMediaRecording();
-          }
+          }, 1100);
         }
       };
 
-      recorder.start(250);
-      mediaRecorderRef.current = recorder;
-    } catch(e) {
-      console.warn("MediaRecorder start error:", e);
+      rec.onerror = (e) => {
+        if (e.error !== 'no-speech' && e.error !== 'aborted') {
+          console.warn('[SpeechRec] Status:', e.error);
+        }
+      };
+
+      rec.onend = () => {
+        // Auto-revive recognition if the session is still active and listening
+        if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
+          setTimeout(() => {
+            if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
+              startRecognition();
+            }
+          }, 150);
+        }
+      };
+
+      rec.start();
+      recognitionRef.current = rec;
+    } catch(err) {
+      console.warn('[SpeechRec] Start error:', err);
     }
   };
 
-  const finalizeRecordedSpeech = () => {
-    if (isProcessingSpeechRef.current) return;
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+  const stopRecognition = () => {
+    if (chromeSpeechTimerRef.current) {
+      clearTimeout(chromeSpeechTimerRef.current);
+      chromeSpeechTimerRef.current = null;
+    }
+    if (recognitionRef.current) {
       try {
-        updateCallState('thinking');
-        mediaRecorderRef.current.stop();
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.stop();
       } catch(e) {}
+      recognitionRef.current = null;
     }
   };
 
   const resumeListeningCycle = () => {
     if (!isMountedRef.current || !isCallActiveRef.current || isMutedRef.current) return;
     isProcessingSpeechRef.current = false;
-    hasSpokenInSessionRef.current = false;
     lastSpokenTextRef.current = '';
     setUserTranscript('');
     updateCallState('listening');
-    startMediaRecording();
-    if (recognitionRef.current) {
-      setTimeout(() => {
-        if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening') {
-          try { recognitionRef.current.start(); } catch(e) {}
-        }
-      }, 150);
-    }
+    startRecognition();
   };
 
   const handleStartCall = async () => {
@@ -433,7 +351,7 @@ export const VoiceTutor = () => {
     setUserTranscript('');
     setAiSpokenText('');
 
-    // Request microphone first
+    // Initialize microphone stream
     await initUniversalMicrophone();
 
     const welcome = `Hey ${userName}! I'm online and listening. What are we working on today, buddy?`;
@@ -518,13 +436,9 @@ export const VoiceTutor = () => {
 
   const speakResponse = async (text, onComplete) => {
     updateCallState('speaking');
+    stopRecognition();
     stopElevenLabsAudio();
     if (synthRef.current) synthRef.current.cancel();
-
-    // Abort speech recognition while AI is speaking so mic does not transcribe AI speech
-    if (recognitionRef.current) {
-      try { recognitionRef.current.abort(); } catch(e) {}
-    }
 
     try {
       await speakElevenLabs(
@@ -581,14 +495,9 @@ export const VoiceTutor = () => {
     } else {
       setIsMuted(true);
       isMutedRef.current = true;
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-        try { mediaRecorderRef.current.pause(); } catch(e){}
-      }
+      stopRecognition();
       stopElevenLabsAudio();
       if (synthRef.current) synthRef.current.cancel();
-      if (recognitionRef.current) {
-        try { recognitionRef.current.abort(); } catch(e){}
-      }
       updateCallState('idle');
       isProcessingSpeechRef.current = false;
     }
@@ -756,6 +665,39 @@ export const VoiceTutor = () => {
             </p>
           )}
         </div>
+
+        {/* Quick Interactive Input (Type or Speak) */}
+        {isCallActive && (
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!manualInput.trim()) return;
+              const text = manualInput.trim();
+              setManualInput('');
+              stopRecognition();
+              handleUserSpeechComplete(text);
+            }}
+            className="w-full max-w-md flex items-center gap-2 mt-4 px-4 z-20 animate-fade-in"
+          >
+            <div className="flex-1 relative flex items-center">
+              <input
+                type="text"
+                value={manualInput}
+                onChange={(e) => setManualInput(e.target.value)}
+                placeholder="Or type here if mic isn't available..."
+                className="w-full bg-white/5 border border-white/15 focus:border-cyan-500/60 rounded-full py-2 pl-4 pr-9 text-xs text-white placeholder-neutral-500 outline-none backdrop-blur-md transition-all shadow-inner"
+              />
+              {manualInput.trim() && (
+                <button
+                  type="submit"
+                  className="absolute right-1.5 p-1.5 rounded-full bg-cyan-500 text-black hover:bg-cyan-400 transition-all cursor-pointer"
+                >
+                  <Send size={12} />
+                </button>
+              )}
+            </div>
+          </form>
+        )}
 
         {/* Floating In-Call Mute Button */}
         {isCallActive && (
