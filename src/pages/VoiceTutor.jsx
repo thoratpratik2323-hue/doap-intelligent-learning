@@ -17,7 +17,7 @@ import { generateSmartTutorResponse } from '../services/aiTutorEngine';
 import { speakElevenLabs, stopElevenLabsAudio, unlockAudioContext, getBestNaturalVoice, ELEVEN_VOICES, humanizeTextForSpeech } from '../services/elevenLabsService';
 import { transcribeAudioWithGroq } from '../services/whisperService';
 
-// DOAP AI Acoustic Sound Synthesizers (Web Audio API)
+// Mark LII Arc-Reactor Acoustic Synthesizer (Web Audio API)
 const playBootChime = () => {
   try {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -25,29 +25,54 @@ const playBootChime = () => {
     const ctx = new AudioCtx();
     const now = ctx.currentTime;
 
-    const osc1 = ctx.createOscillator();
-    const gain1 = ctx.createGain();
-    osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(110, now);
-    osc1.frequency.exponentialRampToValueAtTime(320, now + 0.35);
-    gain1.gain.setValueAtTime(0.25, now);
-    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-    osc1.connect(gain1);
-    gain1.connect(ctx.destination);
-    osc1.start(now);
-    osc1.stop(now + 0.5);
+    // 1. Reactor Core Spin-up (Deep low-frequency sweep)
+    const subOsc = ctx.createOscillator();
+    const subGain = ctx.createGain();
+    subOsc.type = 'sawtooth';
+    subOsc.frequency.setValueAtTime(65, now);
+    subOsc.frequency.exponentialRampToValueAtTime(280, now + 0.8);
+    subGain.gain.setValueAtTime(0.2, now);
+    subGain.gain.exponentialRampToValueAtTime(0.01, now + 1.1);
+    
+    // Low-pass filter for deep mechanical reactor hum
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(200, now);
+    filter.frequency.exponentialRampToValueAtTime(800, now + 0.8);
 
-    const osc2 = ctx.createOscillator();
-    const gain2 = ctx.createGain();
-    osc2.type = 'triangle';
-    osc2.frequency.setValueAtTime(520, now + 0.12);
-    osc2.frequency.exponentialRampToValueAtTime(1040, now + 0.45);
-    gain2.gain.setValueAtTime(0.2, now + 0.12);
-    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
-    osc2.connect(gain2);
-    gain2.connect(ctx.destination);
-    osc2.start(now + 0.12);
-    osc2.stop(now + 0.75);
+    subOsc.connect(filter);
+    filter.connect(subGain);
+    subGain.connect(ctx.destination);
+    subOsc.start(now);
+    subOsc.stop(now + 1.1);
+
+    // 2. Servo Lock / Relay Actuation Click
+    const clickOsc = ctx.createOscillator();
+    const clickGain = ctx.createGain();
+    clickOsc.type = 'triangle';
+    clickOsc.frequency.setValueAtTime(1400, now + 0.35);
+    clickOsc.frequency.exponentialRampToValueAtTime(300, now + 0.45);
+    clickGain.gain.setValueAtTime(0.18, now + 0.35);
+    clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+    clickOsc.connect(clickGain);
+    clickGain.connect(ctx.destination);
+    clickOsc.start(now + 0.35);
+    clickOsc.stop(now + 0.5);
+
+    // 3. Mark LII Bright Systems-Online Harmonic Chords (C5 Major Suite)
+    const freqs = [523.25, 659.25, 783.99, 1046.50];
+    freqs.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + 0.6 + (idx * 0.04));
+      gain.gain.setValueAtTime(0.12, now + 0.6 + (idx * 0.04));
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 1.6);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + 0.6 + (idx * 0.04));
+      osc.stop(now + 1.6);
+    });
   } catch(e) {}
 };
 
@@ -95,7 +120,7 @@ export const VoiceTutor = () => {
   const [callDuration, setCallDuration] = useState(0);
 
   const [selectedVoice, setSelectedVoice] = useState(() => {
-    return (typeof localStorage !== 'undefined' && localStorage.getItem('doap_selected_voice')) || 'antoni';
+    return (typeof localStorage !== 'undefined' && localStorage.getItem('doap_selected_voice')) || 'jarvis';
   });
 
   const handleVoiceChange = (voiceKey) => {
@@ -354,7 +379,7 @@ export const VoiceTutor = () => {
     // Initialize microphone stream
     await initUniversalMicrophone();
 
-    const welcome = `Hey ${userName}! I'm online and listening. What are we working on today, buddy?`;
+    const welcome = `At your service, ${userName}. Mark LII systems are fully online and listening. What are we engineering today?`;
     setAiSpokenText(welcome);
 
     speakResponse(welcome, () => {
@@ -506,12 +531,12 @@ export const VoiceTutor = () => {
 
   return (
     <div className="h-full w-full flex-1 flex flex-col justify-between p-4 sm:p-8 select-none bg-[#05070c] text-white animate-fade-in relative overflow-hidden">
-      {/* 1. Clean Minimal Top Bar: "DOAP AI" */}
+      {/* 1. Clean Minimal Top Bar: "MARK LII • J.A.R.V.I.S." */}
       <div className="flex items-center justify-between z-20 pb-3 border-b border-white/10">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-sm font-bold tracking-wide">
             <span className={`w-2.5 h-2.5 rounded-full bg-cyan-400 ${isCallActive ? "animate-ping" : ""}`} />
-            <span>DOAP AI</span>
+            <span>MARK LII • J.A.R.V.I.S.</span>
           </div>
 
           {isCallActive && (
@@ -528,14 +553,16 @@ export const VoiceTutor = () => {
             <select
               value={selectedVoice}
               onChange={(e) => handleVoiceChange(e.target.value)}
-              className="bg-white/5 hover:bg-white/10 text-white/90 text-xs font-medium pl-7 pr-3 py-1.5 rounded-xl border border-white/15 outline-none cursor-pointer transition-all focus:border-cyan-500/50"
-              title="Select AI Voice Persona"
+              className="bg-white/5 hover:bg-white/10 text-white/90 text-xs font-medium pl-7 pr-3 py-1.5 rounded-xl border border-cyan-500/30 outline-none cursor-pointer transition-all focus:border-cyan-400"
+              title="Select Mark LII AI Voice Persona"
             >
-              <option value="antoni" className="bg-neutral-900 text-white">Antoni (Warm & Natural)</option>
-              <option value="adam" className="bg-neutral-900 text-white">Adam (Deep & Engaging)</option>
-              <option value="liam" className="bg-neutral-900 text-white">Liam (Tech Buddy)</option>
-              <option value="alice" className="bg-neutral-900 text-white">Alice (Clear Female)</option>
-              <option value="brian" className="bg-neutral-900 text-white">Brian (Studio Narrator)</option>
+              <option value="jarvis" className="bg-neutral-900 text-cyan-400 font-semibold">🤖 J.A.R.V.I.S. (Mark LII - Charon)</option>
+              <option value="fenrir" className="bg-neutral-900 text-white">⚡ Fenrir (Mark LII - Technical)</option>
+              <option value="puck" className="bg-neutral-900 text-white">🚀 Puck (Mark LII - Energetic)</option>
+              <option value="kore" className="bg-neutral-900 text-white">🌸 Kore (Mark LII - Empathetic)</option>
+              <option value="aoede" className="bg-neutral-900 text-white">🎶 Aoede (Mark LII - Melodic)</option>
+              <option value="antoni" className="bg-neutral-900 text-white">🎙️ Antoni (Warm Tutor)</option>
+              <option value="brian" className="bg-neutral-900 text-white">🇬🇧 Brian (British Mentor)</option>
             </select>
           </div>
 

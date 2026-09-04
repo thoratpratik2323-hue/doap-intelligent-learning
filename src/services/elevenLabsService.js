@@ -6,15 +6,18 @@ const ELEVEN_API_KEY = (typeof localStorage !== 'undefined' ? localStorage.getIt
                        (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_ELEVENLABS_KEY) ||
                        ['sk_5f91a262d00d2924db05', '7bf3fd48a71b8857415c268c9452'].join('');
 
-// 100% Verified Working Official ElevenLabs Premade Studio Voices (Free Tier Supported)
+/// Official ElevenLabs Studio Voices configured for Mark LII J.A.R.V.I.S. & Native AI Personas
 export const ELEVEN_VOICES = {
-  doap: { id: 'ErXwobaYiN019PkySvjV', name: 'DOAP Tutor (Antoni - Warm & Natural Male)' },
-  antoni: { id: 'ErXwobaYiN019PkySvjV', name: 'Antoni (Warm, Conversational & Expressive Male)' },
-  adam: { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam (Deep, Resonant & Charismatic Male)' },
-  liam: { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'Liam (Youthful, Energetic Tech Buddy)' },
-  alice: { id: 'Xb7hH8MSUJpSbSDYk0k2', name: 'Alice (Clear, Natural & Confident Female)' },
-  aria: { id: 'Xb7hH8MSUJpSbSDYk0k2', name: 'Aria (Natural & Expressive Female)' },
-  brian: { id: 'nPczCjzI2devNBz1zQrb', name: 'Brian (Rich Studio Narrator)' }
+  jarvis: { id: 'pNInz6obpgDQGcFmaJgB', name: 'J.A.R.V.I.S. (Mark LII - Deep, Calm & Resonant)' },
+  charon: { id: 'pNInz6obpgDQGcFmaJgB', name: 'Charon (Mark LII J.A.R.V.I.S. Core)' },
+  doap: { id: 'pNInz6obpgDQGcFmaJgB', name: 'J.A.R.V.I.S. (Mark LII Core)' },
+  adam: { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam (Mark LII J.A.R.V.I.S. Voice)' },
+  fenrir: { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'Fenrir (Mark LII - Technical & Crisp)' },
+  puck: { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'Puck (Mark LII - Energetic Tech Buddy)' },
+  kore: { id: 'Xb7hH8MSUJpSbSDYk0k2', name: 'Kore (Mark LII - Warm & Empathetic)' },
+  aoede: { id: 'Xb7hH8MSUJpSbSDYk0k2', name: 'Aoede (Mark LII - Melodic & Clear)' },
+  antoni: { id: 'ErXwobaYiN019PkySvjV', name: 'Antoni (Warm Conversational Tutor)' },
+  brian: { id: 'nPczCjzI2devNBz1zQrb', name: 'Brian (British Studio Mentor)' }
 };
 
 let sharedAudioCtx = null;
@@ -44,49 +47,57 @@ export function stopElevenLabsAudio() {
 
 /**
  * Intelligent Neural Voice Selector for Browser SpeechSynthesis
- * Rejects legacy robotic voices (like Microsoft Ravi / Heera / Desktop)
- * Prefers natural online neural voices (Edge / Chrome / Windows 11 / Mac)
+ * Prioritizes British / UK natural neural voices (Ryan / Oliver / Guy) matching Mark LII JARVIS
  */
 export function getBestNaturalVoice(synth) {
   if (!synth) return null;
   const voices = synth.getVoices ? synth.getVoices() : [];
   if (!voices || voices.length === 0) return null;
 
-  // 1. Natural / Neural Online Voices (Edge / Windows 11 / Chrome Natural)
+  // 1. Mark LII JARVIS Style: British / UK Natural Neural Voices (Ryan / Oliver / Guy / Christopher)
+  const jarvisVoice = voices.find(v => 
+    (v.name.includes('Ryan') || v.name.includes('Guy') || v.name.includes('Christopher') || v.name.includes('George') || v.name.includes('Oliver') || v.name.includes('UK English Male')) &&
+    (v.name.includes('Online (Natural)') || v.name.includes('Natural') || v.name.includes('Google'))
+  );
+  if (jarvisVoice) return jarvisVoice;
+
+  // 2. Natural / Neural Online Voices (Edge / Windows 11 / Chrome Natural)
   const preferredNatural = voices.find(v => 
     (v.name.includes('Online (Natural)') || v.name.includes('Natural')) &&
     (v.lang.startsWith('en') || v.lang.startsWith('hi'))
   );
   if (preferredNatural) return preferredNatural;
 
-  // 2. Google High-Quality Voices (Chrome)
+  // 3. Google High-Quality Voices (Chrome)
+  const googleUkMale = voices.find(v => v.name.includes('Google UK English Male'));
+  if (googleUkMale) return googleUkMale;
+
   const googleNatural = voices.find(v => 
     v.name.includes('Google UK English Female') ||
-    v.name.includes('Google UK English Male') ||
     v.name.includes('Google US English') ||
     v.name.includes('Google हिन्दी')
   );
   if (googleNatural) return googleNatural;
 
-  // 3. Apple Neural Voices (Siri / Samantha / Daniel / Karen)
+  // 4. Apple Neural Voices (Daniel / Samantha / Karen)
   const appleVoice = voices.find(v => 
-    (v.name.includes('Samantha') || v.name.includes('Daniel') || v.name.includes('Karen')) &&
+    (v.name.includes('Daniel') || v.name.includes('Samantha') || v.name.includes('Karen')) &&
     !v.name.includes('Compact')
   );
   if (appleVoice) return appleVoice;
 
-  // 4. Any English voice that is NOT an ancient robotic desktop voice
+  // 5. Any English voice that is NOT an ancient robotic desktop voice
   const nonRoboticEn = voices.find(v => 
     v.lang.startsWith('en') && 
     !v.name.toLowerCase().includes('desktop') && 
     !v.name.toLowerCase().includes('ravi') && 
-    !v.name.toLowerCase().includes('heera') &&
-    !v.name.toLowerCase().includes('espeak') &&
+    !v.name.toLowerCase().includes('heera') && 
+    !v.name.toLowerCase().includes('espeak') && 
     !v.name.toLowerCase().includes('sapi')
   );
   if (nonRoboticEn) return nonRoboticEn;
 
-  // 5. Fallback to any English voice
+  // 6. Fallback to any English voice
   const anyEn = voices.find(v => v.lang.startsWith('en'));
   return anyEn || voices[0];
 }

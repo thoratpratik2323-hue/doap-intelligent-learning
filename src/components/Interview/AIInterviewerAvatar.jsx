@@ -29,7 +29,7 @@ export const AIInterviewerAvatar = ({ questionText = '', isAiSpeaking = false, o
     try {
       await speakElevenLabs(
         cleanSpeech,
-        'doap',
+        'jarvis',
         () => {
           setSpeakingState('listening');
           if (onSpeechComplete) onSpeechComplete();

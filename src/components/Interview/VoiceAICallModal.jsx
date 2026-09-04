@@ -249,7 +249,7 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
     try {
       await speakElevenLabs(
         text,
-        'aria',
+        'jarvis',
         () => {
           if (onFinished && isComponentMounted.current) onFinished();
         },
