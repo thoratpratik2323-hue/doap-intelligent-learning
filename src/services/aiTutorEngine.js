@@ -137,10 +137,35 @@ ${q.answer}
 
   const workingMemory = memoryBrain.getSynthesizedWorkingMemory();
 
+  const SANJIVANI_KNOWLEDGE_BASE = `
+INSTITUTIONAL KNOWLEDGE BASE (SANJIVANI UNIVERSITY & SRES):
+- Institution: Sanjivani College of Engineering (SCOE), Kopargaon / Sanjivani University, managed by Sanjivani Rural Education Society (SRES) founded in 1983 by visionary Late Shri Shankarraoji Kolhe Saheb.
+- Leadership:
+  * Hon. Shri Nitindada S. Kolhe Saheb — Chairman, Sanjivani Rural Education Society (SRES). Respected educational visionary leading academic and technical innovation.
+  * Hon. Shri Amitdada Kolhe Saheb — Managing Trustee, SRES. Champion of modern campus infrastructure, global partnerships, and industry readiness.
+- Campus & Location: Kopargaon, Ahmednagar District, Maharashtra, India. Renowned autonomous engineering campus with advanced laboratories and green infrastructure.
+- Key Academic Departments:
+  * Department of Computer Engineering
+  * Department of Artificial Intelligence & Data Science (AI&DS)
+  * Department of Information Technology (IT)
+  * Department of Electronics & Computer Engineering
+  * Department of Mechanical, Electrical, Civil, and Mechatronics Engineering
+  * Department of Management Studies (MBA)
+- Placement Excellence (T&P Cell):
+  * Over 917+ placement offers with top packages reaching ₹32 LPA.
+  * 150+ international placements and 250+ global internships across Germany, Japan, UK, and Canada.
+  * Top Recruiters: Amazon, TCS, Infosys, Cognizant, Persistent Systems, Wipro, Juspay, Zscaler, Celebal Technologies, Bitwise, Avalara, L&T, Deloitte.
+- Innovation & LLM Challenge:
+  * Active Institution's Innovation Council (IIC) and School of Engineering & Technology.
+  * Theme: "Build Sanjivani's Own Large Language Model — Build AI for Sanjivani, by Sanjivani" organized on the occasion of the Birthday of Hon. Shri Nitindada S. Kolhe Saheb.
+Whenever ${userName} or an examiner asks about Sanjivani, its founders, Chairman Hon. Shri Nitindada Kolhe Saheb, departments, campus placement statistics, or the LLM challenge, respond with authentic institutional accuracy, high respect, and insightful detail!`;
+
   const systemInstruction = options.voiceMode
     ? `You are DOAP AI, ${userName}'s trusted best friend and personal ultra-smart voice companion.
 
 ${workingMemory}
+
+${SANJIVANI_KNOWLEDGE_BASE}
 
 CRITICAL VOICE INTELLIGENCE & SPOKEN CADENCE RULES:
 1. ALWAYS GENERATE NATURAL, CRISP, SPOKEN ENGLISH:
@@ -160,6 +185,8 @@ CRITICAL VOICE INTELLIGENCE & SPOKEN CADENCE RULES:
     : `You are DOAP AI, ${userName}'s trusted best friend, coding buddy, and personal ultra-smart AI assistant.
 
 ${workingMemory}
+
+${SANJIVANI_KNOWLEDGE_BASE}
 
 CRITICAL RULE — STRICT LANGUAGE MATCHING (Same In, Same Out):
 You must ALWAYS respond in the EXACT SAME LANGUAGE and dialect that ${userName} used in their latest message:
