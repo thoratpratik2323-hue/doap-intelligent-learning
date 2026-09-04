@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Sparkles, Send, FileText, Linkedin, Copy, Check, Bot, Zap, ArrowUpRight } from 'lucide-react';
+import { Sparkles, Send, FileText, Linkedin, Copy, Check, Bot, Zap, ArrowUpRight, Download, Search } from 'lucide-react';
 import { runLinkedInAgent, runRezAI } from '../../services/ipArmyAgents';
+import { ATSResumePreview } from './ATSResumePreview';
 
 export const IPArmySuite = ({ userName = 'Pratik', isDarkMode, accentHex }) => {
-  const [activeTab, setActiveTab] = useState('linkedin'); // 'linkedin' | 'rezai'
+  const [activeTab, setActiveTab] = useState('rezai'); // default to Resume Builder
+  const [resumeSubTab, setResumeSubTab] = useState('pdf'); // 'pdf' | 'audit'
 
   // LinkedIn Agent State
   const [liRole, setLiRole] = useState('Senior Software Engineer');
@@ -192,51 +194,87 @@ export const IPArmySuite = ({ userName = 'Pratik', isDarkMode, accentHex }) => {
       {/* Tab 2: Resume Builder */}
       {activeTab === 'rezai' && (
         <div className="space-y-4 animate-fade-in">
-          <div>
-            <label className="text-[11px] font-mono text-neutral-400 block mb-1">Target Engineering Role</label>
-            <input
-              type="text"
-              value={targetJobRole}
-              onChange={(e) => setTargetJobRole(e.target.value)}
-              placeholder="e.g. Senior Full-Stack & AI Systems Architect"
-              className="w-full px-3.5 py-2 rounded-xl text-xs bg-black/40 border border-neutral-800 text-white focus:outline-none focus:border-cyan-400"
-            />
+          {/* Sub-mode Switcher */}
+          <div className="flex items-center justify-between pb-2 border-b border-neutral-800">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setResumeSubTab('pdf')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border ${
+                  resumeSubTab === 'pdf'
+                    ? 'bg-emerald-500 text-black border-emerald-400 font-bold shadow-md'
+                    : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white'
+                }`}
+              >
+                <Download size={13} />
+                <span>1-Click ATS PDF Generator</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setResumeSubTab('audit')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border ${
+                  resumeSubTab === 'audit'
+                    ? 'bg-cyan-500 text-black border-cyan-400 font-bold shadow-md'
+                    : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white'
+                }`}
+              >
+                <Search size={13} />
+                <span>AI Score & Bullet Audit</span>
+              </button>
+            </div>
           </div>
 
-          <div>
-            <label className="text-[11px] font-mono text-neutral-400 block mb-1">Resume Highlights / Experience Snippet</label>
-            <textarea
-              rows={4}
-              value={resumeSnippet}
-              onChange={(e) => setResumeSnippet(e.target.value)}
-              className="w-full p-3.5 rounded-xl text-xs bg-black/40 border border-neutral-800 text-white focus:outline-none focus:border-cyan-400 font-mono leading-relaxed"
-            />
-          </div>
-
-          <button
-            onClick={handleRunRezAI}
-            disabled={isRezLoading}
-            className="w-full py-3 rounded-xl text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-black flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/10 transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-50"
-          >
-            <Sparkles size={14} className={isRezLoading ? "animate-spin" : ""} />
-            <span>{isRezLoading ? "Resume Builder is Analyzing..." : "Build & Optimize Resume with AI"}</span>
-          </button>
-
-          {rezResult && (
-            <div className="p-4 rounded-2xl bg-black/60 border border-neutral-800 space-y-3 animate-fade-in">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-mono text-cyan-400 font-bold">Resume Builder Audit & Upgrades:</span>
-                <button
-                  onClick={() => copyToClipboard(rezResult, setRezCopied)}
-                  className="px-3 py-1 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 cursor-pointer"
-                >
-                  {rezCopied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
-                  <span>{rezCopied ? "Copied!" : "Copy Report"}</span>
-                </button>
+          {resumeSubTab === 'pdf' ? (
+            <ATSResumePreview userName={userName} isDarkMode={isDarkMode} accentHex={accentHex} />
+          ) : (
+            <div className="space-y-4 animate-fade-in">
+              <div>
+                <label className="text-[11px] font-mono text-neutral-400 block mb-1">Target Engineering Role</label>
+                <input
+                  type="text"
+                  value={targetJobRole}
+                  onChange={(e) => setTargetJobRole(e.target.value)}
+                  placeholder="e.g. Senior Full-Stack & AI Systems Architect"
+                  className="w-full px-3.5 py-2 rounded-xl text-xs bg-black/40 border border-neutral-800 text-white focus:outline-none focus:border-cyan-400"
+                />
               </div>
-              <div className="text-xs leading-relaxed text-neutral-200 whitespace-pre-wrap font-sans">
-                {rezResult}
+
+              <div>
+                <label className="text-[11px] font-mono text-neutral-400 block mb-1">Resume Highlights / Experience Snippet</label>
+                <textarea
+                  rows={4}
+                  value={resumeSnippet}
+                  onChange={(e) => setResumeSnippet(e.target.value)}
+                  className="w-full p-3.5 rounded-xl text-xs bg-black/40 border border-neutral-800 text-white focus:outline-none focus:border-cyan-400 font-mono leading-relaxed"
+                />
               </div>
+
+              <button
+                onClick={handleRunRezAI}
+                disabled={isRezLoading}
+                className="w-full py-3 rounded-xl text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-black flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/10 transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-50"
+              >
+                <Sparkles size={14} className={isRezLoading ? "animate-spin" : ""} />
+                <span>{isRezLoading ? "Resume Builder is Analyzing..." : "Build & Optimize Resume with AI"}</span>
+              </button>
+
+              {rezResult && (
+                <div className="p-4 rounded-2xl bg-black/60 border border-neutral-800 space-y-3 animate-fade-in">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono text-cyan-400 font-bold">Resume Builder Audit & Upgrades:</span>
+                    <button
+                      onClick={() => copyToClipboard(rezResult, setRezCopied)}
+                      className="px-3 py-1 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 text-white flex items-center gap-1.5 cursor-pointer"
+                    >
+                      {rezCopied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                      <span>{rezCopied ? "Copied!" : "Copy Report"}</span>
+                    </button>
+                  </div>
+                  <div className="text-xs leading-relaxed text-neutral-200 whitespace-pre-wrap font-sans">
+                    {rezResult}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

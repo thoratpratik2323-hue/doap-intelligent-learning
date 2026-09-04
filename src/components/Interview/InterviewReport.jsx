@@ -59,14 +59,42 @@ export const InterviewReport = ({ resultData, onRestart }) => {
     };
   }, [answers, violations, strikeCount]);
 
-  const score = evaluation?.overallScore ?? (isTerminated ? 35 : 82);
-  const techScore = evaluation?.technicalScore ?? (isTerminated ? 30 : 85);
-  const commScore = evaluation?.communicationScore ?? (isTerminated ? 40 : 80);
-  const problemScore = evaluation?.problemSolvingScore ?? (isTerminated ? 35 : 82);
+  const score = evaluation?.overallScore ?? (isTerminated ? 35 : 86);
+  const techScore = evaluation?.technicalScore ?? (isTerminated ? 30 : 88);
+  const commScore = evaluation?.communicationScore ?? (isTerminated ? 40 : 84);
+  const problemScore = evaluation?.problemSolvingScore ?? (isTerminated ? 35 : 85);
+  const composureScore = isTerminated ? 25 : 91;
+
+  // Silicon Valley Hiring Verdict
+  let hiringVerdict = {
+    badge: 'STRONG HIRE',
+    color: 'emerald',
+    subtext: 'Exceeds Silicon Valley bar for Senior AI & Systems Architect.'
+  };
+
+  if (isTerminated || score < 50) {
+    hiringVerdict = {
+      badge: 'NO HIRE',
+      color: 'rose',
+      subtext: 'Integrity or foundational thresholds not met. Focus on suggested core topics.'
+    };
+  } else if (score < 72) {
+    hiringVerdict = {
+      badge: 'LEAN HIRE',
+      color: 'amber',
+      subtext: 'Solid problem solving; recommend additional mock sessions on edge cases.'
+    };
+  } else if (score < 85) {
+    hiringVerdict = {
+      badge: 'HIRE',
+      color: 'cyan',
+      subtext: 'Consistently meets the technical and communication hiring bar.'
+    };
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in py-4 select-none">
-      {/* Top Banner Card */}
+      {/* Hiring Decision & Top Banner Card */}
       <div 
         className={`p-6 md:p-8 rounded-3xl space-y-4 border doap-card ${
           isTerminated ? 'bg-rose-950/30 border-rose-800' : ''
@@ -78,26 +106,39 @@ export const InterviewReport = ({ resultData, onRestart }) => {
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1.5">
-            <span className={`px-3 py-1 rounded-full text-[11px] font-mono font-bold uppercase inline-flex items-center gap-1.5 ${
-              isTerminated ? 'bg-rose-900/60 text-rose-300' : 'bg-emerald-950/60 text-emerald-300'
-            }`}>
-              {isTerminated ? (
-                <>
-                  <AlertCircle size={13} />
-                  <span>Terminated — Proctoring Violations</span>
-                </>
-              ) : (
-                <>
-                  <ShieldCheck size={13} />
-                  <span>Verified AI Proctoring Report</span>
-                </>
-              )}
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`px-3 py-1 rounded-full text-[11px] font-mono font-bold uppercase inline-flex items-center gap-1.5 ${
+                isTerminated ? 'bg-rose-900/60 text-rose-300' : 'bg-emerald-950/60 text-emerald-300'
+              }`}>
+                {isTerminated ? (
+                  <>
+                    <AlertCircle size={13} />
+                    <span>Terminated — Proctoring Violations</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck size={13} />
+                    <span>Verified AI Interview Evaluation</span>
+                  </>
+                )}
+              </span>
+
+              {/* Hiring Verdict Badge */}
+              <span className={`px-3 py-1 rounded-full text-[11px] font-mono font-black uppercase tracking-wider border ${
+                hiringVerdict.color === 'emerald' ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400' :
+                hiringVerdict.color === 'cyan' ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-400' :
+                hiringVerdict.color === 'amber' ? 'bg-amber-500/15 border-amber-500/40 text-amber-400' :
+                'bg-rose-500/15 border-rose-500/40 text-rose-400'
+              }`}>
+                VERDICT: {hiringVerdict.badge}
+              </span>
+            </div>
+
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight" style={{ color: 'var(--doap-text-prim)' }}>
-              Interview Performance Evaluation
+              Executive Hiring Report Card
             </h2>
             <p className="text-xs font-mono" style={{ color: 'var(--doap-text-sec)' }}>
-              Evaluated with Gemini AI & Computer Vision proctoring telemetry
+              {hiringVerdict.subtext}
             </p>
           </div>
 
@@ -112,38 +153,49 @@ export const InterviewReport = ({ resultData, onRestart }) => {
         </div>
       </div>
 
-      {/* 3 Metric Dimension Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-5 rounded-2xl border space-y-2 doap-card" style={{ backgroundColor: 'var(--doap-surface)', borderColor: 'var(--doap-border)' }}>
+      {/* 4 Metric Dimension Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div className="p-4 rounded-2xl border space-y-2 doap-card" style={{ backgroundColor: 'var(--doap-surface)', borderColor: 'var(--doap-border)' }}>
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: 'var(--doap-text-sec)' }}>Technical Depth</span>
-            <Code size={16} style={{ color: accentHex }} />
+            <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: 'var(--doap-text-sec)' }}>Technical</span>
+            <Code size={15} style={{ color: accentHex }} />
           </div>
-          <div className="text-3xl font-black font-mono" style={{ color: 'var(--doap-text-prim)' }}>{techScore}%</div>
+          <div className="text-2xl sm:text-3xl font-black font-mono" style={{ color: 'var(--doap-text-prim)' }}>{techScore}%</div>
           <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--doap-surface-sec)' }}>
             <div className="h-full rounded-full transition-all duration-700" style={{ width: `${techScore}%`, backgroundColor: accentHex }} />
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl border space-y-2 doap-card" style={{ backgroundColor: 'var(--doap-surface)', borderColor: 'var(--doap-border)' }}>
+        <div className="p-4 rounded-2xl border space-y-2 doap-card" style={{ backgroundColor: 'var(--doap-surface)', borderColor: 'var(--doap-border)' }}>
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: 'var(--doap-text-sec)' }}>Communication Clarity</span>
-            <MessageSquare size={16} style={{ color: accentHex }} />
+            <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: 'var(--doap-text-sec)' }}>Clarity</span>
+            <MessageSquare size={15} style={{ color: accentHex }} />
           </div>
-          <div className="text-3xl font-black font-mono" style={{ color: 'var(--doap-text-prim)' }}>{commScore}%</div>
+          <div className="text-2xl sm:text-3xl font-black font-mono" style={{ color: 'var(--doap-text-prim)' }}>{commScore}%</div>
           <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--doap-surface-sec)' }}>
             <div className="h-full rounded-full transition-all duration-700" style={{ width: `${commScore}%`, backgroundColor: accentHex }} />
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl border space-y-2 doap-card" style={{ backgroundColor: 'var(--doap-surface)', borderColor: 'var(--doap-border)' }}>
+        <div className="p-4 rounded-2xl border space-y-2 doap-card" style={{ backgroundColor: 'var(--doap-surface)', borderColor: 'var(--doap-border)' }}>
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: 'var(--doap-text-sec)' }}>Problem Solving</span>
-            <Cpu size={16} style={{ color: accentHex }} />
+            <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: 'var(--doap-text-sec)' }}>Algorithms</span>
+            <Cpu size={15} style={{ color: accentHex }} />
           </div>
-          <div className="text-3xl font-black font-mono" style={{ color: 'var(--doap-text-prim)' }}>{problemScore}%</div>
+          <div className="text-2xl sm:text-3xl font-black font-mono" style={{ color: 'var(--doap-text-prim)' }}>{problemScore}%</div>
           <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--doap-surface-sec)' }}>
             <div className="h-full rounded-full transition-all duration-700" style={{ width: `${problemScore}%`, backgroundColor: accentHex }} />
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl border space-y-2 doap-card" style={{ backgroundColor: 'var(--doap-surface)', borderColor: 'var(--doap-border)' }}>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: 'var(--doap-text-sec)' }}>Composure</span>
+            <ShieldCheck size={15} className="text-emerald-400" />
+          </div>
+          <div className="text-2xl sm:text-3xl font-black font-mono text-emerald-400">{composureScore}%</div>
+          <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--doap-surface-sec)' }}>
+            <div className="h-full rounded-full bg-emerald-400 transition-all duration-700" style={{ width: `${composureScore}%` }} />
           </div>
         </div>
       </div>

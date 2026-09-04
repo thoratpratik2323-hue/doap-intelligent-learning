@@ -22,6 +22,8 @@ import { useFaceDetection } from '../../hooks/useFaceDetection';
 import { useTheme } from '../../context/ThemeContext';
 import { generateQuestionsForPosition } from '../../data/positionsData';
 import { createAnswerModel } from '../../data/interviewSchema';
+import { AIInterviewerAvatar } from './AIInterviewerAvatar';
+import { InterviewTelemetryHUD } from './InterviewTelemetryHUD';
 
 export const LiveInterviewWorkspace = ({ setupData, onInterviewComplete, onInterviewTerminated }) => {
   const { activeAccent, activeAccentHex } = useTheme();
@@ -287,10 +289,16 @@ export const LiveInterviewWorkspace = ({ setupData, onInterviewComplete, onInter
 
         {/* Right Camera & Proctoring Feed */}
         <div className="lg:col-span-5 flex flex-col space-y-4">
-          <div className="p-4 rounded-3xl space-y-3 border doap-card flex-1 flex flex-col justify-between" style={{ backgroundColor: 'var(--doap-surface)', borderColor: 'var(--doap-border)' }}>
+          {/* AI Interviewer Avatar & Spoken Question */}
+          <AIInterviewerAvatar 
+            questionText={currentQ.title} 
+          />
+
+          {/* Candidate Camera Stream */}
+          <div className="p-4 rounded-3xl space-y-3 border doap-card flex flex-col justify-between" style={{ backgroundColor: 'var(--doap-surface)', borderColor: 'var(--doap-border)' }}>
             <div className="flex items-center justify-between text-xs font-semibold">
               <span className="uppercase tracking-wider text-[11px] font-mono font-bold" style={{ color: 'var(--doap-text-sec)' }}>
-                PROCTORED CAMERA STREAM
+                CANDIDATE PROCTORED FEED
               </span>
               <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
                 faceStatus === 'DETECTED' ? 'bg-emerald-950/50 text-emerald-400 border border-emerald-800' : 'bg-rose-950/50 text-rose-400 border border-rose-800 animate-pulse'
@@ -300,7 +308,7 @@ export const LiveInterviewWorkspace = ({ setupData, onInterviewComplete, onInter
             </div>
 
             {/* Live Camera Feed */}
-            <div className="bg-neutral-900 rounded-2xl flex-1 min-h-[260px] relative overflow-hidden flex items-center justify-center border border-neutral-800">
+            <div className="bg-neutral-900 rounded-2xl min-h-[190px] max-h-[220px] relative overflow-hidden flex items-center justify-center border border-neutral-800">
               <video
                 ref={bindVideoRef}
                 autoPlay
@@ -311,8 +319,8 @@ export const LiveInterviewWorkspace = ({ setupData, onInterviewComplete, onInter
               />
 
               {(!stream || !isCameraOn) && (
-                <div className="text-center space-y-2 text-neutral-400">
-                  <VideoOff size={40} className="mx-auto text-neutral-500" />
+                <div className="text-center space-y-2 text-neutral-400 py-6">
+                  <VideoOff size={36} className="mx-auto text-neutral-500" />
                   <p className="text-xs font-mono">Camera Feed Off / Initializing...</p>
                 </div>
               )}
@@ -321,24 +329,33 @@ export const LiveInterviewWorkspace = ({ setupData, onInterviewComplete, onInter
             {/* Media Controls Bar */}
             <div className="flex items-center justify-center gap-4 pt-1">
               <button
+                type="button"
                 onClick={toggleMic}
-                className="w-10 h-10 rounded-full flex items-center justify-center transition-colors cursor-pointer border"
+                className="w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer border"
                 style={{ backgroundColor: isMicOn ? 'var(--doap-surface-sec)' : 'rgba(239, 68, 68, 0.2)', borderColor: 'var(--doap-border)', color: isMicOn ? 'var(--doap-text-prim)' : '#ef4444' }}
                 title={isMicOn ? "Mute Mic" : "Unmute Mic"}
               >
-                {isMicOn ? <Mic size={18} /> : <MicOff size={18} />}
+                {isMicOn ? <Mic size={16} /> : <MicOff size={16} />}
               </button>
 
               <button
+                type="button"
                 onClick={toggleCamera}
-                className="w-10 h-10 rounded-full flex items-center justify-center transition-colors cursor-pointer border"
+                className="w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer border"
                 style={{ backgroundColor: isCameraOn ? 'var(--doap-surface-sec)' : 'rgba(239, 68, 68, 0.2)', borderColor: 'var(--doap-border)', color: isCameraOn ? 'var(--doap-text-prim)' : '#ef4444' }}
                 title={isCameraOn ? "Turn Camera Off" : "Turn Camera On"}
               >
-                {isCameraOn ? <Camera size={18} /> : <VideoOff size={18} />}
+                {isCameraOn ? <Camera size={16} /> : <VideoOff size={16} />}
               </button>
             </div>
           </div>
+
+          {/* Real-Time Delivery & Speech Telemetry HUD */}
+          <InterviewTelemetryHUD
+            transcript={currentAnswerText}
+            recordingSeconds={recordingSeconds}
+            isRecording={isRecording}
+          />
         </div>
       </div>
     </div>
