@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Play, Sparkles, FileText, ChevronRight, Check, ArrowRight } from 'lucide-react';
-import { POSITIONS_LIST } from '../../data/positionsData';
+import { Play, Sparkles, FileText, ChevronRight, Check, ArrowRight, Building2 } from 'lucide-react';
+import { POSITIONS_LIST, COMPANY_TRACKS } from '../../data/positionsData';
 import { useTheme } from '../../context/ThemeContext';
 
 export const SetupStep = ({ onNext }) => {
   const { activeAccent, activeAccentHex } = useTheme();
   const accentHex = activeAccentHex || activeAccent?.hex || 'var(--doap-accent, #ffffff)';
 
+  const [selectedCompanyTrack, setSelectedCompanyTrack] = useState('google');
   const [selectedPositionId, setSelectedPositionId] = useState('software-engineer');
   const [selectedType, setSelectedType] = useState('Technical');
   const [selectedDifficulty, setSelectedDifficulty] = useState('Intermediate');
@@ -27,7 +28,8 @@ export const SetupStep = ({ onNext }) => {
       type: selectedType,
       difficulty: selectedDifficulty,
       duration: selectedDuration,
-      jobDescription: jobDescription
+      jobDescription: jobDescription,
+      companyTrackId: selectedCompanyTrack
     });
   };
 
@@ -47,7 +49,9 @@ export const SetupStep = ({ onNext }) => {
           </div>
           <div>
             <h3 className="text-sm font-bold" style={{ color: 'var(--doap-text-prim)' }}>
-              Selected: {selectedPosition.title}
+              {selectedCompanyTrack 
+                ? `${COMPANY_TRACKS.find(t => t.id === selectedCompanyTrack)?.name} • ${selectedPosition.title}`
+                : `Selected: ${selectedPosition.title}`}
             </h3>
             <p className="text-xs font-mono text-neutral-400">
               {selectedType} Interview • {selectedDifficulty} • {selectedDuration}
@@ -64,10 +68,69 @@ export const SetupStep = ({ onNext }) => {
         </button>
       </div>
 
+      {/* Target Company Track Selection */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-widest block" style={{ color: 'var(--doap-text-sec)' }}>
+            1. TARGET COMPANY TRACK (SILICON VALLEY RECRUITER MODE)
+          </span>
+          {selectedCompanyTrack && (
+            <button
+              onClick={() => setSelectedCompanyTrack(null)}
+              className="text-xs font-mono text-neutral-400 hover:text-white cursor-pointer underline"
+            >
+              Reset to General Role
+            </button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          {COMPANY_TRACKS.map((track) => {
+            const isSelected = selectedCompanyTrack === track.id;
+            return (
+              <button
+                key={track.id}
+                type="button"
+                onClick={() => setSelectedCompanyTrack(track.id)}
+                className={`p-3.5 rounded-2xl text-left transition-all cursor-pointer border flex flex-col justify-between space-y-2 doap-card ${
+                  isSelected ? 'border-cyan-400 shadow-md shadow-cyan-500/10' : ''
+                }`}
+                style={{
+                  backgroundColor: isSelected ? 'rgba(6,182,212,0.12)' : 'var(--doap-surface)',
+                  borderColor: isSelected ? '#06b6d4' : 'var(--doap-border)'
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-xs" style={{ color: isSelected ? '#38bdf8' : 'var(--doap-text-prim)' }}>
+                    {track.name}
+                  </span>
+                  {isSelected && (
+                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                  )}
+                </div>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-black/40 text-neutral-300 border border-white/5 truncate block">
+                  {track.badge}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {selectedCompanyTrack && (
+          <div className="p-3.5 rounded-2xl bg-cyan-950/30 border border-cyan-500/20 text-xs font-sans text-cyan-200 flex items-center gap-2 animate-fade-in">
+            <Sparkles size={14} className="text-cyan-400 shrink-0" />
+            <span>
+              <strong>{COMPANY_TRACKS.find(t => t.id === selectedCompanyTrack)?.name} Active:</strong>{' '}
+              {COMPANY_TRACKS.find(t => t.id === selectedCompanyTrack)?.rubric}
+            </span>
+          </div>
+        )}
+      </div>
+
       {/* Position Selection */}
       <div className="space-y-3">
         <span className="text-[11px] font-mono font-bold uppercase tracking-widest block" style={{ color: 'var(--doap-text-sec)' }}>
-          1. TARGET POSITION / JOB ROLE
+          2. TARGET POSITION / JOB ROLE
         </span>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {POSITIONS_LIST.map((pos) => {
@@ -141,7 +204,7 @@ export const SetupStep = ({ onNext }) => {
         {/* Type */}
         <div className="space-y-3">
           <span className="text-[11px] font-mono font-bold uppercase tracking-widest block" style={{ color: 'var(--doap-text-sec)' }}>
-            2. INTERVIEW TYPE
+            3. INTERVIEW TYPE
           </span>
           <div className="space-y-2">
             {interviewTypes.map((type) => (
@@ -166,7 +229,7 @@ export const SetupStep = ({ onNext }) => {
         {/* Difficulty */}
         <div className="space-y-3">
           <span className="text-[11px] font-mono font-bold uppercase tracking-widest block" style={{ color: 'var(--doap-text-sec)' }}>
-            3. DIFFICULTY LEVEL
+            4. SENIORITY / DIFFICULTY LEVEL
           </span>
           <div className="space-y-2">
             {difficulties.map((diff) => (
@@ -191,7 +254,7 @@ export const SetupStep = ({ onNext }) => {
         {/* Duration */}
         <div className="space-y-3">
           <span className="text-[11px] font-mono font-bold uppercase tracking-widest block" style={{ color: 'var(--doap-text-sec)' }}>
-            4. DURATION
+            5. SESSION DURATION
           </span>
           <div className="space-y-2">
             {durations.map((dur) => (

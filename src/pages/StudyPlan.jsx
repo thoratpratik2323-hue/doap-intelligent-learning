@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle2, Circle, Clock, Sparkles, Plus, Trash2, X, Check } from 'lucide-react';
 import { SmartCoachRecommendation } from '../components/Common/SmartCoachRecommendation';
 import { useTheme } from '../context/ThemeContext';
@@ -15,6 +15,26 @@ export const StudyPlan = () => {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskTime, setNewTaskTime] = useState('10:00');
   const [newTaskDuration, setNewTaskDuration] = useState('45m');
+
+  // Auto-merge recovery drills injected from mock interview weaknesses
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('doap_study_plan_tasks');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const currentIds = new Set(tasks.map(t => String(t.id)));
+          const fresh = parsed.filter(t => !currentIds.has(String(t.id)));
+          if (fresh.length > 0) {
+            updateUserProgress({ tasks: [...fresh, ...tasks] });
+            localStorage.removeItem('doap_study_plan_tasks');
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Could not auto-merge recovery tasks:', e);
+    }
+  }, [tasks, updateUserProgress]);
 
   const todayObj = new Date();
   const daysNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

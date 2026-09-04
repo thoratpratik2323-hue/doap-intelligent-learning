@@ -153,6 +153,46 @@ class MemoryBrain {
     this.saveMemory();
   }
 
+  // Layer 4 & 7: Transform post-interview weaknesses into auto-generated 3-day recovery curriculum
+  injectInterviewWeaknessMilestones(areas = [], companyTrack = '') {
+    if (!Array.isArray(areas) || areas.length === 0) return [];
+
+    areas.forEach(topic => {
+      this.recordWeakness(topic);
+    });
+
+    const trackLabel = companyTrack ? `${companyTrack.toUpperCase()} Track` : 'Silicon Valley Mock';
+
+    const times = ["09:00", "11:30", "15:00"];
+    const generatedTasks = areas.slice(0, 3).map((area, idx) => ({
+      id: `task_recovery_${Date.now()}_${idx}`,
+      title: `Day ${idx + 1}: Deep Drill on ${area}`,
+      description: `Targeted practice to eliminate gaps identified during your ${trackLabel} interview. Focus on edge cases and complexity.`,
+      time: times[idx] || "10:00",
+      duration: "45m",
+      category: 'Interview Recovery',
+      difficulty: 'Intermediate',
+      completed: false,
+      date: new Date(Date.now() + idx * 86400000).toISOString().split('T')[0]
+    }));
+
+    try {
+      if (typeof window !== 'undefined') {
+        const storedPlan = localStorage.getItem('doap_study_plan_tasks') || '[]';
+        const parsed = JSON.parse(storedPlan);
+        const merged = [...generatedTasks, ...parsed];
+        localStorage.setItem('doap_study_plan_tasks', JSON.stringify(merged));
+      }
+    } catch(e){}
+
+    this.recordEpisodic(
+      `Mock Interview Recovery (${trackLabel})`,
+      `Auto-generated 3-day study plan curriculum targeting: ${areas.join(', ')}.`
+    );
+
+    return generatedTasks;
+  }
+
   // Layer 8: Generate Synthesized Context for LLM Prompts
   getSynthesizedWorkingMemory() {
     const mem = this.memory;

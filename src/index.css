@@ -164,12 +164,13 @@ input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.2);
 }
 
-/* ── Print Styles (Clean ATS PDF Export) ─────────────────── */
+/* ── Print Styles (Clean ATS PDF Export & Verified Interview Audit Card) ── */
 @media print {
   body * {
     visibility: hidden;
   }
-  #printable-ats-resume, #printable-ats-resume * {
+  #printable-ats-resume, #printable-ats-resume *,
+  #printable-interview-report, #printable-interview-report * {
     visibility: visible;
   }
   #printable-ats-resume {
@@ -185,8 +186,22 @@ input[type="range"]::-webkit-slider-thumb:hover {
     background: white !important;
     color: black !important;
   }
+  #printable-interview-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0.5in !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+    color: #0f172a !important;
+    display: block !important;
+  }
   @page {
     size: letter portrait;
-    margin: 0.2in;
+    margin: 0.25in;
   }
 }

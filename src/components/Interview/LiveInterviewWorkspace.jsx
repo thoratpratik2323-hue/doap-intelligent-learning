@@ -88,7 +88,12 @@ export const LiveInterviewWorkspace = ({ setupData, onInterviewComplete, onInter
   } = useFaceDetection({ videoRef, isStreamActive: isCameraOn });
 
   useEffect(() => {
-    const qList = generateQuestionsForPosition(setupData.positionId);
+    const qList = generateQuestionsForPosition(
+      setupData.positionId,
+      setupData.jobDescription,
+      setupData.difficulty,
+      setupData.companyTrackId
+    );
     setQuestions(qList);
     startMedia({ video: true, audio: true });
     requestFullscreen();
@@ -113,14 +118,9 @@ export const LiveInterviewWorkspace = ({ setupData, onInterviewComplete, onInter
   const handleStartRecording = () => {
     setIsRecording(true);
     setHasStartedRecording(true);
-    setRecordingSeconds(0);
-    resetTranscript();
-    setBaseAnswerText(currentAnswerText);
+    startListening();
 
-    if (isSpeechSupported) {
-      startListening();
-    }
-
+    if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
     recordingTimerRef.current = setInterval(() => {
       setRecordingSeconds(prev => prev + 1);
     }, 1000);
@@ -128,23 +128,23 @@ export const LiveInterviewWorkspace = ({ setupData, onInterviewComplete, onInter
 
   const handlePauseRecording = () => {
     setIsRecording(false);
+    stopListening();
     if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
-    if (isSpeechSupported) stopListening();
     setBaseAnswerText(currentAnswerText);
   };
 
   const handleNextQuestion = () => {
-    if (isRecording) {
-      handlePauseRecording();
-    }
+    setIsRecording(false);
+    stopListening();
+    if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
 
     const currentQ = questions[currentQuestionIndex] || {};
     const newAnswerObj = createAnswerModel({
-      questionId: currentQ.id || `q_${currentQuestionIndex}`,
-      questionCategory: currentQ.category || 'General',
-      questionText: currentQ.title || 'Question',
-      transcript: currentAnswerText,
-      recordingDurationSeconds: recordingSeconds
+      questionId: currentQ.id,
+      questionTitle: currentQ.title,
+      category: currentQ.category,
+      text: currentAnswerText.trim(),
+      recordingSeconds
     });
 
     const updatedAnswers = [...recordedAnswers, newAnswerObj];
@@ -163,7 +163,8 @@ export const LiveInterviewWorkspace = ({ setupData, onInterviewComplete, onInter
         status: 'COMPLETED',
         strikeCount,
         violations,
-        answers: updatedAnswers
+        answers: updatedAnswers,
+        setupData
       });
     }
   };
