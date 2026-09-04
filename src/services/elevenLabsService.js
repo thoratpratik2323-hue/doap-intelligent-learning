@@ -47,57 +47,64 @@ export function stopElevenLabsAudio() {
 
 /**
  * Intelligent Neural Voice Selector for Browser SpeechSynthesis
- * Prioritizes British / UK natural neural voices (Ryan / Oliver / Guy) matching Mark LII JARVIS
+ * Prioritizes Authentic Indian English Natural & Neural Voices (Neerja, Prabhat, Google English India)
  */
 export function getBestNaturalVoice(synth) {
   if (!synth) return null;
   const voices = synth.getVoices ? synth.getVoices() : [];
   if (!voices || voices.length === 0) return null;
 
-  // 1. Mark LII JARVIS Style: British / UK Natural Neural Voices (Ryan / Oliver / Guy / Christopher)
-  const jarvisVoice = voices.find(v => 
-    (v.name.includes('Ryan') || v.name.includes('Guy') || v.name.includes('Christopher') || v.name.includes('George') || v.name.includes('Oliver') || v.name.includes('UK English Male')) &&
-    (v.name.includes('Online (Natural)') || v.name.includes('Natural') || v.name.includes('Google'))
-  );
-  if (jarvisVoice) return jarvisVoice;
+  // 1. Authentic Indian English Natural & Neural Voices (Microsoft Neerja, Microsoft Prabhat, Google English India)
+  const indianNaturalVoice = voices.find(v => {
+    const name = (v.name || '').toLowerCase();
+    const lang = (v.lang || '').toLowerCase().replace('_', '-');
+    const isIndian = lang === 'en-in' || name.includes('india') || name.includes('neerja') || name.includes('prabhat');
+    const isNatural = name.includes('online (natural)') || name.includes('natural') || name.includes('google') || name.includes('neural');
+    return isIndian && isNatural;
+  });
+  if (indianNaturalVoice) return indianNaturalVoice;
 
-  // 2. Natural / Neural Online Voices (Edge / Windows 11 / Chrome Natural)
+  // 2. Any Standard Indian English voice (Google English (India), Neerja, Prabhat, Heera, Ravi)
+  const indianVoice = voices.find(v => {
+    const name = (v.name || '').toLowerCase();
+    const lang = (v.lang || '').toLowerCase().replace('_', '-');
+    return lang === 'en-in' || name.includes('india') || name.includes('neerja') || name.includes('prabhat') || name.includes('heera') || name.includes('ravi');
+  });
+  if (indianVoice) return indianVoice;
+
+  // 3. Indian Hindi Natural Voice Fallback if user speaks Hindi/Hinglish
+  const hindiVoice = voices.find(v => {
+    const name = (v.name || '').toLowerCase();
+    const lang = (v.lang || '').toLowerCase().replace('_', '-');
+    return lang === 'hi-in' || name.includes('hindi') || name.includes('हिन्दी');
+  });
+  if (hindiVoice) return hindiVoice;
+
+  // 4. Natural / Neural Online Voices (Edge / Windows 11 / Chrome Natural)
   const preferredNatural = voices.find(v => 
     (v.name.includes('Online (Natural)') || v.name.includes('Natural')) &&
     (v.lang.startsWith('en') || v.lang.startsWith('hi'))
   );
   if (preferredNatural) return preferredNatural;
 
-  // 3. Google High-Quality Voices (Chrome)
-  const googleUkMale = voices.find(v => v.name.includes('Google UK English Male'));
-  if (googleUkMale) return googleUkMale;
-
+  // 5. Google High-Quality Voices (Chrome)
   const googleNatural = voices.find(v => 
-    v.name.includes('Google UK English Female') ||
     v.name.includes('Google US English') ||
-    v.name.includes('Google हिन्दी')
+    v.name.includes('Google UK English Male') ||
+    v.name.includes('Google UK English Female')
   );
   if (googleNatural) return googleNatural;
 
-  // 4. Apple Neural Voices (Daniel / Samantha / Karen)
-  const appleVoice = voices.find(v => 
-    (v.name.includes('Daniel') || v.name.includes('Samantha') || v.name.includes('Karen')) &&
-    !v.name.includes('Compact')
-  );
-  if (appleVoice) return appleVoice;
-
-  // 5. Any English voice that is NOT an ancient robotic desktop voice
+  // 6. Non-robotic English voice
   const nonRoboticEn = voices.find(v => 
     v.lang.startsWith('en') && 
     !v.name.toLowerCase().includes('desktop') && 
-    !v.name.toLowerCase().includes('ravi') && 
-    !v.name.toLowerCase().includes('heera') && 
     !v.name.toLowerCase().includes('espeak') && 
     !v.name.toLowerCase().includes('sapi')
   );
   if (nonRoboticEn) return nonRoboticEn;
 
-  // 6. Fallback to any English voice
+  // 7. Fallback to any English voice
   const anyEn = voices.find(v => v.lang.startsWith('en'));
   return anyEn || voices[0];
 }

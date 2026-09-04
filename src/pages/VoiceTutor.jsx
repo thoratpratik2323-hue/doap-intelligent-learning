@@ -510,6 +510,18 @@ export const VoiceTutor = () => {
       safeComplete();
     }, estimatedDurationMs);
 
+    // Prioritize authentic Indian English Neural Voice (Google English India / Microsoft Neerja / Prabhat)
+    const indianVoice = synthRef.current ? getBestNaturalVoice(synthRef.current) : null;
+    if (indianVoice && (
+      (indianVoice.lang || '').toLowerCase().includes('in') || 
+      (indianVoice.name || '').toLowerCase().includes('india') || 
+      (indianVoice.name || '').toLowerCase().includes('neerja') || 
+      (indianVoice.name || '').toLowerCase().includes('prabhat')
+    )) {
+      fallbackBrowserSpeech(text, safeComplete);
+      return;
+    }
+
     try {
       await speakElevenLabs(
         text, 
@@ -542,7 +554,9 @@ export const VoiceTutor = () => {
       const naturalVoice = getBestNaturalVoice(synthRef.current);
       if (naturalVoice) {
         utterance.voice = naturalVoice;
-        utterance.lang = naturalVoice.lang || 'en-US';
+        utterance.lang = naturalVoice.lang || 'en-IN';
+      } else {
+        utterance.lang = 'en-IN';
       }
 
       // Keep live reference so Chrome does not garbage-collect utterance mid-speech
@@ -713,19 +727,23 @@ export const VoiceTutor = () => {
           </div>
         )}
 
-        {/* Live Subtitles & Captions */}
-        <div className="w-full max-w-3xl text-center mt-8 min-h-[60px] flex items-center justify-center z-10 px-4">
+        {/* Live Subtitles & Captions (Scrollable Popup Box) */}
+        <div className="w-full max-w-3xl mt-6 z-10 px-4 flex flex-col items-center">
           {userTranscript ? (
-            <p className="text-base sm:text-lg font-medium text-cyan-200 italic animate-fade-in bg-cyan-950/40 px-6 py-3 rounded-2xl border border-cyan-500/30 shadow-lg">
-              "{userTranscript}"
-            </p>
+            <div className="w-full max-h-48 overflow-y-auto px-6 py-3.5 rounded-2xl bg-cyan-950/50 backdrop-blur-md border border-cyan-500/30 shadow-xl animate-fade-in text-center select-text">
+              <p className="text-base sm:text-lg font-medium text-cyan-200 italic">
+                "{userTranscript}"
+              </p>
+            </div>
           ) : aiSpokenText ? (
-            <p className="text-sm sm:text-base font-medium text-neutral-200 line-clamp-3 px-6 py-3 rounded-2xl bg-black/70 border border-neutral-800 shadow-lg leading-relaxed">
-              {aiSpokenText}
-            </p>
+            <div className="w-full max-h-48 sm:max-h-60 overflow-y-auto px-6 py-4 rounded-2xl bg-black/80 backdrop-blur-md border border-neutral-800 shadow-2xl animate-fade-in text-left sm:text-center select-text">
+              <p className="text-sm sm:text-base font-medium text-neutral-100 leading-relaxed whitespace-pre-wrap">
+                {aiSpokenText}
+              </p>
+            </div>
           ) : (
-            <p className="text-xs font-mono text-neutral-400">
-              {isCallActive ? "Mic active — speak naturally in any language, I'll answer in English!" : "Tap Start Call to talk with DOAP AI in hands-free voice"}
+            <p className="text-xs font-mono text-neutral-400 text-center py-2">
+              {isCallActive ? "Mic active — speak naturally in Indian English or Hindi, DOAP AI is listening!" : "Tap Start Call to talk with DOAP AI in hands-free voice"}
             </p>
           )}
         </div>
