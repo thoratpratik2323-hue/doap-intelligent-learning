@@ -268,13 +268,8 @@ export async function speakElevenLabs(text, voiceKey = 'doap', onComplete, onErr
   stopElevenLabsAudio();
   unlockAudioContext();
 
-  // Resolve user preferred voice or fallback to Antoni
-  const preferredStored = typeof localStorage !== 'undefined' ? localStorage.getItem('doap_selected_voice') : null;
-  const activeKey = voiceKey === 'doap' && preferredStored && ELEVEN_VOICES[preferredStored] 
-    ? preferredStored 
-    : voiceKey;
-
-  const targetVoice = ELEVEN_VOICES[activeKey] || ELEVEN_VOICES.doap;
+  // Direct high-fidelity DOAP AI Voice
+  const targetVoice = ELEVEN_VOICES[voiceKey] || ELEVEN_VOICES.doap;
   const voiceId = targetVoice.id;
 
   try {

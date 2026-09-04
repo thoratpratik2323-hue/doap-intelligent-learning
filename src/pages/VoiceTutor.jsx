@@ -8,13 +8,12 @@ import {
   Clock, 
   Sparkles,
   Zap,
-  Volume2,
   Send
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { generateSmartTutorResponse } from '../services/aiTutorEngine';
-import { speakElevenLabs, stopElevenLabsAudio, unlockAudioContext, getBestNaturalVoice, ELEVEN_VOICES, humanizeTextForSpeech } from '../services/elevenLabsService';
+import { speakElevenLabs, stopElevenLabsAudio, unlockAudioContext, getBestNaturalVoice, humanizeTextForSpeech } from '../services/elevenLabsService';
 import { transcribeAudioWithGroq } from '../services/whisperService';
 
 // Mark LII Arc-Reactor Acoustic Synthesizer (Web Audio API)
@@ -119,16 +118,12 @@ export const VoiceTutor = () => {
   const isMutedRef = useRef(false);
   const [callDuration, setCallDuration] = useState(0);
 
-  const [selectedVoice, setSelectedVoice] = useState(() => {
-    return (typeof localStorage !== 'undefined' && localStorage.getItem('doap_selected_voice')) || 'jarvis';
-  });
-
-  const handleVoiceChange = (voiceKey) => {
-    setSelectedVoice(voiceKey);
+  // Ensure legacy voice settings are cleared so DOAP AI uses pure studio voice
+  useEffect(() => {
     if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('doap_selected_voice', voiceKey);
+      localStorage.removeItem('doap_selected_voice');
     }
-  };
+  }, []);
 
   const [userTranscript, setUserTranscript] = useState('');
   const [aiSpokenText, setAiSpokenText] = useState('');
@@ -371,7 +366,7 @@ export const VoiceTutor = () => {
     // Initialize microphone stream
     await initUniversalMicrophone();
 
-    const welcome = `At your service, ${userName}. Mark LII systems are fully online and listening. What are we engineering today?`;
+    const welcome = `Hey ${userName}! I'm DOAP AI, online and listening. What are we working on today, buddy?`;
     setAiSpokenText(welcome);
 
     speakResponse(welcome, () => {
@@ -463,7 +458,7 @@ export const VoiceTutor = () => {
     try {
       await speakElevenLabs(
         text, 
-        selectedVoice,
+        'doap',
         () => {
           if (onComplete && isMountedRef.current) onComplete();
         },
@@ -526,12 +521,12 @@ export const VoiceTutor = () => {
 
   return (
     <div className="h-full w-full flex-1 flex flex-col justify-between p-4 sm:p-8 select-none bg-[#05070c] text-white animate-fade-in relative overflow-hidden">
-      {/* 1. Clean Minimal Top Bar: "MARK LII • J.A.R.V.I.S." */}
+      {/* 1. Clean Minimal Top Bar: "DOAP AI" */}
       <div className="flex items-center justify-between z-20 pb-3 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-sm font-bold tracking-wide">
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-sm font-bold tracking-wide shadow-sm">
             <span className={`w-2.5 h-2.5 rounded-full bg-cyan-400 ${isCallActive ? "animate-ping" : ""}`} />
-            <span>MARK LII • J.A.R.V.I.S.</span>
+            <span>DOAP AI</span>
           </div>
 
           {isCallActive && (
@@ -542,25 +537,6 @@ export const VoiceTutor = () => {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* AI Voice Persona Selector */}
-          <div className="relative flex items-center">
-            <Volume2 size={13} className="text-cyan-400 absolute left-2.5 pointer-events-none" />
-            <select
-              value={selectedVoice}
-              onChange={(e) => handleVoiceChange(e.target.value)}
-              className="bg-white/5 hover:bg-white/10 text-white/90 text-xs font-medium pl-7 pr-3 py-1.5 rounded-xl border border-cyan-500/30 outline-none cursor-pointer transition-all focus:border-cyan-400"
-              title="Select Mark LII AI Voice Persona"
-            >
-              <option value="jarvis" className="bg-neutral-900 text-cyan-400 font-semibold">🤖 J.A.R.V.I.S. (Mark LII - Charon)</option>
-              <option value="fenrir" className="bg-neutral-900 text-white">⚡ Fenrir (Mark LII - Technical)</option>
-              <option value="puck" className="bg-neutral-900 text-white">🚀 Puck (Mark LII - Energetic)</option>
-              <option value="kore" className="bg-neutral-900 text-white">🌸 Kore (Mark LII - Empathetic)</option>
-              <option value="aoede" className="bg-neutral-900 text-white">🎶 Aoede (Mark LII - Melodic)</option>
-              <option value="antoni" className="bg-neutral-900 text-white">🎙️ Antoni (Warm Tutor)</option>
-              <option value="brian" className="bg-neutral-900 text-white">🇬🇧 Brian (British Mentor)</option>
-            </select>
-          </div>
-
           {/* Switch to Text AI Chat */}
           <button
             onClick={() => navigateTo('/ai-tutor')}
