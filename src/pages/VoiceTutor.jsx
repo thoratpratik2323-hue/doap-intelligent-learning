@@ -717,33 +717,8 @@ export const VoiceTutor = () => {
           )}
         </div>
 
-        {/* Accent / Engine Mode Selector + Switch to Text Chat */}
+        {/* Switch to Text Chat */}
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="flex items-center p-0.5 rounded-xl bg-neutral-900/90 border border-white/10 shadow-inner">
-            <button
-              onClick={() => handleVoiceModeChange('indian')}
-              className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                voiceMode === 'indian'
-                  ? 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
-                  : 'text-neutral-400 hover:text-neutral-200'
-              }`}
-              title="Authentic Indian English natural accent"
-            >
-              🇮🇳 Indian
-            </button>
-            <button
-              onClick={() => handleVoiceModeChange('studio')}
-              className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                voiceMode === 'studio'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
-                  : 'text-neutral-400 hover:text-neutral-200'
-              }`}
-              title="Studio HD ultra-crisp voice with broadcast warmth"
-            >
-              💎 Studio
-            </button>
-          </div>
-
           <button
             onClick={() => navigateTo('/ai-tutor')}
             className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-white/15 bg-white/5 hover:bg-white/10 transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
@@ -953,9 +928,6 @@ export const VoiceTutor = () => {
                       <Sparkles size={12} className="text-cyan-400" />
                     </div>
                     <span className="text-xs font-bold text-neutral-200">DOAP AI</span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-neutral-800 text-neutral-400 border border-neutral-700">
-                      {voiceMode === 'indian' ? '🇮🇳 Indian Accent' : '💎 Studio HD'}
-                    </span>
                   </div>
 
                   <div className="flex items-center gap-1.5">
@@ -1026,17 +998,6 @@ export const VoiceTutor = () => {
               {isMuted ? <MicOff size={16} /> : <Mic size={16} />}
               <span className="hidden sm:inline">{isMuted ? 'Muted' : 'Mute'}</span>
             </button>
-
-            {/* Accent Mode Switcher in Dock */}
-            <button
-              onClick={() => handleVoiceModeChange(voiceMode === 'indian' ? 'studio' : 'indian')}
-              className="p-3 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-neutral-200 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
-              title="Toggle between Indian accent and Studio HD"
-            >
-              <span>{voiceMode === 'indian' ? '🇮🇳' : '💎'}</span>
-              <span className="hidden sm:inline">{voiceMode === 'indian' ? 'Indian Accent' : 'Studio HD'}</span>
-            </button>
-
             {/* End Call Button */}
             <button
               onClick={handleEndCall}
