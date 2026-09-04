@@ -16,7 +16,7 @@ import {
   Send
 } from 'lucide-react';
 import { generateSmartTutorResponse } from '../../services/aiTutorEngine';
-import { speakElevenLabs, stopElevenLabsAudio, getBestNaturalVoice } from '../../services/elevenLabsService';
+import { speakElevenLabs, stopElevenLabsAudio, getBestNaturalVoice, humanizeTextForSpeech } from '../../services/elevenLabsService';
 
 export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode, accentHex }) => {
   const [callState, setCallState] = useState('idle'); // 'listening' | 'thinking' | 'speaking'
@@ -269,7 +269,8 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
       return;
     }
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    const spokenHumanText = humanizeTextForSpeech(text);
+    const utterance = new SpeechSynthesisUtterance(spokenHumanText);
     utterance.rate = 0.98;
     utterance.pitch = 1.0;
 

@@ -14,7 +14,7 @@ import {
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { generateSmartTutorResponse } from '../services/aiTutorEngine';
-import { speakElevenLabs, stopElevenLabsAudio, unlockAudioContext, getBestNaturalVoice, ELEVEN_VOICES } from '../services/elevenLabsService';
+import { speakElevenLabs, stopElevenLabsAudio, unlockAudioContext, getBestNaturalVoice, ELEVEN_VOICES, humanizeTextForSpeech } from '../services/elevenLabsService';
 import { transcribeAudioWithGroq } from '../services/whisperService';
 
 // DOAP AI Acoustic Sound Synthesizers (Web Audio API)
@@ -464,7 +464,8 @@ export const VoiceTutor = () => {
       return;
     }
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    const spokenHumanText = humanizeTextForSpeech(text);
+    const utterance = new SpeechSynthesisUtterance(spokenHumanText);
     utterance.rate = 0.98;
     utterance.pitch = 1.0;
 
