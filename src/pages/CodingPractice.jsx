@@ -538,6 +538,23 @@ export const CodingPractice = () => {
   useEffect(() => {
     const handleFullscreenChange = () => {
       if (!isAssessmentActiveRef.current) return;
+
+      // Check if browser actually supports fullscreen API
+      const isSupported = typeof document !== 'undefined' && (
+        document.fullscreenEnabled || 
+        document.webkitFullscreenEnabled || 
+        document.mozFullScreenEnabled || 
+        document.msFullscreenEnabled
+      );
+      if (!isSupported) return;
+
+      // If student is actively focused in an input or textarea (e.g. mobile keyboard opened),
+      // or if viewport shifted from virtual keyboard, do not falsely flag violation
+      const activeTag = document.activeElement ? document.activeElement.tagName : '';
+      if (activeTag === 'TEXTAREA' || activeTag === 'INPUT') {
+        return;
+      }
+
       const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
       if (!isFs) {
         setIsFullscreenViolation(true);
@@ -1812,14 +1829,26 @@ Evaluate this code strictly:
                   ⚠️ Total Violations Recorded: {violations.length} / 3
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={enterFullscreen}
-                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-bold text-sm flex items-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/30 hover:scale-105 active:scale-95 transition-all"
-              >
-                <Maximize2 size={16} />
-                <span>Return to Fullscreen Assessment</span>
-              </button>
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setIsFullscreenViolation(false);
+                    await enterFullscreen();
+                  }}
+                  className="px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-bold text-sm flex items-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/30 hover:scale-105 active:scale-95 transition-all"
+                >
+                  <Maximize2 size={16} />
+                  <span>Return to Fullscreen Assessment</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExitAssessment}
+                  className="px-4 py-2.5 rounded-xl text-xs text-neutral-400 hover:text-rose-400 cursor-pointer transition-colors"
+                >
+                  Exit & Forfeit Assessment
+                </button>
+              </div>
             </div>
           )}
 
