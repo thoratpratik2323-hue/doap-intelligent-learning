@@ -1207,7 +1207,7 @@ Evaluate this code strictly:
             </div>
 
             {/* Selected Challenge Card */}
-            <div className="p-4 rounded-2xl bg-neutral-900/80 border border-neutral-800 space-y-2">
+            <div className="p-4 rounded-2xl bg-neutral-900/80 border border-neutral-800 space-y-2.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono text-neutral-400">Challenge #{pendingProblem.id}</span>
                 <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
@@ -1221,10 +1221,13 @@ Evaluate this code strictly:
                 </span>
               </div>
               <h4 className="text-base font-bold text-white">{pendingProblem.title}</h4>
+              <p className="text-xs text-neutral-300 leading-relaxed line-clamp-3 select-text border-t border-neutral-800/80 pt-2 font-sans">
+                {pendingProblem.description}
+              </p>
               <div className="flex items-center gap-3 text-xs text-neutral-400 font-mono pt-1">
                 <span>Category: {pendingProblem.category}</span>
                 <span>•</span>
-                <span className="text-cyan-300">⏱️ Benchmark: {pendingProblem.benchmarkMins || 20} Mins</span>
+                <span className="text-cyan-300 font-bold">⏱️ Benchmark: {pendingProblem.benchmarkMins || 20} Mins</span>
               </div>
             </div>
 
@@ -1266,20 +1269,13 @@ Evaluate this code strictly:
                 <span>Start Assessment & Enter Fullscreen</span>
               </button>
 
-              <div className="flex items-center justify-between pt-1">
-                <button
-                  type="button"
-                  onClick={() => handleLaunchCasualSandbox(pendingProblem)}
-                  className="text-xs text-neutral-400 hover:text-white cursor-pointer underline transition-colors"
-                >
-                  Casual Sandbox (No Proctoring)
-                </button>
+              <div className="flex items-center justify-center pt-1">
                 <button
                   type="button"
                   onClick={() => setPendingProblem(null)}
                   className="text-xs text-neutral-400 hover:text-white cursor-pointer transition-colors"
                 >
-                  Cancel
+                  Cancel & Return to Challenge List
                 </button>
               </div>
             </div>
@@ -1892,17 +1888,41 @@ Evaluate this code strictly:
             {/* Editor & Question Details */}
             <div className="p-4 flex-1 overflow-y-auto space-y-4 font-mono">
               {/* Question Statement Card ON TOP */}
-              <div className="p-3.5 rounded-2xl bg-black/50 border border-neutral-800 space-y-2 font-sans text-xs">
+              <div className="p-4 rounded-2xl bg-black/60 border border-cyan-500/30 space-y-3 font-sans text-xs shadow-lg">
                 <div className="flex items-center justify-between text-neutral-400 text-[11px] font-mono font-bold">
-                  <span className="text-cyan-400">PROBLEM STATEMENT</span>
-                  <span>{activeProblem.category}</span>
+                  <span className="text-cyan-400 flex items-center gap-1.5">
+                    <FileCode size={14} />
+                    <span>PROBLEM STATEMENT</span>
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-neutral-400">{activeProblem.category}</span>
+                    <span>•</span>
+                    <span className="text-cyan-300">⏱️ {activeProblem.benchmarkMins || 20}m benchmark</span>
+                  </div>
                 </div>
-                <p className="text-neutral-200 leading-relaxed select-text">{activeProblem.description}</p>
+                <p className="text-sm text-neutral-100 leading-relaxed select-text font-normal">{activeProblem.description}</p>
 
                 {activeProblem.examples && activeProblem.examples.length > 0 && (
-                  <div className="p-2.5 rounded-xl bg-neutral-950 border border-neutral-800/80 font-mono text-[11px] space-y-1">
-                    <div><span className="text-cyan-400">Example Input:</span> {activeProblem.examples[0].input}</div>
-                    <div><span className="text-emerald-400">Example Output:</span> {activeProblem.examples[0].output}</div>
+                  <div className="space-y-1.5">
+                    <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-wide font-mono">Examples:</div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {activeProblem.examples.slice(0, 2).map((ex, idx) => (
+                        <div key={idx} className="p-2.5 rounded-xl bg-neutral-950/90 border border-neutral-800 font-mono text-[11px] space-y-1 select-text">
+                          <div><span className="text-cyan-400 font-semibold">Input:</span> {ex.input}</div>
+                          <div><span className="text-emerald-400 font-semibold">Output:</span> {ex.output}</div>
+                          {ex.explanation && (
+                            <div className="text-neutral-400 text-[10px] font-sans pt-0.5">{ex.explanation}</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {activeProblem.constraints && activeProblem.constraints.length > 0 && (
+                  <div className="pt-2 border-t border-neutral-800/80 text-[11px] text-neutral-400 font-mono">
+                    <span className="text-neutral-300 font-bold">Constraints: </span>
+                    {activeProblem.constraints.join(' • ')}
                   </div>
                 )}
               </div>
@@ -2135,30 +2155,39 @@ Evaluate this code strictly:
             {/* Footer Buttons */}
             <div className="p-4 border-t flex flex-wrap items-center justify-between gap-3" style={{ borderColor: 'var(--doap-border)' }}>
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    const updated = solvedProblems.includes(activeProblem.id)
-                      ? solvedProblems.filter(id => id !== activeProblem.id)
-                      : [...solvedProblems, activeProblem.id];
-                    updateUserProgress({ solvedProblems: updated });
-                  }}
-                  className="px-4 py-2.5 rounded-xl text-xs font-semibold border cursor-pointer hover:opacity-80 flex items-center gap-1.5"
-                  style={{ borderColor: 'var(--doap-border)' }}
-                >
-                  <Check size={14} />
-                  <span>{solvedProblems.includes(activeProblem.id) ? 'Marked as Solved' : 'Mark as Solved'}</span>
-                </button>
+                {solvedProblems.includes(activeProblem.id) ? (
+                  <div className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
+                    <CheckCircle2 size={14} className="text-emerald-400" />
+                    <span>Verified Solved</span>
+                  </div>
+                ) : (
+                  <div className="px-3 py-1.5 rounded-xl text-[11px] font-mono text-neutral-400 bg-neutral-900/80 border border-neutral-800 flex items-center gap-1.5">
+                    <Clock size={13} className="text-amber-400" />
+                    <span>Unsolved (Pass all tests to mark solved)</span>
+                  </div>
+                )}
               </div>
 
-              <button
-                onClick={handleRunCode}
-                disabled={isRunning}
-                className="px-6 py-2.5 rounded-xl text-xs font-bold shadow-md cursor-pointer hover-glide flex items-center gap-2 disabled:opacity-50"
-                style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
-              >
-                <Play size={14} className={isRunning ? "animate-spin" : ""} />
-                <span>{isRunning ? 'Running Tests...' : 'Run Code & Tests'}</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleLaunchAssessment(activeProblem)}
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-500/30 flex items-center gap-1.5 cursor-pointer transition-colors"
+                >
+                  <Maximize2 size={13} />
+                  <span>Start Fullscreen Exam</span>
+                </button>
+
+                <button
+                  onClick={handleRunCode}
+                  disabled={isRunning}
+                  className="px-6 py-2.5 rounded-xl text-xs font-bold shadow-md cursor-pointer hover-glide flex items-center gap-2 disabled:opacity-50"
+                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
+                >
+                  <Play size={14} className={isRunning ? "animate-spin" : ""} />
+                  <span>{isRunning ? 'Running Tests...' : 'Run Code & Tests'}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
