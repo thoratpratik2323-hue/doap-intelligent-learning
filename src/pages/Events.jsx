@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CalendarDays, Clock, MapPin, Users, Check, Bookmark, Share2 } from 'lucide-react';
 import { EVENTS_DATA } from '../data/mockData';
 import { useTheme } from '../context/ThemeContext';
+import { memoryBrain } from '../services/memoryBrain';
 
 export const Events = () => {
   const { isDarkMode } = useTheme();
@@ -15,7 +16,24 @@ export const Events = () => {
   ];
 
   const toggleEnroll = (id) => {
-    setEventsList(eventsList.map(e => e.id === id ? { ...e, enrolled: !e.enrolled } : e));
+    setEventsList(prev => prev.map(e => {
+      if (e.id === id) {
+        const nextEnrolled = !e.enrolled;
+        if (nextEnrolled) {
+          try {
+            memoryBrain.recordEpisodic(
+              `Registered for Campus Event: ${e.title}`,
+              `Event Type: ${e.type} | Date: ${e.dateMonth} ${e.dateDay} | Location: ${e.location}`
+            );
+            memoryBrain.updateKnowledge(e.title, 'inProgress');
+          } catch (err) {
+            console.warn('[Events] memoryBrain record failed:', err);
+          }
+        }
+        return { ...e, enrolled: nextEnrolled };
+      }
+      return e;
+    }));
   };
 
   const filteredEvents = eventsList.filter(e => 

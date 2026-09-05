@@ -478,10 +478,20 @@ export const MarkdownRenderer = ({ content, isDarkMode }) => {
               if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
                 if (trimmed.includes('---')) return null; // Separator row
                 const cells = trimmed.split('|').filter((_, idx, arr) => idx > 0 && idx < arr.length - 1);
+                const colCount = Math.max(1, cells.length);
                 return (
-                  <div key={lIdx} className="grid grid-cols-3 gap-2 p-2 rounded-xl border text-xs font-mono my-1" style={{ borderColor: 'var(--doap-border)', backgroundColor: 'var(--doap-surface-sec, #161616)' }}>
+                  <div 
+                    key={lIdx} 
+                    className="gap-2.5 p-2.5 rounded-xl border text-xs font-mono my-1 items-center" 
+                    style={{ 
+                      display: 'grid',
+                      gridTemplateColumns: `repeat(${colCount}, minmax(0, 1fr))`,
+                      borderColor: 'var(--doap-border)', 
+                      backgroundColor: 'var(--doap-surface-sec, #161616)' 
+                    }}
+                  >
                     {cells.map((cell, cIdx) => (
-                      <div key={cIdx} className="truncate" style={{ color: 'var(--doap-text-prim)' }}>
+                      <div key={cIdx} className="break-words font-medium" style={{ color: 'var(--doap-text-prim)' }}>
                         {formatInline(cell.trim(), isDarkMode)}
                       </div>
                     ))}

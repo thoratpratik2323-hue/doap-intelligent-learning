@@ -204,10 +204,16 @@ export const ThemeProvider = ({ children }) => {
   const updateProfile = (updatedFields) => {
     setProfile(prev => {
       const next = { ...prev, ...updatedFields };
-      if (auth?.user?.uid) {
-        localStorage.setItem(`doap_user_profile_${auth.user.uid}`, JSON.stringify(next));
+      try {
+        if (typeof localStorage !== 'undefined') {
+          if (auth?.user?.uid) {
+            localStorage.setItem(`doap_user_profile_${auth.user.uid}`, JSON.stringify(next));
+          }
+          localStorage.setItem('doap_profile', JSON.stringify(next));
+        }
+      } catch (e) {
+        console.warn('[ThemeContext] Failed to persist profile locally:', e);
       }
-      localStorage.setItem('doap_profile', JSON.stringify(next));
       return next;
     });
     if (auth?.updateProfileData) {

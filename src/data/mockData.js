@@ -523,7 +523,10 @@ export const RESOURCES_DATA = [
     semester: "Semester 3",
     size: "2.4 MB",
     date: "Sep 2026",
-    type: "Lecture Notes"
+    type: "Lecture Notes",
+    readingTime: "35 min",
+    summary: "Complete reference for Big-O notation, amortized analysis, Trees (AVL, Red-Black), Graphs (BFS/DFS, Dijkstra, Bellman-Ford), and Dynamic Programming tabulation patterns.",
+    keyTopics: ["Time & Space Complexities", "Tree Rebalancing", "Graph Traversals", "DP Memoization & Tabulation"]
   },
   {
     id: 2,
@@ -532,7 +535,82 @@ export const RESOURCES_DATA = [
     semester: "Semester 4",
     size: "5.1 MB",
     date: "Sep 2026",
-    type: "PDF"
+    type: "PDF",
+    readingTime: "50 min",
+    summary: "Core mathematical and practical foundations of ML: Gradient Descent algorithms, Cross-Entropy loss, Backpropagation derivation, Regularization (L1/L2), and Evaluation metrics (ROC-AUC, F1).",
+    keyTopics: ["Optimizer Math (SGD, Adam)", "Backprop Math", "Regularization", "Confusion Matrix & ROC-AUC"]
+  },
+  {
+    id: 3,
+    title: "Operating Systems & Concurrency Deep Dive",
+    subject: "Computer Science",
+    semester: "Semester 3",
+    size: "3.8 MB",
+    date: "Sep 2026",
+    type: "Lecture Notes",
+    readingTime: "40 min",
+    summary: "Comprehensive exploration of Process Scheduling, Virtual Memory & Paging, Semaphore/Mutex Synchronization, Deadlock Coffman Conditions, and POSIX thread models.",
+    keyTopics: ["Paging & Page Faults", "Mutex vs Semaphore", "Banker's Algorithm", "CPU Scheduling (CFS, Round Robin)"]
+  },
+  {
+    id: 4,
+    title: "Full-Stack System Design: High-Availability Microservices",
+    subject: "Computer Science",
+    semester: "Semester 4",
+    size: "4.2 MB",
+    date: "Sep 2026",
+    type: "PDF",
+    readingTime: "45 min",
+    summary: "Architecting web systems that scale to millions: Load Balancing strategies, Database Sharding & Read Replicas, Redis Caching (Cache-Aside, Write-Through), and Kafka Event Queues.",
+    keyTopics: ["CAP Theorem & PACELC", "Consistent Hashing", "Redis Caching Strategies", "Idempotent API Design"]
+  },
+  {
+    id: 5,
+    title: "Deep Learning & Transformer Architectures Handbook",
+    subject: "AI",
+    semester: "Semester 4",
+    size: "6.7 MB",
+    date: "Sep 2026",
+    type: "PDF",
+    readingTime: "60 min",
+    summary: "Inside modern Generative AI: Scaled Dot-Product Attention, Multi-Head Attention equations, Positional Encodings (RoPE), Quantization (AWQ/GPTQ), and Fine-tuning with LoRA.",
+    keyTopics: ["Self-Attention Math (Q, K, V)", "Rotary Position Embeddings", "KV Caching & FlashAttention", "LoRA & QLoRA"]
+  },
+  {
+    id: 6,
+    title: "Database Internals: B-Trees, WAL & ACID Guarantees",
+    subject: "Computer Science",
+    semester: "Semester 3",
+    size: "3.1 MB",
+    date: "Sep 2026",
+    type: "Lecture Notes",
+    readingTime: "30 min",
+    summary: "Under the hood of relational engines: B+ Tree branch splitting, Write-Ahead Logging (WAL) for durability, MVCC isolation levels, and Query Optimizer EXPLAIN plans.",
+    keyTopics: ["B+ Tree vs LSM Tree", "Write-Ahead Logging", "MVCC & Read Commits", "Clustered vs Secondary Indexes"]
+  },
+  {
+    id: 7,
+    title: "Linear Algebra & Probability for Machine Learning",
+    subject: "Mathematics",
+    semester: "Semester 2",
+    size: "4.5 MB",
+    date: "Sep 2026",
+    type: "Book",
+    readingTime: "55 min",
+    summary: "The essential mathematics powering modern algorithms: Eigenvalues & SVD, Matrix decomposition, Bayes' Theorem, Maximum Likelihood Estimation, and Covariance matrices.",
+    keyTopics: ["Eigenvectors & PCA", "Singular Value Decomposition (SVD)", "Bayes' Theorem", "Multivariate Normal Distribution"]
+  },
+  {
+    id: 8,
+    title: "FAANG Technical Interview Mastery Guide",
+    subject: "Career",
+    semester: "Semester 4",
+    size: "5.8 MB",
+    date: "Sep 2026",
+    type: "PDF",
+    readingTime: "65 min",
+    summary: "Curated blueprint for breaking into top-tier tech firms: High-frequency LeetCode patterns, System Design interview frameworks, Google XYZ resume bullet writing, and STAR behavioral answers.",
+    keyTopics: ["Two-Pointer & Sliding Window", "Monotonic Stacks", "System Design 4-Step Framework", "STAR Behavioral Stories"]
   }
 ];
 

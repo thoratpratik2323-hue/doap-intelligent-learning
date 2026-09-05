@@ -10,17 +10,21 @@ const defaultPat = [
 ].join('');
 
 export const getGitHubToken = () => {
-  if (typeof localStorage !== 'undefined') {
-    const custom = localStorage.getItem('doap_github_token');
-    if (custom && custom.trim()) return custom.trim();
-  }
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const custom = localStorage.getItem('doap_github_token');
+      if (custom && custom.trim()) return custom.trim();
+    }
+  } catch {}
   return defaultPat;
 };
 
 export const setGitHubToken = (token) => {
-  if (typeof localStorage !== 'undefined') {
-    localStorage.setItem('doap_github_token', token.trim());
-  }
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('doap_github_token', token.trim());
+    }
+  } catch {}
 };
 
 const LANG_EXT_MAP = {

@@ -381,7 +381,18 @@ const PROBLEM_DEFINITIONS = [
 ];
 
 function deepEqual(a, b) {
-  return JSON.stringify(a) === JSON.stringify(b);
+  if (a === b) return true;
+  if (a === undefined || b === undefined) return a === b;
+  if (a === null || b === null) return a === b;
+  if (typeof a !== typeof b) return false;
+  if (typeof a === 'number') {
+    return Math.abs(a - b) < 1e-6;
+  }
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch (e) {
+    return false;
+  }
 }
 
 const playAlertSound = () => {

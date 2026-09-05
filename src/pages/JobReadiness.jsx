@@ -14,8 +14,19 @@ export const JobReadiness = () => {
   const solvedCount = (userProgress?.solvedProblems || []).length;
   const hasAssessments = assessments.length > 0;
 
-  const readinessScore = hasAssessments
-    ? Math.round(assessments.reduce((acc, a) => acc + (a.scoreNum || parseInt(a.score) || 0), 0) / assessments.length)
+  const computedScore = hasAssessments
+    ? Math.round(
+        assessments.reduce((acc, a) => {
+          const val = Number.isFinite(a.scoreNum)
+            ? a.scoreNum
+            : parseInt(a.score, 10);
+          return acc + (Number.isFinite(val) ? val : 0);
+        }, 0) / Math.max(assessments.length, 1)
+      )
+    : (Number.isFinite(profile?.stats?.aiReadiness) ? profile.stats.aiReadiness : 0);
+
+  const readinessScore = Number.isFinite(computedScore) && computedScore >= 0
+    ? Math.min(computedScore, 100)
     : 0;
 
   const [activeRoleTab, setActiveRoleTab] = useState('Software Engineer');

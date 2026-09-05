@@ -72,16 +72,20 @@ class LocalSystemConnector {
   }
 
   enableAndConnect() {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('doap_enable_local_bridge', 'true');
-    }
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('doap_enable_local_bridge', 'true');
+      }
+    } catch {}
     this.checkConnection();
   }
 
   disableBridge() {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem('doap_enable_local_bridge');
-    }
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('doap_enable_local_bridge');
+      }
+    } catch {}
     if (this.socket) {
       try { this.socket.close(); } catch (e) {}
       this.socket = null;

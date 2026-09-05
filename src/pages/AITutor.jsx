@@ -138,6 +138,17 @@ export const AITutor = () => {
     }
   }, [sessions]);
 
+  // Unmount cleanup guard: clear any active streaming interval & stop speech recognition
+  useEffect(() => {
+    return () => {
+      if (activeStreamRef.current) {
+        clearInterval(activeStreamRef.current);
+        activeStreamRef.current = null;
+      }
+      stopListening();
+    };
+  }, []);
+
   useEffect(() => {
     if (transcript) {
       const combined = baseInputText ? `${baseInputText} ${transcript}` : transcript;
@@ -505,7 +516,11 @@ export const AITutor = () => {
             <button
               onClick={() => {
                 if (confirm('Clear all conversation history?')) {
-                  localStorage.removeItem(STORAGE_KEY);
+                  try {
+                    if (typeof localStorage !== 'undefined') {
+                      localStorage.removeItem(STORAGE_KEY);
+                    }
+                  } catch {}
                   handleNewChat();
                 }
               }}

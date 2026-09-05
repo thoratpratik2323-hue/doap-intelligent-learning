@@ -197,6 +197,25 @@ export const AuthProvider = ({ children }) => {
         }
       } else {
         if (unsubscribeDoc) unsubscribeDoc();
+        // Check if guest demo session is active
+        try {
+          if (typeof localStorage !== 'undefined' && localStorage.getItem('doap_guest_session') === 'true') {
+            const cachedGuest = localStorage.getItem('doap_user_profile_guest_demo_student');
+            if (cachedGuest) {
+              const parsed = JSON.parse(cachedGuest);
+              const guestUser = {
+                uid: 'guest_demo_student',
+                email: 'student@sanjivani.edu.in',
+                displayName: 'Demo Student'
+              };
+              setUser(guestUser);
+              setSession({ user: guestUser });
+              setProfile(parsed);
+              setLoading(false);
+              return;
+            }
+          }
+        } catch {}
         setUser(null);
         setSession(null);
         setProfile(null);
@@ -277,6 +296,55 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Instant 1-Click Guest / Demo Access
+  const signInAsGuest = () => {
+    const guestUser = {
+      uid: 'guest_demo_student',
+      email: 'student@sanjivani.edu.in',
+      displayName: 'Demo Student'
+    };
+    const guestProfile = {
+      user_id: 'guest_demo_student',
+      name: 'Demo Student',
+      full_name: 'Demo Student',
+      email: 'student@sanjivani.edu.in',
+      avatar: 'DS',
+      avatar_url: '',
+      title: 'Computer Science Scholar',
+      university: 'Sanjivani College of Engineering',
+      course: 'B.Tech Computer Engineering',
+      year: '3rd Year',
+      education: 'B.Tech in Computer Engineering',
+      bio: 'Enthusiastic developer learning algorithms and machine learning.',
+      skills: ['JavaScript', 'Python', 'React', 'Data Structures', 'Git'],
+      interests: ['Web Development', 'Machine Learning', 'Problem Solving'],
+      careerGoals: ['Full Stack Engineer at Tier-1 Tech'],
+      stats: {
+        achievements: 4,
+        dayStreak: 7,
+        aiReadiness: 78
+      },
+      progress: {
+        tasks: [],
+        courses: { 'dsa-101': { progress: 60 } },
+        solvedProblems: [1, 2, 6],
+        assessments: [{ id: 'mock-1', score: 85 }],
+        interviewCount: 1
+      }
+    };
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('doap_user_profile_guest_demo_student', JSON.stringify(guestProfile));
+        localStorage.setItem('doap_profile', JSON.stringify(guestProfile));
+        localStorage.setItem('doap_guest_session', 'true');
+      }
+    } catch {}
+    setUser(guestUser);
+    setSession({ user: guestUser });
+    setProfile(guestProfile);
+    setIsAuthModalOpen(false);
+  };
+
   // Sign Out
   const signOut = async () => {
     if (firebaseAuth) {
@@ -284,6 +352,11 @@ export const AuthProvider = ({ children }) => {
         await firebaseSignOut(firebaseAuth);
       } catch (e) {}
     }
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('doap_guest_session');
+      }
+    } catch {}
     setUser(null);
     setSession(null);
     setProfile(null);
@@ -388,6 +461,7 @@ export const AuthProvider = ({ children }) => {
       openAuthModal,
       signUp,
       signIn,
+      signInAsGuest,
       signOut,
       resetPassword,
       updateProfileData,

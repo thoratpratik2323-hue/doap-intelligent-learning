@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 
 export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
-  const { signIn, signUp, resetPassword, isConfigured, isDevBypass } = useAuth();
+  const { signIn, signUp, resetPassword, signInAsGuest, isConfigured, isDevBypass } = useAuth();
   const { isDarkMode, toggleThemeMode } = useTheme();
 
   const [mode, setMode] = useState(initialMode); // 'login' | 'signup' | 'reset'
@@ -352,6 +352,31 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
                   <ArrowRight size={15} />
                 </>
               )}
+            </button>
+
+            {/* Quick Demo Access Divider */}
+            <div className="relative my-4 flex items-center justify-center">
+              <div className={`w-full border-t ${isDarkMode ? 'border-neutral-800' : 'border-neutral-200'}`} />
+              <span className={`absolute px-3 text-[10px] font-mono uppercase tracking-widest ${
+                isDarkMode ? 'bg-[#0a0a0a] text-neutral-500' : 'bg-white text-neutral-400'
+              }`}>
+                or explore
+              </span>
+            </div>
+
+            {/* Instant Demo Student Button */}
+            <button
+              type="button"
+              onClick={() => signInAsGuest && signInAsGuest()}
+              disabled={isSubmitting}
+              className={`w-full py-3 font-semibold text-xs rounded-2xl border transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 ${
+                isDarkMode 
+                  ? 'bg-neutral-900 border-neutral-800 text-neutral-200 hover:bg-neutral-800 hover:text-white' 
+                  : 'bg-neutral-50 border-neutral-200 text-neutral-800 hover:bg-neutral-100 hover:text-black'
+              }`}
+            >
+              <Sparkles size={14} className="text-amber-400" />
+              <span>⚡ Quick Guest / Demo Access</span>
             </button>
           </form>
 

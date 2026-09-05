@@ -11,6 +11,7 @@ export const AuthModal = () => {
     setAuthMode,
     signIn,
     signUp,
+    signInAsGuest,
     resetPassword,
     isConfigured
   } = useAuth();
@@ -174,6 +175,21 @@ export const AuthModal = () => {
             <span>
               {submitting ? 'Processing...' : authMode === 'login' ? 'Sign In' : authMode === 'signup' ? 'Create Account' : 'Send Reset Link'}
             </span>
+          </button>
+
+          {/* Quick Demo Button */}
+          <button
+            type="button"
+            onClick={() => {
+              if (signInAsGuest) signInAsGuest();
+              setIsAuthModalOpen(false);
+            }}
+            disabled={submitting}
+            className={`w-full py-2.5 rounded-2xl font-semibold text-xs border transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 mt-2 ${
+              isDarkMode ? 'bg-neutral-900 border-neutral-800 text-neutral-300 hover:bg-neutral-800 hover:text-white' : 'bg-neutral-50 border-neutral-200 text-neutral-700 hover:bg-neutral-100 hover:text-black'
+            }`}
+          >
+            <span>⚡ Quick Demo / Guest Access</span>
           </button>
         </form>
 
