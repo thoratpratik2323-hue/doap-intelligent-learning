@@ -551,18 +551,20 @@ export const VoiceTutor = () => {
       }
       activeUtteranceRef.current = null;
       if (typeof window !== 'undefined') window._doapActiveUtterance = null;
-      if (onComplete && isMountedRef.current) {
-        onComplete();
-      }
+      // 400ms acoustic echo guard before restarting mic listening cycle
+      setTimeout(() => {
+        if (onComplete && isMountedRef.current && isCallActiveRef.current) {
+          onComplete();
+        }
+      }, 400);
     };
 
-    // Watchdog timer: guarantees listening cycle ALWAYS resumes even on audio stutter
-    const estimatedDurationMs = Math.min(22000, Math.max(3500, (text || '').length * 95));
+    // Safety watchdog timer (60s) so speech is never cut off mid-sentence
     speechWatchdogTimerRef.current = setTimeout(() => {
       stopElevenLabsAudio();
       if (synthRef.current) synthRef.current.cancel();
       safeComplete();
-    }, estimatedDurationMs);
+    }, 60000);
 
     try {
       await speakElevenLabs(
@@ -572,11 +574,15 @@ export const VoiceTutor = () => {
           safeComplete();
         },
         () => {
-          fallbackBrowserSpeech(text, safeComplete);
+          if (!finished) {
+            fallbackBrowserSpeech(text, safeComplete);
+          }
         }
       );
     } catch (err) {
-      fallbackBrowserSpeech(text, safeComplete);
+      if (!finished) {
+        fallbackBrowserSpeech(text, safeComplete);
+      }
     }
   };
 
