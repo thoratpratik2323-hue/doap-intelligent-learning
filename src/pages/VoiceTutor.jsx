@@ -129,6 +129,10 @@ export const VoiceTutor = () => {
   const [lastUserInput, setLastUserInput] = useState('');
   const [aiSpokenText, setAiSpokenText] = useState('');
   const [liveVolume, setLiveVolume] = useState(0);
+  const [isUserSpeaking, setIsUserSpeaking] = useState(false);
+  const isUserSpeakingRef = useRef(false);
+  const speechStartTimestampRef = useRef(0);
+  const isRecordingRef = useRef(false);
   const [liveCodeSnippet, setLiveCodeSnippet] = useState(null);
   const [isCodeCanvasOpen, setIsCodeCanvasOpen] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
@@ -142,6 +146,21 @@ export const VoiceTutor = () => {
   const speechWatchdogTimerRef = useRef(null);
   const isStartingRecognitionRef = useRef(false);
   const hasFatalMicErrorRef = useRef(false);
+
+  const getOptimalMimeType = () => {
+    if (typeof MediaRecorder === 'undefined') return '';
+    const candidates = [
+      'audio/webm;codecs=opus',
+      'audio/webm',
+      'audio/ogg;codecs=opus',
+      'audio/ogg',
+      'audio/mp4'
+    ];
+    for (const t of candidates) {
+      if (MediaRecorder.isTypeSupported(t)) return t;
+    }
+    return '';
+  };
 
   // Pre-load voices on Chrome/Edge as soon as speech engine fires onvoiceschanged
   useEffect(() => {
@@ -221,14 +240,113 @@ export const VoiceTutor = () => {
       clearTimeout(chromeSpeechTimerRef.current);
       chromeSpeechTimerRef.current = null;
     }
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      try { mediaRecorderRef.current.stop(); } catch(e) {}
-    }
+    stopUniversalRecorder();
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getTracks().forEach(t => t.stop());
       mediaStreamRef.current = null;
     }
     stopRecognition();
+  };
+
+  const stopUniversalRecorder = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try {
+        mediaRecorderRef.current.onstop = null;
+        mediaRecorderRef.current.ondataavailable = null;
+        mediaRecorderRef.current.stop();
+      } catch (e) {}
+    }
+    isRecordingRef.current = false;
+  };
+
+  const finalizeAndTranscribeWithWhisper = async () => {
+    if (!isMountedRef.current || !isCallActiveRef.current || isProcessingSpeechRef.current) return;
+    if (callStateRef.current !== 'listening') return;
+
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state === 'inactive') {
+      resumeListeningCycle();
+      return;
+    }
+
+    isProcessingSpeechRef.current = true;
+    updateCallState('thinking');
+    setIsUserSpeaking(false);
+    isUserSpeakingRef.current = false;
+    stopRecognition();
+
+    recorder.onstop = async () => {
+      try {
+        const mimeType = getOptimalMimeType() || 'audio/webm';
+        const blob = new Blob(audioChunksRef.current, { type: mimeType });
+        audioChunksRef.current = [];
+
+        if (!blob || blob.size < 300) {
+          resumeListeningCycle();
+          return;
+        }
+
+        setUserTranscript('Processing voice...');
+        const text = await transcribeAudioWithGroq(blob);
+
+        if (text && text.trim()) {
+          setUserTranscript(text.trim());
+          handleUserSpeechComplete(text.trim());
+        } else {
+          resumeListeningCycle();
+        }
+      } catch (err) {
+        console.warn('[VoiceTutor] Whisper transcribe error:', err);
+        resumeListeningCycle();
+      }
+    };
+
+    try {
+      recorder.stop();
+    } catch (e) {
+      resumeListeningCycle();
+    }
+  };
+
+  const startUniversalRecorder = () => {
+    if (!isMountedRef.current || !isCallActiveRef.current || isMutedRef.current || hasFatalMicErrorRef.current) return;
+    if (!mediaStreamRef.current || !mediaStreamRef.current.active) return;
+    if (typeof MediaRecorder === 'undefined') return;
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try {
+        mediaRecorderRef.current.onstop = null;
+        mediaRecorderRef.current.ondataavailable = null;
+        mediaRecorderRef.current.stop();
+      } catch (e) {}
+    }
+
+    try {
+      const mimeType = getOptimalMimeType();
+      const options = mimeType ? { mimeType } : undefined;
+      const recorder = new MediaRecorder(mediaStreamRef.current, options);
+      audioChunksRef.current = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+
+      recorder.onstart = () => {
+        isRecordingRef.current = true;
+      };
+
+      recorder.onerror = (e) => {
+        console.warn('[MediaRecorder] Error:', e);
+        isRecordingRef.current = false;
+      };
+
+      recorder.start(250);
+      mediaRecorderRef.current = recorder;
+    } catch (err) {
+      console.warn('[MediaRecorder] Start failed:', err);
+    }
   };
 
   // Start universal microphone recording with safe constraints
@@ -251,7 +369,7 @@ export const VoiceTutor = () => {
       }
       mediaStreamRef.current = stream;
 
-      // Audio frequency analyzer for real-time visualizer
+      // Audio frequency analyzer for real-time visualizer & VAD
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) {
         const audioCtx = new AudioCtx();
@@ -264,6 +382,11 @@ export const VoiceTutor = () => {
         const bufferLength = analyser.frequencyBinCount;
         const dataArray = new Uint8Array(bufferLength);
 
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+          animationFrameRef.current = null;
+        }
+
         const checkAudioVolume = () => {
           if (!isMountedRef.current || !mediaStreamRef.current) return;
           analyser.getByteFrequencyData(dataArray);
@@ -275,6 +398,41 @@ export const VoiceTutor = () => {
           const avg = sum / bufferLength;
           setLiveVolume(avg);
 
+          // Real-time Voice Activity Detection (VAD)
+          if (callStateRef.current === 'listening' && !isMutedRef.current && !isProcessingSpeechRef.current) {
+            if (avg < 8) {
+              noiseFloorRef.current = noiseFloorRef.current * 0.95 + avg * 0.05;
+            }
+            const speechThreshold = Math.max(9, noiseFloorRef.current + 5);
+
+            if (avg > speechThreshold) {
+              if (!isUserSpeakingRef.current) {
+                isUserSpeakingRef.current = true;
+                setIsUserSpeaking(true);
+                speechStartTimestampRef.current = Date.now();
+              }
+              if (vadSilenceTimeoutRef.current) {
+                clearTimeout(vadSilenceTimeoutRef.current);
+                vadSilenceTimeoutRef.current = null;
+              }
+            } else if (isUserSpeakingRef.current) {
+              if (!vadSilenceTimeoutRef.current) {
+                vadSilenceTimeoutRef.current = setTimeout(() => {
+                  vadSilenceTimeoutRef.current = null;
+                  const speechDuration = Date.now() - speechStartTimestampRef.current;
+                  isUserSpeakingRef.current = false;
+                  setIsUserSpeaking(false);
+
+                  if (speechDuration >= 350 && callStateRef.current === 'listening' && !isProcessingSpeechRef.current) {
+                    finalizeAndTranscribeWithWhisper();
+                  } else {
+                    audioChunksRef.current = [];
+                  }
+                }, 750);
+              }
+            }
+          }
+
           animationFrameRef.current = requestAnimationFrame(checkAudioVolume);
         };
         checkAudioVolume();
@@ -284,7 +442,7 @@ export const VoiceTutor = () => {
     } catch(err) {
       console.warn("Microphone access permission error:", err);
       hasFatalMicErrorRef.current = true;
-      setMicError('Microphone permission blocked. Please allow microphone access in your browser to speak with DOAP AI.');
+      setMicError('Microphone permission blocked or not found. Please click the mic/lock icon in your browser address bar to allow mic access.');
       return false;
     }
   };
@@ -293,7 +451,7 @@ export const VoiceTutor = () => {
     if (!isMountedRef.current || !isCallActiveRef.current || isMutedRef.current || callStateRef.current !== 'listening' || hasFatalMicErrorRef.current) return;
     const SpeechRec = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
     if (!SpeechRec) {
-      console.warn('[SpeechRec] Web Speech API not supported in this browser');
+      console.log('[VoiceTutor] Universal Groq Whisper VAD active (Web Speech API not present in this browser)');
       return;
     }
 
@@ -334,16 +492,17 @@ export const VoiceTutor = () => {
             clearTimeout(chromeSpeechTimerRef.current);
           }
 
-          // Ultra-responsive conversational pause (420ms for zero-latency turn-taking)
+          // Ultra-responsive conversational pause (450ms for zero-latency turn-taking)
           chromeSpeechTimerRef.current = setTimeout(() => {
             if (callStateRef.current === 'listening' && clean.length > 0 && !isProcessingSpeechRef.current) {
               isProcessingSpeechRef.current = true;
               updateCallState('thinking');
               unlockAudioContext();
               stopRecognition();
+              stopUniversalRecorder();
               handleUserSpeechComplete(clean);
             }
-          }, 420);
+          }, 450);
         }
       };
 
@@ -366,8 +525,7 @@ export const VoiceTutor = () => {
       rec.onend = () => {
         recognitionRef.current = null;
         isStartingRecognitionRef.current = false;
-        if (hasFatalMicErrorRef.current) return; // Do NOT loop indefinitely on permission errors
-        // Auto-revive recognition immediately if the session is still active and in listening state
+        if (hasFatalMicErrorRef.current) return;
         if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening' && !isProcessingSpeechRef.current) {
           setTimeout(() => {
             if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening' && !isProcessingSpeechRef.current && !hasFatalMicErrorRef.current) {
@@ -413,11 +571,14 @@ export const VoiceTutor = () => {
   const resumeListeningCycle = () => {
     if (!isMountedRef.current || !isCallActiveRef.current || isMutedRef.current) return;
     isProcessingSpeechRef.current = false;
+    isUserSpeakingRef.current = false;
+    setIsUserSpeaking(false);
     lastSpokenTextRef.current = '';
     setUserTranscript('');
     updateCallState('listening');
     setTimeout(() => {
       if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening' && !hasFatalMicErrorRef.current) {
+        startUniversalRecorder();
         startRecognition();
       }
     }, 120);
@@ -441,6 +602,10 @@ export const VoiceTutor = () => {
     const micGranted = await initUniversalMicrophone();
     if (!micGranted) {
       hasFatalMicErrorRef.current = true;
+      setIsCallActive(false);
+      isCallActiveRef.current = false;
+      updateCallState('idle');
+      return;
     }
 
     if (typeof initialPrompt === 'string' && initialPrompt.trim()) {
@@ -555,6 +720,9 @@ export const VoiceTutor = () => {
   const speakResponse = async (text, onComplete) => {
     updateCallState('speaking');
     stopRecognition();
+    stopUniversalRecorder();
+    setIsUserSpeaking(false);
+    isUserSpeakingRef.current = false;
     stopElevenLabsAudio();
     if (synthRef.current) synthRef.current.cancel();
 
@@ -651,11 +819,20 @@ export const VoiceTutor = () => {
     if (isMuted) {
       setIsMuted(false);
       isMutedRef.current = false;
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getAudioTracks().forEach(t => { t.enabled = true; });
+      }
       resumeListeningCycle();
     } else {
       setIsMuted(true);
       isMutedRef.current = true;
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getAudioTracks().forEach(t => { t.enabled = false; });
+      }
       stopRecognition();
+      stopUniversalRecorder();
+      setIsUserSpeaking(false);
+      isUserSpeakingRef.current = false;
       stopElevenLabsAudio();
       if (synthRef.current) synthRef.current.cancel();
       updateCallState('idle');
@@ -758,7 +935,9 @@ export const VoiceTutor = () => {
               ? (callState === 'speaking' 
                   ? 'bg-cyan-500/15 border-cyan-500/50 text-cyan-300 shadow-cyan-500/20' 
                   : callState === 'listening' 
-                  ? 'bg-blue-500/15 border-blue-500/50 text-blue-300 shadow-blue-500/20' 
+                  ? (isUserSpeaking 
+                      ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-emerald-500/30 ring-2 ring-emerald-500/30' 
+                      : 'bg-blue-500/15 border-blue-500/50 text-blue-300 shadow-blue-500/20')
                   : 'bg-amber-500/15 border-amber-500/50 text-amber-300 shadow-amber-500/20')
               : 'bg-neutral-900/90 border-neutral-800 text-neutral-400'
           }`}>
@@ -767,7 +946,7 @@ export const VoiceTutor = () => {
                 ? (callState === 'speaking' 
                     ? 'bg-cyan-400 animate-pulse' 
                     : callState === 'listening' 
-                    ? 'bg-blue-400 animate-ping' 
+                    ? (isUserSpeaking ? 'bg-emerald-400 animate-ping' : 'bg-blue-400 animate-pulse') 
                     : 'bg-amber-400 animate-bounce') 
                 : 'bg-neutral-600'
             }`} />
@@ -777,8 +956,8 @@ export const VoiceTutor = () => {
                 : callState === 'speaking' 
                 ? 'DOAP AI SPEAKING...' 
                 : callState === 'listening' 
-                ? 'LISTENING TO YOU (SPEAK FREELY)...' 
-                : 'THINKING...'}
+                ? (isUserSpeaking ? 'HEARING YOUR VOICE... (SPEAK FREELY)' : 'LISTENING TO YOU (SPEAK FREELY)...') 
+                : 'THINKING & TRANSCRIBING...'}
             </span>
           </div>
         </div>
@@ -867,23 +1046,58 @@ export const VoiceTutor = () => {
           </div>
         )}
 
-        {/* Minimal Live Status Indicator */}
+        {/* Minimal Live Status Indicator and Live Captions */}
         {isCallActive && (
-          <div className="flex items-center justify-center gap-2 mt-6 z-10 animate-fade-in">
-            <span className={`w-2 h-2 rounded-full ${
-              callState === 'speaking' 
-                ? 'bg-cyan-400 animate-ping' 
-                : callState === 'thinking' 
-                ? 'bg-amber-400 animate-pulse' 
-                : 'bg-emerald-400 animate-pulse'
-            }`} />
-            <p className="text-xs font-mono text-neutral-400 tracking-wide">
-              {callState === 'speaking' 
-                ? 'DOAP AI Speaking...' 
-                : callState === 'thinking' 
-                ? 'Thinking...' 
-                : 'Listening... Speak naturally'}
-            </p>
+          <div className="flex flex-col items-center justify-center gap-2.5 mt-4 z-10 animate-fade-in w-full max-w-lg px-3">
+            <div className="flex items-center justify-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${
+                callState === 'speaking' 
+                  ? 'bg-cyan-400 animate-ping' 
+                  : callState === 'thinking' 
+                  ? 'bg-amber-400 animate-pulse' 
+                  : (isUserSpeaking ? 'bg-emerald-400 animate-ping' : 'bg-blue-400 animate-pulse')
+              }`} />
+              <p className="text-xs font-mono tracking-wide" style={{ color: isUserSpeaking ? '#34d399' : '#94a3b8' }}>
+                {callState === 'speaking' 
+                  ? 'DOAP AI Speaking...' 
+                  : callState === 'thinking' 
+                  ? 'Transcribing & Thinking...' 
+                  : (isUserSpeaking ? 'Voice Detected • Speak freely...' : 'Listening... Speak naturally')}
+              </p>
+            </div>
+
+            {/* Live User Caption Card */}
+            {(userTranscript || lastUserInput) && (
+              <div className="w-full mt-1 p-3 rounded-2xl bg-neutral-900/80 border border-cyan-500/25 backdrop-blur-xl shadow-xl transition-all animate-fade-in text-center">
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <Mic size={11} className={isUserSpeaking ? 'animate-pulse text-emerald-400' : 'text-cyan-400'} />
+                  <span className="text-[10px] font-mono uppercase text-cyan-400 font-bold">
+                    {callState === 'listening' ? 'Hearing you:' : 'You said:'}
+                  </span>
+                  {callState === 'listening' && isUserSpeaking && (
+                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      LIVE
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-neutral-100 italic leading-relaxed font-sans select-text">
+                  &ldquo;{userTranscript || lastUserInput}&rdquo;
+                </p>
+              </div>
+            )}
+
+            {/* Live AI Spoken Caption Card */}
+            {aiSpokenText && callState === 'speaking' && (
+              <div className="w-full mt-1 p-3 rounded-2xl bg-neutral-900/80 border border-emerald-500/25 backdrop-blur-xl shadow-xl transition-all animate-fade-in text-center">
+                <div className="flex items-center justify-center gap-1.5 mb-1 text-[10px] font-mono uppercase text-emerald-400 font-bold">
+                  <Sparkles size={11} />
+                  <span>DOAP AI:</span>
+                </div>
+                <p className="text-xs text-neutral-100 leading-relaxed font-sans line-clamp-3 select-text">
+                  &ldquo;{aiSpokenText}&rdquo;
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

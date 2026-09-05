@@ -8,12 +8,22 @@ const GROQ_KEY = (typeof localStorage !== 'undefined' ? localStorage.getItem('do
                  ['gsk_15WoQKTz6UaWI4I1QoSh', 'WGdyb3FYZzu8zBQjddTZfcCfBtzyq5V9'].join('');
 
 export async function transcribeAudioWithGroq(audioBlob) {
-  if (!audioBlob || audioBlob.size < 1200) {
+  if (!audioBlob || audioBlob.size < 300) {
     return '';
   }
 
+  const mime = (audioBlob.type || '').toLowerCase();
+  let filename = 'audio.webm';
+  if (mime.includes('ogg')) {
+    filename = 'audio.ogg';
+  } else if (mime.includes('mp4') || mime.includes('m4a')) {
+    filename = 'audio.mp4';
+  } else if (mime.includes('wav')) {
+    filename = 'audio.wav';
+  }
+
   const formData = new FormData();
-  formData.append('file', audioBlob, 'audio.webm');
+  formData.append('file', audioBlob, filename);
   formData.append('model', 'whisper-large-v3-turbo');
   // Auto-detect language seamlessly for perfect recognition across English, Hindi, Hinglish
   formData.append('prompt', 'DOAP AI assistant conversational speech. Technical terms: coding, algorithms, Python, Java, React, SQL, system design, debugging.');
