@@ -3,14 +3,16 @@
  */
 
 const ELEVEN_API_KEY = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_elevenlabs_key') : '') ||
+                       'sk_49242a8b562bd43cd0c8ff30db444b69216a64c89ef7d3d2' ||
                        (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_ELEVENLABS_KEY) ||
-                       ['sk_5f91a262d00d2924db05', '7bf3fd48a71b8857415c268c9452'].join('');
+                       'sk_5f91a262d00d2924db057bf3fd48a71b8857415c268c9452';
 
 /// Official ElevenLabs Studio Voices configured for DOAP AI Voice Engine
 export const ELEVEN_VOICES = {
-  doap: { id: 'pNInz6obpgDQGcFmaJgB', name: 'DOAP AI Studio Voice (Warm, Articulate & Resonant)' },
+  charon: { id: 'pNInz6obpgDQGcFmaJgB', name: 'Charon (Deep, Calm & Resonant Studio Voice)' },
+  doap: { id: 'pNInz6obpgDQGcFmaJgB', name: 'DOAP AI Charon (Warm, Articulate & Resonant)' },
+  studio: { id: 'pNInz6obpgDQGcFmaJgB', name: 'Charon Studio HD' },
   conversational: { id: 'ErXwobaYiN019PkySvjV', name: 'DOAP AI Natural Tutor (Warm & Empathetic)' },
-  studio: { id: 'pNInz6obpgDQGcFmaJgB', name: 'DOAP AI Studio HD' },
   antoni: { id: 'ErXwobaYiN019PkySvjV', name: 'DOAP AI Conversational' },
   fenrir: { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'DOAP AI Technical' },
   kore: { id: 'Xb7hH8MSUJpSbSDYk0k2', name: 'DOAP AI Empathetic' },
@@ -389,8 +391,8 @@ export function fallbackBrowserSpeech(text, onComplete) {
 }
 
 /**
- * Unified DOAP AI Indian English Voice Engine
- * Speaks crystal-clear English with natural Indian accent and authentic Hinglish pronunciation.
+ * Unified DOAP AI Charon Voice Engine
+ * Speaks crystal-clear English with deep, resonant, lifelike studio clarity (Charon Voice Core).
  */
 export async function speakDOAPVoice(text, onComplete, onError) {
   if (!text || !text.trim()) {
@@ -400,67 +402,82 @@ export async function speakDOAPVoice(text, onComplete, onError) {
 
   stopElevenLabsAudio();
   isAudioCancelled = false;
+  unlockAudioContext();
 
   const cleanText = humanizeTextForSpeech(text);
-  const chunks = splitTextIntoSpokenChunks(cleanText);
+  const voiceId = 'pNInz6obpgDQGcFmaJgB'; // Charon Voice Core
 
-  if (chunks.length === 0) {
-    if (onComplete) onComplete();
-    return;
-  }
+  const apiKeys = [
+    (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_elevenlabs_key') : ''),
+    'sk_49242a8b562bd43cd0c8ff30db444b69216a64c89ef7d3d2',
+    (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_ELEVENLABS_KEY),
+    'sk_5f91a262d00d2924db057bf3fd48a71b8857415c268c9452'
+  ].filter(Boolean);
 
-  let chunkIndex = 0;
-
-  function playNext() {
+  for (const key of apiKeys) {
     if (isAudioCancelled) return;
-
-    if (chunkIndex >= chunks.length) {
-      currentAudioElement = null;
-      if (onComplete) onComplete();
-      return;
-    }
-
-    const currentChunk = chunks[chunkIndex];
-    chunkIndex++;
-
-    const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(currentChunk)}&tl=en-IN&client=tw-ob`;
-    const audio = new Audio(audioUrl);
-    currentAudioElement = audio;
-
-    // Preload next chunk audio if available for zero-latency seamless speech
-    if (chunkIndex < chunks.length) {
-      try {
-        const nextUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunks[chunkIndex])}&tl=en-IN&client=tw-ob`;
-        const nextAudio = new Audio(nextUrl);
-        nextAudio.preload = 'auto';
-      } catch (e) {}
-    }
-
-    audio.onended = () => {
-      if (!isAudioCancelled) {
-        playNext();
-      }
-    };
-
-    audio.onerror = (e) => {
-      console.warn('[DOAP Voice] Audio stream error, falling back to browser neural voice:', e);
-      fallbackBrowserSpeech(cleanText, onComplete);
-    };
-
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise.catch((err) => {
-        console.warn('[DOAP Voice] Audio play error, falling back:', err);
-        fallbackBrowserSpeech(cleanText, onComplete);
+    try {
+      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'audio/mpeg',
+          'Content-Type': 'application/json',
+          'xi-api-key': key
+        },
+        body: JSON.stringify({
+          text: cleanText,
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: {
+            stability: 0.40,
+            similarity_boost: 0.88,
+            style: 0.35,
+            use_speaker_boost: true
+          }
+        })
       });
+
+      if (!response.ok) {
+        console.warn(`[DOAP Charon Voice] API returned HTTP ${response.status}, trying fallback key...`);
+        continue;
+      }
+
+      const blob = await response.blob();
+      if (isAudioCancelled) return;
+
+      const audioUrl = URL.createObjectURL(blob);
+      const audio = new Audio(audioUrl);
+      currentAudioElement = audio;
+
+      audio.onended = () => {
+        try { URL.revokeObjectURL(audioUrl); } catch (e) {}
+        currentAudioElement = null;
+        if (onComplete) onComplete();
+      };
+
+      audio.onerror = (e) => {
+        try { URL.revokeObjectURL(audioUrl); } catch (e) {}
+        currentAudioElement = null;
+        console.warn('[DOAP Charon Voice] Audio error, falling back to browser speech:', e);
+        fallbackBrowserSpeech(cleanText, onComplete);
+      };
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          try { URL.revokeObjectURL(audioUrl); } catch (e) {}
+          currentAudioElement = null;
+          console.warn('[DOAP Charon Voice] Play error, falling back:', err);
+          fallbackBrowserSpeech(cleanText, onComplete);
+        });
+      }
+      return; // Charon voice playing!
+    } catch (err) {
+      console.warn('[DOAP Charon Voice] Request error:', err);
     }
   }
 
-  try {
-    playNext();
-  } catch (err) {
-    fallbackBrowserSpeech(cleanText, onComplete);
-  }
+  // Fallback to browser speech if offline or quota reached
+  fallbackBrowserSpeech(cleanText, onComplete);
 }
 
 /**
