@@ -359,6 +359,34 @@ ${recentEp}
 `.trim();
   }
 
+  removeWeakness(topic) {
+    if (!topic) return;
+    this.memory.weaknesses.reviewTopics = this.memory.weaknesses.reviewTopics.filter(t => t !== topic);
+    if (this.memory.weaknesses.lastStumbledOn === topic) {
+      this.memory.weaknesses.lastStumbledOn = this.memory.weaknesses.reviewTopics[0] || 'None';
+    }
+    this.saveMemory();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('doap:memory-updated', { detail: this.memory }));
+    }
+  }
+
+  updateIdentity(fields = {}) {
+    this.memory.identity = { ...this.memory.identity, ...fields };
+    this.saveMemory();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('doap:memory-updated', { detail: this.memory }));
+    }
+  }
+
+  resetBrain() {
+    this.memory = JSON.parse(JSON.stringify(DEFAULT_MEMORY));
+    this.saveMemory();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('doap:memory-updated', { detail: this.memory }));
+    }
+  }
+
   getMemory() {
     return this.memory;
   }

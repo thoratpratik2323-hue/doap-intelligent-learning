@@ -1,10 +1,120 @@
 import React, { useState } from 'react';
-import { MessageSquare, BookOpen, Code, Video, BarChart2, ArrowRight, Mic, X, Sparkles, Brain } from 'lucide-react';
+import { 
+  MessageSquare, 
+  BookOpen, 
+  Code, 
+  Video, 
+  BarChart2, 
+  ArrowRight, 
+  Mic, 
+  X, 
+  Sparkles, 
+  Brain,
+  Flame,
+  CheckCircle2,
+  AlertCircle,
+  Check,
+  RotateCcw
+} from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { memoryBrain } from '../services/memoryBrain';
+
+const DAILY_CHALLENGES = [
+  {
+    id: 1,
+    topic: "Algorithms & Complexity",
+    question: "What is the amortized time complexity of appending an element to a dynamic array (like std::vector or Python list)?",
+    options: ["O(N)", "O(1) amortized", "O(log N)", "O(N²)"],
+    correctIdx: 1,
+    explanation: "While doubling capacity takes O(N), geometric resizing means across N insertions, total cost is ~2N, yielding O(1) amortized time."
+  },
+  {
+    id: 2,
+    topic: "Heap Data Structures",
+    question: "In a min-heap with N elements, what is the worst-case time complexity of extracting the minimum root element?",
+    options: ["O(1)", "O(log N)", "O(N)", "O(N log N)"],
+    correctIdx: 1,
+    explanation: "After removing the root element, bubbling down (sift-down) takes at most the tree height: O(log N)."
+  },
+  {
+    id: 3,
+    topic: "Web Architecture & Protocols",
+    question: "Which HTTP header is strictly mandatory in every HTTP/1.1 request?",
+    options: ["Host", "Content-Type", "Authorization", "User-Agent"],
+    correctIdx: 0,
+    explanation: "HTTP/1.1 requires the 'Host' header to distinguish multiple domain names hosted on a single IP address (virtual hosting)."
+  },
+  {
+    id: 4,
+    topic: "React Internals",
+    question: "Why should React state never be mutated directly (e.g., state.items.push(x))?",
+    options: ["It causes an instant SyntaxError", "React relies on shallow object reference equality to detect changes and trigger re-renders", "It deletes child component props", "It blocks JavaScript thread execution"],
+    correctIdx: 1,
+    explanation: "Direct mutation keeps the same object reference, so React's shallow comparison concludes nothing changed and skips re-rendering."
+  },
+  {
+    id: 5,
+    topic: "Graph Algorithms",
+    question: "In a simple undirected graph with V vertices, what is the maximum possible number of edges?",
+    options: ["V * (V - 1) / 2", "V²", "2^V", "V * (V + 1) / 2"],
+    correctIdx: 0,
+    explanation: "Each vertex can connect to V-1 other vertices. Dividing by 2 accounts for undirected bidirectionality: V*(V-1)/2."
+  }
+];
 
 export const Home = () => {
   const { navigateTo, isDarkMode } = useTheme();
   const [isTutorModalOpen, setIsTutorModalOpen] = useState(false);
+
+  // Streak & Daily Challenge State
+  const [streakCount, setStreakCount] = useState(() => {
+    try {
+      const saved = localStorage.getItem('doap_streak_count');
+      return saved ? parseInt(saved, 10) : 3;
+    } catch {
+      return 3;
+    }
+  });
+
+  const todayDateStr = new Date().toISOString().split('T')[0];
+  const [isCompletedToday, setIsCompletedToday] = useState(() => {
+    try {
+      return localStorage.getItem('doap_last_streak_date') === todayDateStr;
+    } catch {
+      return false;
+    }
+  });
+
+  // Pick challenge based on day of year
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+  const dailyChallenge = DAILY_CHALLENGES[dayOfYear % DAILY_CHALLENGES.length];
+
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [feedbackState, setFeedbackState] = useState(null); // 'correct' | 'incorrect' | null
+
+  const handleSelectOption = (idx) => {
+    if (isCompletedToday) return;
+    setSelectedOption(idx);
+    if (idx === dailyChallenge.correctIdx) {
+      setFeedbackState('correct');
+      const newStreak = isCompletedToday ? streakCount : streakCount + 1;
+      setStreakCount(newStreak);
+      setIsCompletedToday(true);
+      try {
+        localStorage.setItem('doap_streak_count', String(newStreak));
+        localStorage.setItem('doap_last_streak_date', todayDateStr);
+      } catch(e) {}
+
+      // Update memoryBrain
+      memoryBrain.updateKnowledge(dailyChallenge.topic, 'mastered');
+      memoryBrain.recordEpisodic(
+        `Daily Challenge Solved: ${dailyChallenge.topic}`,
+        `Maintained ${newStreak}-day DOAP streak! Correctly answered: "${dailyChallenge.question}"`
+      );
+    } else {
+      setFeedbackState('incorrect');
+    }
+  };
 
   const actions = [
     {
@@ -85,44 +195,109 @@ export const Home = () => {
           </div>
         </div>
 
-        {/* Today's Focus Card */}
-        <div className={`p-6 rounded-3xl border space-y-4 flex flex-col justify-between transition-colors doap-card ${
+        {/* Daily DOAP Streak & Challenge Engine Card */}
+        <div className={`p-6 rounded-3xl border space-y-4 flex flex-col justify-between transition-colors doap-card relative overflow-hidden ${
           isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black shadow-sm'
         }`}>
+          {/* Top Header & Streak Pill */}
           <div className="space-y-2">
-            <span className={`text-[11px] font-mono uppercase tracking-widest block ${
-              isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
-            }`}>
-              TODAY'S FOCUS
-            </span>
-            <h3 className="text-xl font-bold">
-              Prompt Engineering
-            </h3>
+            <div className="flex items-center justify-between">
+              <span className={`text-[11px] font-mono uppercase tracking-widest block font-bold ${
+                isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
+              }`}>
+                DAILY DOAP DRILL
+              </span>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-mono text-xs font-bold shadow-[0_0_10px_rgba(245,158,11,0.15)]">
+                <Flame size={13} className="text-amber-400 animate-pulse" />
+                <span>{streakCount} Days Streak</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-bold text-cyan-400">
+                {dailyChallenge.topic}
+              </h3>
+            </div>
+
             <p className={`text-xs font-medium leading-relaxed ${
-              isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
+              isDarkMode ? 'text-neutral-300' : 'text-neutral-700'
             }`}>
-              Improving prompt structure boosts your AI effectiveness.
+              {dailyChallenge.question}
             </p>
           </div>
 
-          <div className="space-y-4 pt-2">
-            <div>
-              <span className={`inline-block px-3 py-1 text-xs font-mono rounded-full border ${
-                isDarkMode ? 'bg-neutral-900 border-neutral-800 text-neutral-300' : 'bg-neutral-100 border-neutral-200 text-neutral-700'
-              }`}>
-                Est. 20 min
-              </span>
-            </div>
+          {/* Interactive Challenge Body */}
+          <div className="space-y-2 pt-1">
+            {!isCompletedToday ? (
+              <div className="space-y-1.5">
+                {dailyChallenge.options.map((opt, idx) => {
+                  const isSelected = selectedOption === idx;
+                  const isWrong = isSelected && feedbackState === 'incorrect';
 
-            <button 
-              onClick={() => navigateTo('/learning')}
-              className={`font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer ${
-                isDarkMode ? 'text-white hover:underline' : 'text-black hover:underline'
-              }`}
-            >
-              <span>Start</span>
-              <ArrowRight size={14} />
-            </button>
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => handleSelectOption(idx)}
+                      className={`w-full text-left p-2.5 rounded-xl border text-xs font-medium transition-all cursor-pointer flex items-center justify-between ${
+                        isWrong
+                          ? 'bg-rose-950/40 border-rose-500 text-rose-200 animate-shake'
+                          : isDarkMode
+                          ? 'bg-neutral-900/60 border-neutral-800 hover:border-neutral-700 hover:bg-neutral-800/80 text-neutral-200'
+                          : 'bg-neutral-50 border-neutral-200 hover:border-neutral-300 hover:bg-neutral-100 text-neutral-800'
+                      }`}
+                    >
+                      <span>{opt}</span>
+                      {isWrong && (
+                        <span className="text-[10px] font-mono text-rose-400 font-bold shrink-0 ml-2">Try again</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 space-y-2 animate-fade-in text-xs">
+                <div className="flex items-center gap-2 text-emerald-400 font-bold">
+                  <CheckCircle2 size={16} />
+                  <span>Streak Maintained! Today's Drill Solved.</span>
+                </div>
+                <p className="text-[11px] text-neutral-300 leading-relaxed font-mono">
+                  {dailyChallenge.explanation}
+                </p>
+                <div className="pt-1 flex items-center justify-between text-[10px] font-mono text-neutral-400">
+                  <span>Next challenge unlocks tomorrow</span>
+                  <button
+                    onClick={() => navigateTo('/coding')}
+                    className="text-cyan-400 hover:underline flex items-center gap-1 cursor-pointer font-bold"
+                  >
+                    <span>Coding Sandbox</span>
+                    <ArrowRight size={11} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Weekly Streak Mini Dots */}
+            <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[10px] font-mono text-neutral-500">
+              <span className="font-semibold text-neutral-400">This Week:</span>
+              <div className="flex items-center gap-1.5">
+                {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => {
+                  const isPastOrToday = i <= (new Date().getDay() === 0 ? 6 : new Date().getDay() - 1);
+                  return (
+                    <span
+                      key={i}
+                      className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[9px] ${
+                        isPastOrToday
+                          ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                          : isDarkMode ? 'bg-neutral-900 text-neutral-600' : 'bg-neutral-100 text-neutral-400'
+                      }`}
+                      title={`${day}: Active`}
+                    >
+                      {isPastOrToday ? '✓' : day}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -8,6 +8,7 @@ import { FloatingActionButton } from './components/Common/FloatingActionButton';
 import { EditProfileModal } from './components/Modals/EditProfileModal';
 import { SettingsModal } from './components/Modals/SettingsModal';
 import { AuthModal } from './components/Modals/AuthModal';
+import { BrainVaultModal } from './components/Modals/BrainVaultModal';
 import { AuthScreen } from './components/Auth/AuthScreen';
 import { LandingPage } from './components/Landing/LandingPage';
 import { ErrorBoundary } from './components/Common/ErrorBoundary';
@@ -165,6 +166,7 @@ const AppContent = () => {
       <FloatingActionButton />
       <EditProfileModal />
       <SettingsModal />
+      <BrainVaultModal />
       <AuthModal />
     </AmbientBackground>
   );

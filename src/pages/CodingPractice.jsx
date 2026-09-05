@@ -197,6 +197,9 @@ export const CodingPractice = () => {
   const [activeProblem, setActiveProblem] = useState(null);
   const [code, setCode] = useState('');
   const [showHint, setShowHint] = useState(false);
+  const [hintTier, setHintTier] = useState(1); // 1: Intuition Nudge | 2: Edge-Case Clue | 3: Socratic AI Debugger
+  const [socraticInsight, setSocraticInsight] = useState('');
+  const [isSocraticLoading, setIsSocraticLoading] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [runResult, setRunResult] = useState(null);
   const [isPushingToGit, setIsPushingToGit] = useState(false);
@@ -210,12 +213,54 @@ export const CodingPractice = () => {
   const [isCodemakerLoading, setIsCodemakerLoading] = useState(false);
   const [codemakerMode, setCodemakerMode] = useState(null);
 
+  // Auto-load injected code from Voice Tutor Live Code Canvas
+  useEffect(() => {
+    try {
+      const injected = localStorage.getItem('doap_sandbox_injected_code');
+      if (injected) {
+        const parsed = JSON.parse(injected);
+        if (parsed?.code) {
+          localStorage.removeItem('doap_sandbox_injected_code');
+          const targetProb = PROBLEM_DEFINITIONS[0];
+          setActiveProblem(targetProb);
+          setCode(parsed.code);
+          if (parsed.lang) setSelectedLanguage(parsed.lang.toLowerCase());
+        }
+      }
+    } catch(e) {}
+  }, []);
+
   useEffect(() => {
     const unsub = localConnector.subscribe(status => {
       setLocalStatus(status);
     });
     return () => unsub();
   }, []);
+
+  const handleFetchSocraticHint = async () => {
+    if (!activeProblem) return;
+    setIsSocraticLoading(true);
+    setSocraticInsight('');
+    try {
+      const prompt = `I am practicing the coding problem "${activeProblem.title}" (${activeProblem.category}) in ${selectedLanguage}.
+Problem description: ${activeProblem.description}
+
+Here is my current code in the editor:
+\`\`\`${selectedLanguage}
+${code}
+\`\`\`
+
+Act as my Socratic AI Tutor. Do NOT write the entire solved code. Instead, analyze my specific logic, identify what edge cases or algorithmic invariant I am missing, and give me a clear Socratic nudge and 1-2 guiding questions so I can debug and finish it myself.`;
+
+      const tutorResponse = await generateSmartTutorResponse(prompt, 'Coder', [], { voiceMode: false });
+      setSocraticInsight(tutorResponse);
+      memoryBrain.recordWeakness(`${activeProblem.title} Socratic Debug`);
+    } catch (e) {
+      setSocraticInsight("Think about how the state evolves on each step. Are you handling empty inputs or boundary conditions correctly?");
+    } finally {
+      setIsSocraticLoading(false);
+    }
+  };
 
   const handleRunCodemaker = async (mode) => {
     if (!activeProblem) return;
@@ -795,19 +840,17 @@ Evaluate this code strictly:
                 <div className="flex items-center justify-between text-xs text-neutral-400">
                   <div className="flex items-center gap-3">
                     <span className="capitalize">{selectedLanguage} Sandbox</span>
-                    {activeProblem.hint && (
-                      <button 
-                        onClick={() => setShowHint(!showHint)}
-                        className={`text-[11px] px-2 py-0.5 rounded-md border flex items-center gap-1 transition-colors cursor-pointer ${
-                          showHint 
-                            ? 'bg-amber-400/20 text-amber-300 border-amber-400/40 font-bold' 
-                            : 'bg-neutral-900 border-neutral-700 text-neutral-400 hover:text-amber-300 hover:border-amber-400/30'
-                        }`}
-                      >
-                        <Sparkles size={11} />
-                        <span>{showHint ? 'Hide Hint' : '💡 Need a Hint?'}</span>
-                      </button>
-                    )}
+                    <button 
+                      onClick={() => setShowHint(!showHint)}
+                      className={`text-[11px] px-2.5 py-1 rounded-md border flex items-center gap-1.5 transition-all cursor-pointer ${
+                        showHint 
+                          ? 'bg-amber-400/20 text-amber-300 border-amber-400/50 font-bold shadow-sm' 
+                          : 'bg-neutral-900 border-neutral-700 text-neutral-300 hover:text-amber-300 hover:border-amber-400/40'
+                      }`}
+                    >
+                      <Sparkles size={12} className={showHint ? "text-amber-400" : "text-neutral-400"} />
+                      <span>{showHint ? 'Hide Socratic Hints' : '💡 Socratic AI Hint'}</span>
+                    </button>
                   </div>
                   <div className="flex items-center gap-3">
                     <button 
@@ -829,11 +872,103 @@ Evaluate this code strictly:
                   </div>
                 </div>
 
-                {/* Collapsible Hint Card */}
-                {showHint && activeProblem.hint && (
-                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-start gap-2 animate-fade-in">
-                    <Sparkles size={15} className="shrink-0 text-amber-400 mt-0.5" />
-                    <p className="leading-relaxed"><strong className="text-amber-300">Algorithmic Hint:</strong> {activeProblem.hint}</p>
+                {/* 3-Tier Socratic AI Hint Drawer */}
+                {showHint && (
+                  <div className="p-4 rounded-2xl bg-neutral-950/80 border border-amber-500/30 text-xs space-y-3 animate-fade-in shadow-xl">
+                    {/* Tier Selector Buttons */}
+                    <div className="flex items-center justify-between border-b border-neutral-800 pb-2.5 flex-wrap gap-2">
+                      <div className="flex items-center gap-1.5 font-mono">
+                        <span className="text-[10px] text-amber-400 uppercase font-bold mr-1">Hint Level:</span>
+                        {[
+                          { id: 1, label: '1. Intuition Nudge' },
+                          { id: 2, label: '2. Edge-Cases' },
+                          { id: 3, label: '3. Socratic Debugger' }
+                        ].map((t) => (
+                          <button
+                            key={t.id}
+                            type="button"
+                            onClick={() => setHintTier(t.id)}
+                            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer border ${
+                              hintTier === t.id
+                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm'
+                                : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white'
+                            }`}
+                          >
+                            {t.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setShowHint(false)}
+                        className="text-neutral-500 hover:text-neutral-300 cursor-pointer"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+
+                    {/* Tier 1: Intuition Nudge */}
+                    {hintTier === 1 && (
+                      <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-xs flex items-start gap-2.5">
+                        <Sparkles size={16} className="shrink-0 text-amber-400 mt-0.5" />
+                        <div className="space-y-1">
+                          <div className="font-bold text-amber-300">Algorithmic Intuition Nudge:</div>
+                          <p className="leading-relaxed">{activeProblem.hint}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tier 2: Edge-Case & Invariant Clues */}
+                    {hintTier === 2 && (
+                      <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-200 text-xs flex items-start gap-2.5">
+                        <AlertCircle size={16} className="shrink-0 text-cyan-400 mt-0.5" />
+                        <div className="space-y-1">
+                          <div className="font-bold text-cyan-300">Boundary & Edge-Case Traps:</div>
+                          <p className="leading-relaxed font-mono text-[11px]">
+                            {activeProblem.id === 1 && "1) Negative values; 2) Duplicate elements (e.g., [3,3], target=6); 3) Do not use the same index twice."}
+                            {activeProblem.id === 2 && "1) Odd string length (instantly invalid); 2) Closing bracket without open bracket; 3) Unclosed openings at EOF (stack not empty)."}
+                            {activeProblem.id === 3 && "1) Empty list (head === null); 2) Single-element list; 3) Clearing next pointer to prevent infinite cycles."}
+                            {activeProblem.id === 4 && "1) Strictly declining prices (max profit must be 0, never negative); 2) Array length < 2."}
+                            {activeProblem.id === 5 && "1) One list is completely empty; 2) Both lists empty; 3) Lists of different lengths; 4) Handling ties."}
+                            {activeProblem.id === 6 && "1) Target missing from array (return -1); 2) Target at boundary (0 or N-1); 3) Overflow in mid calculation."}
+                            {activeProblem.id === 7 && "1) All numbers negative (e.g. [-5, -2, -8] -> max is -2, not 0); 2) Single element array."}
+                            {activeProblem.id > 7 && "Check: 1) Empty inputs or single-element bounds; 2) Integer overflow; 3) Off-by-one indexing."}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tier 3: Socratic AI Debugger */}
+                    {hintTier === 3 && (
+                      <div className="p-3.5 rounded-xl bg-purple-950/20 border border-purple-500/30 text-purple-200 text-xs space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <div className="font-bold text-purple-300 flex items-center gap-1.5">
+                            <Bot size={14} className="text-purple-400" />
+                            <span>Socratic AI Code Reviewer</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleFetchSocraticHint}
+                            disabled={isSocraticLoading}
+                            className="px-3 py-1 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-purple-300 text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
+                          >
+                            <Sparkles size={11} className={isSocraticLoading ? "animate-spin" : ""} />
+                            <span>{isSocraticLoading ? 'Analyzing Your Code...' : 'Analyze Editor Code'}</span>
+                          </button>
+                        </div>
+
+                        {socraticInsight ? (
+                          <div className="p-3 rounded-lg bg-neutral-900/80 border border-neutral-800 text-neutral-200 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto font-mono text-[11px]">
+                            {socraticInsight}
+                          </div>
+                        ) : (
+                          <p className="text-[11px] text-neutral-400 leading-relaxed">
+                            Click <strong>&ldquo;Analyze Editor Code&rdquo;</strong>. DOAP AI will read your exact code above, detect where your logic is breaking, and ask Socratic questions to lead you to the fix without spoiling the answer.
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 

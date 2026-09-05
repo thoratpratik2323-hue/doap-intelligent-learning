@@ -8,7 +8,12 @@ import {
   Clock, 
   Sparkles,
   Zap,
-  AlertCircle
+  AlertCircle,
+  Code2,
+  Copy,
+  Check,
+  ExternalLink,
+  X
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -123,6 +128,9 @@ export const VoiceTutor = () => {
   const [userTranscript, setUserTranscript] = useState('');
   const [aiSpokenText, setAiSpokenText] = useState('');
   const [liveVolume, setLiveVolume] = useState(0);
+  const [liveCodeSnippet, setLiveCodeSnippet] = useState(null);
+  const [isCodeCanvasOpen, setIsCodeCanvasOpen] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
 
   const synthRef = useRef(typeof window !== 'undefined' ? window.speechSynthesis : null);
   const durationTimerRef = useRef(null);
@@ -495,11 +503,21 @@ export const VoiceTutor = () => {
 
     try {
       const response = await generateSmartTutorResponse(spokenPrompt, userName, [], { voiceMode: true });
+
+      // Live Code Canvas Projection: Extract syntax-highlighted code block if present
+      const codeBlockMatch = response.match(/```([a-zA-Z0-9_-]*)\s*\n([\s\S]*?)```/);
+      if (codeBlockMatch) {
+        const lang = codeBlockMatch[1] || 'python';
+        const code = codeBlockMatch[2].trim();
+        setLiveCodeSnippet({ lang, code, timestamp: Date.now() });
+        setIsCodeCanvasOpen(true);
+      }
+
       const speechCleaned = response
         .replace(/<think>[\s\S]*?<\/think>/gi, '')
         .replace(/<details[\s\S]*?<\/details>/gi, '')
         .replace(/\*\*Reasoning\*\*[\s\S]*?\*\*Final Answer\*\*/i, '')
-        .replace(/```[\s\S]*?```/g, 'Code block outlined on screen.')
+        .replace(/```[\s\S]*?```/g, 'I have sent the code snippet to your live code canvas on screen.')
         .replace(/`([^`]+)`/g, '$1')
         .replace(/[#*_~>|]/g, '')
         .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
@@ -670,8 +688,25 @@ export const VoiceTutor = () => {
           )}
         </div>
 
-        {/* Switch to Text Chat */}
+        {/* Header Action Buttons */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Live Code Canvas Toggle */}
+          <button
+            onClick={() => setIsCodeCanvasOpen(prev => !prev)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95 ${
+              isCodeCanvasOpen
+                ? 'bg-cyan-500/25 border-cyan-400 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.3)]'
+                : 'border-white/15 bg-white/5 hover:bg-white/10 text-neutral-300'
+            }`}
+            title="Toggle Live Code Canvas"
+          >
+            <Code2 size={14} className={liveCodeSnippet ? "text-cyan-400 animate-pulse" : "text-neutral-400"} />
+            <span className="hidden sm:inline">Code Canvas</span>
+            {liveCodeSnippet && (
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+            )}
+          </button>
+
           <button
             onClick={() => navigateTo('/ai-tutor')}
             className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-white/15 bg-white/5 hover:bg-white/10 transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
@@ -872,6 +907,125 @@ export const VoiceTutor = () => {
               <PhoneOff size={16} />
               <span>End Call</span>
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Slide-Out Glassmorphic Live Code Canvas */}
+      {isCodeCanvasOpen && (
+        <div className="absolute inset-y-16 right-0 sm:right-4 w-full sm:w-[480px] lg:w-[540px] z-40 rounded-t-3xl sm:rounded-3xl bg-neutral-950/90 backdrop-blur-2xl border border-cyan-500/30 shadow-2xl flex flex-col overflow-hidden animate-fade-in transition-all">
+          {/* Canvas Top Bar */}
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-cyan-500/20 bg-neutral-900/60 shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                <Code2 size={16} />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-white flex items-center gap-2">
+                  Live Code Canvas
+                  <span className="text-[10px] font-mono px-2 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 uppercase">
+                    {liveCodeSnippet?.lang || 'PYTHON'}
+                  </span>
+                </div>
+                <div className="text-[10px] font-mono text-neutral-400">
+                  Voice-driven real-time syntax projection
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              {liveCodeSnippet && (
+                <>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard?.writeText(liveCodeSnippet.code);
+                      setCopiedCode(true);
+                      setTimeout(() => setCopiedCode(false), 2000);
+                    }}
+                    className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+                    title="Copy code to clipboard"
+                  >
+                    {copiedCode ? <Check size={15} className="text-emerald-400" /> : <Copy size={15} />}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      try {
+                        localStorage.setItem('doap_sandbox_injected_code', JSON.stringify(liveCodeSnippet));
+                      } catch(e) {}
+                      navigateTo('/coding');
+                    }}
+                    className="p-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition-colors cursor-pointer"
+                    title="Open in Coding Practice Sandbox"
+                  >
+                    <ExternalLink size={15} />
+                  </button>
+                </>
+              )}
+
+              <button
+                onClick={() => setIsCodeCanvasOpen(false)}
+                className="p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer ml-1"
+                title="Close Code Canvas"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+
+          {/* Canvas Content */}
+          <div className="flex-1 overflow-y-auto p-4 font-mono text-xs scrollbar-none">
+            {liveCodeSnippet ? (
+              <div className="rounded-2xl border border-neutral-800/80 bg-neutral-900/40 overflow-hidden">
+                <div className="px-4 py-2 border-b border-neutral-800/80 bg-neutral-900/80 text-[11px] text-neutral-400 flex items-center justify-between">
+                  <span>snippet.{liveCodeSnippet.lang === 'python' ? 'py' : liveCodeSnippet.lang === 'javascript' ? 'js' : liveCodeSnippet.lang === 'cpp' ? 'cpp' : 'txt'}</span>
+                  <span className="text-[10px] text-neutral-500">{liveCodeSnippet.code.split('\n').length} lines</span>
+                </div>
+                <div className="p-4 overflow-x-auto text-neutral-200 leading-relaxed whitespace-pre font-mono text-[11px]">
+                  {liveCodeSnippet.code.split('\n').map((line, idx) => (
+                    <div key={idx} className="table-row">
+                      <span className="table-cell pr-4 select-none text-neutral-600 text-right font-mono text-[10px]">{idx + 1}</span>
+                      <span className="table-cell">{line || ' '}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4 text-neutral-400">
+                <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center">
+                  <Code2 size={24} />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-white font-semibold text-sm">No Code Projected Yet</h4>
+                  <p className="text-xs text-neutral-400 max-w-xs leading-relaxed">
+                    Speak directly to DOAP AI to project code onto this canvas without breaking voice latency.
+                  </p>
+                </div>
+
+                <div className="space-y-2 pt-2 w-full max-w-xs">
+                  <div className="text-[10px] font-mono text-neutral-500 uppercase font-semibold">Try Asking by Voice:</div>
+                  {[
+                    "Write a Python function to reverse a linked list",
+                    "Show me two sum in C++ with hash map",
+                    "How to debounce an input in React?"
+                  ].map((prompt, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        if (!isCallActive) {
+                          handleStartCall(prompt);
+                        } else {
+                          handleUserSpeechComplete(prompt);
+                        }
+                      }}
+                      className="w-full text-left p-2.5 rounded-xl bg-neutral-900/60 border border-neutral-800 text-[11px] text-neutral-300 hover:text-cyan-300 hover:border-cyan-500/40 transition-all cursor-pointer truncate"
+                    >
+                      &ldquo;{prompt}&rdquo;
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

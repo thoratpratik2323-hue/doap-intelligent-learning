@@ -81,6 +81,7 @@ export const ThemeProvider = ({ children }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isBrainVaultOpen, setIsBrainVaultOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
   // Sync with browser Back/Forward buttons and URL changes
@@ -250,6 +251,7 @@ export const ThemeProvider = ({ children }) => {
     isSidebarCollapsed, setIsSidebarCollapsed,
     isSettingsOpen, setIsSettingsOpen,
     isEditProfileOpen, setIsEditProfileOpen,
+    isBrainVaultOpen, setIsBrainVaultOpen,
   };
 
   return (
@@ -276,6 +278,7 @@ export const useTheme = () => {
       isSidebarCollapsed: false, setIsSidebarCollapsed: () => {},
       isSettingsOpen: false, setIsSettingsOpen: () => {},
       isEditProfileOpen: false, setIsEditProfileOpen: () => {},
+      isBrainVaultOpen: false, setIsBrainVaultOpen: () => {},
     };
   }
   return ctx;

@@ -20,7 +20,8 @@ import {
   LogOut,
   Sun,
   Moon,
-  Radio
+  Radio,
+  Brain
 } from 'lucide-react';
 import { NAVIGATION_ITEMS } from '../../data/mockData';
 import { useTheme } from '../../context/ThemeContext';
@@ -50,6 +51,7 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
     isSidebarCollapsed, 
     setIsSidebarCollapsed, 
     setIsSettingsOpen,
+    setIsBrainVaultOpen,
     isDarkMode,
     toggleThemeMode
   } = useTheme();
@@ -171,6 +173,22 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
             {!isSidebarCollapsed && <span>Sign In</span>}
           </button>
         )}
+
+        <button
+          onClick={() => setIsBrainVaultOpen(true)}
+          className="w-full flex items-center gap-3.5 px-3.5 py-2 rounded-2xl transition-all text-xs font-semibold group cursor-pointer border-0 outline-none hover:opacity-90 hover:bg-cyan-500/10 text-cyan-400"
+          title="DOAP Brain Vault (8-Layer Memory)"
+        >
+          <Brain size={17} className="shrink-0 text-cyan-400 animate-pulse" />
+          {!isSidebarCollapsed && (
+            <span className="flex items-center gap-2">
+              Brain Vault
+              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                8L
+              </span>
+            </span>
+          )}
+        </button>
 
         <button
           onClick={() => setIsSettingsOpen(true)}
