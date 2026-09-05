@@ -341,15 +341,16 @@ export const VoiceTutor = () => {
             clearTimeout(chromeSpeechTimerRef.current);
           }
 
-          // Trigger answer after 1.0s natural pause
+          // Ultra-responsive conversational pause (420ms for zero-latency turn-taking)
           chromeSpeechTimerRef.current = setTimeout(() => {
             if (callStateRef.current === 'listening' && clean.length > 0 && !isProcessingSpeechRef.current) {
               isProcessingSpeechRef.current = true;
               updateCallState('thinking');
+              unlockAudioContext();
               stopRecognition();
               handleUserSpeechComplete(clean);
             }
-          }, 1000);
+          }, 420);
         }
       };
 
@@ -522,11 +523,13 @@ export const VoiceTutor = () => {
         .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
         .trim();
 
-      setAiSpokenText(speechCleaned);
-
+      // ZERO-LATENCY: Fire voice response immediately
       speakResponse(speechCleaned, () => {
         resumeListeningCycle();
       });
+
+      // Update text in background without delaying voice
+      setAiSpokenText(speechCleaned);
     } catch (err) {
       const fallback = `I'm listening, buddy! Tell me what you'd like to work on or explore today.`;
       speakResponse(fallback, () => {
