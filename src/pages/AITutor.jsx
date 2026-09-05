@@ -21,7 +21,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   MessageSquare,
-  PhoneCall
+  PhoneCall,
+  Brain
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -537,9 +538,15 @@ export const AITutor = () => {
               {isSidebarOpen ? <PanelLeftClose size={15} /> : <PanelLeftOpen size={15} />}
             </button>
 
-            <span className="font-bold text-xs sm:text-sm tracking-tight" style={{ color: 'var(--doap-text-prim)' }}>
-              AI Tutor
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-xs sm:text-sm tracking-tight" style={{ color: 'var(--doap-text-prim)' }}>
+                AI Tutor
+              </span>
+              <span className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-medium">
+                <Brain size={11} className="text-indigo-400" />
+                <span>Cognitive Self-Thinking & Memory Active</span>
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">

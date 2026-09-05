@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check, Code, ExternalLink, Download, Image as ImageIcon, HelpCircle } from 'lucide-react';
+import { Copy, Check, Code, ExternalLink, Download, Image as ImageIcon, HelpCircle, Brain, ChevronDown, Sparkles } from 'lucide-react';
 
 const InteractiveQuizCard = ({ quiz, isDarkMode }) => {
   const [selected, setSelected] = useState(null);
@@ -149,6 +149,69 @@ const InteractiveQuizCard = ({ quiz, isDarkMode }) => {
   );
 };
 
+const CognitiveThinkingBlock = ({ content, isDarkMode, isStreaming = false }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const formattedContent = content
+    .replace(/^#+\s+/gm, '• ')
+    .trim();
+
+  return (
+    <div 
+      className="my-3 rounded-2xl border transition-all duration-300 overflow-hidden shadow-sm"
+      style={{
+        backgroundColor: isDarkMode ? '#0d1117' : '#f8fafc',
+        borderColor: isDarkMode ? (isStreaming ? '#6366f1' : '#30363d') : (isStreaming ? '#6366f1' : '#e2e8f0')
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-4 py-2.5 flex items-center justify-between text-left text-xs sm:text-sm font-semibold cursor-pointer hover:opacity-95 transition-all select-none group"
+        style={{
+          color: isDarkMode ? '#e2e8f0' : '#1e293b',
+          backgroundColor: isDarkMode ? 'rgba(99, 102, 241, 0.08)' : 'rgba(99, 102, 241, 0.05)'
+        }}
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-6 h-6 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-500/30">
+            <Brain size={14} className={isStreaming ? 'animate-pulse text-indigo-300' : ''} />
+          </div>
+          <span className="font-mono text-xs sm:text-sm tracking-wide font-bold truncate">
+            DOAP Deep Cognitive Thinking & Self-Reflection
+          </span>
+          {isStreaming ? (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 animate-pulse shrink-0">
+              Thinking in progress...
+            </span>
+          ) : (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold shrink-0">
+              Verified
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-neutral-400 group-hover:text-indigo-400 transition-colors shrink-0 ml-2">
+          <span className="text-[11px] font-mono hidden sm:inline">{isOpen ? 'Hide reasoning' : 'View reasoning'}</span>
+          <ChevronDown size={14} className={`transform transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        </div>
+      </button>
+
+      {isOpen && (
+        <div 
+          className="p-4 border-t text-xs sm:text-[13px] font-mono leading-relaxed space-y-2 whitespace-pre-wrap select-text max-h-96 overflow-y-auto scrollbar-thin animate-fade-in"
+          style={{
+            borderColor: isDarkMode ? '#21262d' : '#e2e8f0',
+            color: isDarkMode ? '#94a3b8' : '#475569',
+            backgroundColor: isDarkMode ? '#070a0e' : '#ffffff'
+          }}
+        >
+          {formattedContent}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const MarkdownRenderer = ({ content, isDarkMode }) => {
   const [copiedIndex, setCopiedIndex] = useState(null);
 
@@ -160,8 +223,8 @@ export const MarkdownRenderer = ({ content, isDarkMode }) => {
 
   if (!content) return null;
 
-  // Split by code blocks ```lang ... ``` or HTML <details> ... </details>
-  const parts = content.split(/(```[\s\S]*?```|<details[\s\S]*?<\/details>)/gi);
+  // Split by code blocks ```lang ... ``` or HTML <details> ... </details> or <think> ... </think> or active <think> ...
+  const parts = content.split(/(```[\s\S]*?```|<details[\s\S]*?<\/details>|<think>[\s\S]*?<\/think>|<think>[\s\S]*$)/gi);
 
   return (
     <div 
@@ -170,6 +233,23 @@ export const MarkdownRenderer = ({ content, isDarkMode }) => {
     >
       {parts.map((part, pIdx) => {
         if (!part) return null;
+
+        // Metacognitive Deep Thinking Block: <think> ... </think> or active stream <think> ...
+        if (/^<think>/i.test(part.trim())) {
+          const isUnclosed = !/<\/think>$/i.test(part.trim());
+          const thinkingText = part.trim().replace(/^<think>/i, '').replace(/<\/think>$/i, '').trim();
+          if (thinkingText) {
+            return (
+              <CognitiveThinkingBlock 
+                key={pIdx} 
+                content={thinkingText} 
+                isDarkMode={isDarkMode} 
+                isStreaming={isUnclosed} 
+              />
+            );
+          }
+          return null;
+        }
 
         // Fenced Code Block or Quiz Block
         if (part.startsWith('```') && part.endsWith('```')) {

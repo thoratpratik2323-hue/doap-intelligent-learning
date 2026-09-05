@@ -153,6 +153,149 @@ class MemoryBrain {
     this.saveMemory();
   }
 
+  // Layer 3 & 4: Autonomous Continuous Self-Learning Engine
+  learnFromInteraction(userPrompt = '', aiResponse = '', mode = 'text') {
+    if (!userPrompt || typeof userPrompt !== 'string') return;
+
+    const rawPrompt = userPrompt.trim();
+    const lowerPrompt = rawPrompt.toLowerCase();
+    const lowerResponse = (aiResponse || '').toLowerCase();
+
+    // 1. Technical Topics & Concepts Catalog
+    const TOPIC_CATALOG = [
+      // Languages
+      { label: 'Python', keywords: ['python', 'py', 'numpy', 'pandas', 'cpython'] },
+      { label: 'JavaScript / TypeScript', keywords: ['javascript', 'typescript', 'js', 'ts', 'node', 'nodejs'] },
+      { label: 'C / C++', keywords: ['c++', 'cpp', 'pointers', 'memory management', 'malloc'] },
+      { label: 'Java', keywords: ['java', 'jvm', 'spring boot', 'concurrency', 'multithreading'] },
+      { label: 'Rust', keywords: ['rust', 'cargo', 'borrow checker', 'ownership'] },
+      { label: 'Go (Golang)', keywords: ['golang', 'goroutines', 'go channels'] },
+      { label: 'SQL / Databases', keywords: ['sql', 'mysql', 'postgresql', 'mongodb', 'indexing', 'acid', 'joins'] },
+
+      // DSA & Algorithms
+      { label: 'Dynamic Programming', keywords: ['dynamic programming', 'dp', 'memoization', 'tabulation', 'knapsack', 'longest common subsequence'] },
+      { label: 'Graph Algorithms', keywords: ['graph', 'graphs', 'dijkstra', 'bfs', 'dfs', 'topological sort', 'union-find', 'kruskal', 'prim'] },
+      { label: 'Trees & BST', keywords: ['tree', 'trees', 'binary tree', 'bst', 'avl', 'trie', 'tree traversal', 'inorder', 'preorder'] },
+      { label: 'Linked Lists', keywords: ['linked list', 'singly linked', 'doubly linked', 'reverse linked list', 'slow fast pointer'] },
+      { label: 'Arrays & Two Pointers', keywords: ['two pointers', 'sliding window', 'prefix sum', 'two sum', 'kadane', 'binary search'] },
+      { label: 'Stack & Queue', keywords: ['stack', 'queue', 'monotonic stack', 'priority queue', 'heap', 'min heap', 'max heap'] },
+      { label: 'Recursion & Backtracking', keywords: ['recursion', 'backtracking', 'n-queens', 'permutations', 'subsets'] },
+      { label: 'Time & Space Complexity', keywords: ['time complexity', 'space complexity', 'big o', 'asymptotic', 'complexity analysis'] },
+
+      // Engineering & Architecture
+      { label: 'System Design', keywords: ['system design', 'load balancer', 'caching', 'redis', 'microservices', 'sharding', 'horizontal scaling'] },
+      { label: 'Operating Systems', keywords: ['operating system', 'deadlock', 'paging', 'virtual memory', 'threads', 'processes', 'semaphores'] },
+      { label: 'Computer Networks', keywords: ['tcp', 'udp', 'dns', 'http', 'https', 'websocket', 'osi model'] },
+      { label: 'AI / Machine Learning', keywords: ['machine learning', 'deep learning', 'neural networks', 'transformers', 'llm', 'rag', 'embeddings'] },
+      { label: 'Frontend Architecture', keywords: ['react', 'vue', 'nextjs', 'tailwind', 'state management', 'redux', 'rendering'] },
+      { label: 'Sanjivani University & Leadership', keywords: ['sanjivani', 'scoe', 'sres', 'nitindada', 'amitdada', 'shankarraoji kolhe'] }
+    ];
+
+    // Detect matched topics
+    const detectedTopics = [];
+    for (const entry of TOPIC_CATALOG) {
+      if (entry.keywords.some(kw => lowerPrompt.includes(kw) || lowerResponse.includes(kw))) {
+        detectedTopics.push(entry.label);
+      }
+    }
+
+    // 2. Cognitive State & Sentiment Detection
+    const isMastery = /\b(solved|understood|got it|makes sense|it works|passed|samajh gaya|samajh aa gaya|ab clear hai|chal gaya|code run ho gaya|ban gaya|ho gaya solve|solved it|i get it now)\b/i.test(lowerPrompt);
+    const isStruggling = /\b(stuck|confused|error|bug|failing|exception|nahi samajh raha|fas gaya|kaam nahi kar raha|doubt|dikkat|run nahi ho raha|failing test|time limit|tle|segmentation fault|segfault)\b/i.test(lowerPrompt);
+
+    let changed = false;
+
+    // A. User Demonstrated Mastery
+    if (isMastery && detectedTopics.length > 0) {
+      detectedTopics.forEach(topic => {
+        if (!this.memory.semantic.mastered.includes(topic)) {
+          this.memory.semantic.mastered.push(topic);
+          changed = true;
+        }
+        // Remove from weaknesses & inProgress
+        this.memory.semantic.inProgress = this.memory.semantic.inProgress.filter(t => t !== topic);
+        this.memory.weaknesses.reviewTopics = this.memory.weaknesses.reviewTopics.filter(t => t !== topic);
+      });
+
+      this.memory.milestones.solvedProblemCount = (this.memory.milestones.solvedProblemCount || 0) + 1;
+      this.memory.milestones.readinessScore = Math.min(99, (this.memory.milestones.readinessScore || 85) + 1);
+
+      this.recordEpisodic(
+        `Concept Mastered: ${detectedTopics.join(', ')}`,
+        `User confirmed full comprehension & execution in ${mode.toUpperCase()} AI session.`
+      );
+      changed = true;
+    } 
+    // B. User Stumbled / Needs Review
+    else if (isStruggling && detectedTopics.length > 0) {
+      detectedTopics.forEach(topic => {
+        if (!this.memory.weaknesses.reviewTopics.includes(topic)) {
+          this.memory.weaknesses.reviewTopics.push(topic);
+          changed = true;
+        }
+        if (!this.memory.semantic.inProgress.includes(topic) && !this.memory.semantic.mastered.includes(topic)) {
+          this.memory.semantic.inProgress.push(topic);
+          changed = true;
+        }
+      });
+      this.memory.weaknesses.lastStumbledOn = detectedTopics[0];
+
+      this.recordEpisodic(
+        `Target Focus Area: ${detectedTopics[0]}`,
+        `Identified learning friction in ${mode.toUpperCase()} AI. Queued for proactive coaching.`
+      );
+      changed = true;
+    }
+    // C. General Technical Discussion
+    else if (detectedTopics.length > 0) {
+      detectedTopics.forEach(topic => {
+        if (!this.memory.semantic.mastered.includes(topic) && !this.memory.semantic.inProgress.includes(topic)) {
+          this.memory.semantic.inProgress.push(topic);
+          changed = true;
+        }
+      });
+
+      // Keep episodic memory fresh if it's a new or substantive topic
+      const recentEp = this.memory.episodic[0];
+      const primaryTopic = detectedTopics[0];
+      if (!recentEp || recentEp.topic !== `Explored: ${primaryTopic}`) {
+        this.recordEpisodic(
+          `Explored: ${primaryTopic}`,
+          `Deep dive session conducted via ${mode.toUpperCase()} AI.`
+        );
+        changed = true;
+      }
+    }
+
+    // 3. User Coding Preferences
+    if (lowerPrompt.includes('prefer python') || lowerPrompt.includes('in python') || lowerPrompt.includes('python mai')) {
+      this.memory.procedural.preferredCodingLanguage = 'python';
+      changed = true;
+    } else if (lowerPrompt.includes('prefer c++') || lowerPrompt.includes('in cpp') || lowerPrompt.includes('in c++')) {
+      this.memory.procedural.preferredCodingLanguage = 'cpp';
+      changed = true;
+    } else if (lowerPrompt.includes('prefer java') || lowerPrompt.includes('in java')) {
+      this.memory.procedural.preferredCodingLanguage = 'java';
+      changed = true;
+    } else if (lowerPrompt.includes('prefer javascript') || lowerPrompt.includes('in js')) {
+      this.memory.procedural.preferredCodingLanguage = 'javascript';
+      changed = true;
+    }
+
+    if (changed) {
+      this.saveMemory();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('doap:memory-updated', { detail: this.memory }));
+      }
+    }
+
+    return {
+      mastered: this.memory.semantic.mastered,
+      inProgress: this.memory.semantic.inProgress,
+      weaknesses: this.memory.weaknesses.reviewTopics
+    };
+  }
+
   // Layer 4 & 7: Transform post-interview weaknesses into auto-generated 3-day recovery curriculum
   injectInterviewWeaknessMilestones(areas = [], companyTrack = '') {
     if (!Array.isArray(areas) || areas.length === 0) return [];

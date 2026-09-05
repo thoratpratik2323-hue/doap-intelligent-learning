@@ -134,8 +134,11 @@ export function humanizeTextForSpeech(rawText) {
 
   let text = String(rawText);
 
-  // 1. Strip markdown code blocks, links, and formatting symbols
+  // 1. Strip <think> reasoning blocks, <details>, markdown code blocks, links, and formatting symbols
   text = text
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')
+    .replace(/<details[\s\S]*?<\/details>/gi, '')
+    .replace(/\*\*Reasoning\*\*[\s\S]*?\*\*Final Answer\*\*/i, '')
     .replace(/```[\s\S]*?```/g, ' I have shared the code on your screen. ')
     .replace(/`([^`]+)`/g, ' $1 ')
     .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1') // [link text](url) -> link text

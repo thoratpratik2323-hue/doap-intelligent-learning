@@ -13,6 +13,7 @@ import {
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { generateSmartTutorResponse } from '../services/aiTutorEngine';
+import { memoryBrain } from '../services/memoryBrain';
 import { speakElevenLabs, stopElevenLabsAudio, unlockAudioContext, getBestNaturalVoice, humanizeTextForSpeech } from '../services/elevenLabsService';
 import { transcribeAudioWithGroq } from '../services/whisperService';
 
@@ -511,6 +512,13 @@ export const VoiceTutor = () => {
 
       // Update text in background without delaying voice
       setAiSpokenText(speechCleaned);
+
+      // Cross-AI Self-Learning: absorb voice conversation into living 8-layer memory brain
+      try {
+        memoryBrain.learnFromInteraction(spokenPrompt, speechCleaned, 'voice');
+      } catch (e) {
+        console.warn('[VoiceTutor] Error learning from voice interaction:', e);
+      }
     } catch (err) {
       const fallback = `I'm listening, buddy! Tell me what you'd like to work on or explore today.`;
       speakResponse(fallback, () => {

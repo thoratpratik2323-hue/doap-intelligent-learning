@@ -184,17 +184,20 @@ CRITICAL VOICE INTELLIGENCE & SPOKEN CADENCE RULES:
    - Maintain one consistent, unified voice persona throughout your entire answer.
    - Speak in fluent, articulate, warm conversational English with friendly cadence ("Sure ${userName}!", "Great question!").
    - Keep the entire explanation in a cohesive language flow so text-to-speech synthesis maintains the exact same voice timbre and pitch from start to finish.
-2. Conversational Comprehension:
+2. Cognitive Self-Thinking & Internal Verification:
+   - Perform deep internal reasoning and verification before formulating your answer to guarantee 100% technical correctness and zero hallucinations.
+   - DO NOT speak or output any <think> tags in voice mode. Directly speak only your verified, crystal-clear final solution.
+3. Conversational Comprehension:
    - ${userName} may speak in English, Hindi, Hinglish, or Marathi. Comprehend their intent with 100% precision.
    - Reply in articulate, friendly English or clean Hinglish, keeping the sentence structure smooth and easy for the ear.
-3. World-Class Engineering & Depth:
+4. World-Class Engineering & Depth:
    - You have master-level knowledge across Computer Science, DSA, System Design, AI/ML, Science, and Sanjivani University.
    - Explain complex concepts using intuitive, vivid analogies that sound wonderful through headphones.
-4. Zero-Latency Spoken Cadence (Written for Instant Speech):
+5. Zero-Latency Spoken Cadence (Written for Instant Speech):
    - CRITICAL: Keep voice answers ultra-punchy, direct, and compact: exactly 1 to 2 crisp, conversational sentences (maximum 30-40 words total).
    - Answer the question directly in the very first breath so audio synthesis starts instantly with zero lag.
    - Avoid all markdown formatting, bullet symbols, asterisks, brackets, or code blocks.
-5. Engaging & Natural Chemistry:
+6. Engaging & Natural Chemistry:
    - Be engaging, warm, slightly witty, and sharp ("Sure thing, ${userName}!", "You got it, buddy!", "Absolutely!").`
     : `You are DOAP AI (DOAP stands for "Discover Opportunities and Progress Platform"), ${userName}'s trusted best friend, coding buddy, and personal ultra-smart AI assistant.
 
@@ -206,6 +209,18 @@ DOAP Platform Identity:
 ${workingMemory}
 
 ${SANJIVANI_KNOWLEDGE_BASE}
+
+CRITICAL COGNITIVE SELF-THINKING & REASONING PROTOCOL:
+For complex, technical, or multi-step questions (coding problems, DSA algorithms, system architecture, debugging, logic, math, or complex analysis):
+1. Think before answering: Conduct deep metacognitive chain-of-thought self-reflection inside <think>...</think> tags right at the beginning of your response:
+   <think>
+   - Invariants & Constraints: State inputs, outputs, edge cases, time/space bounds.
+   - Approaches & Trade-offs: Compare strategies (e.g. brute force vs two pointers, recursion vs dynamic programming).
+   - Trap & Bug Verification: Check off-by-one errors, empty/null cases, scale limits.
+   - Step-by-Step Logic Proof: Verify that the chosen algorithm or explanation is fully correct.
+   </think>
+2. After the </think> closing tag, provide your clear, structured, high-energy, and friendly final answer to ${userName}.
+3. For casual greetings, simple compliments, or short social chats (e.g. "hi", "kya chal raha hai", "thanks"), DO NOT include <think> tags — reply directly, naturally, and warmly!
 
 CRITICAL RULE — STRICT LANGUAGE MATCHING (Same In, Same Out):
 You must ALWAYS respond in the EXACT SAME LANGUAGE and dialect that ${userName} used in their latest message:
@@ -298,17 +313,31 @@ Core Persona & Vibe:
         if (res.ok) {
           const data = await res.json();
           let reply = data?.choices?.[0]?.message?.content || '';
-          // If reasoning model returned empty content but populated reasoning
-          if (!reply.trim() && data?.choices?.[0]?.message?.reasoning) {
-            reply = data.choices[0].message.reasoning;
+          const reasoning = data?.choices?.[0]?.message?.reasoning;
+
+          // If model returned explicit reasoning field, incorporate it
+          if (!reply.trim() && reasoning) {
+            reply = options.voiceMode ? reasoning : `<think>\n${reasoning.trim()}\n</think>`;
+          } else if (reasoning && !options.voiceMode && !reply.includes('<think>')) {
+            reply = `<think>\n${reasoning.trim()}\n</think>\n\n${reply}`;
           }
-          // Remove any <think> tags or **Reasoning** scratchpads
-          reply = reply
-            .replace(/<think>[\s\S]*?<\/think>/gi, '')
-            .replace(/\*\*Reasoning\*\*[\s\S]*?\*\*Final Answer\*\*/i, '')
-            .trim();
+
+          if (options.voiceMode) {
+            // Voice mode: strictly strip <think> blocks, hidden details, and scratchpads for clean spoken delivery
+            reply = reply
+              .replace(/<think>[\s\S]*?<\/think>/gi, '')
+              .replace(/<details[\s\S]*?<\/details>/gi, '')
+              .replace(/\*\*Reasoning\*\*[\s\S]*?\*\*Final Answer\*\*/i, '')
+              .trim();
+          }
 
           if (reply) {
+            // Autonomous Continuous Self-Learning: absorb new skills, weaknesses, and concepts into memory
+            try {
+              memoryBrain.learnFromInteraction(cleanText, reply, options.voiceMode ? 'voice' : 'text');
+            } catch (e) {
+              console.warn('[aiTutorEngine] learnFromInteraction error:', e);
+            }
             return reply;
           }
         }
@@ -405,8 +434,13 @@ Here is your comprehensive, step-by-step roadmap to master ML from scratch to in
   }
 
   const isHindiOrHinglish = /[\u0900-\u097F]|\b(bhai|yaar|kaise|kya|karo|batao|karna|mera|meri|mujhe|tum|aap|chal|theek|suno|bol)\b/i.test(rawText);
-  if (isHindiOrHinglish) {
-    return `Haan ${userName} bhai! Ekdum ready hoon, bata kya kaam karna hai ya kya chal raha hai? Main poori tarah se tere sath hoon — code, task, plan, jo bolega abhi karte hain! 🚀🤝`;
-  }
-  return `Hey ${userName}! I'm right here with you and ready. Tell me what you'd like to work on, solve, or build, and let's get it done! 🚀🤝`;
+  const fallbackReply = isHindiOrHinglish
+    ? `Haan ${userName} bhai! Ekdum ready hoon, bata kya kaam karna hai ya kya chal raha hai? Main poori tarah se tere sath hoon — code, task, plan, jo bolega abhi karte hain! 🚀🤝`
+    : `Hey ${userName}! I'm right here with you and ready. Tell me what you'd like to work on, solve, or build, and let's get it done! 🚀🤝`;
+
+  try {
+    memoryBrain.learnFromInteraction(cleanText, fallbackReply, options.voiceMode ? 'voice' : 'text');
+  } catch (e) {}
+
+  return fallbackReply;
 }
