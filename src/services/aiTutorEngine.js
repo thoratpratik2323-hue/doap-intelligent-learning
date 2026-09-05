@@ -130,6 +130,101 @@ ${JSON.stringify(quizData, null, 2)}
     return `### 😄 Tech Humor\n\n${jokes[Math.floor(Math.random() * jokes.length)]}`;
   }
 
+  // E. Master Platform Description & Introduction (DOAP: Discover Opportunities and Progress Platform)
+  const isPlatformDescriptionQuery = (
+    /\b(describe (this |the |doap )?platform|what is (this |the )?platform|tell (me )?about (this |the )?platform|explain (this |the )?platform|introduce (this |the )?platform|about (this |the )?platform|ye platform kya hai|ye app kya hai|doap kya hai|platform ke baare me|doap ke baare me|what is doap|describe doap|tell me about doap)\b/i.test(cleanText) ||
+    ((lowerText.includes('platform') || lowerText.includes('doap')) && (lowerText.includes('describe') || lowerText.includes('introduce') || lowerText.includes('what is') || lowerText.includes('kya hai') || lowerText.includes('batao') || lowerText.includes('details') || lowerText.includes('about')))
+  );
+
+  if (isPlatformDescriptionQuery) {
+    if (options.voiceMode) {
+      const voiceSpeech = `DOAP stands for Discover Opportunities and Progress Platform! It is an intelligent engineering ecosystem built for Sanjivani University, combining real-time voice intelligence, cognitive self-thinking AI tutoring, a unified eight-layer memory brain, and hands-on coding practice to accelerate your software engineering career.`;
+      try {
+        memoryBrain.learnFromInteraction(cleanText, voiceSpeech, 'voice');
+      } catch (e) {}
+      return voiceSpeech;
+    }
+
+    const isHindiOrHinglish = /[\u0900-\u097F]|\b(bhai|yaar|kaise|kya|karo|batao|karna|mera|meri|mujhe|tum|aap|chal|theek|suno|bol|ye)\b/i.test(rawText);
+
+    const platformOverview = isHindiOrHinglish ? `### 🚀 DOAP — Discover Opportunities and Progress Platform
+
+**DOAP** ek next-generation, AI-driven engineering mentorship aur career acceleration platform hai, jo students aur software developers ko foundational coder se lekar top-tier industry-ready software architect banata hai! 🌟
+
+Isko **Pratik Thorat** ne develop kiya hai **Sanjivani College of Engineering (SCOE) / Sanjivani University, Kopargaon** ke liye, under the visionary leadership of **Hon. Chairman Shri Nitindada S. Kolhe Saheb** aur **Managing Trustee Shri Amitdada Kolhe Saheb** (*"Build Sanjivani's Own LLM Challenge"*).
+
+---
+
+### 🏛️ DOAP ke 5 Core Pillars:
+
+1. 🧠 **Text AI Tutor (Cognitive Super-Brain)**:
+   - **Sub-150ms Speed**: Powered by Groq LPU (GPT-OSS 120B Flagship & Qwen 27B).
+   - **Deep Cognitive Self-Thinking**: DeepSeek-R1 / OpenAI o1 style chain-of-thought \`<think>\` reasoning, edge-case checks aur algorithm proof.
+   - **Interactive Flash Quizzes (\`/quiz\`)**: Real interview MCQs with interactive options and hidden explanations.
+   - **Flux AI Artwork (\`/image\`)**: High-res neural image generation directly in chat.
+
+2. 🎙️ **Voice AI Tutor (Mark-LII Arc-Reactor)**:
+   - **Hands-Free Conversational Voice**: Headphone/mic ke sath real-time voice call.
+   - **ElevenLabs Charon Studio Voice**: Crystal-clear, deep, authoritative Indian-accented studio cadence with zero voice drift.
+   - **Sub-Second Zero Latency**: Instant speech-first responses without waiting.
+
+3. 🧬 **Unified 8-Layer Memory Brain**:
+   - Continuous self-learning across both Voice aur Text AIs.
+   - Mastered skills, weaknesses, user preferences, target companies, aur career milestones automatically track hote hain. Jo Voice me bologe, Text ko turant yaad rahega!
+
+4. 💻 **Interactive Coding Sandbox (\`/coding\`)**:
+   - Python, C++, Java, aur JavaScript ka live compiler with instant test-case verification.
+   - Direct Memory Brain synchronization: problems solve karte hi readiness score boost hota hai.
+
+5. 🎯 **Mock Interviews, Assessments & ATS Resume Hub (\`/assessments\`, \`/job-readiness\`)**:
+   - Silicon Valley & FAANG company tracks (Google, Amazon, Microsoft).
+   - Weakness detect hone par automatic 3-day recovery study plan inject karta hai.
+   - Real-time ATS resume preview aur skill-matching analytics.
+
+---
+*Bata ${userName} bhai, aaj kis topic par deep dive karna hai ya coding practice karni hai?* 🚀🤝` : `### 🚀 DOAP — Discover Opportunities and Progress Platform
+
+**DOAP** is a next-generation, AI-driven engineering mentorship and career acceleration platform built to transform students and developers into elite, industry-ready software architects.
+
+Developed by **Pratik Thorat** for **Sanjivani College of Engineering (SCOE) / Sanjivani University, Kopargaon** under the visionary leadership of **Chairman Hon. Shri Nitindada S. Kolhe Saheb** and **Managing Trustee Hon. Shri Amitdada Kolhe Saheb** for the *"Build Sanjivani's Own Large Language Model"* initiative.
+
+---
+
+### 🏛️ The 5 Core Pillars of DOAP:
+
+1. 🧠 **Text AI Tutor (Cognitive Super-Brain)**:
+   - **Sub-150ms Intelligence**: Powered by Groq LPU (GPT-OSS 120B Flagship & Qwen 27B).
+   - **Deep Cognitive Self-Thinking**: DeepSeek-R1 / OpenAI o1 style chain-of-thought reasoning inside expandable \`<think>\` blocks for algorithmic proof and edge-case verification.
+   - **Interactive Flash Quizzes (\`/quiz\`)**: Live technical multiple-choice drills with hidden answer reveals.
+   - **Flux AI Artwork (\`/image\`)**: High-resolution neural artwork generation right in chat.
+
+2. 🎙️ **Voice AI Tutor (Mark-LII Arc-Reactor)**:
+   - **Hands-Free Conversational Voice**: Real-time microphone dialogue with a living acoustic orb UI.
+   - **Studio-Grade ElevenLabs Charon Voice**: Deep, resonant, articulate studio voice tuned for Indian English and technical cadence with zero drift.
+   - **Sub-Second Zero Latency**: Direct speech-first playback with instant spoken answers.
+
+3. 🧬 **Unified 8-Layer Memory Brain**:
+   - Autonomous continuous self-learning shared between Voice and Text AIs.
+   - Automatically tracks mastered concepts, flags stumbling points, saves episodic history, and synchronizes cross-modal knowledge.
+
+4. 💻 **Interactive Coding Sandbox (\`/coding\`)**:
+   - Multi-language sandbox supporting Python, C++, Java, and JavaScript with automated test-case evaluation.
+   - Seamlessly updates your verified skills and ATS job readiness metrics upon passing tests.
+
+5. 🎯 **Mock Interviews, Assessments & ATS Resume Hub (\`/assessments\`, \`/job-readiness\`)**:
+   - FAANG benchmark tracks (Google, Amazon, Microsoft).
+   - Automated 3-day recovery curriculum targeting detected interview gaps.
+   - Real-time ATS resume preview and industry readiness score.
+
+---
+*How can I help you accelerate your engineering journey today, ${userName}?* 🚀🤝`;
+
+    try {
+      memoryBrain.learnFromInteraction(cleanText, platformOverview, 'text');
+    } catch (e) {}
+    return platformOverview;
+  }
+
   const effectivePrompt = cleanText.replace(/^(\/code|\/explain|\/interview)\s+/i, '');
 
   // ==========================================
