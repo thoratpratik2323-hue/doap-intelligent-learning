@@ -132,13 +132,16 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
           <div className="text-center space-y-3 mb-8">
             <div 
               onClick={onBackToLanding}
-              className="inline-flex items-center justify-center gap-2 group cursor-pointer"
+              className="inline-flex flex-col items-center justify-center gap-1.5 group cursor-pointer"
             >
               <img 
                 src="/doap-logo.jpg" 
                 alt="DOAP Logo" 
                 className="h-10 object-contain rounded-xl hover:opacity-80 transition-opacity" 
               />
+              <span className="text-[10px] font-mono tracking-widest uppercase text-neutral-400 font-semibold block">
+                Discover Opportunities and Progress Platform
+              </span>
             </div>
 
             <div className="space-y-1">

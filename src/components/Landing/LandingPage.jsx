@@ -165,6 +165,12 @@ export const LandingPage = ({ onGetStarted, onSignIn }) => {
             DOAP
           </h1>
 
+          <p className={`text-xs sm:text-sm font-mono tracking-widest uppercase font-semibold ${
+            isDarkMode ? 'text-cyan-400' : 'text-cyan-600'
+          }`}>
+            Discover Opportunities and Progress Platform
+          </p>
+
           {/* Headline */}
           <h2 className={`text-xl sm:text-2xl md:text-3xl font-medium tracking-tight leading-relaxed ${
             isDarkMode ? 'text-neutral-300' : 'text-neutral-700'

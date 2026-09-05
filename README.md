@@ -2,8 +2,8 @@
 
 <img src="public/doap-logo.jpg" alt="DOAP Logo" width="540" style="border-radius: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
 
-# ⚡ DOAP — Intelligent Learning & Autonomous Engineering Ecosystem
-### *The Next-Generation AI-Powered Engineering Mentorship, Real-Time Voice Intelligence & Career Acceleration Platform*
+# ⚡ DOAP — Discover Opportunities and Progress Platform
+### *The Next-Generation AI-Powered Engineering Mentorship, Real-Time Voice Intelligence & Career Acceleration Ecosystem*
 
 <br />
 
