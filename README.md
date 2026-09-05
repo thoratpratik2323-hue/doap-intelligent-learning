@@ -43,12 +43,14 @@ Created for the landmark **"Build Sanjivani's Own Large Language Model — Build
 
 ## 📖 Table of Contents
 - [✨ Key Highlights](#-key-highlights)
-- [🧠 Cognitive Self-Thinking Super-Brain](#-cognitive-self-thinking-super-brain)
-- [🎙️ Real-Time Voice AI Tutor (Mark-LII Engine)](#️-real-time-voice-ai-tutor-mark-lii-engine)
-- [🧬 Unified 8-Layer Living Memory Brain](#-unified-8-layer-living-memory-brain)
+- [🧠 Brain Vault (Visual 8-Layer Memory Inspector)](#-brain-vault-visual-8-layer-memory-inspector)
+- [🎙️ Real-Time Voice AI Tutor with Live I/O Console (`IO`)](#️-real-time-voice-ai-tutor-with-live-io-console-io)
+- [🛡️ Proctored Fullscreen Coding Assessment & Proficiency Engine](#️-proctored-fullscreen-coding-assessment--proficiency-engine)
+- [🧠 Cognitive Self-Thinking Super-Brain (`/ai-tutor`)](#-cognitive-self-thinking-super-brain-ai-tutor)
+- [🎯 Job Description (JD) ATS Matcher & Resume Optimizer](#-job-description-jd-ats-matcher--resume-optimizer)
+- [🔥 Daily DOAP Streak & Challenge Drill Engine](#-daily-doap-streak--challenge-drill-engine)
 - [📱 Dual-Mode "Ask DOAP" Quick Launcher](#-dual-mode-ask-doap-quick-launcher)
 - [🎥 AI Video Mock Interviewer & Telemetry](#-ai-video-mock-interviewer--telemetry)
-- [💻 Multi-Language Code Sandbox](#-multi-language-code-sandbox)
 - [📄 1-Click Harvard ATS PDF Resume Studio](#-1-click-harvard-ats-pdf-resume-studio)
 - [🏛️ System Architecture](#️-system-architecture)
 - [📂 Project Structure](#-project-structure)
@@ -64,55 +66,92 @@ Created for the landmark **"Build Sanjivani's Own Large Language Model — Build
  🧠 Groq 120B Super-Brain     │ ⚡ Sub-150ms Inference (GPT-OSS 120B Flagship & Qwen 27B)
  🔬 Deep Self-Thinking        │ 🧩 DeepSeek-R1 / o1 Style <think> Chain-of-Thought Reflection
  🎙️ Studio Voice AI           │ 🔊 ElevenLabs Charon Turbo (Zero Drift, Sub-Second Latency)
- 🧬 Unified 8-Layer Brain     │ 🗄️ Continuous Self-Learning Across Voice & Text Modes
- 📱 Dual-Mode Quick Launcher  │ 🚀 "Ask DOAP" 1-Click Selector for Text Tutor or Voice Tutor
- 📝 In-Chat Flash Quizzes     │ 💡 Interactive MCQs with Hidden Explanations (/quiz)
- 🎨 Flux AI Art Generator     │ 🖼️ Live Neural Artwork Generation in Chat (/image)
- 💻 Multi-Language Sandbox    │ ⚡ Browser Execution for Python, C++, Java & JavaScript
- 🎥 AI Video Mock Interviewer │ 👔 Principal AI Lead Avatar + 3-Day Recovery Curriculum
- 📄 1-Click ATS Resume Studio │ 📥 Harvard Vector PDF Export (100/100 ATS Pass Rate)
- ☁️ Multi-Device Cloud Sync   │ 🔄 Real-time Firestore Persistence & Multi-CDN Hosting
+ 🖥️ Live I/O Console (IO)     │ ⚡ Real-Time Voice Input, Output & Syntax-Highlighted Code Drawer
+ 🧠 Visual Brain Vault (8L)   │ 🔍 Interactive Knowledge Graph, Friction Points & LLM Context Engine
+ 🛡️ Proctored Fullscreen Exam │ 🔒 Strict Native Fullscreen, Anti-Cheat Tab Lock & Violation Blocker
+ 📊 Student Proficiency Score │ 🎓 0-100 Verified Metric (Correctness, Speed, Autonomy & Integrity)
+ 📌 Top-Mounted Problem Card  │ 📋 Prominent Statements, Benchmarks, Constraints & Examples on Top
+ ❌ Strict Automated Tests    │ 🚫 Manual "Mark as Solved" Removed (Pass Tests to Solve)
+ 🎯 JD ATS Matcher & Tailor   │ 💼 Real Company Match Score (Google, Amazon, TCS) + XYZ Bullet Writer
+ 🔥 Daily DOAP Streak Engine  │ 📅 Interactive Daily Problem Drills, Week Badges & Local Persistence
+ 💻 Multi-Language Sandbox    │ ⚡ In-Browser Execution for JavaScript, Python 3, C++ (GCC) & Java
+ 🎥 AI Video Mock Interviewer │ 👔 Principal AI Lead Avatar + Real-Time Telemetry HUD & Report Card
+ 📄 Harvard ATS Resume Studio │ 📥 1-Click Vector PDF Export (100/100 ATS Pass Rate)
+ ☁️ Multi-Device Cloud Sync   │ 🔄 Real-Time Firestore Persistence & Fast Multi-CDN Hosting
 ```
 
 ---
 
-## 🧠 Cognitive Self-Thinking Super-Brain (`/ai-tutor`)
+## 🧠 Brain Vault (Visual 8-Layer Memory Inspector)
 
-### 1. Metacognitive Reasoning Engine
-Inspired by modern reasoning models (**DeepSeek-R1**, **OpenAI o1**, **Claude 3.7 Sonnet**), DOAP performs explicit chain-of-thought self-reflection before providing solutions for complex engineering problems:
-* **Constraint & Invariant Formulation**: Identifies inputs, outputs, edge cases, and $O(N)$ time/space complexity bounds.
-* **Alternative Strategy Comparison**: Weighs brute force vs. hash maps, two pointers vs. sliding windows, iterative vs. dynamic programming.
-* **Trap & Edge-Case Verification**: Checks off-by-one errors, null pointers, empty data structures, and integer overflow.
-* **Step-by-Step Logic Proof**: Verifies that the approach satisfies all constraints before synthesizing the final answer.
+Mounted globally via [`src/components/Modals/BrainVaultModal.jsx`](file:///src/components/Modals/BrainVaultModal.jsx) with a glowing navigation item in the Sidebar, the **Brain Vault** allows students to visually inspect and interact with the AI's living memory state in real-time:
 
-### 2. Collapsible Reasoning UI (`MarkdownRenderer.jsx`)
-* Renders a glowing **"🧠 DOAP Deep Cognitive Thinking & Self-Reflection"** accordion card right above the solution.
-* Features a dynamic **"Verified"** / **"Thinking in progress..."** status badge with a one-click toggle to view the full monospace reasoning trace.
-
-### 3. In-Chat Interactive Flash Quizzes (`/quiz [py|c|java|dsa]`)
-* Interactive technical multiple-choice question cards embedded directly in the chat stream.
-* Answers and explanations are **hidden by default** inside collapsible blocks, allowing students to test their intuition before revealing the solution.
-
-### 4. Flux AI Image Generation (`/image <prompt>`)
-* Generates high-resolution, photorealistic neural artwork on-demand directly inside the chat interface via Flux Neural Engine.
-
-### 5. Strict Multilingual Mirroring
-* Automatically detects the user's language and dialect (English, Hinglish, pure Hindi in Devanagari script, Marathi) and responds 1:1 in the exact same conversational tone.
+* **Layer 3 & 4 (Interactive Knowledge Graph)**:
+  * **Mastered Skills**: Visual emerald badges celebrating concepts conquered through assessment.
+  * **In-Progress Skills**: Cyan badges tracking active learning trajectories.
+  * **Friction Points & Weaknesses**: Rose badges highlighting algorithmic traps with a 1-click **"Practice with AI"** button and quick deletion.
+  * **Custom Node Injection**: Add custom skills or focus areas on the fly.
+* **Layer 2 (Chronological Episodic Timeline)**:
+  * View recent AI learning milestones and timestamps (`10m ago`, `1h ago`).
+* **Layer 1, 5, 6 (Identity, Procedural, Projects)**:
+  * Target roles, companies, communication preferences, and registered IP-Verse projects.
+* **Layer 8 (Real-Time LLM Prompt Context Engine)**:
+  * Live preview of the synthesized system prompt payload injected into Groq/Gemini context windows with a 1-click **"Copy Context"** button.
+* **Management Actions**: Export the entire brain graph to JSON or reset memory to factory defaults.
 
 ---
 
-## 🎙️ Real-Time Voice AI Tutor (Mark-LII Engine) (`/voice-tutor`)
+## 🎙️ Real-Time Voice AI Tutor with Live I/O Console (`IO`)
 
-### 1. Studio-Grade Charon Voice Core (`elevenLabsService.js`)
-* **Voice Model**: Powered by **ElevenLabs Charon (`pNInz6obpgDQGcFmaJgB`)** using the high-efficiency `eleven_turbo_v2_5` pipeline.
-* **Tuned Acoustic Settings**: High stability (0.50) and style (0.0) configuration eliminates mid-speech voice drift and keeps the vocal pitch warm, resonant, and authoritative.
-* **Phonetic Normalization**: Specially tuned for Indian English and technical vocabulary (*"D-S-A"*, *"D-B-M-S"*, *"Kopar-gaon"*, *"Sanjeevani"*, *"Nitin-dada"*).
+Powered by ElevenLabs Charon Studio Voice and Groq Whisper Large v3 Turbo, the Voice Tutor includes a **Three-Tier Glassmorphic Live I/O Console** (accessible via the top-bar `IO` button):
 
-### 2. Sub-Second Zero-Latency Pipeline
-* **Instant Speech-First Priority**: Voice synthesis begins immediately on the first breath.
-* **Clean 1–2 Sentence Spoken Cadence**: Compact, verified answers designed specifically for conversational listening without overwhelming technical monologues.
-* **Pure Living Orb UI**: Completely removes distracting chat cards for an immersive, distraction-free holographic Mark-LII Arc-Reactor experience that pulses to speech volume.
-* **Acoustic Guard**: 400ms silence detection and dynamic echo prevention to avoid mic feedback loops.
+1. **INPUT Block (Voice / Prompt)**: Displays the student's real-time spoken transcript with a live `"Listening..."` indicator and 1-click **Copy Input** button.
+2. **OUTPUT Block (DOAP AI Response)**: Displays the AI tutor's text response with a `"Speaking..."` status pill and 1-click **Copy Output** button.
+3. **CODE OUTPUT Block**:
+   * Automatically parses code blocks (` ```lang ... ``` `) out of spoken responses using regular expressions.
+   * Renders syntax-highlighted code with language badges (`JAVASCRIPT`, `PYTHON`, `CPP`, `JAVA`), line counts, 1-click **Copy Code**, and an **"Open in Sandbox"** button that bridges directly into the coding editor.
+4. **Vocal Acknowledgement**: Voice AI verbally announces: *"I have projected the code snippet to your live IO console on screen."*
+5. **Instant Quick-Test Prompts**: One-tap sample buttons populate Input, Output, and Code simultaneously for instant testing.
+
+---
+
+## 🛡️ Proctored Fullscreen Coding Assessment & Proficiency Engine (`/coding`)
+
+A state-of-the-art proctored assessment system designed to evaluate genuine technical coding proficiency under simulated interview conditions:
+
+### 1. 📌 Top-Mounted Question Statements
+* The full problem statement, difficulty badge, benchmark time, constraints, and formatted examples ($1 \le N \le 10^5$, input/output tables) are mounted **prominently right on top of the code editor** across mobile and desktop.
+* Sub-tabs for **Examples**, **Constraints**, and **💡 Socratic Hints** allow quick review without losing the editor context.
+
+### 2. 🛡️ Assessment Gateway & Permission Workflow
+* Clicking **"Solve Challenge"** opens the **DOAP Proctored Assessment Gateway**.
+* Clearly outlines duration, benchmark goals, and integrity rules.
+* User explicitly accepts rules by clicking **"Start Assessment & Enter Fullscreen"**, satisfying browser security permission requirements and transitioning directly into native fullscreen mode.
+
+### 3. 🔒 Strict Anti-Cheat & Fullscreen Lock
+* **Direct Fullscreen**: Automatically requests native fullscreen on launch.
+* **Fullscreen Exit Blocker**: Exiting fullscreen triggers an inescapable blocking overlay with an audio chime and violation increment. The student must click `"Return to Fullscreen Assessment"` to resume.
+* **Tab Switch & Minimize Detection**: Listens to `visibilitychange` events. Switching tabs or minimizing the browser sounds an alert chime and tracks violations (`Tab Switches: {violations}/3`). Exceeding 3 violations flags the submission.
+* **Mobile Keyboard Awareness**: Does not falsely trigger fullscreen violations when the virtual soft keyboard opens on mobile devices (`activeTag === 'TEXTAREA'`).
+* **Unload Prevention**: Warns students if they attempt to close or reload the browser during an active test.
+
+### 4. 📊 Verified Student Coding Proficiency Evaluation (0 - 100 Score)
+Upon submitting the assessment, DOAP AI evaluates performance across 4 critical dimensions:
+1. **Test Correctness (50%)**: Proportion of automated test cases passed.
+2. **Speed Efficiency (20%)**: Elapsed solving time compared to the benchmark target.
+3. **Hint Autonomy (15%)**: Deductions for consulting Socratic hints.
+4. **Proctor Integrity (15%)**: Deductions for tab switches or exiting fullscreen.
+
+### 5. 🎓 Student Proficiency Report Card
+* Circular animated visual dial displaying the final **0 - 100 Coding Proficiency Score**.
+* **SDE Ranking Tier**: `Elite SDE Candidate (Top 5%)`, `Proficient SDE`, `Junior SDE Candidate`, or `Needs Foundational Practice`.
+* Breakdown progress bars for each dimension + AI strategic coaching feedback.
+* Scores $\ge 60\%$ automatically update `solvedProblems` and mark the skill as mastered in `memoryBrain`.
+
+### 6. ❌ Strict Automated Verification (Manual "Mark as Solved" Removed)
+* The manual `Mark as Solved` toggle button has been **completely eliminated**.
+* A problem is strictly marked as solved **only** when all automated test cases pass or when the assessment is submitted with a passing grade.
+* Replaced with a real-time status indicator: `✓ Verified Solved` or `⚪ Unsolved (Pass all tests to mark solved)`.
 
 ---
 
@@ -154,11 +193,32 @@ Clicking **"Ask DOAP"** on the Home dashboard opens an interactive glassmorphic 
 
 ---
 
-## 💻 Multi-Language Code Sandbox (`/coding`)
+## 🎯 Job Description (JD) ATS Matcher & Resume Optimizer
 
-* **Multi-Language Support:** JavaScript, Python 3, C++ (GCC), and Java.
-* **Instant In-Browser Test Runner:** Client-side sandboxed execution with automated assertion checks, runtime benchmarking, and error diagnostics.
-* **1-Click GitHub Integration:** Direct solution push to GitHub repositories via personal access tokens (`githubService.js`).
+Located in [`src/components/JobReadiness/IPArmySuite.jsx`](file:///src/components/JobReadiness/IPArmySuite.jsx) alongside the LinkedIn Agent and Resume Builder:
+
+* **Enterprise Role Presets**:
+  * Google SWE III (Cloud & Distributed Systems)
+  * Amazon SDE II (Full-Stack & AWS)
+  * TCS Digital / Prime Cadre (Full-Stack Engineer)
+  * Silicon Valley AI Labs (Generative AI & Autonomous Agents)
+  * Custom JD: Paste any external job description.
+* **Real-Time Match Engine**:
+  * Calculates real-time ATS match percentage against the candidate's resume and `memoryBrain` knowledge graph.
+  * Highlights **Matched Keywords** (emerald) and **Missing Critical Keywords** (rose with a 1-click **"+"** to inject into memory).
+* **1-Click "Tailor Resume with DOAP AI"**:
+  * Automatically drafts 3 high-impact Google XYZ-format resume bullet points incorporating the missing skills with technical rigor.
+
+---
+
+## 🔥 Daily DOAP Streak & Challenge Drill Engine
+
+Located on the main Home dashboard ([`src/pages/Home.jsx`](file:///src/pages/Home.jsx)):
+
+* **Rotating Daily Drills**: Daily technical questions covering Algorithms, Heap Data Structures, HTTP/1.1 Protocols, React Internals, and Graph Theory.
+* **Instant Evaluation & Explanations**: Selecting an answer immediately reveals correctness with deep technical reasoning.
+* **Streak Counter**: Persists `🔥 X Days Streak` in `localStorage` (`doap_streak_count`), updates milestones, and records episodic memories in `memoryBrain`.
+* **Weekly Badges**: Visual completion dots `[M, T, W, T, F, S, S]` tracking weekly consistency.
 
 ---
 
@@ -171,20 +231,22 @@ graph TD
     subgraph "AI & Speech Intelligence"
         ReactApp -->|120B Inference| Groq[Groq LPU - Llama 3.3 70B & DeepSeek R1]
         ReactApp -->|120ms Audio STT| Whisper[Groq Whisper Large v3 Turbo]
-        ReactApp -->|Studio Vocal TTS| ElevenLabs[ElevenLabs Neural Engine - Brian]
+        ReactApp -->|Studio Vocal TTS| ElevenLabs[ElevenLabs Neural Engine - Charon]
     end
     
-    subgraph "IP-Verse-Mafia Ecosystem"
-        ReactApp -->|8-Layer Cognitive State| MemoryBrain[Memory Brain Engine]
-        ReactApp -->|Autonomous Outreach & ATS| IPArmy[IP Army Agents]
+    subgraph "Cognitive Brain & Career Suite"
+        ReactApp -->|8-Layer Living Memory| MemoryBrain[Memory Brain Engine & Brain Vault]
+        ReactApp -->|ATS Matcher & Tailor| JDMatcher[JD ATS Matcher & Resume Optimizer]
+        ReactApp -->|Autonomous Outreach| IPArmy[IP Army Agents]
         ReactApp -->|WebSocket ws://127.0.0.1:8765| IPPrimeOS[IP Prime OS Desktop Hardware Runtime]
     end
     
-    subgraph "Cloud & Persistence Layer"
+    subgraph "Proctored Coding & Cloud Layer"
+        ReactApp -->|Proctored Fullscreen & Scoring| ProctorEngine[Proctor & Anti-Cheat Engine]
         ReactApp -->|Multi-Language Sandbox| Judge0[Judge0 Cloud Compiler]
         ReactApp -->|Push Solutions| GitHub[GitHub REST API]
         ReactApp -->|User Auth & State| Firestore[(Google Cloud Firestore)]
-        ReactApp -->|Global CDN Hosting| Firebase[Firebase Hosting CDN]
+        ReactApp -->|Global CDN Hosting| Firebase[Firebase Hosting Multi-CDN]
     end
 ```
 
@@ -204,22 +266,23 @@ doap-intelligent-learning/
 │   │   │   ├── InterviewTelemetryHUD.jsx  # Real-time filler word & WPM meter
 │   │   │   ├── LiveInterviewWorkspace.jsx # Proctored dual-stream workspace
 │   │   │   └── InterviewReport.jsx        # Executive hiring report card
-│   │   ├── 📁 JobReadiness/       # Career suite & resume tools
+│   │   ├── 📁 JobReadiness/       # Career suite, JD ATS Matcher & Resume Builder
 │   │   │   ├── ATSResumePreview.jsx       # 1-Click Harvard ATS PDF generator
-│   │   │   └── IPArmySuite.jsx            # LinkedIn Agent & Resume Builder
+│   │   │   └── IPArmySuite.jsx            # JD ATS Matcher, LinkedIn Agent & Resume Builder
 │   │   ├── 📁 Landing/            # Public marketing landing page
-│   │   ├── 📁 Modals/             # Profile, Settings, Auth dialogs
-│   │   ├── 📁 Shell/              # Header, Sidebar, AmbientBackground
-│   │   └── MarkdownRenderer.jsx   # Syntax-highlighted code formatter
-│   ├── 📁 context/                # AuthContext (Firestore sync) & ThemeContext
-│   ├── 📁 data/                   # Interview question banks, DSA problems, positions
+│   │   ├── 📁 Modals/             # BrainVaultModal (8L), Profile, Settings, Auth dialogs
+│   │   ├── 📁 Shell/              # Header, Sidebar (with Brain Vault link), AmbientBackground
+│   │   └── MarkdownRenderer.jsx   # Deep-thinking reasoning accordion & code formatter
+│   ├── 📁 context/                # AuthContext (Firestore sync) & ThemeContext (Brain Vault state)
+│   ├── 📁 data/                   # 10 comprehensive DSA problems with benchmarks & test suites
 │   ├── 📁 hooks/                  # Camera, FaceDetection, Proctoring, SpeechRecognition
 │   ├── 📁 lib/                    # Firebase client initialization
 │   ├── 📁 pages/                  # Main application views
-│   │   ├── AITutor.jsx            # 120B Chat mentor with quiz & image generator
-│   │   ├── VoiceTutor.jsx         # Hands-free Voice AI with Arc Reactor visualizer
+│   │   ├── Home.jsx               # Home dashboard with Daily DOAP Streak & Drill card
+│   │   ├── AITutor.jsx            # 120B Chat mentor with deep thinking, quiz & image generator
+│   │   ├── VoiceTutor.jsx         # Voice AI with Arc Reactor visualizer & Live I/O Console (IO)
 │   │   ├── AIInterview.jsx        # Interactive video mock interview simulator
-│   │   ├── CodingPractice.jsx     # Multi-language sandbox with IP Codemaker
+│   │   ├── CodingPractice.jsx     # Proctored Fullscreen Assessment, Anti-cheat & Proficiency scoring
 │   │   ├── JobReadiness.jsx       # Career suite & ATS resume generator
 │   │   ├── Assessments.jsx        # Benchmark quizzes & technical exams
 │   │   ├── Dashboard.jsx          # Real-time telemetry, readiness radar, streak
@@ -227,17 +290,17 @@ doap-intelligent-learning/
 │   │   └── StudyPlan.jsx          # Live calendar & AI scheduler
 │   ├── 📁 services/               # Core service layer
 │   │   ├── aiTutorEngine.js       # Groq 120B Super-Brain & language mirroring
-│   │   ├── elevenLabsService.js   # ElevenLabs studio voice engine
+│   │   ├── elevenLabsService.js   # ElevenLabs Charon studio voice engine
 │   │   ├── whisperService.js      # Groq Whisper Large v3 STT
-│   │   ├── ipArmyAgents.js        # LinkedIn, Resume & Codemaker autonomous agents
+│   │   ├── ipArmyAgents.js        # LinkedIn, Resume, JD Matcher & Codemaker agents
 │   │   ├── memoryBrain.js         # 8-Layer Unified Cognitive Memory
 │   │   ├── localSystemConnector.js# IP Prime OS WebSocket runtime connector
 │   │   └── githubService.js       # GitHub solution committer
-│   ├── App.jsx                    # Root router with ErrorBoundary
+│   ├── App.jsx                    # Root router with ErrorBoundary & Global Modals
 │   ├── index.css                  # Design system tokens & print styles
 │   └── main.jsx                   # React DOM entry point
 ├── firestore.rules                # Granular Firestore security policies
-├── firebase.json                  # Firebase Hosting routing & CSP configuration
+├── firebase.json                  # Firebase Hosting routing & hardened CSP configuration
 ├── package.json                   # Project dependencies & scripts
 └── vite.config.js                 # Vite bundling & asset chunking config
 ```
@@ -303,7 +366,7 @@ npx firebase deploy --only hosting
 ## 🔐 Security & Content Policies
 
 * **Granular Firestore Security:** User documents (`users/{userId}`) are isolated by strict security rules requiring authentic Firebase UID ownership.
-* **Content Security Policy (CSP):** Configured in `firebase.json` to allow secured WebSocket bridging (`ws://127.0.0.1:*`, `ws://localhost:*`) for desktop runtime execution without compromising safety.
+* **Content Security Policy (CSP):** Hardened in `firebase.json` with support for Google Tag Manager, Google Analytics, Groq, ElevenLabs, and secured desktop WebSocket runtimes (`ws://127.0.0.1:*`, `ws://localhost:*`).
 * **Zero Leakage:** All API keys are loaded safely from environment variables and protected against client-side exposure.
 
 ---
@@ -316,7 +379,9 @@ npx firebase deploy --only hosting
 | **Styling & UI Design** | Tailwind CSS v4, Lucide Icons, Glassmorphism & Print Media Engine |
 | **Large Language Models** | Groq LPU (GPT-OSS 120B Flagship, Qwen 27B) + Deep Cognitive Self-Thinking |
 | **Speech & Audio** | Groq Whisper Large v3 Turbo, ElevenLabs Charon Studio Voice Core (`eleven_turbo_v2_5`) |
-| **Cognitive Memory** | Unified 8-Layer Living Memory Brain (`memoryBrain.js`) with continuous self-learning |
+| **Cognitive Memory** | Unified 8-Layer Living Memory Brain (`memoryBrain.js`) + Interactive Brain Vault Modal |
+| **Proctored Assessment** | Fullscreen API, Anti-Cheat Tab Monitor (`visibilitychange`), Automated Test Runner, 0-100 Proficiency Evaluation |
+| **Career & ATS Engine** | Harvard Vector PDF Generator, JD ATS Keyword Matcher, Google XYZ Bullet Generator |
 | **Image Generation** | Flux Neural Engine via Pollinations |
 | **Data Visualizations** | Recharts (Radar charts, Line graphs, Telemetry gauges) |
 | **Database & Auth** | Google Cloud Firestore, Firebase Authentication |
