@@ -11,8 +11,7 @@ import {
   Copy,
   Check,
   RotateCcw,
-  AlertCircle,
-  ArrowRight
+  AlertCircle
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -641,29 +640,6 @@ export const VoiceTutor = () => {
     }
   };
 
-  const CONVERSATION_STARTERS = [
-    {
-      title: "Binary Search Trees",
-      prompt: "Explain Binary Search Trees with a real world analogy, buddy!",
-      badge: "DSA Concept"
-    },
-    {
-      title: "Python vs JavaScript",
-      prompt: "What is the key difference between Python and JavaScript, and which should I master first?",
-      badge: "Web & Tech"
-    },
-    {
-      title: "Sanjivani University",
-      prompt: "Tell me about Sanjivani University, Kopargaon and Chairman Hon. Shri Nitindada Kolhe Saheb.",
-      badge: "Campus Info"
-    },
-    {
-      title: "Mock Interview Drill",
-      prompt: "Give me a quick 1-minute FAANG coding interview problem to solve right now.",
-      badge: "Interview Prep"
-    }
-  ];
-
   return (
     <div className="h-full w-full flex-1 flex flex-col justify-between p-3 sm:p-6 select-none bg-[#030712] text-white animate-fade-in relative overflow-hidden">
       {/* Dynamic Ambient Mesh Glow */}
@@ -848,37 +824,6 @@ export const VoiceTutor = () => {
                 }}
               />
             ))}
-          </div>
-        )}
-
-        {/* Pre-Call State: Topic Starter Chips */}
-        {!isCallActive && (
-          <div className="w-full max-w-2xl mt-8 z-10 px-2 animate-fade-in">
-            <div className="flex items-center justify-center gap-2 mb-3 text-xs font-mono font-semibold text-neutral-400 uppercase tracking-wider">
-              <Sparkles size={13} className="text-amber-400" />
-              <span>Tap any topic to talk right away</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {CONVERSATION_STARTERS.map((starter, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleStartCall(starter.prompt)}
-                  className="p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-cyan-500/40 transition-all text-left group cursor-pointer shadow-sm hover:shadow-cyan-500/10 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-between gap-3"
-                >
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 inline-block mb-1">
-                      {starter.badge}
-                    </span>
-                    <p className="text-xs sm:text-sm font-semibold text-neutral-200 group-hover:text-white truncate">
-                      {starter.title}
-                    </p>
-                  </div>
-                  <div className="w-8 h-8 rounded-full bg-white/5 group-hover:bg-cyan-500/20 border border-white/10 group-hover:border-cyan-500/30 flex items-center justify-center shrink-0 transition-colors">
-                    <ArrowRight size={14} className="text-neutral-400 group-hover:text-cyan-300 group-hover:translate-x-0.5 transition-all" />
-                  </div>
-                </button>
-              ))}
-            </div>
           </div>
         )}
 
