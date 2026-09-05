@@ -470,6 +470,7 @@ export const CodingPractice = () => {
   const [proficiencyReport, setProficiencyReport] = useState(null);
   const [showQuestionDetails, setShowQuestionDetails] = useState(true);
   const [questionSubTab, setQuestionSubTab] = useState('examples'); // 'examples' | 'constraints' | 'hints'
+  const [mobileViewTab, setMobileViewTab] = useState('both'); // 'both' | 'problem' | 'editor'
 
   const timerRef = useRef(null);
   const isAssessmentActiveRef = useRef(false);
@@ -1372,136 +1373,153 @@ Evaluate this code strictly:
             </div>
           </div>
 
-          {/* Main Scrollable Assessment Workspace */}
-          <div className="flex-1 overflow-y-auto p-3 sm:p-5 space-y-4 scrollbar-thin">
-            {/* 1. QUESTION STATEMENT CARD (PROMINENTLY VISIBLE RIGHT ON TOP!) */}
-            <div className="rounded-2xl border border-cyan-500/30 bg-[#0c101a] overflow-hidden shadow-xl">
-              {/* Question Card Top Bar */}
-              <div className="p-3.5 sm:p-4 border-b border-neutral-800/80 bg-neutral-900/60 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
-                    <FileCode size={16} />
-                  </div>
-                  <div>
-                    <div className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-                      <span>Problem Statement</span>
-                      <span className="text-[10px] font-mono px-2 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                        {activeProblem.category}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowHint(!showHint);
-                      if (!showHint) setHintsUsedCount(prev => prev + 1);
-                    }}
-                    className={`text-xs px-2.5 py-1 rounded-xl border flex items-center gap-1.5 transition-all cursor-pointer ${
-                      showHint
-                        ? 'bg-amber-400/20 text-amber-300 border-amber-400/50 font-bold shadow-sm'
-                        : 'bg-neutral-900 border-neutral-700 text-neutral-300 hover:text-amber-300 hover:border-amber-400/40'
-                    }`}
-                  >
-                    <Sparkles size={13} className={showHint ? 'text-amber-400' : 'text-neutral-400'} />
-                    <span>{showHint ? 'Hide Hints' : '💡 Socratic AI Hint'}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setShowQuestionDetails(!showQuestionDetails)}
-                    className="p-1.5 rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer"
-                    title={showQuestionDetails ? 'Collapse Question' : 'Expand Question'}
-                  >
-                    {showQuestionDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                  </button>
-                </div>
+          {/* Main Assessment Workspace: Modern Side-by-Side (Split View) */}
+          <div className="flex-1 min-h-0 p-2 sm:p-4 overflow-hidden flex flex-col">
+            {/* Mobile View Switcher (Visible only on screens below lg) */}
+            <div className="flex lg:hidden items-center justify-center gap-1 mb-2 shrink-0">
+              <div className="flex items-center p-1 rounded-xl bg-neutral-900 border border-neutral-800 text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setMobileViewTab('problem')}
+                  className={`px-3 py-1 rounded-lg transition-all ${
+                    mobileViewTab === 'problem'
+                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                      : 'text-neutral-400 hover:text-white'
+                  }`}
+                >
+                  📄 Problem
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileViewTab('editor')}
+                  className={`px-3 py-1 rounded-lg transition-all ${
+                    mobileViewTab === 'editor'
+                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                      : 'text-neutral-400 hover:text-white'
+                  }`}
+                >
+                  💻 Editor & Tests
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileViewTab('both')}
+                  className={`px-3 py-1 rounded-lg transition-all ${
+                    mobileViewTab === 'both'
+                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                      : 'text-neutral-400 hover:text-white'
+                  }`}
+                >
+                  ⚡ Both
+                </button>
               </div>
+            </div>
 
-              {/* Question Body (Description, Examples, Constraints) */}
-              {showQuestionDetails && (
-                <div className="p-4 space-y-4 font-sans text-xs">
-                  {/* Detailed Description */}
-                  <div className="text-xs sm:text-sm text-neutral-200 leading-relaxed font-sans select-text">
-                    <p>{activeProblem.description}</p>
+            {/* Side-by-Side Split Workspace Grid */}
+            <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-3 overflow-hidden">
+              {/* LEFT PANE (5 of 12 cols on desktop): Problem Description, Examples, Constraints, Socratic Hint */}
+              <div className={`lg:col-span-5 flex flex-col min-h-0 h-full rounded-2xl border border-cyan-500/25 bg-[#0a0d15] overflow-hidden shadow-2xl ${
+                mobileViewTab === 'editor' ? 'hidden lg:flex' : 'flex'
+              }`}>
+                {/* Left Pane Top Bar */}
+                <div className="p-3 sm:p-3.5 border-b border-neutral-800/80 bg-neutral-900/70 flex items-center justify-between shrink-0">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                      <FileCode size={14} />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-white flex items-center gap-2">
+                        <span>Problem Statement</span>
+                        <span className="text-[10px] font-mono px-2 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                          {activeProblem.category}
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Sub-Tabs: Examples & Constraints */}
-                  <div className="space-y-2.5">
-                    <div className="flex items-center gap-2 border-b border-neutral-800 pb-2">
-                      <button
-                        type="button"
-                        onClick={() => setQuestionSubTab('examples')}
-                        className={`text-xs font-semibold px-3 py-1 rounded-lg transition-colors cursor-pointer ${
-                          questionSubTab === 'examples'
-                            ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                            : 'text-neutral-400 hover:text-white'
-                        }`}
-                      >
-                        Examples ({activeProblem.examples ? activeProblem.examples.length : 0})
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setQuestionSubTab('constraints')}
-                        className={`text-xs font-semibold px-3 py-1 rounded-lg transition-colors cursor-pointer ${
-                          questionSubTab === 'constraints'
-                            ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                            : 'text-neutral-400 hover:text-white'
-                        }`}
-                      >
-                        Constraints
-                      </button>
-                    </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowHint(!showHint);
+                        if (!showHint) setHintsUsedCount(prev => prev + 1);
+                      }}
+                      className={`text-[11px] px-2.5 py-1 rounded-xl border flex items-center gap-1 transition-all cursor-pointer ${
+                        showHint
+                          ? 'bg-amber-400/20 text-amber-300 border-amber-400/50 font-bold shadow-sm'
+                          : 'bg-neutral-900 border-neutral-700 text-neutral-300 hover:text-amber-300 hover:border-amber-400/40'
+                      }`}
+                    >
+                      <Sparkles size={12} className={showHint ? 'text-amber-400' : 'text-neutral-400'} />
+                      <span>{showHint ? 'Hide Hint' : '💡 Socratic Hint'}</span>
+                    </button>
+                  </div>
+                </div>
 
-                    {/* Tab: Examples */}
-                    {questionSubTab === 'examples' && activeProblem.examples && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* Left Pane Scrollable Body */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 font-sans text-xs scrollbar-thin select-text">
+                  {/* Detailed Description */}
+                  <div className="text-xs sm:text-[13px] text-neutral-200 leading-relaxed">
+                    <p className="whitespace-pre-line">{activeProblem.description}</p>
+                  </div>
+
+                  {/* Examples Section */}
+                  {activeProblem.examples && (
+                    <div className="space-y-2.5 pt-2 border-t border-neutral-800/60">
+                      <div className="text-[11px] font-mono font-bold text-cyan-400 uppercase tracking-wider">
+                        Examples ({activeProblem.examples.length}):
+                      </div>
+                      <div className="space-y-2.5">
                         {activeProblem.examples.map((ex, idx) => (
-                          <div key={idx} className="p-3 rounded-xl bg-black/60 border border-neutral-800 space-y-1.5 font-mono text-[11px] select-text">
-                            <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-wide">Example {idx + 1}:</div>
-                            <div>
-                              <span className="text-cyan-400 font-semibold">Input: </span>
-                              <span className="text-neutral-200">{ex.input}</span>
+                          <div key={idx} className="p-3 rounded-xl bg-black/60 border border-neutral-800/90 space-y-1.5 font-mono text-[11px]">
+                            <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-wide">
+                              Example {idx + 1}:
                             </div>
-                            <div>
-                              <span className="text-emerald-400 font-semibold">Output: </span>
-                              <span className="text-neutral-200">{ex.output}</span>
+                            <div className="flex items-start gap-1">
+                              <span className="text-cyan-400 font-semibold shrink-0">Input: </span>
+                              <span className="text-neutral-200 break-all">{ex.input}</span>
+                            </div>
+                            <div className="flex items-start gap-1">
+                              <span className="text-emerald-400 font-semibold shrink-0">Output: </span>
+                              <span className="text-neutral-200 break-all">{ex.output}</span>
                             </div>
                             {ex.explanation && (
-                              <div className="text-neutral-400 text-[11px] font-sans pt-1 leading-normal border-t border-neutral-800/80">
+                              <div className="text-neutral-400 text-[11px] font-sans pt-1 border-t border-neutral-800/80 leading-normal">
                                 <strong>Explanation: </strong> {ex.explanation}
                               </div>
                             )}
                           </div>
                         ))}
                       </div>
-                    )}
+                    </div>
+                  )}
 
-                    {/* Tab: Constraints */}
-                    {questionSubTab === 'constraints' && activeProblem.constraints && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 font-mono text-[11px]">
+                  {/* Constraints Section */}
+                  {activeProblem.constraints && (
+                    <div className="space-y-2 pt-2 border-t border-neutral-800/60">
+                      <div className="text-[11px] font-mono font-bold text-cyan-400 uppercase tracking-wider">
+                        Constraints:
+                      </div>
+                      <div className="space-y-1.5 font-mono text-[11px]">
                         {activeProblem.constraints.map((c, idx) => (
-                          <div key={idx} className="p-2.5 rounded-xl bg-black/50 border border-neutral-800/80 flex items-center gap-2 text-neutral-300 select-text">
+                          <div key={idx} className="p-2 rounded-lg bg-black/40 border border-neutral-800/60 flex items-center gap-2 text-neutral-300">
                             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0" />
                             <span>{c}</span>
                           </div>
                         ))}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
-                  {/* 3-Tier Socratic AI Hint Drawer (Inside Question Panel) */}
+                  {/* Socratic AI Hints Drawer */}
                   {showHint && (
-                    <div className="p-3.5 rounded-xl bg-neutral-950/80 border border-amber-500/30 text-xs space-y-3 animate-fade-in shadow-xl">
+                    <div className="p-3.5 rounded-xl bg-neutral-950/90 border border-amber-500/30 text-xs space-y-3 animate-fade-in shadow-xl">
                       <div className="flex items-center justify-between border-b border-neutral-800 pb-2 flex-wrap gap-2">
                         <div className="flex items-center gap-1.5 font-mono">
                           <span className="text-[10px] text-amber-400 uppercase font-bold mr-1">Hint Level:</span>
                           {[
-                            { id: 1, label: '1. Intuition Nudge' },
-                            { id: 2, label: '2. Edge-Cases' },
-                            { id: 3, label: '3. Socratic Debugger' }
+                            { id: 1, label: '1. Nudge' },
+                            { id: 2, label: '2. Edge Cases' },
+                            { id: 3, label: '3. AI Reviewer' }
                           ].map((t) => (
                             <button
                               key={t.id}
@@ -1590,226 +1608,217 @@ Evaluate this code strictly:
                     </div>
                   )}
                 </div>
-              )}
-            </div>
-
-            {/* 2. CODE EDITOR & SANDBOX (BELOW THE QUESTION) */}
-            <div className="space-y-4">
-              {/* Language Selector Bar & Tool Actions */}
-              <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-2xl bg-[#0d0f17] border border-neutral-800">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {[
-                    { id: 'javascript', label: '⚡ JavaScript (ES6)' },
-                    { id: 'python', label: '🐍 Python 3' },
-                    { id: 'cpp', label: '⚡ C++ (GCC)' },
-                    { id: 'java', label: '☕ Java' }
-                  ].map((lang) => (
-                    <button
-                      key={lang.id}
-                      onClick={() => handleLanguageChange(lang.id)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
-                        selectedLanguage === lang.id
-                          ? 'bg-white text-black font-bold border-white shadow'
-                          : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white'
-                      }`}
-                    >
-                      {lang.label}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setCode('')}
-                    className="text-[11px] px-2 py-1 rounded-lg bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white cursor-pointer transition-colors"
-                  >
-                    🧹 Blank Editor
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCode(getLanguageStarterCode(activeProblem, selectedLanguage))}
-                    className="text-[11px] px-2 py-1 rounded-lg bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white cursor-pointer transition-colors flex items-center gap-1"
-                  >
-                    <RefreshCw size={11} />
-                    <span>Reset</span>
-                  </button>
-                </div>
               </div>
 
-              {/* IP Codemaker Co-Pilot Action Bar */}
-              <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-black/60 border border-neutral-800 text-xs">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-bold flex items-center gap-1">
-                    <Bot size={11} /> IP Codemaker
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleRunCodemaker('optimize')}
-                    disabled={isCodemakerLoading}
-                    className="px-2.5 py-1 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-cyan-300 border border-neutral-700/60 flex items-center gap-1 cursor-pointer transition-colors text-[11px]"
-                  >
-                    <Zap size={11} className="text-amber-400" />
-                    <span>Optimize O(N)</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleRunCodemaker('find_bugs')}
-                    disabled={isCodemakerLoading}
-                    className="px-2.5 py-1 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-cyan-300 border border-neutral-700/60 flex items-center gap-1 cursor-pointer transition-colors text-[11px]"
-                  >
-                    <AlertCircle size={11} className="text-rose-400" />
-                    <span>Find Edge Bugs</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleRunCodemaker('tests')}
-                    disabled={isCodemakerLoading}
-                    className="px-2.5 py-1 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-cyan-300 border border-neutral-700/60 flex items-center gap-1 cursor-pointer transition-colors text-[11px]"
-                  >
-                    <Terminal size={11} className="text-emerald-400" />
-                    <span>Generate Tests</span>
-                  </button>
-                </div>
-                {isCodemakerLoading && (
-                  <span className="text-[10px] font-mono text-cyan-400 animate-pulse flex items-center gap-1">
-                    <Sparkles size={11} className="animate-spin" /> Analyzing code...
-                  </span>
-                )}
-              </div>
+              {/* RIGHT PANE (7 of 12 cols on desktop): Language Selector, Codemaker, Editor, Test Console & Submit */}
+              <div className={`lg:col-span-7 flex flex-col min-h-0 h-full space-y-2.5 overflow-hidden ${
+                mobileViewTab === 'problem' ? 'hidden lg:flex' : 'flex'
+              }`}>
+                {/* Language Selector Bar & Tool Actions */}
+                <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-[#0a0d15] border border-neutral-800 shrink-0">
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {[
+                      { id: 'javascript', label: '⚡ JS' },
+                      { id: 'python', label: '🐍 Python' },
+                      { id: 'cpp', label: '⚡ C++' },
+                      { id: 'java', label: '☕ Java' }
+                    ].map((lang) => (
+                      <button
+                        key={lang.id}
+                        type="button"
+                        onClick={() => handleLanguageChange(lang.id)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer border ${
+                          selectedLanguage === lang.id
+                            ? 'bg-white text-black font-bold border-white shadow'
+                            : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white'
+                        }`}
+                      >
+                        {lang.label}
+                      </button>
+                    ))}
+                  </div>
 
-              {/* Collapsible Codemaker Output Drawer */}
-              {codemakerOutput && (
-                <div className="p-3.5 rounded-2xl bg-[#090b10] border border-cyan-500/30 text-xs space-y-2 animate-fade-in shadow-xl">
-                  <div className="flex items-center justify-between border-b border-neutral-800 pb-2">
-                    <span className="font-mono font-bold text-cyan-400 flex items-center gap-1.5">
-                      <Bot size={13} /> IP Codemaker Co-Pilot ({codemakerMode}):
-                    </span>
+                  <div className="flex items-center gap-1.5">
+                    {/* Codemaker Quick Actions */}
                     <button
                       type="button"
-                      onClick={() => setCodemakerOutput('')}
-                      className="text-neutral-400 hover:text-white cursor-pointer"
+                      onClick={() => handleRunCodemaker('optimize')}
+                      disabled={isCodemakerLoading}
+                      className="px-2 py-1 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-cyan-300 border border-neutral-700/60 flex items-center gap-1 cursor-pointer transition-colors text-[11px]"
+                      title="AI Optimize O(N)"
                     >
-                      <X size={14} />
+                      <Zap size={11} className="text-amber-400" />
+                      <span className="hidden sm:inline">Optimize</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRunCodemaker('find_bugs')}
+                      disabled={isCodemakerLoading}
+                      className="px-2 py-1 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-cyan-300 border border-neutral-700/60 flex items-center gap-1 cursor-pointer transition-colors text-[11px]"
+                      title="Find Edge Bugs"
+                    >
+                      <AlertCircle size={11} className="text-rose-400" />
+                      <span className="hidden sm:inline">Bugs</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRunCodemaker('tests')}
+                      disabled={isCodemakerLoading}
+                      className="px-2 py-1 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-cyan-300 border border-neutral-700/60 flex items-center gap-1 cursor-pointer transition-colors text-[11px]"
+                      title="Generate Tests"
+                    >
+                      <Terminal size={11} className="text-emerald-400" />
+                      <span className="hidden sm:inline">Tests</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCode(getLanguageStarterCode(activeProblem, selectedLanguage))}
+                      className="text-[11px] px-2 py-1 rounded-lg bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white cursor-pointer transition-colors flex items-center gap-1"
+                      title="Reset Starter Code"
+                    >
+                      <RefreshCw size={11} />
+                      <span className="hidden sm:inline">Reset</span>
                     </button>
                   </div>
-                  <div className="text-xs text-neutral-200 whitespace-pre-wrap leading-relaxed max-h-56 overflow-y-auto font-mono">
-                    {codemakerOutput}
-                  </div>
-                </div>
-              )}
-
-              {/* Code Editor Area */}
-              <div className="rounded-2xl border border-neutral-800 bg-[#050608] overflow-hidden shadow-inner">
-                <div className="px-4 py-2 border-b border-neutral-800/80 bg-neutral-900/60 text-[11px] font-mono text-neutral-400 flex items-center justify-between">
-                  <span>solution.{selectedLanguage === 'python' ? 'py' : selectedLanguage === 'cpp' ? 'cpp' : selectedLanguage === 'java' ? 'java' : 'js'}</span>
-                  <span>{code.split('\n').length} lines</span>
-                </div>
-                <textarea
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  rows={13}
-                  className="w-full p-4 text-xs leading-relaxed focus:outline-none font-mono resize-y bg-transparent text-neutral-100"
-                  spellCheck={false}
-                  placeholder="// Type your solution here..."
-                />
-              </div>
-
-              {/* Execution Console & Test Cases */}
-              <div className="p-4 rounded-2xl border border-neutral-800/80 bg-[#080a10] text-xs space-y-3">
-                <div className="flex items-center justify-between border-b border-neutral-800 pb-2">
-                  <span className="flex items-center gap-1.5 font-bold text-neutral-300">
-                    <Terminal size={14} className="text-cyan-400" />
-                    <span>{runResult?.isJudge0 ? `Judge0 ${runResult.language} Compiler Output` : 'Automated Test Results'}</span>
-                  </span>
-                  {runResult && runResult.runtime && (
-                    <span className="text-[10px] text-neutral-400 font-mono">
-                      Runtime: {runResult.runtime} {runResult.memory ? `• Memory: ${runResult.memory}` : ''}
-                    </span>
-                  )}
                 </div>
 
-                {!runResult ? (
-                  <p className="text-neutral-500 text-[11px]">Click "Run Code & Tests" below to verify your solution against test cases.</p>
-                ) : runResult.error ? (
-                  <div className="flex items-start gap-2 text-rose-400 text-xs">
-                    <AlertCircle size={15} className="shrink-0 mt-0.5" />
-                    <span>{runResult.error}</span>
-                  </div>
-                ) : runResult.isJudge0 ? (
-                  <div className="space-y-2 font-mono text-xs">
-                    <div className={`font-bold flex items-center gap-1 ${runResult.success ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {runResult.success ? <Check size={14} /> : <AlertCircle size={14} />}
-                      <span>{runResult.success ? 'Compilation & Execution Succeeded' : 'Execution Warning/Error'}</span>
+                {/* Collapsible Codemaker Output Drawer */}
+                {codemakerOutput && (
+                  <div className="p-3 rounded-xl bg-[#090b10] border border-cyan-500/30 text-xs space-y-1.5 animate-fade-in shadow-xl shrink-0 max-h-36 overflow-y-auto scrollbar-thin">
+                    <div className="flex items-center justify-between border-b border-neutral-800 pb-1">
+                      <span className="font-mono font-bold text-cyan-400 flex items-center gap-1.5 text-[11px]">
+                        <Bot size={12} /> IP Codemaker ({codemakerMode}):
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setCodemakerOutput('')}
+                        className="text-neutral-400 hover:text-white cursor-pointer"
+                      >
+                        <X size={12} />
+                      </button>
                     </div>
-                    {runResult.stdout && (
-                      <div className="p-3 rounded-xl bg-black border border-neutral-800 text-emerald-300 whitespace-pre-wrap">
-                        {runResult.stdout}
-                      </div>
-                    )}
-                    {runResult.stderr && (
-                      <div className="p-3 rounded-xl bg-rose-950/20 border border-rose-800/40 text-rose-300 whitespace-pre-wrap">
-                        {runResult.stderr}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      {runResult.allPassed ? (
-                        <span className="text-emerald-400 font-bold flex items-center gap-1">
-                          <CheckCircle size={15} />
-                          <span>All Test Cases Passed! You are ready to submit.</span>
-                        </span>
-                      ) : (
-                        <span className="text-rose-400 font-bold flex items-center gap-1">
-                          <AlertCircle size={15} />
-                          <span>Some Test Cases Failed. Check your edge cases above.</span>
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="space-y-1.5 pt-1">
-                      {runResult.tests && runResult.tests.map((t) => (
-                        <div key={t.id} className="p-2.5 rounded-xl bg-black/40 border border-neutral-800 text-[11px] flex items-center justify-between font-mono">
-                          <div className="flex items-center gap-2">
-                            {t.passed ? (
-                              <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
-                            ) : (
-                              <AlertCircle size={14} className="text-rose-400 shrink-0" />
-                            )}
-                            <span className={t.passed ? 'text-neutral-300' : 'text-rose-300 font-semibold'}>
-                              Test {t.id}: {t.display}
-                            </span>
-                          </div>
-                          <span className="text-[10px] text-neutral-500">{t.duration}</span>
-                        </div>
-                      ))}
+                    <div className="text-xs text-neutral-200 whitespace-pre-wrap leading-relaxed font-mono">
+                      {codemakerOutput}
                     </div>
                   </div>
                 )}
-              </div>
 
-              {/* Bottom Sticky Action Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-2 pb-6">
-                <button
-                  type="button"
-                  onClick={handleRunCode}
-                  disabled={isRunning}
-                  className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center gap-2 cursor-pointer border border-white/20 transition-all active:scale-95 disabled:opacity-50"
-                >
-                  <Play size={14} className={isRunning ? 'animate-spin' : ''} />
-                  <span>{isRunning ? 'Running Tests...' : 'Run Code & Tests'}</span>
-                </button>
+                {/* Code Editor Area (Takes maximum available height) */}
+                <div className="flex-1 min-h-[180px] flex flex-col rounded-2xl border border-neutral-800 bg-[#050608] overflow-hidden shadow-inner">
+                  <div className="px-3.5 py-1.5 border-b border-neutral-800/80 bg-neutral-900/60 text-[11px] font-mono text-neutral-400 flex items-center justify-between shrink-0">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                      <span>solution.{selectedLanguage === 'python' ? 'py' : selectedLanguage === 'cpp' ? 'cpp' : selectedLanguage === 'java' ? 'java' : 'js'}</span>
+                    </div>
+                    <span>{code.split('\n').length} lines</span>
+                  </div>
+                  <textarea
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    className="flex-1 w-full p-3.5 text-xs leading-relaxed focus:outline-none font-mono resize-none bg-transparent text-neutral-100 overflow-y-auto scrollbar-thin select-text"
+                    spellCheck={false}
+                    placeholder="// Type your solution here..."
+                  />
+                </div>
 
-                <button
-                  type="button"
-                  onClick={handleEvaluateAssessment}
-                  className="px-7 py-3 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-black font-bold text-xs flex items-center gap-2 cursor-pointer shadow-xl shadow-emerald-500/25 transition-all hover:scale-105 active:scale-95"
-                >
-                  <Award size={15} />
-                  <span>Submit Assessment & Get Proficiency Score</span>
-                </button>
+                {/* Execution Console & Test Cases (Scrollable bottom drawer) */}
+                <div className="rounded-2xl border border-neutral-800/80 bg-[#080a10] text-xs flex flex-col overflow-hidden max-h-40 sm:max-h-48 shrink-0">
+                  <div className="px-3.5 py-2 border-b border-neutral-800 bg-neutral-900/50 flex items-center justify-between shrink-0">
+                    <span className="flex items-center gap-1.5 font-bold text-neutral-300 text-xs">
+                      <Terminal size={13} className="text-cyan-400" />
+                      <span>{runResult?.isJudge0 ? `Compiler Output` : 'Test Results'}</span>
+                    </span>
+                    {runResult && runResult.runtime && (
+                      <span className="text-[10px] text-neutral-400 font-mono">
+                        Runtime: {runResult.runtime} {runResult.memory ? `• ${runResult.memory}` : ''}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="p-3 overflow-y-auto scrollbar-thin text-xs space-y-2">
+                    {!runResult ? (
+                      <p className="text-neutral-500 text-[11px]">Click "Run Code" below to verify your solution against automated test cases.</p>
+                    ) : runResult.error ? (
+                      <div className="flex items-start gap-2 text-rose-400 text-xs">
+                        <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                        <span>{runResult.error}</span>
+                      </div>
+                    ) : runResult.isJudge0 ? (
+                      <div className="space-y-1.5 font-mono text-xs">
+                        <div className={`font-bold flex items-center gap-1 ${runResult.success ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {runResult.success ? <Check size={13} /> : <AlertCircle size={13} />}
+                          <span>{runResult.success ? 'Execution Succeeded' : 'Execution Warning/Error'}</span>
+                        </div>
+                        {runResult.stdout && (
+                          <div className="p-2.5 rounded-lg bg-black border border-neutral-800 text-emerald-300 whitespace-pre-wrap text-[11px]">
+                            {runResult.stdout}
+                          </div>
+                        )}
+                        {runResult.stderr && (
+                          <div className="p-2.5 rounded-lg bg-rose-950/20 border border-rose-800/40 text-rose-300 whitespace-pre-wrap text-[11px]">
+                            {runResult.stderr}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          {runResult.allPassed ? (
+                            <span className="text-emerald-400 font-bold flex items-center gap-1 text-xs">
+                              <CheckCircle size={14} />
+                              <span>All Test Cases Passed! Ready to submit.</span>
+                            </span>
+                          ) : (
+                            <span className="text-rose-400 font-bold flex items-center gap-1 text-xs">
+                              <AlertCircle size={14} />
+                              <span>Some Tests Failed. Check test cases below.</span>
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="space-y-1 pt-1">
+                          {runResult.tests && runResult.tests.map((t) => (
+                            <div key={t.id} className="p-2 rounded-lg bg-black/40 border border-neutral-800 text-[11px] flex items-center justify-between font-mono">
+                              <div className="flex items-center gap-2">
+                                {t.passed ? (
+                                  <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
+                                ) : (
+                                  <AlertCircle size={13} className="text-rose-400 shrink-0" />
+                                )}
+                                <span className={t.passed ? 'text-neutral-300' : 'text-rose-300 font-semibold'}>
+                                  Test {t.id}: {t.display}
+                                </span>
+                              </div>
+                              <span className="text-[10px] text-neutral-500">{t.duration}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Bottom Sticky Action Bar */}
+                <div className="flex items-center justify-between gap-3 pt-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleRunCode}
+                    disabled={isRunning}
+                    className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center gap-2 cursor-pointer border border-white/20 transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    <Play size={13} className={isRunning ? 'animate-spin' : ''} />
+                    <span>{isRunning ? 'Running...' : 'Run Code'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleEvaluateAssessment}
+                    className="px-5 sm:px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-black font-bold text-xs flex items-center gap-2 cursor-pointer shadow-xl shadow-emerald-500/25 transition-all hover:scale-105 active:scale-95"
+                  >
+                    <Award size={14} />
+                    <span>Submit Assessment</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>

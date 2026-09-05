@@ -162,6 +162,12 @@ export const VoiceTutor = () => {
     return '';
   };
 
+  const isMobileDevice = () => {
+    if (typeof navigator === 'undefined') return false;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+           (typeof window !== 'undefined' && window.innerWidth < 768);
+  };
+
   // Pre-load voices on Chrome/Edge as soon as speech engine fires onvoiceschanged
   useEffect(() => {
     if (typeof window === 'undefined' || !window.speechSynthesis) return;
@@ -400,10 +406,14 @@ export const VoiceTutor = () => {
 
           // Real-time Voice Activity Detection (VAD)
           if (callStateRef.current === 'listening' && !isMutedRef.current && !isProcessingSpeechRef.current) {
-            if (avg < 8) {
-              noiseFloorRef.current = noiseFloorRef.current * 0.95 + avg * 0.05;
+            const isMobile = isMobileDevice();
+            // Adaptive noise floor tracking: mobile mics usually have higher gain/AGC
+            if (avg < 25) {
+              noiseFloorRef.current = Math.max(3, Math.min(25, noiseFloorRef.current * 0.96 + avg * 0.04));
             }
-            const speechThreshold = Math.max(9, noiseFloorRef.current + 5);
+            // Dynamic threshold with higher margin on mobile to prevent ambient hiss false triggers
+            const minThreshold = isMobile ? 18 : 12;
+            const speechThreshold = Math.max(minThreshold, noiseFloorRef.current + (isMobile ? 8 : 5));
 
             if (avg > speechThreshold) {
               if (!isUserSpeakingRef.current) {
@@ -417,18 +427,21 @@ export const VoiceTutor = () => {
               }
             } else if (isUserSpeakingRef.current) {
               if (!vadSilenceTimeoutRef.current) {
+                const silenceWait = isMobile ? 950 : 750;
+                const minSpeechDuration = isMobile ? 550 : 350;
                 vadSilenceTimeoutRef.current = setTimeout(() => {
                   vadSilenceTimeoutRef.current = null;
                   const speechDuration = Date.now() - speechStartTimestampRef.current;
                   isUserSpeakingRef.current = false;
                   setIsUserSpeaking(false);
 
-                  if (speechDuration >= 350 && callStateRef.current === 'listening' && !isProcessingSpeechRef.current) {
+                  if (speechDuration >= minSpeechDuration && callStateRef.current === 'listening' && !isProcessingSpeechRef.current) {
                     finalizeAndTranscribeWithWhisper();
                   } else {
+                    // Speech burst too short (likely a breath or mic tap), reset buffer
                     audioChunksRef.current = [];
                   }
-                }, 750);
+                }, silenceWait);
               }
             }
           }
@@ -449,6 +462,14 @@ export const VoiceTutor = () => {
 
   const startRecognition = () => {
     if (!isMountedRef.current || !isCallActiveRef.current || isMutedRef.current || callStateRef.current !== 'listening' || hasFatalMicErrorRef.current) return;
+    
+    // CRITICAL: On mobile devices (Android Chrome, iOS Safari), running SpeechRecognition
+    // invokes the OS-level speech daemon which aggressive cycles ON/OFF, causes mic beeping,
+    // and terminates MediaRecorder chunks. Mobile relies 100% on continuous MediaRecorder + Groq Whisper VAD.
+    if (isMobileDevice()) {
+      return;
+    }
+
     const SpeechRec = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
     if (!SpeechRec) {
       console.log('[VoiceTutor] Universal Groq Whisper VAD active (Web Speech API not present in this browser)');
@@ -525,13 +546,13 @@ export const VoiceTutor = () => {
       rec.onend = () => {
         recognitionRef.current = null;
         isStartingRecognitionRef.current = false;
-        if (hasFatalMicErrorRef.current) return;
+        if (hasFatalMicErrorRef.current || isMobileDevice()) return;
         if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening' && !isProcessingSpeechRef.current) {
           setTimeout(() => {
             if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening' && !isProcessingSpeechRef.current && !hasFatalMicErrorRef.current) {
               startRecognition();
             }
-          }, 150);
+          }, 600);
         }
       };
 
@@ -541,12 +562,12 @@ export const VoiceTutor = () => {
     } catch(err) {
       isStartingRecognitionRef.current = false;
       console.warn('[SpeechRec] Start error:', err);
-      if (!hasFatalMicErrorRef.current) {
+      if (!hasFatalMicErrorRef.current && !isMobileDevice()) {
         setTimeout(() => {
           if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening' && !hasFatalMicErrorRef.current) {
             startRecognition();
           }
-        }, 500);
+        }, 600);
       }
     }
   };
@@ -1049,21 +1070,35 @@ export const VoiceTutor = () => {
         {/* Minimal Live Status Indicator and Live Captions */}
         {isCallActive && (
           <div className="flex flex-col items-center justify-center gap-2.5 mt-4 z-10 animate-fade-in w-full max-w-lg px-3">
-            <div className="flex items-center justify-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${
-                callState === 'speaking' 
-                  ? 'bg-cyan-400 animate-ping' 
-                  : callState === 'thinking' 
-                  ? 'bg-amber-400 animate-pulse' 
-                  : (isUserSpeaking ? 'bg-emerald-400 animate-ping' : 'bg-blue-400 animate-pulse')
-              }`} />
-              <p className="text-xs font-mono tracking-wide" style={{ color: isUserSpeaking ? '#34d399' : '#94a3b8' }}>
-                {callState === 'speaking' 
-                  ? 'DOAP AI Speaking...' 
-                  : callState === 'thinking' 
-                  ? 'Transcribing & Thinking...' 
-                  : (isUserSpeaking ? 'Voice Detected • Speak freely...' : 'Listening... Speak naturally')}
-              </p>
+            <div className="flex flex-col items-center justify-center gap-1.5">
+              <div className="flex items-center justify-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${
+                  callState === 'speaking' 
+                    ? 'bg-cyan-400 animate-ping' 
+                    : callState === 'thinking' 
+                    ? 'bg-amber-400 animate-pulse' 
+                    : (isUserSpeaking ? 'bg-emerald-400 animate-ping' : 'bg-blue-400 animate-pulse')
+                }`} />
+                <p className="text-xs font-mono tracking-wide" style={{ color: isUserSpeaking ? '#34d399' : '#94a3b8' }}>
+                  {callState === 'speaking' 
+                    ? 'DOAP AI Speaking...' 
+                    : callState === 'thinking' 
+                    ? 'Transcribing & Thinking...' 
+                    : (isUserSpeaking ? 'Voice Detected • Speak freely...' : 'Listening... Speak naturally')}
+                </p>
+              </div>
+
+              {callState === 'listening' && isUserSpeaking && (
+                <button
+                  type="button"
+                  onClick={() => finalizeAndTranscribeWithWhisper()}
+                  className="px-3 py-1 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[11px] font-mono flex items-center gap-1.5 cursor-pointer shadow-lg animate-pulse transition-all"
+                  title="Done speaking? Tap to send immediately"
+                >
+                  <Check size={12} />
+                  <span>Done Speaking • Tap to Send</span>
+                </button>
+              )}
             </div>
 
             {/* Live User Caption Card */}

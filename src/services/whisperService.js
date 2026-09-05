@@ -8,7 +8,7 @@ const GROQ_KEY = (typeof localStorage !== 'undefined' ? localStorage.getItem('do
                  ['gsk_15WoQKTz6UaWI4I1QoSh', 'WGdyb3FYZzu8zBQjddTZfcCfBtzyq5V9'].join('');
 
 export async function transcribeAudioWithGroq(audioBlob) {
-  if (!audioBlob || audioBlob.size < 300) {
+  if (!audioBlob || audioBlob.size < 600) {
     return '';
   }
 
@@ -25,8 +25,8 @@ export async function transcribeAudioWithGroq(audioBlob) {
   const formData = new FormData();
   formData.append('file', audioBlob, filename);
   formData.append('model', 'whisper-large-v3-turbo');
-  // Auto-detect language seamlessly for perfect recognition across English, Hindi, Hinglish
-  formData.append('prompt', 'DOAP AI assistant conversational speech. Technical terms: coding, algorithms, Python, Java, React, SQL, system design, debugging.');
+  // Multilingual auto-detection prompt: English, Hindi, Hinglish, Marathi
+  formData.append('prompt', 'DOAP AI educational tutor conversational audio in English, Hinglish, Hindi, Marathi. Coding, programming, DSA, system design, debugging, computer science.');
   formData.append('temperature', '0.0');
 
   try {
@@ -45,12 +45,15 @@ export async function transcribeAudioWithGroq(audioBlob) {
 
     const data = await response.json();
     const clean = (data.text || '').trim();
-    // Filter out common whisper hallucinations on silence
-    if (!clean || 
-        clean.toLowerCase() === 'thank you.' || 
-        clean.toLowerCase() === 'you' || 
-        clean.toLowerCase() === 'thanks for watching.' ||
-        clean.toLowerCase() === 'subscribe') {
+    
+    // Filter out common whisper hallucinations on silence / quiet audio
+    const lower = clean.toLowerCase().replace(/[.!?,]/g, '').trim();
+    const HALLUCINATIONS = [
+      'thank you', 'you', 'thanks for watching', 'subscribe', 
+      'bye', 'so', 'silence', 'subtitles by', 'amara org',
+      'i am', 'please subscribe', 'the end', 'mb'
+    ];
+    if (!clean || clean.length <= 1 || HALLUCINATIONS.includes(lower)) {
       return '';
     }
     return clean;
