@@ -18,30 +18,42 @@
 [![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS_v4-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Groq LPU](https://img.shields.io/badge/Groq_LPU_120B-F55036?style=flat-square&logo=speedtest&logoColor=white)](https://groq.com/)
 [![Whisper STT](https://img.shields.io/badge/Whisper_Large_v3_Turbo-00A67E?style=flat-square&logo=openai&logoColor=white)](https://groq.com/)
-[![ElevenLabs](https://img.shields.io/badge/ElevenLabs_Studio_Voice-black?style=flat-square&logo=elevenlabs&logoColor=white)](https://elevenlabs.io/)
+[![ElevenLabs](https://img.shields.io/badge/ElevenLabs_Charon_Turbo-black?style=flat-square&logo=elevenlabs&logoColor=white)](https://elevenlabs.io/)
 [![Firebase Firestore](https://img.shields.io/badge/Google_Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com/)
 
 <br />
 
-[Explore Live Web App 🚀](https://doap-1908.web.app) • [GitHub Repository 📦](https://github.com/thoratpratik2323-hue/doap-intelligent-learning) • [IP-Verse-Mafia 🤖](https://github.com/thoratpratik2323-hue/IP-Verse-Mafia) • [Report Bug 🐛](https://github.com/thoratpratik2323-hue/doap-intelligent-learning/issues)
+[Explore Live Web App 🚀](https://doap-1908.web.app) • [GitHub Repository 📦](https://github.com/thoratpratik2323-hue/doap-intelligent-learning) • [Report Bug 🐛](https://github.com/thoratpratik2323-hue/doap-intelligent-learning/issues)
 
 </div>
 
 ---
 
+## 🏛️ Institutional Heritage & Background
+
+**DOAP (Discover Opportunities and Progress Platform)** was conceptualized and developed by **Pratik Thorat** for **Sanjivani College of Engineering (SCOE) / Sanjivani University, Kopargaon** (managed by Sanjivani Rural Education Society - SRES, founded in 1983 by Late Shri Shankarraoji Kolhe Saheb).
+
+The platform was built under the visionary educational leadership of:
+* **Hon. Shri Nitindada S. Kolhe Saheb** — Chairman, Sanjivani Rural Education Society (SRES)
+* **Hon. Shri Amitdada Kolhe Saheb** — Managing Trustee, Sanjivani Rural Education Society (SRES)
+
+Created for the landmark **"Build Sanjivani's Own Large Language Model — Build AI for Sanjivani, by Sanjivani"** initiative on the occasion of the Birthday of Hon. Shri Nitindada S. Kolhe Saheb, DOAP represents an elite leap in academic AI, hands-free conversational intelligence, and software engineering mentorship.
+
+---
+
 ## 📖 Table of Contents
 - [✨ Key Highlights](#-key-highlights)
-- [🧠 120B Super-Brain & Voice AI](#-120b-super-brain--voice-ai)
-- [🎥 Interactive AI Video Mock Interviewer](#-interactive-ai-video-mock-interviewer)
-- [📄 1-Click ATS PDF Resume Generator](#-1-click-ats-pdf-resume-generator)
-- [🤖 IP-Verse-Mafia Autonomous Integration](#-ip-verse-mafia-autonomous-integration)
+- [🧠 Cognitive Self-Thinking Super-Brain](#-cognitive-self-thinking-super-brain)
+- [🎙️ Real-Time Voice AI Tutor (Mark-LII Engine)](#️-real-time-voice-ai-tutor-mark-lii-engine)
+- [🧬 Unified 8-Layer Living Memory Brain](#-unified-8-layer-living-memory-brain)
+- [📱 Dual-Mode "Ask DOAP" Quick Launcher](#-dual-mode-ask-doap-quick-launcher)
+- [🎥 AI Video Mock Interviewer & Telemetry](#-ai-video-mock-interviewer--telemetry)
 - [💻 Multi-Language Code Sandbox](#-multi-language-code-sandbox)
+- [📄 1-Click Harvard ATS PDF Resume Studio](#-1-click-harvard-ats-pdf-resume-studio)
 - [🏛️ System Architecture](#️-system-architecture)
 - [📂 Project Structure](#-project-structure)
 - [🚀 Quickstart & Installation](#-quickstart--installation)
-- [🔐 Security & Content Policies](#-security--content-policies)
 - [🛠️ Tech Stack](#️-tech-stack)
-- [🤝 Contributing](#-contributing)
 - [📄 License](#-license)
 
 ---
@@ -49,82 +61,92 @@
 ## ✨ Key Highlights
 
 ```
- 🧠 Groq 120B Super-Brain     │ ⚡ Sub-100ms Inference (Llama 3.3 70B & DeepSeek R1)
- 🎙️ Hands-Free Voice AI       │ 🌌 Holographic Mark-LII Arc Reactor + Barge-In Interruption
- 🎥 AI Video Mock Interviewer │ 👔 Face-to-Face AI Lead Avatar + Real-Time Telemetry HUD
- 📄 1-Click ATS Resume Studio │ 📥 Harvard 1-Page Vector PDF Export (100/100 ATS Pass Rate)
- 🤖 IP Army Autonomous Agents │ 💼 LinkedIn Outreacher, Resume Builder & Codemaker O(N)
- 🧠 8-Layer Unified Brain     │ 🗄️ Identity, Episodic, Semantic & Working Cognitive Memory
- ⚡ 0ms Native Local Runtime  │ 🔌 WebSocket Bridge to IP Prime OS Desktop Shell
- ☁️ Multi-Device Cloud Sync   │ 🔄 Instant Firestore State & Zero-Start Architecture
+ 🧠 Groq 120B Super-Brain     │ ⚡ Sub-150ms Inference (GPT-OSS 120B Flagship & Qwen 27B)
+ 🔬 Deep Self-Thinking        │ 🧩 DeepSeek-R1 / o1 Style <think> Chain-of-Thought Reflection
+ 🎙️ Studio Voice AI           │ 🔊 ElevenLabs Charon Turbo (Zero Drift, Sub-Second Latency)
+ 🧬 Unified 8-Layer Brain     │ 🗄️ Continuous Self-Learning Across Voice & Text Modes
+ 📱 Dual-Mode Quick Launcher  │ 🚀 "Ask DOAP" 1-Click Selector for Text Tutor or Voice Tutor
+ 📝 In-Chat Flash Quizzes     │ 💡 Interactive MCQs with Hidden Explanations (/quiz)
+ 🎨 Flux AI Art Generator     │ 🖼️ Live Neural Artwork Generation in Chat (/image)
+ 💻 Multi-Language Sandbox    │ ⚡ Browser Execution for Python, C++, Java & JavaScript
+ 🎥 AI Video Mock Interviewer │ 👔 Principal AI Lead Avatar + 3-Day Recovery Curriculum
+ 📄 1-Click ATS Resume Studio │ 📥 Harvard Vector PDF Export (100/100 ATS Pass Rate)
+ ☁️ Multi-Device Cloud Sync   │ 🔄 Real-time Firestore Persistence & Multi-CDN Hosting
 ```
 
 ---
 
-## 🧠 120B Super-Brain & Voice AI
+## 🧠 Cognitive Self-Thinking Super-Brain (`/ai-tutor`)
 
-### 1. Dual-Core AI Architecture (`src/services/aiTutorEngine.js`)
-* **Default Super-Brain:** Groq LPU serving **Llama-3.3-70b-versatile** and **DeepSeek R1** with sub-100ms token generation.
-* **Smart Offline & Fallback Engine:** Client-side heuristic inference ensuring zero downtime if offline or rate-limited.
-* **Strict 1:1 Language Mirroring:**
-  * **Text Tutor (`/ai-tutor`):** Automatically detects user input language (English, Hinglish, Hindi/Devanagari, Marathi, Spanish, etc.) and mirrors the exact dialect in response.
-  * **Voice AI (`/voice-tutor`):** Accepts multilingual audio input and delivers crystal-clear studio English vocal replies.
+### 1. Metacognitive Reasoning Engine
+Inspired by modern reasoning models (**DeepSeek-R1**, **OpenAI o1**, **Claude 3.7 Sonnet**), DOAP performs explicit chain-of-thought self-reflection before providing solutions for complex engineering problems:
+* **Constraint & Invariant Formulation**: Identifies inputs, outputs, edge cases, and $O(N)$ time/space complexity bounds.
+* **Alternative Strategy Comparison**: Weighs brute force vs. hash maps, two pointers vs. sliding windows, iterative vs. dynamic programming.
+* **Trap & Edge-Case Verification**: Checks off-by-one errors, null pointers, empty data structures, and integer overflow.
+* **Step-by-Step Logic Proof**: Verifies that the approach satisfies all constraints before synthesizing the final answer.
 
-### 2. Studio Voice AI Engine (`src/pages/VoiceTutor.jsx`)
-* **Mark-LII Arc Reactor Visualizer:** Multi-ring rotational holographic HUD inspired by iron-class avionics with real-time audio reactivity.
-* **Multilingual Groq Whisper Large v3 Turbo:** Ultra-fast 120ms cloud audio transcription with automatic ambient noise floor subtraction.
-* **Barge-In Interruption:** Natural conversational interruption—speak up while the AI is talking to instantly pause audio playback and re-engage listening.
-* **Studio Vocal Synthesis:** Powered by **ElevenLabs Brian (Studio Quality)** with fallback to browser native Indian English (`en-IN`) speech synthesis.
+### 2. Collapsible Reasoning UI (`MarkdownRenderer.jsx`)
+* Renders a glowing **"🧠 DOAP Deep Cognitive Thinking & Self-Reflection"** accordion card right above the solution.
+* Features a dynamic **"Verified"** / **"Thinking in progress..."** status badge with a one-click toggle to view the full monospace reasoning trace.
 
----
+### 3. In-Chat Interactive Flash Quizzes (`/quiz [py|c|java|dsa]`)
+* Interactive technical multiple-choice question cards embedded directly in the chat stream.
+* Answers and explanations are **hidden by default** inside collapsible blocks, allowing students to test their intuition before revealing the solution.
 
-## 🎥 Interactive AI Video Mock Interviewer (`/interview`)
+### 4. Flux AI Image Generation (`/image <prompt>`)
+* Generates high-resolution, photorealistic neural artwork on-demand directly inside the chat interface via Flux Neural Engine.
 
-### 1. Alex Vance — Principal AI Lead Avatar
-* Displays a live, animated AI interviewer video window with real-time acoustic speech waves and attention tracking.
-* Spoken question delivery using ElevenLabs neural audio.
-* Instant question replay button for candidates.
-
-### 2. Real-Time Speech Telemetry HUD
-* **Live Filler Word Counter:** Detects and flags crutch words (*"um", "uh", "like", "basically", "actually", "you know"*).
-* **Live Pacing Gauge:** Computes active Words Per Minute (WPM) gauge (Optimal: 120–150 WPM).
-* **Delivery Composure Metric:** Evaluates verbal stability and fluency in real-time.
-
-### 3. Silicon Valley Hiring Decision Report Card
-* Evaluates technical answers using the 120B Super-Brain.
-* Delivers an executive hiring verdict: **`[ STRONG HIRE | HIRE | LEAN HIRE | NO HIRE ]`**.
-* 4-Dimensional radar matrix: Technical Depth, Communication Clarity, Algorithmic Reasoning, and Composure.
+### 5. Strict Multilingual Mirroring
+* Automatically detects the user's language and dialect (English, Hinglish, pure Hindi in Devanagari script, Marathi) and responds 1:1 in the exact same conversational tone.
 
 ---
 
-## 📄 1-Click ATS PDF Resume Generator (`/job-readiness`)
+## 🎙️ Real-Time Voice AI Tutor (Mark-LII Engine) (`/voice-tutor`)
 
-Located inside the **Resume Builder** tab:
-* **Harvard / Silicon Valley Single-Page Standard:** Single-column, scannable layout scoring 100/100 on modern ATS platforms (Workday, Lever, Greenhouse).
-* **Auto-Sync Memory Brain:** 1-click sync pulling real projects (`IP-Verse-Mafia`, `DOAP`, `IP-Codemaker`), primary languages, and AI toolchains.
-* **In-Browser Interactive Customization:** Edit personal details, summaries, skills, and Google X-Y-Z bullet points in real-time.
-* **Native Vector PDF Export:** High-fidelity browser print stylesheet (`@media print`) generating crystal-clear, text-selectable vector PDFs without watermarks.
+### 1. Studio-Grade Charon Voice Core (`elevenLabsService.js`)
+* **Voice Model**: Powered by **ElevenLabs Charon (`pNInz6obpgDQGcFmaJgB`)** using the high-efficiency `eleven_turbo_v2_5` pipeline.
+* **Tuned Acoustic Settings**: High stability (0.50) and style (0.0) configuration eliminates mid-speech voice drift and keeps the vocal pitch warm, resonant, and authoritative.
+* **Phonetic Normalization**: Specially tuned for Indian English and technical vocabulary (*"D-S-A"*, *"D-B-M-S"*, *"Kopar-gaon"*, *"Sanjeevani"*, *"Nitin-dada"*).
+
+### 2. Sub-Second Zero-Latency Pipeline
+* **Instant Speech-First Priority**: Voice synthesis begins immediately on the first breath.
+* **Clean 1–2 Sentence Spoken Cadence**: Compact, verified answers designed specifically for conversational listening without overwhelming technical monologues.
+* **Pure Living Orb UI**: Completely removes distracting chat cards for an immersive, distraction-free holographic Mark-LII Arc-Reactor experience that pulses to speech volume.
+* **Acoustic Guard**: 400ms silence detection and dynamic echo prevention to avoid mic feedback loops.
 
 ---
 
-## 🤖 IP-Verse-Mafia Autonomous Integration
+## 🧬 Unified 8-Layer Living Memory Brain (`memoryBrain.js`)
 
-DOAP connects natively with the **[IP-Verse-Mafia](https://github.com/thoratpratik2323-hue/IP-Verse-Mafia)** ecosystem:
+Unlike standard chatbots where conversation history is lost upon page refresh, DOAP features an **autonomous 8-layer cognitive memory graph**:
 
-### 1. IP Army Autonomous Agents (`src/services/ipArmyAgents.js`)
-* **LinkedIn Agent:** Auto-generates high-converting cold outreach DMs, 280-character connection notes, and viral engineering posts.
-* **Resume Builder:** Audits experience snippets against Google X-Y-Z standards (`Accomplished [X] as measured by [Y] by doing [Z]`).
-* **IP Codemaker (`ip_agent_001`):** Analyzes algorithmic time complexity, refactors $O(N^2)$ quadratic loops into $O(N)$ linear time, and generates 5-point boundary unit test suites.
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                   DOAP 8-LAYER UNIFIED MEMORY GRAPH                   │
+├────────────────────────────────────────────────────────────────────────┤
+│ Layer 1: Identity & Persona     │ Developer goals, targets (Google, OpenAI)
+│ Layer 2: Episodic Memory        │ Chronological history of past topics & turns
+│ Layer 3: Semantic Knowledge     │ Mastered skills vs. in-progress topics
+│ Layer 4: Weakness Tracker       │ Stumbling points queued for review
+│ Layer 5: Procedural Preferences │ Preferred coding language, theme, cadence
+│ Layer 6: Project Registry       │ Known projects (IP-Verse-Mafia, DOAP)
+│ Layer 7: Career Milestones      │ Solved problem count, ATS readiness score
+│ Layer 8: Synthesized Working Mem│ Active context injected into every prompt
+└────────────────────────────────────────────────────────────────────────┘
+```
 
-### 2. 8-Layer Unified Cognitive Memory Brain (`src/services/memoryBrain.js`)
-* **Layer 1:** Core Identity (developer name, target role, primary stacks).
-* **Layer 2:** Episodic Memory (chronological timeline of solved problems and interviews).
-* **Layer 3:** Semantic Knowledge Graph (mastered vs weak CS concepts).
-* **Layer 4:** Weakness Tracker (data structures requiring reinforcement).
-* **Layer 5:** Procedural Preferences (language, theme, voice speed).
-* **Layer 6:** Project Registry (repositories, architectures, live URLs).
-* **Layer 7:** Long-Term Milestones (career targets, benchmark percentiles).
-* **Layer 8:** Active Working Memory (context window injected directly into the 120B model).
+### Continuous Autonomous Self-Learning (`learnFromInteraction`)
+* **Mastery Signal Detection**: Keywords like *"understood"*, *"solved it"*, *"samajh gaya"*, *"ban gaya"* automatically move concepts to `semantic.mastered`, increment problem counts, and boost readiness scores.
+* **Friction & Weakness Detection**: Keywords like *"stuck"*, *"bug"*, *"confused"*, *"error"* automatically flag concepts in `weaknesses.reviewTopics` for proactive coaching.
+* **Cross-AI Synchronization**: What you discuss in Voice AI is **immediately remembered by Text AI**, and what you solve in Text AI is **instantly known to Voice AI**!
+
+---
+
+## 📱 Dual-Mode "Ask DOAP" Quick Launcher
+
+Clicking **"Ask DOAP"** on the Home dashboard opens an interactive glassmorphic modal allowing users to choose their optimal learning path:
+1. 💬 **Text AI Tutor**: Deep Cognitive Self-Thinking, interactive chat, code generation, quizzes, and Flux AI generation.
+2. 🎙️ **Voice AI Tutor**: Hands-free conversational audio call with ElevenLabs Charon studio voice and live Arc-Reactor HUD.
 
 ### 3. Local Hardware Runtime Connector (`src/services/localSystemConnector.js`)
 * Real-time bidirectional WebSocket bridge to `ws://127.0.0.1:8765` (IP Prime OS `room_server.py`).
@@ -292,12 +314,14 @@ npx firebase deploy --only hosting
 |---|---|
 | **Frontend Framework** | React 18, Vite 6 |
 | **Styling & UI Design** | Tailwind CSS v4, Lucide Icons, Glassmorphism & Print Media Engine |
-| **Large Language Models** | Groq LPU (Llama 3.3 70B Versatile, DeepSeek R1) |
-| **Speech & Audio** | Groq Whisper Large v3 Turbo, ElevenLabs Neural Studio Voice |
+| **Large Language Models** | Groq LPU (GPT-OSS 120B Flagship, Qwen 27B) + Deep Cognitive Self-Thinking |
+| **Speech & Audio** | Groq Whisper Large v3 Turbo, ElevenLabs Charon Studio Voice Core (`eleven_turbo_v2_5`) |
+| **Cognitive Memory** | Unified 8-Layer Living Memory Brain (`memoryBrain.js`) with continuous self-learning |
+| **Image Generation** | Flux Neural Engine via Pollinations |
 | **Data Visualizations** | Recharts (Radar charts, Line graphs, Telemetry gauges) |
 | **Database & Auth** | Google Cloud Firestore, Firebase Authentication |
 | **Code Execution** | Local IP Prime OS WebSocket Runtime, Judge0 Cloud API |
-| **Hosting Infrastructure** | Firebase Global Multi-CDN Hosting |
+| **Hosting Infrastructure** | Firebase Global Multi-CDN Hosting (`https://doap-1908.web.app`) |
 
 ---
 
@@ -321,7 +345,7 @@ Distributed under the **MIT License**. See `LICENSE` for more information.
 
 <div align="center">
 
-Crafted with ❤️ by **[Pratik Thorat](https://github.com/thoratpratik2323-hue)**
+Crafted with ❤️ for **Sanjivani University (SCOE), Kopargaon** by **[Pratik Thorat](https://github.com/thoratpratik2323-hue)**
 
 ⭐ **If you find this project inspiring, please star the repository!** ⭐
 
