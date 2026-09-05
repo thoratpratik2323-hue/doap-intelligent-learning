@@ -13,7 +13,8 @@ import {
   Copy,
   Check,
   ExternalLink,
-  X
+  X,
+  Terminal
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -21,6 +22,74 @@ import { generateSmartTutorResponse } from '../services/aiTutorEngine';
 import { memoryBrain } from '../services/memoryBrain';
 import { speakElevenLabs, stopElevenLabsAudio, unlockAudioContext, getBestNaturalVoice, humanizeTextForSpeech } from '../services/elevenLabsService';
 import { transcribeAudioWithGroq } from '../services/whisperService';
+
+const SAMPLE_CANVAS_SNIPPETS = {
+  "Write a Python function to reverse a linked list": {
+    lang: "python",
+    explanation: "Reversing a singly linked list can be done iteratively using three pointers (prev, curr, next) in O(N) linear time and O(1) auxiliary space.",
+    code: `class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def reverse_list(head: ListNode) -> ListNode:
+    """Reverses a singly linked list in O(N) time and O(1) auxiliary space."""
+    prev = None
+    curr = head
+    while curr:
+        nxt = curr.next
+        curr.next = prev
+        prev = curr
+        curr = nxt
+    return prev
+
+# Example Execution:
+# 1 -> 2 -> 3 -> None becomes 3 -> 2 -> 1 -> None`
+  },
+  "Show me two sum in C++ with hash map": {
+    lang: "cpp",
+    explanation: "Two Sum can be solved in O(N) time using an unordered_map to store visited values and their indices, enabling O(1) complement lookups.",
+    code: `#include <iostream>
+#include <vector>
+#include <unordered_map>
+using namespace std;
+
+class Solution {
+public:
+    vector<int> twoSum(vector<int>& nums, int target) {
+        unordered_map<int, int> numMap;
+        for (int i = 0; i < nums.size(); ++i) {
+            int complement = target - nums[i];
+            if (numMap.find(complement) != numMap.end()) {
+                return {numMap[complement], i};
+            }
+            numMap[nums[i]] = i;
+        }
+        return {};
+    }
+};`
+  },
+  "How to debounce an input in React?": {
+    lang: "javascript",
+    explanation: "Debouncing delays the state update or API dispatch until a specified interval has elapsed since the last keystroke, preventing redundant re-renders.",
+    code: `import { useState, useEffect } from 'react';
+
+// Custom React hook for debouncing fast-changing values
+export function useDebounce(value, delay = 300) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debouncedValue;
+}`
+  }
+};
 
 // Mark LII Arc-Reactor Acoustic Synthesizer (Web Audio API)
 const playBootChime = () => {
@@ -126,11 +195,14 @@ export const VoiceTutor = () => {
 
   const [micError, setMicError] = useState('');
   const [userTranscript, setUserTranscript] = useState('');
+  const [lastUserInput, setLastUserInput] = useState('');
   const [aiSpokenText, setAiSpokenText] = useState('');
   const [liveVolume, setLiveVolume] = useState(0);
   const [liveCodeSnippet, setLiveCodeSnippet] = useState(null);
   const [isCodeCanvasOpen, setIsCodeCanvasOpen] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedOutput, setCopiedOutput] = useState(false);
+  const [copiedInput, setCopiedInput] = useState(false);
 
   const synthRef = useRef(typeof window !== 'undefined' ? window.speechSynthesis : null);
   const durationTimerRef = useRef(null);
@@ -429,6 +501,9 @@ export const VoiceTutor = () => {
     isCallActiveRef.current = true;
     isProcessingSpeechRef.current = false;
     setUserTranscript(typeof initialPrompt === 'string' ? initialPrompt : '');
+    if (typeof initialPrompt === 'string' && initialPrompt.trim()) {
+      setLastUserInput(initialPrompt);
+    }
     setAiSpokenText('');
 
     // Initialize microphone stream
@@ -491,6 +566,7 @@ export const VoiceTutor = () => {
     isProcessingSpeechRef.current = true;
     updateCallState('thinking');
     setUserTranscript(spokenPrompt);
+    setLastUserInput(spokenPrompt);
 
     const actionResult = executeVoicePlugins(spokenPrompt);
     if (actionResult) {
@@ -517,7 +593,7 @@ export const VoiceTutor = () => {
         .replace(/<think>[\s\S]*?<\/think>/gi, '')
         .replace(/<details[\s\S]*?<\/details>/gi, '')
         .replace(/\*\*Reasoning\*\*[\s\S]*?\*\*Final Answer\*\*/i, '')
-        .replace(/```[\s\S]*?```/g, 'I have sent the code snippet to your live code canvas on screen.')
+        .replace(/```[\s\S]*?```/g, 'I have projected the code snippet to your live IO console on screen.')
         .replace(/`([^`]+)`/g, '$1')
         .replace(/[#*_~>|]/g, '')
         .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
@@ -690,19 +766,19 @@ export const VoiceTutor = () => {
 
         {/* Header Action Buttons */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Live Code Canvas Toggle */}
+          {/* Live I/O Console Button */}
           <button
             onClick={() => setIsCodeCanvasOpen(prev => !prev)}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95 ${
               isCodeCanvasOpen
-                ? 'bg-cyan-500/25 border-cyan-400 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.3)]'
+                ? 'bg-cyan-500/25 border-cyan-400 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.3)] font-bold'
                 : 'border-white/15 bg-white/5 hover:bg-white/10 text-neutral-300'
             }`}
-            title="Toggle Live Code Canvas"
+            title="Toggle Live I/O Console (Input, Output & Code Canvas)"
           >
-            <Code2 size={14} className={liveCodeSnippet ? "text-cyan-400 animate-pulse" : "text-neutral-400"} />
-            <span className="hidden sm:inline">Code Canvas</span>
-            {liveCodeSnippet && (
+            <Terminal size={14} className="text-cyan-400" />
+            <span className="font-mono font-bold tracking-wider">IO</span>
+            {(liveCodeSnippet || userTranscript || aiSpokenText) && (
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
             )}
           </button>
@@ -911,77 +987,162 @@ export const VoiceTutor = () => {
         </div>
       )}
 
-      {/* 4. Slide-Out Glassmorphic Live Code Canvas */}
+      {/* 4. Slide-Out Glassmorphic Live I/O Console (Input, Spoken Output & Code Extraction) */}
       {isCodeCanvasOpen && (
-        <div className="absolute inset-y-16 right-0 sm:right-4 w-full sm:w-[480px] lg:w-[540px] z-40 rounded-t-3xl sm:rounded-3xl bg-neutral-950/90 backdrop-blur-2xl border border-cyan-500/30 shadow-2xl flex flex-col overflow-hidden animate-fade-in transition-all">
-          {/* Canvas Top Bar */}
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-cyan-500/20 bg-neutral-900/60 shrink-0">
+        <div className="absolute inset-y-16 right-0 sm:right-4 w-full sm:w-[500px] lg:w-[560px] z-40 rounded-t-3xl sm:rounded-3xl bg-neutral-950/95 backdrop-blur-2xl border border-cyan-500/30 shadow-2xl flex flex-col overflow-hidden animate-fade-in transition-all">
+          {/* I/O Console Top Bar */}
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-cyan-500/20 bg-neutral-900/70 shrink-0">
             <div className="flex items-center gap-2.5">
               <div className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
-                <Code2 size={16} />
+                <Terminal size={16} />
               </div>
               <div>
                 <div className="text-xs font-bold text-white flex items-center gap-2">
-                  Live Code Canvas
-                  <span className="text-[10px] font-mono px-2 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 uppercase">
-                    {liveCodeSnippet?.lang || 'PYTHON'}
+                  DOAP Live I/O Console
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 uppercase">
+                    {liveCodeSnippet ? liveCodeSnippet.lang.toUpperCase() : 'ACTIVE'}
                   </span>
                 </div>
                 <div className="text-[10px] font-mono text-neutral-400">
-                  Voice-driven real-time syntax projection
+                  Real-time Voice Input, Spoken Output & Code Canvas
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-1.5">
-              {liveCodeSnippet && (
-                <>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard?.writeText(liveCodeSnippet.code);
-                      setCopiedCode(true);
-                      setTimeout(() => setCopiedCode(false), 2000);
-                    }}
-                    className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition-colors cursor-pointer"
-                    title="Copy code to clipboard"
-                  >
-                    {copiedCode ? <Check size={15} className="text-emerald-400" /> : <Copy size={15} />}
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      try {
-                        localStorage.setItem('doap_sandbox_injected_code', JSON.stringify(liveCodeSnippet));
-                      } catch(e) {}
-                      navigateTo('/coding');
-                    }}
-                    className="p-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition-colors cursor-pointer"
-                    title="Open in Coding Practice Sandbox"
-                  >
-                    <ExternalLink size={15} />
-                  </button>
-                </>
-              )}
-
               <button
                 onClick={() => setIsCodeCanvasOpen(false)}
                 className="p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer ml-1"
-                title="Close Code Canvas"
+                title="Close I/O Console"
               >
                 <X size={16} />
               </button>
             </div>
           </div>
 
-          {/* Canvas Content */}
-          <div className="flex-1 overflow-y-auto p-4 font-mono text-xs scrollbar-none">
-            {liveCodeSnippet ? (
-              <div className="rounded-2xl border border-neutral-800/80 bg-neutral-900/40 overflow-hidden">
-                <div className="px-4 py-2 border-b border-neutral-800/80 bg-neutral-900/80 text-[11px] text-neutral-400 flex items-center justify-between">
-                  <span>snippet.{liveCodeSnippet.lang === 'python' ? 'py' : liveCodeSnippet.lang === 'javascript' ? 'js' : liveCodeSnippet.lang === 'cpp' ? 'cpp' : 'txt'}</span>
-                  <span className="text-[10px] text-neutral-500">{liveCodeSnippet.code.split('\n').length} lines</span>
+          {/* I/O Console Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
+            {/* 1. INPUT BLOCK (Voice transcript or prompt) */}
+            <div className="rounded-2xl border border-cyan-500/25 bg-neutral-900/70 p-3.5 shadow-sm">
+              <div className="flex items-center justify-between text-xs font-semibold text-cyan-400 mb-2">
+                <div className="flex items-center gap-1.5">
+                  <Mic size={13} className={callState === 'listening' ? 'animate-pulse text-cyan-300' : ''} />
+                  <span className="tracking-wide">INPUT (VOICE / PROMPT)</span>
+                  {callState === 'listening' && (
+                    <span className="text-[10px] font-mono text-cyan-300 animate-pulse px-1.5 py-0.2 rounded bg-cyan-500/20 border border-cyan-500/30">
+                      Listening...
+                    </span>
+                  )}
                 </div>
-                <div className="p-4 overflow-x-auto text-neutral-200 leading-relaxed whitespace-pre font-mono text-[11px]">
+                {(userTranscript || lastUserInput) && (
+                  <button
+                    onClick={() => {
+                      navigator.clipboard?.writeText(userTranscript || lastUserInput);
+                      setCopiedInput(true);
+                      setTimeout(() => setCopiedInput(false), 2000);
+                    }}
+                    className="px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white text-[11px] font-mono flex items-center gap-1 transition-colors cursor-pointer border border-white/10"
+                    title="Copy User Input"
+                  >
+                    {copiedInput ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                    <span>{copiedInput ? 'Copied' : 'Copy'}</span>
+                  </button>
+                )}
+              </div>
+              <div className="text-xs text-neutral-200 leading-relaxed font-sans select-text">
+                {userTranscript || lastUserInput ? (
+                  <span className="italic text-neutral-100">&ldquo;{userTranscript || lastUserInput}&rdquo;</span>
+                ) : (
+                  <span className="text-neutral-500 text-[11px]">
+                    No voice input yet. Speak freely via microphone or tap a sample prompt below.
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* 2. OUTPUT BLOCK (DOAP AI Response / Spoken Explanation) */}
+            <div className="rounded-2xl border border-emerald-500/25 bg-neutral-900/70 p-3.5 shadow-sm">
+              <div className="flex items-center justify-between text-xs font-semibold text-emerald-400 mb-2">
+                <div className="flex items-center gap-1.5">
+                  <Sparkles size={13} />
+                  <span className="tracking-wide">OUTPUT (DOAP AI RESPONSE)</span>
+                  {callState === 'speaking' && (
+                    <span className="text-[10px] font-mono text-emerald-300 animate-pulse px-1.5 py-0.2 rounded bg-emerald-500/20 border border-emerald-500/30">
+                      Speaking...
+                    </span>
+                  )}
+                </div>
+                {(aiSpokenText || liveCodeSnippet?.explanation) && (
+                  <button
+                    onClick={() => {
+                      navigator.clipboard?.writeText(aiSpokenText || liveCodeSnippet?.explanation || '');
+                      setCopiedOutput(true);
+                      setTimeout(() => setCopiedOutput(false), 2000);
+                    }}
+                    className="px-2 py-0.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 text-[11px] font-mono flex items-center gap-1 transition-colors cursor-pointer border border-emerald-500/30"
+                    title="Copy AI Output"
+                  >
+                    {copiedOutput ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                    <span>{copiedOutput ? 'Copied!' : 'Copy Output'}</span>
+                  </button>
+                )}
+              </div>
+              <div className="text-xs text-neutral-200 leading-relaxed select-text font-sans">
+                {aiSpokenText || liveCodeSnippet?.explanation ? (
+                  <p className="text-neutral-100 whitespace-pre-wrap">{aiSpokenText || liveCodeSnippet?.explanation}</p>
+                ) : (
+                  <span className="text-neutral-500 text-[11px]">
+                    DOAP AI output will appear here as soon as you speak or choose a topic.
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* 3. CODE OUTPUT BLOCK (When code is provided / extracted) */}
+            {liveCodeSnippet && (
+              <div className="rounded-2xl border border-indigo-500/30 bg-neutral-950/90 overflow-hidden shadow-xl">
+                <div className="px-4 py-2 border-b border-indigo-500/20 bg-neutral-900/80 text-[11px] text-neutral-400 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Code2 size={14} className="text-indigo-400" />
+                    <span className="font-mono text-white font-semibold">CODE OUTPUT</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase">
+                      {liveCodeSnippet.lang}
+                    </span>
+                    <span className="text-[10px] text-neutral-500 font-mono">
+                      {liveCodeSnippet.code.split('\n').length} lines
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard?.writeText(liveCodeSnippet.code);
+                        setCopiedCode(true);
+                        setTimeout(() => setCopiedCode(false), 2000);
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 text-xs font-mono flex items-center gap-1.5 cursor-pointer border border-indigo-500/40 transition-colors shadow-sm"
+                      title="Copy Code to Clipboard"
+                    >
+                      {copiedCode ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
+                      <span>{copiedCode ? 'Copied!' : 'Copy Code'}</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        try {
+                          localStorage.setItem('doap_sandbox_injected_code', JSON.stringify(liveCodeSnippet));
+                        } catch(e) {}
+                        navigateTo('/coding');
+                      }}
+                      className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+                      title="Open in Coding Practice Sandbox"
+                    >
+                      <ExternalLink size={14} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-4 overflow-x-auto text-neutral-200 leading-relaxed whitespace-pre font-mono text-[11px] max-h-[280px] scrollbar-thin select-text">
                   {liveCodeSnippet.code.split('\n').map((line, idx) => (
                     <div key={idx} className="table-row">
                       <span className="table-cell pr-4 select-none text-neutral-600 text-right font-mono text-[10px]">{idx + 1}</span>
@@ -990,42 +1151,45 @@ export const VoiceTutor = () => {
                   ))}
                 </div>
               </div>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4 text-neutral-400">
-                <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center">
-                  <Code2 size={24} />
-                </div>
-                <div className="space-y-1">
-                  <h4 className="text-white font-semibold text-sm">No Code Projected Yet</h4>
-                  <p className="text-xs text-neutral-400 max-w-xs leading-relaxed">
-                    Speak directly to DOAP AI to project code onto this canvas without breaking voice latency.
-                  </p>
-                </div>
-
-                <div className="space-y-2 pt-2 w-full max-w-xs">
-                  <div className="text-[10px] font-mono text-neutral-500 uppercase font-semibold">Try Asking by Voice:</div>
-                  {[
-                    "Write a Python function to reverse a linked list",
-                    "Show me two sum in C++ with hash map",
-                    "How to debounce an input in React?"
-                  ].map((prompt, i) => (
-                    <button
-                      key={i}
-                      onClick={() => {
-                        if (!isCallActive) {
-                          handleStartCall(prompt);
-                        } else {
-                          handleUserSpeechComplete(prompt);
-                        }
-                      }}
-                      className="w-full text-left p-2.5 rounded-xl bg-neutral-900/60 border border-neutral-800 text-[11px] text-neutral-300 hover:text-cyan-300 hover:border-cyan-500/40 transition-all cursor-pointer truncate"
-                    >
-                      &ldquo;{prompt}&rdquo;
-                    </button>
-                  ))}
-                </div>
-              </div>
             )}
+
+            {/* Quick Sample Triggers to test I/O */}
+            <div className="rounded-2xl border border-neutral-800/90 bg-neutral-900/50 p-3.5 space-y-2.5">
+              <div className="flex items-center justify-between text-[11px] font-mono text-neutral-400 uppercase font-semibold">
+                <span className="flex items-center gap-1.5">
+                  <Sparkles size={12} className="text-cyan-400" />
+                  Tap to Populate Live I/O & Code:
+                </span>
+              </div>
+              <div className="space-y-1.5">
+                {[
+                  "Write a Python function to reverse a linked list",
+                  "Show me two sum in C++ with hash map",
+                  "How to debounce an input in React?"
+                ].map((prompt, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      const snippet = SAMPLE_CANVAS_SNIPPETS[prompt];
+                      setUserTranscript(prompt);
+                      setLastUserInput(prompt);
+                      if (snippet) {
+                        setLiveCodeSnippet(snippet);
+                        setAiSpokenText(snippet.explanation);
+                      }
+                      if (isCallActive) {
+                        handleUserSpeechComplete(prompt);
+                      }
+                    }}
+                    className="w-full text-left p-2.5 rounded-xl bg-neutral-900/80 border border-neutral-800/80 text-[11px] text-neutral-300 hover:text-cyan-300 hover:border-cyan-500/40 transition-all cursor-pointer truncate flex items-center justify-between group"
+                  >
+                    <span className="truncate">&ldquo;{prompt}&rdquo;</span>
+                    <Sparkles size={12} className="shrink-0 text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity ml-1" />
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}
