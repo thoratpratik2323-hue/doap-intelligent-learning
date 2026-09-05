@@ -8,9 +8,6 @@ import {
   Clock, 
   Sparkles,
   Zap,
-  Copy,
-  Check,
-  RotateCcw,
   AlertCircle
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
@@ -122,25 +119,9 @@ export const VoiceTutor = () => {
   const [callDuration, setCallDuration] = useState(0);
 
   const [micError, setMicError] = useState('');
-  const [hasCopied, setHasCopied] = useState(false);
   const [userTranscript, setUserTranscript] = useState('');
   const [aiSpokenText, setAiSpokenText] = useState('');
   const [liveVolume, setLiveVolume] = useState(0);
-
-  const handleCopyText = (text) => {
-    if (!text) return;
-    navigator.clipboard?.writeText(text).then(() => {
-      setHasCopied(true);
-      setTimeout(() => setHasCopied(false), 2000);
-    }).catch(() => {});
-  };
-
-  const handleReplay = () => {
-    if (!aiSpokenText) return;
-    speakResponse(aiSpokenText, () => {
-      resumeListeningCycle();
-    });
-  };
 
   const synthRef = useRef(typeof window !== 'undefined' ? window.speechSynthesis : null);
   const durationTimerRef = useRef(null);
@@ -836,81 +817,24 @@ export const VoiceTutor = () => {
           </div>
         )}
 
-        {/* In-Call Dialogue Card (Scrollable & Non-Truncated with Copy & Replay) */}
-        {isCallActive && (userTranscript || aiSpokenText) && (
-          <div className="w-full max-w-2xl mt-6 z-10 px-2 flex flex-col gap-3 animate-fade-in">
-            {/* User Spoken Prompt Bubble */}
-            {userTranscript && (
-              <div className="p-3.5 sm:p-4 rounded-2xl bg-cyan-950/50 backdrop-blur-xl border border-cyan-500/30 shadow-lg text-left select-text">
-                <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-cyan-400 mb-1 flex items-center gap-1.5">
-                  <Mic size={11} />
-                  <span>You Spoke:</span>
-                </div>
-                <p className="text-xs sm:text-sm font-medium text-cyan-100 italic leading-relaxed">
-                  "{userTranscript}"
-                </p>
-              </div>
-            )}
-
-            {/* DOAP AI Spoken Response Card */}
-            {aiSpokenText && (
-              <div className="p-4 sm:p-5 rounded-2xl bg-neutral-900/90 backdrop-blur-xl border border-white/10 shadow-2xl text-left select-text flex flex-col gap-2">
-                <div className="flex items-center justify-between pb-2 border-b border-white/10 gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center">
-                      <Sparkles size={12} className="text-cyan-400" />
-                    </div>
-                    <span className="text-xs font-bold text-neutral-200">DOAP AI</span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    {/* Copy Text Button */}
-                    <button
-                      onClick={() => handleCopyText(aiSpokenText)}
-                      className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition-all cursor-pointer flex items-center gap-1 text-[11px]"
-                      title="Copy response text"
-                    >
-                      {hasCopied ? (
-                        <>
-                          <Check size={12} className="text-emerald-400" />
-                          <span className="text-emerald-400 font-medium">Copied!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy size={12} />
-                          <span className="hidden sm:inline">Copy</span>
-                        </>
-                      )}
-                    </button>
-
-                    {/* Replay Audio Button */}
-                    <button
-                      onClick={handleReplay}
-                      className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition-all cursor-pointer flex items-center gap-1 text-[11px]"
-                      title="Replay speech"
-                    >
-                      <RotateCcw size={12} />
-                      <span className="hidden sm:inline">Replay</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Fully Scrollable Dialogue Content — No Truncation */}
-                <div className="max-h-52 sm:max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-                  <p className="text-xs sm:text-sm font-normal text-neutral-100 leading-relaxed whitespace-pre-wrap">
-                    {aiSpokenText}
-                  </p>
-                </div>
-              </div>
-            )}
+        {/* Minimal Live Status Indicator */}
+        {isCallActive && (
+          <div className="flex items-center justify-center gap-2 mt-6 z-10 animate-fade-in">
+            <span className={`w-2 h-2 rounded-full ${
+              callState === 'speaking' 
+                ? 'bg-cyan-400 animate-ping' 
+                : callState === 'thinking' 
+                ? 'bg-amber-400 animate-pulse' 
+                : 'bg-emerald-400 animate-pulse'
+            }`} />
+            <p className="text-xs font-mono text-neutral-400 tracking-wide">
+              {callState === 'speaking' 
+                ? 'DOAP AI Speaking...' 
+                : callState === 'thinking' 
+                ? 'Thinking...' 
+                : 'Listening... Speak naturally'}
+            </p>
           </div>
-        )}
-
-        {/* Idle Instructions Footer */}
-        {isCallActive && !userTranscript && !aiSpokenText && (
-          <p className="text-xs font-mono text-neutral-400 text-center py-4 z-10">
-            Mic active — speak naturally in Indian English or Hindi, DOAP AI is listening!
-          </p>
         )}
       </div>
 
