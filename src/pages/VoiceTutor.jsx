@@ -22,75 +22,6 @@ import { generateSmartTutorResponse } from '../services/aiTutorEngine';
 import { memoryBrain } from '../services/memoryBrain';
 import { speakElevenLabs, stopElevenLabsAudio, unlockAudioContext, getBestNaturalVoice, humanizeTextForSpeech } from '../services/elevenLabsService';
 import { transcribeAudioWithGroq } from '../services/whisperService';
-
-const SAMPLE_CANVAS_SNIPPETS = {
-  "Write a Python function to reverse a linked list": {
-    lang: "python",
-    explanation: "Reversing a singly linked list can be done iteratively using three pointers (prev, curr, next) in O(N) linear time and O(1) auxiliary space.",
-    code: `class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val = val
-        self.next = next
-
-def reverse_list(head: ListNode) -> ListNode:
-    """Reverses a singly linked list in O(N) time and O(1) auxiliary space."""
-    prev = None
-    curr = head
-    while curr:
-        nxt = curr.next
-        curr.next = prev
-        prev = curr
-        curr = nxt
-    return prev
-
-# Example Execution:
-# 1 -> 2 -> 3 -> None becomes 3 -> 2 -> 1 -> None`
-  },
-  "Show me two sum in C++ with hash map": {
-    lang: "cpp",
-    explanation: "Two Sum can be solved in O(N) time using an unordered_map to store visited values and their indices, enabling O(1) complement lookups.",
-    code: `#include <iostream>
-#include <vector>
-#include <unordered_map>
-using namespace std;
-
-class Solution {
-public:
-    vector<int> twoSum(vector<int>& nums, int target) {
-        unordered_map<int, int> numMap;
-        for (int i = 0; i < nums.size(); ++i) {
-            int complement = target - nums[i];
-            if (numMap.find(complement) != numMap.end()) {
-                return {numMap[complement], i};
-            }
-            numMap[nums[i]] = i;
-        }
-        return {};
-    }
-};`
-  },
-  "How to debounce an input in React?": {
-    lang: "javascript",
-    explanation: "Debouncing delays the state update or API dispatch until a specified interval has elapsed since the last keystroke, preventing redundant re-renders.",
-    code: `import { useState, useEffect } from 'react';
-
-// Custom React hook for debouncing fast-changing values
-export function useDebounce(value, delay = 300) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-
-  return debouncedValue;
-}`
-  }
-};
-
 // Mark LII Arc-Reactor Acoustic Synthesizer (Web Audio API)
 const playBootChime = () => {
   try {
@@ -1152,44 +1083,6 @@ export const VoiceTutor = () => {
                 </div>
               </div>
             )}
-
-            {/* Quick Sample Triggers to test I/O */}
-            <div className="rounded-2xl border border-neutral-800/90 bg-neutral-900/50 p-3.5 space-y-2.5">
-              <div className="flex items-center justify-between text-[11px] font-mono text-neutral-400 uppercase font-semibold">
-                <span className="flex items-center gap-1.5">
-                  <Sparkles size={12} className="text-cyan-400" />
-                  Tap to Populate Live I/O & Code:
-                </span>
-              </div>
-              <div className="space-y-1.5">
-                {[
-                  "Write a Python function to reverse a linked list",
-                  "Show me two sum in C++ with hash map",
-                  "How to debounce an input in React?"
-                ].map((prompt, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => {
-                      const snippet = SAMPLE_CANVAS_SNIPPETS[prompt];
-                      setUserTranscript(prompt);
-                      setLastUserInput(prompt);
-                      if (snippet) {
-                        setLiveCodeSnippet(snippet);
-                        setAiSpokenText(snippet.explanation);
-                      }
-                      if (isCallActive) {
-                        handleUserSpeechComplete(prompt);
-                      }
-                    }}
-                    className="w-full text-left p-2.5 rounded-xl bg-neutral-900/80 border border-neutral-800/80 text-[11px] text-neutral-300 hover:text-cyan-300 hover:border-cyan-500/40 transition-all cursor-pointer truncate flex items-center justify-between group"
-                  >
-                    <span className="truncate">&ldquo;{prompt}&rdquo;</span>
-                    <Sparkles size={12} className="shrink-0 text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity ml-1" />
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       )}
