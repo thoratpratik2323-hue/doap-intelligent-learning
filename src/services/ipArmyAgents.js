@@ -69,40 +69,60 @@ Give 3 sharp, immediate improvements.`;
 // ============================================================================
 // 3. DOAP Code Checker AI (Autonomous In-Editor Co-Pilot & Test Engine)
 // ============================================================================
-export async function runCodemakerAgent({ code, language = 'python', problemTitle = '', mode = 'optimize' }, userName = 'Student') {
+export async function runCodemakerAgent({ code, language = 'python', problemTitle = '', mode = 'optimize' }, userName = 'Engineer') {
   let prompt = '';
 
   if (mode === 'optimize') {
-    prompt = `Act as DOAP Code Checker AI.
+    prompt = `Act as DOAP Code Checker AI, an enterprise-grade automated code quality and performance auditor.
 Analyze this ${language} solution for "${problemTitle}":
 
 \`\`\`${language}
 ${code}
 \`\`\`
 
-1. What is the current Time and Space Complexity ($O(...)$)?
-2. Can this be optimized to an asymptotically optimal complexity?
-3. Provide the fully refactored, production-grade optimized code.
-4. Explain the key algorithmic insight that makes it faster.`;
+LANGUAGE & TONE REQUIREMENT:
+- You must respond strictly and 100% in formal, professional, engineering-grade English.
+- Under NO circumstance should you use Hindi, Hinglish, slang, or casual greetings.
+- Keep the response authoritative, structured, and polished.
+
+1. **Complexity Analysis:** Evaluate current Time Complexity $O(...)$ and Space Complexity $O(...)$.
+2. **Optimization Potential:** Identify bottlenecks or suboptimal operations.
+3. **Refactored Code:** Provide the production-grade, asymptotically optimal code.
+4. **Algorithmic Insight:** Explain the key technical insight that makes it faster.`;
   } else if (mode === 'find_bugs') {
-    prompt = `Act as DOAP Code Checker AI. Thoroughly stress-test and audit this ${language} code for "${problemTitle}":
+    prompt = `Act as DOAP Code Checker AI, an enterprise-grade automated code quality and vulnerability auditor.
+Thoroughly stress-test and audit this ${language} code for "${problemTitle}":
 
 \`\`\`${language}
 ${code}
 \`\`\`
+
+LANGUAGE & TONE REQUIREMENT:
+- You must respond strictly and 100% in formal, professional, engineering-grade English.
+- Under NO circumstance should you use Hindi, Hinglish, slang, or casual greetings.
+- Keep the response authoritative, structured, and polished.
 
 Identify:
-1. Edge cases where it fails (e.g. empty inputs, negative numbers, large constraints, recursion limits).
-2. Any memory or off-by-one errors.
-3. Minimal patch to make it 100% test-case proof.`;
+1. **Edge-Case Vulnerabilities:** Scenarios where it fails (e.g. empty/null inputs, boundary conditions, recursion limits).
+2. **Logical & Memory Bugs:** Off-by-one errors or unhandled cases.
+3. **Recommended Fix:** Minimal patch to make it 100% test-case proof.`;
   } else {
-    prompt = `Act as DOAP Code Checker AI. Generate a comprehensive suite of 5 rigorous unit test cases for this ${language} code:
+    prompt = `Act as DOAP Code Checker AI, an enterprise-grade automated test synthesis and verification engine.
+Generate a comprehensive suite of 5 rigorous unit test cases for this ${language} code for "${problemTitle}":
 
 \`\`\`${language}
 ${code}
 \`\`\`
 
-Include normal, boundary, and extreme edge test cases with expected outputs.`;
+LANGUAGE & TONE REQUIREMENT:
+- You must respond strictly and 100% in formal, professional, engineering-grade English.
+- Under NO circumstance should you use Hindi, Hinglish, slang, or casual greetings.
+- Keep the response authoritative, structured, and polished.
+
+Provide:
+1. **Implementation Status:** Brief overview of whether the function is fully implemented or empty/stub.
+2. **5 Rigorous Test Cases:** Include normal cases, boundary conditions, and extreme edge cases with inputs and expected outputs.
+3. **Verification Analysis:** Explain what each test case verifies to guarantee algorithmic correctness.`;
   }
 
   const rawRes = await generateSmartTutorResponse(prompt, userName, [], { forceEnglish: true, stripThink: true });
