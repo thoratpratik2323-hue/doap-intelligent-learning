@@ -402,7 +402,7 @@ Core Persona & Vibe:
             model,
             messages,
             temperature: options.voiceMode ? 0.6 : 0.7,
-            max_tokens: options.voiceMode ? 85 : 2048
+            max_tokens: options.voiceMode ? 380 : 2048
           })
         });
 

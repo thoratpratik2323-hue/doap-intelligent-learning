@@ -375,17 +375,27 @@ export function fallbackBrowserSpeech(text, onComplete) {
     currentUtterance = utterance;
     if (typeof window !== 'undefined') window._doapActiveUtterance = utterance;
 
-    utterance.onend = () => {
+    // Chrome SpeechSynthesis watchdog: prevents Chrome from silently pausing or cutting off after 14 seconds
+    const keepAlivePing = setInterval(() => {
+      if (typeof window === 'undefined' || !window.speechSynthesis || !window.speechSynthesis.speaking) {
+        clearInterval(keepAlivePing);
+      } else {
+        try {
+          window.speechSynthesis.pause();
+          window.speechSynthesis.resume();
+        } catch (e) {}
+      }
+    }, 8000);
+
+    const safeFinish = () => {
+      clearInterval(keepAlivePing);
       currentUtterance = null;
       if (typeof window !== 'undefined') window._doapActiveUtterance = null;
       if (onComplete) onComplete();
     };
 
-    utterance.onerror = () => {
-      currentUtterance = null;
-      if (typeof window !== 'undefined') window._doapActiveUtterance = null;
-      if (onComplete) onComplete();
-    };
+    utterance.onend = safeFinish;
+    utterance.onerror = safeFinish;
 
     window.speechSynthesis.speak(utterance);
   } catch (e) {

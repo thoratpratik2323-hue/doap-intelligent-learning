@@ -326,30 +326,46 @@ export const VoiceTutor = () => {
         const blob = new Blob(audioChunksRef.current, { type: mimeType });
         audioChunksRef.current = [];
 
+        // STRICT GUARD: If state is no longer 'thinking' or call is inactive, abort immediately
+        if (!isMountedRef.current || !isCallActiveRef.current || callStateRef.current !== 'thinking') {
+          return;
+        }
+
         if (!blob || blob.size < 300) {
-          resumeListeningCycle();
+          if (callStateRef.current === 'thinking') {
+            resumeListeningCycle();
+          }
           return;
         }
 
         setUserTranscript('Processing voice...');
         const text = await transcribeAudioWithGroq(blob);
 
+        // STRICT GUARD: Check again after network fetch
+        if (!isMountedRef.current || !isCallActiveRef.current || callStateRef.current !== 'thinking') {
+          return;
+        }
+
         if (text && text.trim()) {
           setUserTranscript(text.trim());
           handleUserSpeechComplete(text.trim());
-        } else {
+        } else if (callStateRef.current === 'thinking') {
           resumeListeningCycle();
         }
       } catch (err) {
         console.warn('[VoiceTutor] Whisper transcribe error:', err);
-        resumeListeningCycle();
+        if (callStateRef.current === 'thinking') {
+          resumeListeningCycle();
+        }
       }
     };
 
     try {
       recorder.stop();
     } catch (e) {
-      resumeListeningCycle();
+      if (callStateRef.current === 'thinking') {
+        resumeListeningCycle();
+      }
     }
   };
 
@@ -452,45 +468,57 @@ export const VoiceTutor = () => {
           const avg = sum / bufferLength;
           setLiveVolume(avg);
 
-          // Real-time Voice Activity Detection (VAD)
-          if (callStateRef.current === 'listening' && !isMutedRef.current && !isProcessingSpeechRef.current) {
-            const isMobile = isMobileDevice();
-            // Adaptive noise floor tracking: mobile mics usually have higher gain/AGC
-            if (avg < 25) {
-              noiseFloorRef.current = Math.max(3, Math.min(25, noiseFloorRef.current * 0.96 + avg * 0.04));
+          // STRICT: Only evaluate Voice Activity Detection (VAD) when actively listening
+          // When DOAP AI is speaking or thinking, VAD is 100% frozen to guarantee zero mid-sentence interruptions
+          if (callStateRef.current !== 'listening' || isMutedRef.current || isProcessingSpeechRef.current) {
+            if (isUserSpeakingRef.current) {
+              isUserSpeakingRef.current = false;
+              setIsUserSpeaking(false);
             }
-            // Dynamic threshold with higher margin on mobile to prevent ambient hiss false triggers
-            const minThreshold = isMobile ? 18 : 12;
-            const speechThreshold = Math.max(minThreshold, noiseFloorRef.current + (isMobile ? 8 : 5));
+            if (vadSilenceTimeoutRef.current) {
+              clearTimeout(vadSilenceTimeoutRef.current);
+              vadSilenceTimeoutRef.current = null;
+            }
+            animationFrameRef.current = requestAnimationFrame(checkAudioVolume);
+            return;
+          }
 
-            if (avg > speechThreshold) {
-              if (!isUserSpeakingRef.current) {
-                isUserSpeakingRef.current = true;
-                setIsUserSpeaking(true);
-                speechStartTimestampRef.current = Date.now();
-              }
-              if (vadSilenceTimeoutRef.current) {
-                clearTimeout(vadSilenceTimeoutRef.current);
+          const isMobile = isMobileDevice();
+          // Adaptive noise floor tracking: mobile mics usually have higher gain/AGC
+          if (avg < 25) {
+            noiseFloorRef.current = Math.max(3, Math.min(25, noiseFloorRef.current * 0.96 + avg * 0.04));
+          }
+          // Dynamic threshold with higher margin on mobile to prevent ambient hiss false triggers
+          const minThreshold = isMobile ? 18 : 12;
+          const speechThreshold = Math.max(minThreshold, noiseFloorRef.current + (isMobile ? 8 : 5));
+
+          if (avg > speechThreshold) {
+            if (!isUserSpeakingRef.current) {
+              isUserSpeakingRef.current = true;
+              setIsUserSpeaking(true);
+              speechStartTimestampRef.current = Date.now();
+            }
+            if (vadSilenceTimeoutRef.current) {
+              clearTimeout(vadSilenceTimeoutRef.current);
+              vadSilenceTimeoutRef.current = null;
+            }
+          } else if (isUserSpeakingRef.current) {
+            if (!vadSilenceTimeoutRef.current) {
+              const silenceWait = isMobile ? 950 : 750;
+              const minSpeechDuration = isMobile ? 550 : 350;
+              vadSilenceTimeoutRef.current = setTimeout(() => {
                 vadSilenceTimeoutRef.current = null;
-              }
-            } else if (isUserSpeakingRef.current) {
-              if (!vadSilenceTimeoutRef.current) {
-                const silenceWait = isMobile ? 950 : 750;
-                const minSpeechDuration = isMobile ? 550 : 350;
-                vadSilenceTimeoutRef.current = setTimeout(() => {
-                  vadSilenceTimeoutRef.current = null;
-                  const speechDuration = Date.now() - speechStartTimestampRef.current;
-                  isUserSpeakingRef.current = false;
-                  setIsUserSpeaking(false);
+                const speechDuration = Date.now() - speechStartTimestampRef.current;
+                isUserSpeakingRef.current = false;
+                setIsUserSpeaking(false);
 
-                  if (speechDuration >= minSpeechDuration && callStateRef.current === 'listening' && !isProcessingSpeechRef.current) {
-                    finalizeAndTranscribeWithWhisper();
-                  } else {
-                    // Speech burst too short (likely a breath or mic tap), reset buffer
-                    audioChunksRef.current = [];
-                  }
-                }, silenceWait);
-              }
+                if (speechDuration >= minSpeechDuration && callStateRef.current === 'listening' && !isProcessingSpeechRef.current) {
+                  finalizeAndTranscribeWithWhisper();
+                } else {
+                  // Speech burst too short (likely a breath or mic tap), reset buffer
+                  audioChunksRef.current = [];
+                }
+              }, silenceWait);
             }
           }
 
@@ -727,7 +755,12 @@ export const VoiceTutor = () => {
 
   const handleUserSpeechComplete = async (spokenPrompt) => {
     if (!spokenPrompt || !isMountedRef.current) return;
-    if (isProcessingSpeechRef.current && callStateRef.current === 'speaking') return;
+    // CRITICAL: If DOAP AI is currently speaking, user interruption is strictly blocked!
+    // The AI must complete speaking its full response before accepting new input.
+    if (callStateRef.current === 'speaking') {
+      console.log('[VoiceTutor] DOAP AI is speaking. Interruption blocked.');
+      return;
+    }
     isProcessingSpeechRef.current = true;
     updateCallState('thinking');
     setUserTranscript(spokenPrompt);
@@ -788,12 +821,30 @@ export const VoiceTutor = () => {
 
   const speakResponse = async (text, onComplete) => {
     updateCallState('speaking');
+    isProcessingSpeechRef.current = true;
     stopRecognition();
     stopUniversalRecorder();
     setIsUserSpeaking(false);
     isUserSpeakingRef.current = false;
-    stopElevenLabsAudio();
-    if (synthRef.current) synthRef.current.cancel();
+    audioChunksRef.current = [];
+    if (vadSilenceTimeoutRef.current) {
+      clearTimeout(vadSilenceTimeoutRef.current);
+      vadSilenceTimeoutRef.current = null;
+    }
+    if (chromeSpeechTimerRef.current) {
+      clearTimeout(chromeSpeechTimerRef.current);
+      chromeSpeechTimerRef.current = null;
+    }
+
+    // HARD MUTE MIC TRACKS WHILE AI IS SPEAKING:
+    // Physical protection preventing speaker echo or user room noise from cutting DOAP AI off mid-sentence
+    if (mediaStreamRef.current) {
+      try {
+        mediaStreamRef.current.getAudioTracks().forEach(t => {
+          t.enabled = false;
+        });
+      } catch (e) {}
+    }
 
     let finished = false;
     const safeComplete = () => {
@@ -805,20 +856,28 @@ export const VoiceTutor = () => {
       }
       activeUtteranceRef.current = null;
       if (typeof window !== 'undefined') window._doapActiveUtterance = null;
-      // 400ms acoustic echo guard before restarting mic listening cycle
+
+      // Re-enable microphone tracks ONLY after speech playback has 100% finished
+      if (mediaStreamRef.current && !isMutedRef.current) {
+        try {
+          mediaStreamRef.current.getAudioTracks().forEach(t => {
+            t.enabled = true;
+          });
+        } catch (e) {}
+      }
+
+      // 450ms acoustic room clearance guard before restarting listening cycle
       setTimeout(() => {
         if (onComplete && isMountedRef.current && isCallActiveRef.current) {
           onComplete();
         }
-      }, 400);
+      }, 450);
     };
 
-    // Safety watchdog timer (60s) so speech is never cut off mid-sentence
+    // Safety watchdog timer (120s) so long explanations are never cut off prematurely
     speechWatchdogTimerRef.current = setTimeout(() => {
-      stopElevenLabsAudio();
-      if (synthRef.current) synthRef.current.cancel();
       safeComplete();
-    }, 60000);
+    }, 120000);
 
     try {
       await speakElevenLabs(
@@ -865,17 +924,27 @@ export const VoiceTutor = () => {
       activeUtteranceRef.current = utterance;
       if (typeof window !== 'undefined') window._doapActiveUtterance = utterance;
 
-      utterance.onend = () => {
+      // Chrome SpeechSynthesis keep-alive ping: Chromium has a bug that pauses speech after ~14s
+      const keepAlivePing = setInterval(() => {
+        if (!synthRef.current || !synthRef.current.speaking) {
+          clearInterval(keepAlivePing);
+        } else {
+          try {
+            synthRef.current.pause();
+            synthRef.current.resume();
+          } catch (e) {}
+        }
+      }, 8000);
+
+      const finishSpeech = () => {
+        clearInterval(keepAlivePing);
         activeUtteranceRef.current = null;
         if (typeof window !== 'undefined') window._doapActiveUtterance = null;
         if (onComplete && isMountedRef.current) onComplete();
       };
 
-      utterance.onerror = () => {
-        activeUtteranceRef.current = null;
-        if (typeof window !== 'undefined') window._doapActiveUtterance = null;
-        if (onComplete && isMountedRef.current) onComplete();
-      };
+      utterance.onend = finishSpeech;
+      utterance.onerror = finishSpeech;
 
       synthRef.current.speak(utterance);
     } catch(err) {
@@ -1162,39 +1231,6 @@ export const VoiceTutor = () => {
                 </button>
               )}
             </div>
-
-            {/* Live User Caption Card */}
-            {(userTranscript || lastUserInput) && (
-              <div className="w-full mt-1 p-3 rounded-2xl bg-neutral-900/80 border border-cyan-500/25 backdrop-blur-xl shadow-xl transition-all animate-fade-in text-center">
-                <div className="flex items-center justify-center gap-1.5 mb-1">
-                  <Mic size={11} className={isUserSpeaking ? 'animate-pulse text-emerald-400' : 'text-cyan-400'} />
-                  <span className="text-[10px] font-mono uppercase text-cyan-400 font-bold">
-                    {callState === 'listening' ? 'Hearing you:' : 'You said:'}
-                  </span>
-                  {callState === 'listening' && isUserSpeaking && (
-                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      LIVE
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-neutral-100 italic leading-relaxed font-sans select-text">
-                  &ldquo;{userTranscript || lastUserInput}&rdquo;
-                </p>
-              </div>
-            )}
-
-            {/* Live AI Spoken Caption Card */}
-            {aiSpokenText && callState === 'speaking' && (
-              <div className="w-full mt-1 p-3 rounded-2xl bg-neutral-900/80 border border-emerald-500/25 backdrop-blur-xl shadow-xl transition-all animate-fade-in text-center">
-                <div className="flex items-center justify-center gap-1.5 mb-1 text-[10px] font-mono uppercase text-emerald-400 font-bold">
-                  <Sparkles size={11} />
-                  <span>DOAP AI:</span>
-                </div>
-                <p className="text-xs text-neutral-100 leading-relaxed font-sans line-clamp-3 select-text">
-                  &ldquo;{aiSpokenText}&rdquo;
-                </p>
-              </div>
-            )}
           </div>
         )}
       </div>
