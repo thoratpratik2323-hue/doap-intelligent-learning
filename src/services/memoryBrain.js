@@ -64,8 +64,8 @@ const DEFAULT_MEMORY = {
       stack: ['React', 'Vite', 'Tailwind', 'Groq 120B', 'ElevenLabs', 'Firebase']
     },
     {
-      name: 'IP-Codemaker-Agent',
-      description: 'Autonomous programming and code refactoring agent.',
+      name: 'Doap-Code-Checker-AI',
+      description: 'Autonomous programming, test synthesis, and code refactoring agent.',
       stack: ['Python', 'NVIDIA NIM', 'AST Parsing']
     }
   ],

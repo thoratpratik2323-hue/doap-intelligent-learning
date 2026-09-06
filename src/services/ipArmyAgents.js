@@ -3,7 +3,7 @@
  * Houses:
  * 1. IP LinkedIn Agent (Autonomous Outreach, Connection Notes & Post Generator)
  * 2. IP Rez-AI (Deep Resume ATS Auditor & Impact Enhancer)
- * 3. IP Codemaker Agent (Autonomous In-Editor Co-Pilot & Complexity Optimizer)
+ * 3. DOAP Code Checker AI (Autonomous In-Editor Co-Pilot & Complexity Optimizer)
  */
 
 import { generateSmartTutorResponse } from './aiTutorEngine';
@@ -67,13 +67,13 @@ Give 3 sharp, immediate improvements.`;
 }
 
 // ============================================================================
-// 3. IP Codemaker Agent (ip_agent_001 Co-Pilot)
+// 3. DOAP Code Checker AI (Autonomous In-Editor Co-Pilot & Test Engine)
 // ============================================================================
-export async function runCodemakerAgent({ code, language = 'python', problemTitle = '', mode = 'optimize' }, userName = 'Pratik') {
+export async function runCodemakerAgent({ code, language = 'python', problemTitle = '', mode = 'optimize' }, userName = 'Student') {
   let prompt = '';
 
   if (mode === 'optimize') {
-    prompt = `Act as IP Codemaker Agent (ip_agent_001 from IP-Verse-Mafia).
+    prompt = `Act as DOAP Code Checker AI.
 Analyze this ${language} solution for "${problemTitle}":
 
 \`\`\`${language}
@@ -85,7 +85,7 @@ ${code}
 3. Provide the fully refactored, production-grade optimized code.
 4. Explain the key algorithmic insight that makes it faster.`;
   } else if (mode === 'find_bugs') {
-    prompt = `Act as IP Codemaker Agent. Ruthlessly stress-test this ${language} code for "${problemTitle}":
+    prompt = `Act as DOAP Code Checker AI. Thoroughly stress-test and audit this ${language} code for "${problemTitle}":
 
 \`\`\`${language}
 ${code}
@@ -96,7 +96,7 @@ Identify:
 2. Any memory or off-by-one errors.
 3. Minimal patch to make it 100% test-case proof.`;
   } else {
-    prompt = `Act as IP Codemaker Agent. Generate a comprehensive suite of 5 rigorous unit test cases for this ${language} code:
+    prompt = `Act as DOAP Code Checker AI. Generate a comprehensive suite of 5 rigorous unit test cases for this ${language} code:
 
 \`\`\`${language}
 ${code}
@@ -105,5 +105,10 @@ ${code}
 Include normal, boundary, and extreme edge test cases with expected outputs.`;
   }
 
-  return await generateSmartTutorResponse(prompt, userName, [], { forceEnglish: true });
+  const rawRes = await generateSmartTutorResponse(prompt, userName, [], { forceEnglish: true, stripThink: true });
+  let clean = (rawRes || '')
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')
+    .replace(/^<think>[\s\S]*$/gi, '')
+    .trim();
+  return clean || rawRes;
 }

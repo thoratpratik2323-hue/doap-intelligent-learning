@@ -503,7 +503,7 @@ export const CodingPractice = () => {
   // IP Prime OS Local Connector State
   const [localStatus, setLocalStatus] = useState({ isConnected: false });
 
-  // IP Codemaker Co-Pilot State
+  // Doap Code Checker AI State
   const [codemakerOutput, setCodemakerOutput] = useState('');
   const [isCodemakerLoading, setIsCodemakerLoading] = useState(false);
   const [codemakerMode, setCodemakerMode] = useState(null);
@@ -647,7 +647,7 @@ Act as my Socratic AI Tutor. Do NOT write the entire solved code. Instead, analy
       });
       setCodemakerOutput(res);
     } catch (e) {
-      setCodemakerOutput('Error getting insights from IP Codemaker Agent.');
+      setCodemakerOutput('Error getting insights from Doap Code Checker AI.');
     } finally {
       setIsCodemakerLoading(false);
     }
@@ -1752,12 +1752,12 @@ Evaluate this code strictly:
                   </div>
                 </div>
 
-                {/* Collapsible Codemaker Output Drawer */}
+                {/* Collapsible Doap Code Checker AI Output Drawer */}
                 {codemakerOutput && (
-                  <div className="p-3 rounded-xl bg-[#090b10] border border-cyan-500/30 text-xs space-y-1.5 animate-fade-in shadow-xl shrink-0 max-h-36 overflow-y-auto scrollbar-thin">
+                  <div className="p-3 rounded-xl bg-[#090b10] border border-cyan-500/30 text-xs space-y-1.5 animate-fade-in shadow-xl shrink-0 max-h-48 overflow-y-auto scrollbar-thin">
                     <div className="flex items-center justify-between border-b border-neutral-800 pb-1">
                       <span className="font-mono font-bold text-cyan-400 flex items-center gap-1.5 text-[11px]">
-                        <Bot size={12} /> IP Codemaker ({codemakerMode}):
+                        <Bot size={12} /> Doap Code Checker AI ({codemakerMode === 'optimize' ? 'Optimization' : codemakerMode === 'find_bugs' ? 'Bug Analysis' : 'Unit Tests'}):
                       </span>
                       <button
                         type="button"
@@ -1767,7 +1767,7 @@ Evaluate this code strictly:
                         <X size={12} />
                       </button>
                     </div>
-                    <div className="text-xs text-neutral-200 whitespace-pre-wrap leading-relaxed font-mono">
+                    <div className="text-xs text-neutral-200 whitespace-pre-wrap leading-relaxed font-mono select-text">
                       {codemakerOutput}
                     </div>
                   </div>
@@ -2075,11 +2075,11 @@ Evaluate this code strictly:
                 </div>
               </div>
 
-              {/* IP Codemaker Co-Pilot Action Bar */}
+              {/* Doap Code Checker AI Co-Pilot Action Bar */}
               <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-black/60 border border-neutral-800 text-xs">
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-bold flex items-center gap-1">
-                    <Bot size={11} /> IP Codemaker
+                    <Bot size={11} /> Doap Code Checker AI
                   </span>
                   <button
                     type="button"
@@ -2111,12 +2111,12 @@ Evaluate this code strictly:
                 </div>
               </div>
 
-              {/* Collapsible Codemaker Output Drawer */}
+              {/* Collapsible Doap Code Checker AI Output Drawer */}
               {codemakerOutput && (
                 <div className="p-3.5 rounded-2xl bg-[#090b10] border border-cyan-500/30 text-xs space-y-2 animate-fade-in shadow-xl">
                   <div className="flex items-center justify-between border-b border-neutral-800 pb-2">
                     <span className="font-mono font-bold text-cyan-400 flex items-center gap-1.5">
-                      <Bot size={13} /> IP Codemaker Co-Pilot ({codemakerMode}):
+                      <Bot size={13} /> Doap Code Checker AI ({codemakerMode === 'optimize' ? 'Optimization' : codemakerMode === 'find_bugs' ? 'Bug Analysis' : 'Unit Tests'}):
                     </span>
                     <button 
                       type="button" 
@@ -2126,7 +2126,7 @@ Evaluate this code strictly:
                       <X size={14} />
                     </button>
                   </div>
-                  <div className="text-xs text-neutral-200 whitespace-pre-wrap leading-relaxed max-h-56 overflow-y-auto font-mono">
+                  <div className="text-xs text-neutral-200 whitespace-pre-wrap leading-relaxed max-h-56 overflow-y-auto font-mono select-text">
                     {codemakerOutput}
                   </div>
                 </div>

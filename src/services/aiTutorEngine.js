@@ -419,8 +419,8 @@ Core Persona & Vibe:
             reply = `<think>\n${reasoning.trim()}\n</think>\n\n${reply}`;
           }
 
-          if (options.voiceMode) {
-            // Voice mode: strictly strip <think> blocks, hidden details, and scratchpads for clean spoken delivery
+          if (options.voiceMode || options.stripThink) {
+            // Strictly strip <think> blocks, hidden details, and scratchpads for clean delivery
             reply = reply
               .replace(/<think>[\s\S]*?<\/think>/gi, '')
               .replace(/<details[\s\S]*?<\/details>/gi, '')

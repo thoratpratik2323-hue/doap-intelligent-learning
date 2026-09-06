@@ -48,7 +48,7 @@ export const ATSResumePreview = ({ userName = 'Pratik', profile = {}, isDarkMode
         ]
       },
       {
-        name: 'IP Codemaker Agent (ip_agent_001)',
+        name: 'Doap Code Checker AI',
         subtitle: 'Autonomous Algorithmic Code Refactoring & Complexity Optimizer',
         tech: 'Python, AST Parsing, NVIDIA NIM, Unit Testing Pipelines',
         bullets: [
