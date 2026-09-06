@@ -299,6 +299,21 @@ export const AITutor = () => {
     executeSend(inputText);
   };
 
+  // Auto-send incoming prompt when navigated from Company Prep or external action
+  useEffect(() => {
+    try {
+      const pendingPrompt = sessionStorage.getItem('doap_ai_initial_prompt');
+      if (pendingPrompt && pendingPrompt.trim()) {
+        sessionStorage.removeItem('doap_ai_initial_prompt');
+        setTimeout(() => {
+          executeSend(pendingPrompt.trim());
+        }, 200);
+      }
+    } catch (e) {
+      console.warn('[AITutor] Error auto-executing incoming prompt:', e);
+    }
+  }, []);
+
   // Create New Chat Session
   const handleNewChat = () => {
     if (isListening) stopListening();

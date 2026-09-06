@@ -208,8 +208,13 @@ export const CompanyPrep = () => {
     } catch (e) {}
   };
 
-  const handleAskDoapAI = (problemTitle) => {
-    const prompt = `Can you explain the optimal approach, step-by-step intuition, and time/space complexity for the LeetCode problem "${problemTitle}" asked at ${activeCompany?.name || 'top tech companies'}?`;
+  const handleAskDoapAI = (prob) => {
+    const prompt = `Can you explain the LeetCode problem "${prob.title}" (${prob.difficulty}) asked at ${activeCompany?.name || 'top companies'}?
+Please break down:
+1. Core Intuition & Logic (with a simple analogy)
+2. Step-by-Step Optimal Algorithm
+3. Clean, well-commented code solution
+4. Time & Space Complexity (Big-O analysis)`;
     sessionStorage.setItem('doap_ai_initial_prompt', prompt);
     navigateTo('/ai-tutor');
   };
@@ -672,7 +677,7 @@ export const CompanyPrep = () => {
                   {/* Right Column: CTA Buttons */}
                   <div className="flex items-center gap-2 self-end md:self-center shrink-0">
                     <button
-                      onClick={() => handleAskDoapAI(prob.title)}
+                      onClick={() => handleAskDoapAI(prob)}
                       className="px-3 py-1.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
                       title="Ask DOAP AI Tutor for intuition and code approach"
                     >
