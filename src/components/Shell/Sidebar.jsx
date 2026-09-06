@@ -20,7 +20,8 @@ import {
   LogOut,
   Sun,
   Moon,
-  Radio
+  Radio,
+  Building2
 } from 'lucide-react';
 import { NAVIGATION_ITEMS } from '../../data/mockData';
 import { useTheme } from '../../context/ThemeContext';
@@ -34,6 +35,7 @@ const ICON_MAP = {
   'My Learning': BookOpen,
   'Study Plan': Calendar,
   'Coding Practice': Code,
+  'Company Prep': Building2,
   'AI Interview': Video,
   Assessments: FileCheck2,
   'Job Readiness': Briefcase,

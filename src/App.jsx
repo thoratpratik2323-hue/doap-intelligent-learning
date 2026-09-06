@@ -27,6 +27,7 @@ import { Events } from './pages/Events';
 import { Resources } from './pages/Resources';
 import { Achievements } from './pages/Achievements';
 import { Profile } from './pages/Profile';
+import { CompanyPrep } from './pages/CompanyPrep';
 
 const LoadingScreen = () => {
   return (
@@ -102,6 +103,9 @@ const AppContent = () => {
       case '/coding':
       case '/coding-practice':
         return <CodingPractice />;
+      case '/company-prep':
+      case '/company-questions':
+        return <CompanyPrep />;
       case '/interview':
         return <AIInterview />;
       case '/assessments':

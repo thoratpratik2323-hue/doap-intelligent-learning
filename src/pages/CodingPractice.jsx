@@ -28,7 +28,8 @@ import {
   Eye,
   EyeOff,
   Flame,
-  CheckCircle
+  CheckCircle,
+  Building2
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -1290,6 +1291,35 @@ Evaluate this code strictly:
         <p className={`text-xs font-mono uppercase tracking-wider ${
           isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
         }`}>Sharpen problem solving with real-time in-browser automated test suites</p>
+      </div>
+
+      {/* Company Prep LeetCode Archive Cross-Link Banner */}
+      <div 
+        onClick={() => navigateTo('/company-prep')}
+        className="p-4 md:p-5 rounded-2xl border transition-all cursor-pointer group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-emerald-500/10 hover:from-blue-500/20 hover:to-cyan-500/20 border-cyan-500/30 shadow-lg shadow-cyan-500/5 hover:border-cyan-500/60"
+      >
+        <div className="flex items-center gap-3.5">
+          <div className="p-2.5 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 group-hover:scale-110 transition-transform shrink-0">
+            <Building2 size={22} />
+          </div>
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-sm md:text-base font-bold text-cyan-300 group-hover:text-cyan-200">
+                🏢 Looking for Company-Specific Questions?
+              </h3>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold">
+                8,600+ LEETCODE QUESTIONS
+              </span>
+            </div>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Explore authentic interview questions asked by <strong>TCS, Infosys, Accenture, Cognizant, Google, Amazon, Microsoft, Apple & Meta</strong> on the Company Prep Dashboard.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-cyan-400 group-hover:text-cyan-300 shrink-0 self-end sm:self-center">
+          <span>Open Company Archive</span>
+          <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+        </div>
       </div>
 
       {/* Filter Row: Categories + Difficulty */}
