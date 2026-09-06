@@ -14,7 +14,15 @@ import {
   Check,
   ExternalLink,
   X,
-  Terminal
+  Terminal,
+  Cpu,
+  Volume2,
+  Bot,
+  Trash2,
+  ArrowUpRight,
+  Radio,
+  Play,
+  Layers
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -114,6 +122,14 @@ const playShutdownChime = () => {
     }, 450);
   } catch(e) {}
 };
+
+const SAMPLE_QUICK_PROMPTS = [
+  { label: 'Explain Two Sum in Python', category: 'DSA', color: 'from-cyan-500/20 to-blue-500/20 text-cyan-300 border-cyan-500/40', prompt: 'Can you explain how to solve Two Sum in Python with optimal O(N) complexity?' },
+  { label: 'How does React Virtual DOM work?', category: 'React', color: 'from-emerald-500/20 to-teal-500/20 text-emerald-300 border-emerald-500/40', prompt: 'How does React Virtual DOM and diffing reconciliation work under the hood?' },
+  { label: 'Design a scalable URL shortener', category: 'System Design', color: 'from-purple-500/20 to-indigo-500/20 text-purple-300 border-purple-500/40', prompt: 'Walk me through the high-level system design for a scalable URL shortener like TinyURL.' },
+  { label: 'Explain Dijkstra shortest path', category: 'Graphs', color: 'from-amber-500/20 to-orange-500/20 text-amber-300 border-amber-500/40', prompt: 'Can you explain Dijkstra shortest path algorithm with time complexity and code example?' },
+  { label: 'Write a debounce utility in JS', category: 'JavaScript', color: 'from-blue-500/20 to-indigo-500/20 text-blue-300 border-blue-500/40', prompt: 'Write a production-grade JavaScript debounce utility with immediate execution support.' }
+];
 
 export const VoiceTutor = () => {
   const { isDarkMode, activeAccentHex, navigateTo } = useTheme();
@@ -893,6 +909,20 @@ export const VoiceTutor = () => {
     }
   };
 
+  const handleTriggerQuickPrompt = async (itemPrompt) => {
+    setLastUserInput(itemPrompt);
+    setUserTranscript(itemPrompt);
+    if (!isCallActiveRef.current) {
+      await handleStartCall(itemPrompt);
+    } else {
+      updateCallState('thinking');
+      unlockAudioContext();
+      stopRecognition();
+      stopUniversalRecorder();
+      handleUserSpeechComplete(itemPrompt);
+    }
+  };
+
   return (
     <div className="h-full w-full flex-1 flex flex-col justify-between p-3 sm:p-6 select-none bg-[#030712] text-white animate-fade-in relative overflow-hidden">
       {/* Dynamic Ambient Mesh Glow */}
@@ -1201,30 +1231,52 @@ export const VoiceTutor = () => {
 
       {/* 4. Slide-Out Glassmorphic Live I/O Console (Input, Spoken Output & Code Extraction) */}
       {isCodeCanvasOpen && (
-        <div className="absolute inset-y-16 right-0 sm:right-4 w-full sm:w-[500px] lg:w-[560px] z-40 rounded-t-3xl sm:rounded-3xl bg-neutral-950/95 backdrop-blur-2xl border border-cyan-500/30 shadow-2xl flex flex-col overflow-hidden animate-fade-in transition-all">
+        <div className="absolute inset-y-12 sm:inset-y-16 right-0 sm:right-4 w-full sm:w-[540px] lg:w-[620px] z-40 rounded-t-3xl sm:rounded-3xl bg-[#080c14]/95 backdrop-blur-2xl border border-cyan-500/30 shadow-[0_25px_80px_rgba(0,0,0,0.85),0_0_50px_rgba(6,182,212,0.18)] flex flex-col overflow-hidden animate-fade-in transition-all">
+          {/* Top Neon Accent Line */}
+          <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-cyan-400 via-emerald-400 to-transparent shrink-0 animate-pulse" />
+
           {/* I/O Console Top Bar */}
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-cyan-500/20 bg-neutral-900/70 shrink-0">
-            <div className="flex items-center gap-2.5">
-              <div className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
-                <Terminal size={16} />
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/10 bg-neutral-900/60 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="relative p-2 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 text-cyan-400 border border-cyan-500/40 shadow-inner">
+                <Terminal size={17} />
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-cyan-400" />
               </div>
               <div>
-                <div className="text-xs font-bold text-white flex items-center gap-2">
+                <div className="text-xs font-bold text-white flex items-center gap-2 tracking-wide">
                   DOAP Live I/O Console
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 uppercase">
-                    {liveCodeSnippet ? liveCodeSnippet.lang.toUpperCase() : 'ACTIVE'}
+                  <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                    {liveCodeSnippet ? liveCodeSnippet.lang.toUpperCase() : (isCallActive ? 'LIVE HUD' : 'STANDBY')}
                   </span>
                 </div>
-                <div className="text-[10px] font-mono text-neutral-400">
-                  Real-time Voice Input, Spoken Output & Code Canvas
+                <div className="text-[10px] font-mono text-neutral-400 flex items-center gap-2 mt-0.5">
+                  <span>Real-time Voice & Code Canvas</span>
+                  <span className="text-neutral-600">•</span>
+                  <span className="text-cyan-400/90 font-medium">Whisper + 8L Brain</span>
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-1.5">
+              {(userTranscript || lastUserInput || aiSpokenText || liveCodeSnippet) && (
+                <button
+                  onClick={() => {
+                    setUserTranscript('');
+                    setLastUserInput('');
+                    setAiSpokenText('');
+                    setLiveCodeSnippet(null);
+                  }}
+                  className="p-1.5 rounded-xl text-neutral-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                  title="Clear Console Content"
+                >
+                  <Trash2 size={15} />
+                </button>
+              )}
               <button
                 onClick={() => setIsCodeCanvasOpen(false)}
-                className="p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer ml-1"
+                className="p-1.5 rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer ml-0.5"
                 title="Close I/O Console"
               >
                 <X size={16} />
@@ -1233,17 +1285,26 @@ export const VoiceTutor = () => {
           </div>
 
           {/* I/O Console Scrollable Content */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 scrollbar-thin">
             {/* 1. INPUT BLOCK (Voice transcript or prompt) */}
-            <div className="rounded-2xl border border-cyan-500/25 bg-neutral-900/70 p-3.5 shadow-sm">
-              <div className="flex items-center justify-between text-xs font-semibold text-cyan-400 mb-2">
-                <div className="flex items-center gap-1.5">
-                  <Mic size={13} className={callState === 'listening' ? 'animate-pulse text-cyan-300' : ''} />
-                  <span className="tracking-wide">INPUT (VOICE / PROMPT)</span>
+            <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-950/25 via-neutral-900/80 to-neutral-950/90 p-4 shadow-sm relative overflow-hidden group">
+              <div className="absolute -right-6 -top-6 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
+
+              <div className="flex items-center justify-between text-xs font-semibold text-cyan-400 mb-2.5 relative z-10">
+                <div className="flex items-center gap-2">
+                  <div className="p-1 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-300">
+                    <Mic size={13} className={callState === 'listening' ? 'animate-pulse text-cyan-300' : ''} />
+                  </div>
+                  <span className="tracking-wide font-mono text-[11px]">INPUT (VOICE / PROMPT)</span>
                   {callState === 'listening' && (
-                    <span className="text-[10px] font-mono text-cyan-300 animate-pulse px-1.5 py-0.2 rounded bg-cyan-500/20 border border-cyan-500/30">
-                      Listening...
-                    </span>
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-[10px] font-mono text-cyan-300">
+                      <div className="flex items-center gap-0.5 h-2.5">
+                        <span className="w-0.5 bg-cyan-400 rounded-full animate-[pulse_0.6s_ease-in-out_infinite] h-2" />
+                        <span className="w-0.5 bg-cyan-400 rounded-full animate-[pulse_0.4s_ease-in-out_infinite_0.1s] h-3" />
+                        <span className="w-0.5 bg-cyan-400 rounded-full animate-[pulse_0.7s_ease-in-out_infinite_0.2s] h-2" />
+                      </div>
+                      <span>Listening...</span>
+                    </div>
                   )}
                 </div>
                 {(userTranscript || lastUserInput) && (
@@ -1253,7 +1314,7 @@ export const VoiceTutor = () => {
                       setCopiedInput(true);
                       setTimeout(() => setCopiedInput(false), 2000);
                     }}
-                    className="px-2 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white text-[11px] font-mono flex items-center gap-1 transition-colors cursor-pointer border border-white/10"
+                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white text-[11px] font-mono flex items-center gap-1.5 transition-colors cursor-pointer border border-white/10"
                     title="Copy User Input"
                   >
                     {copiedInput ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
@@ -1261,26 +1322,57 @@ export const VoiceTutor = () => {
                   </button>
                 )}
               </div>
-              <div className="text-xs text-neutral-200 leading-relaxed font-sans select-text">
+
+              <div className="relative z-10">
                 {userTranscript || lastUserInput ? (
-                  <span className="italic text-neutral-100">&ldquo;{userTranscript || lastUserInput}&rdquo;</span>
+                  <div className="pl-3 border-l-2 border-cyan-400/70 py-0.5">
+                    <p className="text-xs sm:text-sm text-neutral-100 leading-relaxed font-sans select-text italic">
+                      &ldquo;{userTranscript || lastUserInput}&rdquo;
+                    </p>
+                    <div className="flex items-center gap-2 mt-2 text-[10px] font-mono text-neutral-500">
+                      <span className="text-cyan-400 font-medium">Whisper STT</span>
+                      <span>•</span>
+                      <span>{(userTranscript || lastUserInput).length} characters</span>
+                    </div>
+                  </div>
                 ) : (
-                  <span className="text-neutral-500 text-[11px]">
-                    No voice input yet. Speak freely via microphone or tap a sample prompt below.
-                  </span>
+                  <div className="flex items-center gap-3 py-1 text-neutral-400 text-xs">
+                    <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
+                      <Mic size={14} className={callState === 'listening' ? 'animate-pulse text-cyan-300' : ''} />
+                    </div>
+                    <div>
+                      <p className="text-neutral-200 text-xs font-medium">Ready for your voice</p>
+                      <p className="text-neutral-500 text-[11px] mt-0.5">Speak via microphone or tap any quick prompt below.</p>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
 
             {/* 2. OUTPUT BLOCK (DOAP AI Response / Spoken Explanation) */}
-            <div className="rounded-2xl border border-emerald-500/25 bg-neutral-900/70 p-3.5 shadow-sm">
-              <div className="flex items-center justify-between text-xs font-semibold text-emerald-400 mb-2">
-                <div className="flex items-center gap-1.5">
-                  <Sparkles size={13} />
-                  <span className="tracking-wide">OUTPUT (DOAP AI RESPONSE)</span>
+            <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-950/25 via-neutral-900/80 to-neutral-950/90 p-4 shadow-sm relative overflow-hidden group">
+              <div className="absolute -right-6 -top-6 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+
+              <div className="flex items-center justify-between text-xs font-semibold text-emerald-400 mb-2.5 relative z-10">
+                <div className="flex items-center gap-2">
+                  <div className="p-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">
+                    <Sparkles size={13} className={callState === 'thinking' ? 'animate-spin text-amber-400' : ''} />
+                  </div>
+                  <span className="tracking-wide font-mono text-[11px]">OUTPUT (DOAP AI RESPONSE)</span>
                   {callState === 'speaking' && (
-                    <span className="text-[10px] font-mono text-emerald-300 animate-pulse px-1.5 py-0.2 rounded bg-emerald-500/20 border border-emerald-500/30">
-                      Speaking...
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-[10px] font-mono text-emerald-300">
+                      <div className="flex items-center gap-0.5 h-2.5">
+                        <span className="w-0.5 bg-emerald-400 rounded-full animate-[pulse_0.5s_ease-in-out_infinite] h-2.5" />
+                        <span className="w-0.5 bg-emerald-400 rounded-full animate-[pulse_0.3s_ease-in-out_infinite_0.1s] h-3" />
+                        <span className="w-0.5 bg-emerald-400 rounded-full animate-[pulse_0.6s_ease-in-out_infinite_0.2s] h-2" />
+                      </div>
+                      <span>Speaking...</span>
+                    </div>
+                  )}
+                  {callState === 'thinking' && (
+                    <span className="text-[10px] font-mono text-amber-300 animate-pulse px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                      Synthesizing...
                     </span>
                   )}
                 </div>
@@ -1291,52 +1383,114 @@ export const VoiceTutor = () => {
                       setCopiedOutput(true);
                       setTimeout(() => setCopiedOutput(false), 2000);
                     }}
-                    className="px-2 py-0.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 text-[11px] font-mono flex items-center gap-1 transition-colors cursor-pointer border border-emerald-500/30"
+                    className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 text-[11px] font-mono flex items-center gap-1.5 transition-colors cursor-pointer border border-emerald-500/30"
                     title="Copy AI Output"
                   >
                     {copiedOutput ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
-                    <span>{copiedOutput ? 'Copied!' : 'Copy Output'}</span>
+                    <span>{copiedOutput ? 'Copied' : 'Copy'}</span>
                   </button>
                 )}
               </div>
-              <div className="text-xs text-neutral-200 leading-relaxed select-text font-sans">
+
+              <div className="relative z-10">
                 {aiSpokenText || liveCodeSnippet?.explanation ? (
-                  <p className="text-neutral-100 whitespace-pre-wrap">{aiSpokenText || liveCodeSnippet?.explanation}</p>
+                  <div className="pl-3 border-l-2 border-emerald-400/70 py-0.5">
+                    <p className="text-xs sm:text-sm text-neutral-100 leading-relaxed select-text font-sans whitespace-pre-wrap">
+                      {aiSpokenText || liveCodeSnippet?.explanation}
+                    </p>
+                    <div className="flex items-center gap-2 mt-2 text-[10px] font-mono text-neutral-500">
+                      <span className="text-emerald-400 font-medium">ElevenLabs Studio Voice</span>
+                      <span>•</span>
+                      <span>DOAP 120B Reasoning</span>
+                    </div>
+                  </div>
                 ) : (
-                  <span className="text-neutral-500 text-[11px]">
-                    DOAP AI output will appear here as soon as you speak or choose a topic.
-                  </span>
+                  <div className="flex items-center gap-3 py-1 text-neutral-400 text-xs">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                      <Sparkles size={14} className={callState === 'thinking' ? 'animate-spin text-amber-400' : ''} />
+                    </div>
+                    <div>
+                      <p className="text-neutral-200 text-xs font-medium">
+                        {callState === 'thinking' ? 'Synthesizing response...' : 'DOAP AI Standby'}
+                      </p>
+                      <p className="text-neutral-500 text-[11px] mt-0.5">
+                        {callState === 'thinking'
+                          ? 'Analyzing query with 8-layer memory brain & neural engine...'
+                          : 'Spoken answers, technical explanations & code will stream here.'}
+                      </p>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
 
-            {/* 3. CODE OUTPUT BLOCK (When code is provided / extracted) */}
+            {/* 3. QUICK INTERACTIVE PROMPTS (1-Tap Live Voice Prompts) */}
+            <div className="rounded-2xl border border-white/10 bg-neutral-900/40 p-3.5 space-y-2.5">
+              <div className="flex items-center justify-between text-[11px] font-mono text-neutral-400">
+                <span className="flex items-center gap-1.5 text-cyan-300 font-semibold tracking-wide">
+                  <Zap size={13} className="text-cyan-400 fill-cyan-400/20" />
+                  <span>QUICK TEST PROMPTS (TAP TO ASK)</span>
+                </span>
+                <span className="text-[10px] text-neutral-500">Instant Live Query</span>
+              </div>
+
+              <div className="grid grid-cols-1 gap-1.5">
+                {SAMPLE_QUICK_PROMPTS.map((item, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleTriggerQuickPrompt(item.prompt)}
+                    className="w-full text-left p-2.5 rounded-xl bg-neutral-950/70 hover:bg-cyan-950/30 border border-white/5 hover:border-cyan-500/40 transition-all flex items-center justify-between group cursor-pointer shadow-sm hover:shadow-cyan-500/10"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                      <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-md border bg-gradient-to-r ${item.color} uppercase shrink-0`}>
+                        {item.category}
+                      </span>
+                      <span className="text-xs text-neutral-300 group-hover:text-white transition-colors truncate">
+                        {item.label}
+                      </span>
+                    </div>
+                    <div className="p-1 rounded-md bg-white/5 group-hover:bg-cyan-500/20 text-neutral-400 group-hover:text-cyan-300 transition-colors shrink-0">
+                      <Play size={10} className="fill-current" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 4. CODE OUTPUT BLOCK (When code is provided / extracted) */}
             {liveCodeSnippet && (
-              <div className="rounded-2xl border border-indigo-500/30 bg-neutral-950/90 overflow-hidden shadow-xl">
-                <div className="px-4 py-2 border-b border-indigo-500/20 bg-neutral-900/80 text-[11px] text-neutral-400 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Code2 size={14} className="text-indigo-400" />
-                    <span className="font-mono text-white font-semibold">CODE OUTPUT</span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase">
+              <div className="rounded-2xl border border-indigo-500/40 bg-[#070b14] overflow-hidden shadow-2xl animate-fade-in">
+                <div className="px-4 py-2.5 border-b border-indigo-500/20 bg-neutral-900/90 text-xs text-neutral-300 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80 inline-block" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block" />
+                    </div>
+                    <span className="font-mono text-white text-xs font-semibold flex items-center gap-1.5 ml-1">
+                      <Code2 size={14} className="text-indigo-400" />
+                      CODE CANVAS
+                    </span>
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase">
                       {liveCodeSnippet.lang}
                     </span>
-                    <span className="text-[10px] text-neutral-500 font-mono">
+                    <span className="text-[10px] text-neutral-500 font-mono hidden sm:inline">
                       {liveCodeSnippet.code.split('\n').length} lines
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={() => {
                         navigator.clipboard?.writeText(liveCodeSnippet.code);
                         setCopiedCode(true);
                         setTimeout(() => setCopiedCode(false), 2000);
                       }}
-                      className="px-2.5 py-1 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 text-xs font-mono flex items-center gap-1.5 cursor-pointer border border-indigo-500/40 transition-colors shadow-sm"
+                      className="px-2.5 py-1 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 text-xs font-mono flex items-center gap-1.5 cursor-pointer border border-indigo-500/40 transition-all shadow-sm"
                       title="Copy Code to Clipboard"
                     >
-                      {copiedCode ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
-                      <span>{copiedCode ? 'Copied!' : 'Copy Code'}</span>
+                      {copiedCode ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                      <span>{copiedCode ? 'Copied' : 'Copy'}</span>
                     </button>
 
                     <button
@@ -1346,17 +1500,18 @@ export const VoiceTutor = () => {
                         } catch(e) {}
                         navigateTo('/coding');
                       }}
-                      className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-mono flex items-center gap-1 transition-colors cursor-pointer border border-white/15"
                       title="Open in Coding Practice Sandbox"
                     >
-                      <ExternalLink size={14} />
+                      <span>Sandbox</span>
+                      <ArrowUpRight size={13} />
                     </button>
                   </div>
                 </div>
 
-                <div className="p-4 overflow-x-auto text-neutral-200 leading-relaxed whitespace-pre font-mono text-[11px] max-h-[280px] scrollbar-thin select-text">
+                <div className="p-4 overflow-x-auto text-neutral-200 leading-relaxed whitespace-pre font-mono text-[11px] max-h-[280px] scrollbar-thin select-text bg-[#070b14]">
                   {liveCodeSnippet.code.split('\n').map((line, idx) => (
-                    <div key={idx} className="table-row">
+                    <div key={idx} className="table-row hover:bg-white/[0.02]">
                       <span className="table-cell pr-4 select-none text-neutral-600 text-right font-mono text-[10px]">{idx + 1}</span>
                       <span className="table-cell">{line || ' '}</span>
                     </div>
@@ -1364,6 +1519,19 @@ export const VoiceTutor = () => {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Bottom Telemetry Bar */}
+          <div className="px-5 py-2.5 border-t border-white/10 bg-neutral-900/70 text-[10px] font-mono text-neutral-400 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1 text-cyan-400">
+                <Radio size={11} className={isCallActive ? "animate-pulse" : ""} />
+                <span>{isCallActive ? "Session Active" : "Standby Mode"}</span>
+              </span>
+              <span>•</span>
+              <span className="text-neutral-400">8-Layer Memory Connected</span>
+            </div>
+            <span className="text-neutral-500">DOAP Studio Audio</span>
           </div>
         </div>
       )}
