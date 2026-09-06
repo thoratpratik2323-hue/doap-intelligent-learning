@@ -755,18 +755,26 @@ export const Assessments = () => {
                   isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
                 }`}>
                   <span>{item.date}</span>
-                  <span>•</span>
-                  <span>{item.duration}</span>
-                  <span>•</span>
-                  <div className="flex gap-1">
-                    {item.tags.map((t, idx) => (
-                      <span key={idx} className={`px-2 py-0.5 rounded text-[10px] border ${
-                        isDarkMode ? 'bg-neutral-900 border-neutral-800 text-neutral-300' : 'bg-neutral-100 border-neutral-200 text-neutral-700'
-                      }`}>
-                        {t}
-                      </span>
-                    ))}
-                  </div>
+                  {item.duration && (
+                    <>
+                      <span>•</span>
+                      <span>{item.duration}</span>
+                    </>
+                  )}
+                  {item.tags && item.tags.length > 0 && (
+                    <>
+                      <span>•</span>
+                      <div className="flex gap-1">
+                        {item.tags.map((t, idx) => (
+                          <span key={idx} className={`px-2 py-0.5 rounded text-[10px] border ${
+                            isDarkMode ? 'bg-neutral-900 border-neutral-800 text-neutral-300' : 'bg-neutral-100 border-neutral-200 text-neutral-700'
+                          }`}>
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
