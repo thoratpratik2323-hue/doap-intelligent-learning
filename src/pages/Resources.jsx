@@ -76,6 +76,9 @@ export const Resources = () => {
         <Search size={18} className={`absolute left-4 top-3.5 ${isDarkMode ? 'text-neutral-500' : 'text-neutral-400'}`} />
         <input 
           type="text" 
+          id="search-resources"
+          name="searchResources"
+          aria-label="Search engineering resources"
           placeholder="Search resources..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}

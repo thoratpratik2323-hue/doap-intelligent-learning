@@ -454,6 +454,9 @@ Please break down:
           <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
           <input
             type="text"
+            id="search-company-questions"
+            name="searchCompanyQuestions"
+            aria-label="Search company interview questions"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search questions or topics..."

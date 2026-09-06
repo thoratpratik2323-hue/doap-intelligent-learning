@@ -1469,6 +1469,9 @@ Evaluate this code strictly:
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500" />
             <input
               type="text"
+              id="search-dsa-challenges"
+              name="searchDsaChallenges"
+              aria-label="Search DSA challenges"
               value={problemSearchQuery}
               onChange={(e) => setProblemSearchQuery(e.target.value)}
               placeholder="Search 147 DSA challenges by title, pattern (e.g. two pointers, sliding window), or topic..."
@@ -1625,6 +1628,9 @@ Evaluate this code strictly:
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500" />
             <input
               type="text"
+              id="search-knowledge-base"
+              name="searchKnowledgeBase"
+              aria-label="Search DSA knowledge base guides"
               value={knowledgeSearchQuery}
               onChange={(e) => setKnowledgeSearchQuery(e.target.value)}
               placeholder="Search 105 DSA knowledge base guides (e.g. AVL, Dijkstra, Topological Sort, Segment Tree, Monotonic Stack)..."
@@ -1749,6 +1755,9 @@ Evaluate this code strictly:
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500" />
             <input
               type="text"
+              id="search-dsa-quizzes"
+              name="searchDsaQuizzes"
+              aria-label="Search DSA concept quizzes"
               value={quizSearchQuery}
               onChange={(e) => {
                 setQuizSearchQuery(e.target.value);

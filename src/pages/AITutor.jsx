@@ -460,6 +460,9 @@ export const AITutor = () => {
               <Search size={12} className="absolute left-2.5 top-2.5 text-neutral-500" />
               <input 
                 type="text" 
+                id="search-conversations"
+                name="searchConversations"
+                aria-label="Search conversations"
                 placeholder="Search conversations..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -492,6 +495,9 @@ export const AITutor = () => {
                 {editingSessionId === session.id ? (
                   <input
                     type="text"
+                    id="rename-session"
+                    name="renameSession"
+                    aria-label="Rename conversation session"
                     value={editTitleInput}
                     onChange={(e) => setEditTitleInput(e.target.value)}
                     onBlur={() => handleSaveRename(session.id)}
@@ -793,6 +799,9 @@ export const AITutor = () => {
             <div className="relative flex-1">
               <input 
                 type="text" 
+                id="doap-chat-input"
+                name="chatPrompt"
+                aria-label="Message DOAP AI"
                 placeholder={isListening ? "Listening to your voice..." : "Message DOAP AI (Ask anything from A to Z, coding, math, ideas, or /image <prompt>)..."}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
