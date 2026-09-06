@@ -502,6 +502,9 @@ Please break down:
 
         {/* Topic Filter Dropdown */}
         <select
+          id="select-company-topic"
+          name="companyTopic"
+          aria-label="Filter by Topic"
           value={selectedTopic}
           onChange={(e) => setSelectedTopic(e.target.value)}
           className="px-3.5 py-2.5 rounded-xl border text-xs font-sans outline-none cursor-pointer"
@@ -519,6 +522,9 @@ Please break down:
 
         {/* Sort By Dropdown */}
         <select
+          id="select-company-sort"
+          name="companySort"
+          aria-label="Sort Questions By"
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
           className="px-3.5 py-2.5 rounded-xl border text-xs font-sans outline-none cursor-pointer"
@@ -767,6 +773,9 @@ Please break down:
             <div className="flex items-center gap-2 text-xs font-mono text-neutral-400">
               <span>Per page:</span>
               <select
+                id="select-items-per-page"
+                name="itemsPerPage"
+                aria-label="Select items per page"
                 value={itemsPerPage}
                 onChange={(e) => setItemsPerPage(Number(e.target.value))}
                 className="px-2 py-1 rounded-lg border text-xs font-mono outline-none cursor-pointer"
