@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Code, 
   CheckCircle2, 
@@ -1213,9 +1214,15 @@ Evaluate this code strictly:
       </div>
 
       {/* 1. DOAP Coding Gateway Modal (Choose Casual Sandbox or Proctored Assessment) */}
-      {pendingProblem && !isAssessmentActive && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/90 backdrop-blur-xl animate-fade-in select-none overflow-y-auto">
-          <div className="w-full max-w-xl rounded-3xl border border-cyan-500/40 bg-[#0b0e17] text-white shadow-2xl flex flex-col max-h-[92vh] sm:max-h-[88vh] overflow-hidden my-auto">
+      {pendingProblem && !isAssessmentActive && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md select-none overflow-y-auto"
+          onClick={() => setPendingProblem(null)}
+        >
+          <div 
+            className="w-full max-w-xl rounded-3xl border border-cyan-500/40 bg-[#0b0e17] text-white shadow-2xl flex flex-col max-h-[90vh] sm:max-h-[85vh] overflow-hidden my-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Modal Header */}
             <div className="px-5 py-4 border-b border-neutral-800 flex items-center justify-between shrink-0 bg-[#0d101b]">
               <div className="flex items-center gap-3">
@@ -1360,12 +1367,13 @@ Evaluate this code strictly:
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* 2. Fullscreen Proctored Coding Assessment Environment */}
-      {isAssessmentActive && activeProblem && (
-        <div className="fixed inset-0 z-50 bg-[#07090e] text-white flex flex-col h-screen w-screen overflow-hidden font-sans select-none animate-fade-in">
+      {isAssessmentActive && activeProblem && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] bg-[#07090e] text-white flex flex-col h-screen w-screen overflow-hidden font-sans select-none">
           {/* Assessment Top Proctoring Bar */}
           <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-cyan-500/20 bg-[#0b0e17] shrink-0 z-10">
             {/* Left: Problem & Badge */}
@@ -1953,14 +1961,19 @@ Evaluate this code strictly:
               </div>
             </div>
           )}
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* 3. Casual Code Sandbox Modal (When opened in non-assessment mode) */}
-      {activeProblem && !isAssessmentActive && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-fade-in select-none">
+      {activeProblem && !isAssessmentActive && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md select-none overflow-y-auto"
+          onClick={() => setActiveProblem(null)}
+        >
           <div 
-            className={`w-full max-w-4xl rounded-3xl border shadow-2xl overflow-hidden flex flex-col max-h-[92vh] ${
+            onClick={(e) => e.stopPropagation()}
+            className={`w-full max-w-4xl rounded-3xl border shadow-2xl overflow-hidden flex flex-col max-h-[92vh] my-auto ${
               isDarkMode ? 'bg-[#0d0f14] border-neutral-800 text-white' : 'bg-white border-neutral-300 text-neutral-900'
             }`}
           >
@@ -2290,13 +2303,25 @@ Evaluate this code strictly:
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* 4. DOAP Student Coding Proficiency Report Card Modal */}
-      {showProficiencyReport && proficiencyReport && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/95 backdrop-blur-2xl animate-fade-in select-none">
-          <div className="w-full max-w-lg rounded-3xl border border-cyan-500/40 bg-[#0c101a] text-white p-6 shadow-2xl space-y-6">
+      {showProficiencyReport && proficiencyReport && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/95 backdrop-blur-2xl select-none overflow-y-auto"
+          onClick={() => {
+            setShowProficiencyReport(false);
+            setProficiencyReport(null);
+            setIsAssessmentActive(false);
+            setActiveProblem(null);
+          }}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg rounded-3xl border border-cyan-500/40 bg-[#0c101a] text-white p-6 shadow-2xl space-y-6 max-h-[92vh] overflow-y-auto my-auto"
+          >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-neutral-800 pb-4">
               <div className="flex items-center gap-3">
@@ -2400,7 +2425,8 @@ Evaluate this code strictly:
               <ArrowRight size={14} />
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
