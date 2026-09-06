@@ -12,8 +12,8 @@ import {
   PYTHON_BANK, 
   JAVA_BANK, 
   DSA_NUMERICALS_BANK 
-} from '../data/questionBanks';
-import { memoryBrain } from './memoryBrain';
+} from '../data/questionBanks.js';
+import { memoryBrain } from './memoryBrain.js';
 
 const defaultGk = [
   'gsk',
