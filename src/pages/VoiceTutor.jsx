@@ -1231,12 +1231,12 @@ export const VoiceTutor = () => {
 
       {/* 4. Slide-Out Glassmorphic Live I/O Console (Input, Spoken Output & Code Extraction) */}
       {isCodeCanvasOpen && (
-        <div className="absolute inset-y-12 sm:inset-y-16 right-0 sm:right-4 w-full sm:w-[540px] lg:w-[620px] z-40 rounded-t-3xl sm:rounded-3xl bg-[#080c14]/95 backdrop-blur-2xl border border-cyan-500/30 shadow-[0_25px_80px_rgba(0,0,0,0.85),0_0_50px_rgba(6,182,212,0.18)] flex flex-col overflow-hidden animate-fade-in transition-all">
+        <div className="absolute top-14 bottom-4 sm:top-16 sm:bottom-6 right-0 sm:right-4 w-full sm:w-[540px] lg:w-[620px] z-40 rounded-t-3xl sm:rounded-3xl bg-[#080c14]/95 backdrop-blur-2xl border border-cyan-500/30 shadow-[0_25px_80px_rgba(0,0,0,0.85),0_0_50px_rgba(6,182,212,0.18)] flex flex-col overflow-hidden animate-fade-in transition-all">
           {/* Top Neon Accent Line */}
           <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-cyan-400 via-emerald-400 to-transparent shrink-0 animate-pulse" />
 
           {/* I/O Console Top Bar */}
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/10 bg-neutral-900/60 shrink-0">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-white/10 bg-neutral-900/60 shrink-0">
             <div className="flex items-center gap-3">
               <div className="relative p-2 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 text-cyan-400 border border-cyan-500/40 shadow-inner">
                 <Terminal size={17} />
@@ -1285,9 +1285,9 @@ export const VoiceTutor = () => {
           </div>
 
           {/* I/O Console Scrollable Content */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 scrollbar-thin">
+          <div className="flex-1 overflow-y-auto p-3.5 sm:p-4 space-y-3 scrollbar-thin">
             {/* 1. INPUT BLOCK (Voice transcript or prompt) */}
-            <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-950/25 via-neutral-900/80 to-neutral-950/90 p-4 shadow-sm relative overflow-hidden group">
+            <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-950/25 via-neutral-900/80 to-neutral-950/90 p-3.5 shadow-sm relative overflow-hidden group">
               <div className="absolute -right-6 -top-6 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
 
               <div className="flex items-center justify-between text-xs font-semibold text-cyan-400 mb-2.5 relative z-10">
