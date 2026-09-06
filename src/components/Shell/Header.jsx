@@ -1,11 +1,11 @@
 import React from 'react';
-import { Menu, Sun, Moon, Monitor } from 'lucide-react';
+import { Menu, Sun, Moon, Monitor, PanelLeftOpen } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { NAVIGATION_ITEMS } from '../../data/mockData';
 
 export const Header = ({ onOpenMobileSidebar }) => {
-  const { currentPath, navigateTo, profile, isDarkMode, settings, appearance, updatePersonalization, updateAppearance } = useTheme();
+  const { currentPath, navigateTo, profile, isDarkMode, settings, appearance, updatePersonalization, updateAppearance, isSidebarHidden, setIsSidebarHidden } = useTheme();
   const { user, openAuthModal } = useAuth();
 
   const activeSettings = settings || appearance || {};
@@ -18,11 +18,13 @@ export const Header = ({ onOpenMobileSidebar }) => {
 
   return (
     <header 
-      className="sticky top-0 z-30 border-b px-4 py-3 flex items-center justify-between transition-colors doap-glass"
+      className="sticky top-0 z-30 border-b px-4 py-3 flex items-center justify-between transition-colors shadow-xs"
       style={{
-        backgroundColor: 'var(--surface, var(--doap-surface))',
-        borderColor: 'var(--border, var(--doap-border))',
-        color: 'var(--text-primary, var(--doap-text-prim))'
+        backgroundColor: isDarkMode ? 'rgba(7, 10, 18, 0.96)' : 'rgba(255, 255, 255, 0.96)',
+        borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+        color: 'var(--text-primary, var(--doap-text-prim))',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)'
       }}
     >
       <div className="flex items-center gap-3">
@@ -34,6 +36,23 @@ export const Header = ({ onOpenMobileSidebar }) => {
         >
           <Menu size={20} />
         </button>
+
+        {isSidebarHidden && (
+          <button 
+            onClick={() => setIsSidebarHidden(false)}
+            className="hidden md:flex p-1.5 px-2.5 rounded-xl border items-center gap-1.5 transition-all cursor-pointer hover:scale-105 shadow-sm"
+            style={{ 
+              borderColor: 'var(--border, var(--doap-border))', 
+              color: 'var(--text-primary, var(--doap-text-prim))', 
+              backgroundColor: 'var(--surface-elevated, var(--doap-surface-sec))' 
+            }}
+            title="Show Navigation Sidebar (Ctrl+B)"
+          >
+            <PanelLeftOpen size={16} className="text-cyan-400" />
+            <span className="text-xs font-mono font-semibold">Menu</span>
+          </button>
+        )}
+
         <span className="font-bold text-base tracking-tight" style={{ color: 'var(--text-primary, var(--doap-text-prim))' }}>
           {currentItem.label}
         </span>

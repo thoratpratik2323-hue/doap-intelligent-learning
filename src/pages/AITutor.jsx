@@ -59,7 +59,7 @@ const generateTitleFromPrompt = (prompt) => {
 };
 
 export const AITutor = () => {
-  const { isDarkMode, activeAccentHex } = useTheme();
+  const { isDarkMode, activeAccentHex, isSidebarHidden, setIsSidebarHidden } = useTheme();
   const { profile } = useAuth();
   const accentHex = activeAccentHex || 'var(--doap-accent, #ffffff)';
   const userName = profile?.name ? profile.name.split(' ')[0] : 'there';
@@ -559,6 +559,18 @@ export const AITutor = () => {
           style={{ borderColor: 'var(--doap-border)' }}
         >
           <div className="flex items-center gap-2">
+            {isSidebarHidden && (
+              <button
+                onClick={() => setIsSidebarHidden(false)}
+                className="hidden md:flex p-1.5 px-2.5 rounded-xl border items-center gap-1.5 transition-all cursor-pointer hover:scale-105 shadow-sm mr-1"
+                style={{ borderColor: 'var(--doap-border)', color: 'var(--doap-text-prim)', backgroundColor: 'var(--doap-surface-sec)' }}
+                title="Show Main Navigation Sidebar (Ctrl+B)"
+              >
+                <PanelLeftOpen size={14} className="text-indigo-400" />
+                <span className="text-xs font-mono font-semibold">Menu</span>
+              </button>
+            )}
+
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               className="p-1.5 rounded-xl border flex items-center justify-center transition-colors cursor-pointer hover:opacity-80"

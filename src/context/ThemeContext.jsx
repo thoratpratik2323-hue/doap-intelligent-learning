@@ -79,6 +79,34 @@ export const ThemeProvider = ({ children }) => {
     return '/';
   });
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarHidden, setIsSidebarHidden] = useState(() => {
+    try {
+      return localStorage.getItem('doap_sidebar_hidden') === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
+
+  // Sync sidebar hidden state with localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('doap_sidebar_hidden', String(isSidebarHidden));
+    } catch (e) {}
+  }, [isSidebarHidden]);
+
+  // Global Ctrl+B / Cmd+B keyboard shortcut to toggle sidebar visibility
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(e?.target?.tagName) || e?.target?.isContentEditable) return;
+      if ((e.ctrlKey || e.metaKey) && e.key && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        setIsSidebarHidden(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isBrainVaultOpen, setIsBrainVaultOpen] = useState(false);
@@ -255,6 +283,7 @@ export const ThemeProvider = ({ children }) => {
     activeAccent,
     currentPath, navigateTo,
     isSidebarCollapsed, setIsSidebarCollapsed,
+    isSidebarHidden, setIsSidebarHidden,
     isSettingsOpen, setIsSettingsOpen,
     isEditProfileOpen, setIsEditProfileOpen,
     isBrainVaultOpen, setIsBrainVaultOpen,
@@ -282,6 +311,7 @@ export const useTheme = () => {
       activeAccent: { id: 'neutral', name: 'Neutral', hex: '#e4e4e7' },
       currentPath: '/', navigateTo: () => {},
       isSidebarCollapsed: false, setIsSidebarCollapsed: () => {},
+      isSidebarHidden: false, setIsSidebarHidden: () => {},
       isSettingsOpen: false, setIsSettingsOpen: () => {},
       isEditProfileOpen: false, setIsEditProfileOpen: () => {},
       isBrainVaultOpen: false, setIsBrainVaultOpen: () => {},

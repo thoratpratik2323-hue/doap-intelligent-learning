@@ -22,7 +22,9 @@ import {
   ArrowUpRight,
   Radio,
   Play,
-  Layers
+  Layers,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -132,7 +134,7 @@ const SAMPLE_QUICK_PROMPTS = [
 ];
 
 export const VoiceTutor = () => {
-  const { isDarkMode, activeAccentHex, navigateTo } = useTheme();
+  const { isDarkMode, activeAccentHex, navigateTo, isSidebarHidden, setIsSidebarHidden } = useTheme();
   const { profile } = useAuth();
   const userName = profile?.name ? profile.name.split(' ')[0] : 'there';
 
@@ -1011,7 +1013,17 @@ export const VoiceTutor = () => {
 
       {/* 1. Sleek Modern Header Bar */}
       <div className="flex items-center justify-between z-20 pb-3 border-b border-white/10 gap-2">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Voice Tutor Sidebar Toggle Button */}
+          <button
+            onClick={() => setIsSidebarHidden(prev => !prev)}
+            className="px-2.5 py-1.5 rounded-xl text-xs font-medium border border-white/15 bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
+            title={isSidebarHidden ? "Show Navigation Sidebar (Ctrl+B)" : "Hide Navigation Sidebar for Full Immersion (Ctrl+B)"}
+          >
+            {isSidebarHidden ? <PanelLeftOpen size={14} className="text-cyan-400" /> : <PanelLeftClose size={14} className="text-neutral-400" />}
+            <span className="hidden md:inline font-mono text-[11px]">{isSidebarHidden ? "Show Menu" : "Hide Menu"}</span>
+          </button>
+
           <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs sm:text-sm font-bold tracking-wide shadow-sm">
             <span className={`w-2.5 h-2.5 rounded-full bg-cyan-400 ${isCallActive ? "animate-ping" : ""}`} />
             <span>DOAP AI</span>

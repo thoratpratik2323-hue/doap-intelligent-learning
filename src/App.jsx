@@ -48,7 +48,7 @@ const LoadingScreen = () => {
 };
 
 const AppContent = () => {
-  const { currentPath, isSidebarCollapsed } = useTheme();
+  const { currentPath, isSidebarCollapsed, isSidebarHidden } = useTheme();
   const { user, loading } = useAuth();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   
@@ -149,7 +149,11 @@ const AppContent = () => {
           <Sidebar isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
 
           {/* Main Scrollable Content Window */}
-          <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64 lg:ml-68'}`}>
+          <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${
+            isSidebarHidden 
+              ? 'ml-0' 
+              : (isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64 lg:ml-68')
+          }`}>
             {currentPath !== '/ai-tutor' && currentPath !== '/voice-tutor' && (
               <Header onOpenMobileSidebar={() => setIsMobileOpen(true)} />
             )}

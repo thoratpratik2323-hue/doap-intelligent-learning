@@ -21,7 +21,8 @@ import {
   Sun,
   Moon,
   Radio,
-  Building2
+  Building2,
+  PanelLeftClose
 } from 'lucide-react';
 import { NAVIGATION_ITEMS } from '../../data/mockData';
 import { useTheme } from '../../context/ThemeContext';
@@ -51,6 +52,8 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
     navigateTo, 
     isSidebarCollapsed, 
     setIsSidebarCollapsed, 
+    isSidebarHidden,
+    setIsSidebarHidden,
     setIsSettingsOpen,
     isDarkMode,
     toggleThemeMode
@@ -66,19 +69,21 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
   return (
     <aside 
       className={`
-        fixed top-0 left-0 bottom-0 z-40 border-r doap-glass
+        fixed top-0 left-0 bottom-0 z-40 border-r shadow-2xl
         flex flex-col justify-between transition-all duration-300 ease-in-out select-none
         ${isSidebarCollapsed ? 'w-20' : 'w-64 md:w-68'}
-        ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        ${isMobileOpen 
+          ? 'translate-x-0' 
+          : (isSidebarHidden ? '-translate-x-full md:-translate-x-full pointer-events-none opacity-0' : '-translate-x-full md:translate-x-0 opacity-100')}
       `}
       style={{
-        backgroundColor: 'var(--doap-surface)',
-        borderColor: 'var(--doap-border)',
+        backgroundColor: isDarkMode ? '#060911' : '#ffffff',
+        borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
         color: 'var(--doap-text-prim)'
       }}
     >
       {/* Sidebar Header / Logo */}
-      <div className="p-4 sm:p-5 flex items-center justify-between border-b" style={{ borderColor: 'var(--doap-border)' }}>
+      <div className="p-4 sm:p-5 flex items-center justify-between border-b" style={{ borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)' }}>
         <div 
           onClick={() => handleNavClick('/')} 
           className="flex items-center gap-3 cursor-pointer group"
@@ -105,15 +110,27 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
           )}
         </div>
 
-        {/* Desktop Collapse Toggle */}
-        <button
-          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          className="hidden md:flex items-center justify-center w-7 h-7 rounded-xl transition-colors cursor-pointer hover:opacity-80"
-          style={{ color: 'var(--doap-text-sec)' }}
-          title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {isSidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-        </button>
+        {/* Desktop Collapse & Hide Controls */}
+        <div className="hidden md:flex items-center gap-1">
+          {/* Collapse / Expand Toggle */}
+          <button
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            className="p-1.5 rounded-xl transition-colors cursor-pointer hover:bg-white/10 hover:text-white"
+            style={{ color: 'var(--doap-text-sec)' }}
+            title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar (Icon mode)"}
+          >
+            {isSidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
+
+          {/* Hide Sidebar Completely (Full-screen view) */}
+          <button
+            onClick={() => setIsSidebarHidden(true)}
+            className="p-1.5 rounded-xl transition-colors cursor-pointer hover:bg-white/10 hover:text-rose-400 text-neutral-400"
+            title="Hide sidebar completely (Ctrl+B)"
+          >
+            <PanelLeftClose size={15} />
+          </button>
+        </div>
       </div>
 
       {/* Navigation Links */}
@@ -183,6 +200,18 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
           <Settings size={17} className="shrink-0" />
           {!isSidebarCollapsed && <span>Settings</span>}
         </button>
+
+        {!isSidebarCollapsed && (
+          <button
+            onClick={() => setIsSidebarHidden(true)}
+            className="w-full flex items-center gap-3.5 px-3.5 py-2 rounded-2xl transition-all text-xs font-semibold group cursor-pointer border-0 outline-none hover:bg-white/5 hover:text-white"
+            style={{ color: 'var(--doap-text-sec)' }}
+            title="Hide Sidebar (Full-Screen View • Ctrl+B)"
+          >
+            <PanelLeftClose size={17} className="shrink-0 text-neutral-400 group-hover:text-rose-300 transition-colors" />
+            <span>Hide Sidebar</span>
+          </button>
+        )}
       </div>
     </aside>
   );
