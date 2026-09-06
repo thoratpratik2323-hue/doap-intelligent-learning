@@ -13,6 +13,7 @@ import {
   JAVA_BANK, 
   DSA_NUMERICALS_BANK 
 } from '../data/questionBanks.js';
+import { DSA_QUIZZES } from '../data/dsa/dsaKnowledgeData.js';
 import { memoryBrain } from './memoryBrain.js';
 
 const defaultGk = [
@@ -77,9 +78,51 @@ export async function generateSmartTutorResponse(message, userName = 'there', hi
     } else if (topic.includes('java')) {
       bank = JAVA_BANK;
       domainName = "Java 21 & JVM Concurrency";
-    } else if (topic.includes('dsa') || topic.includes('num') || topic.includes('complexity') || topic.includes('tree') || topic.includes('array')) {
-      bank = DSA_NUMERICALS_BANK;
-      domainName = "DSA Complexity & Numericals";
+    } else if (
+      topic.includes('dsa') || 
+      topic.includes('tree') || 
+      topic.includes('graph') || 
+      topic.includes('dp') || 
+      topic.includes('array') || 
+      topic.includes('string') || 
+      topic.includes('heap') || 
+      topic.includes('stack') || 
+      topic.includes('queue') || 
+      topic.includes('sort') || 
+      topic.includes('search') || 
+      topic.includes('trie') || 
+      topic.includes('complexity') || 
+      topic.includes('num')
+    ) {
+      // Find matching questions in the 315 DSA Quiz Bank
+      let matchingDsa = DSA_QUIZZES;
+      if (topic && !topic.includes('dsa')) {
+        const filtered = DSA_QUIZZES.filter(q => 
+          (q.topic && q.topic.toLowerCase().includes(topic)) ||
+          (q.question && q.question.toLowerCase().includes(topic))
+        );
+        if (filtered.length > 0) matchingDsa = filtered;
+      }
+      
+      const selected = matchingDsa[Math.floor(Math.random() * matchingDsa.length)];
+      domainName = `DSA (${selected.topic || 'Algorithms'})`;
+      const quizData = {
+        domain: domainName,
+        topic: selected.topic || 'DSA',
+        level: selected.difficulty || 'Medium',
+        question: selected.question,
+        options: selected.options,
+        correctIndex: selected.correctIndex,
+        explanation: selected.explanation || 'Optimal DSA algorithm invariant.'
+      };
+
+      return `### 📝 Interactive Flash Quiz: ${domainName}
+
+\`\`\`quiz
+${JSON.stringify(quizData, null, 2)}
+\`\`\`
+
+*Tap your answer above to test your knowledge! Type \`/quiz\` for another question or try \`/quiz dsa\`, \`/quiz trees\`, \`/quiz graphs\`, \`/quiz dp\`!*`;
     }
 
     const q = bank[Math.floor(Math.random() * bank.length)];
@@ -90,7 +133,7 @@ export async function generateSmartTutorResponse(message, userName = 'there', hi
       question: q.question,
       options: q.options,
       correctIndex: q.correctIndex,
-      explanation: q.answer
+      explanation: q.answer || q.explanation
     };
 
     return `### 📝 Interactive Flash Quiz: ${domainName}

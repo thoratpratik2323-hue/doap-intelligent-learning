@@ -29,7 +29,13 @@ import {
   EyeOff,
   Flame,
   CheckCircle,
-  Building2
+  Building2,
+  BookOpen,
+  Search,
+  Filter,
+  Layers,
+  Brain,
+  Lightbulb
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -38,6 +44,12 @@ import { runCodemakerAgent } from '../services/ipArmyAgents';
 import { localConnector } from '../services/localSystemConnector';
 import { memoryBrain } from '../services/memoryBrain';
 import { generateSmartTutorResponse } from '../services/aiTutorEngine';
+import { 
+  DSA_METADATA, 
+  DSA_PROBLEMS, 
+  DSA_QUIZZES, 
+  DSA_KNOWLEDGE_BASE 
+} from '../data/dsa/dsaKnowledgeData';
 
 const PROBLEM_DEFINITIONS = [
   {
@@ -382,6 +394,8 @@ const PROBLEM_DEFINITIONS = [
   }
 ];
 
+export const ALL_PROBLEMS = [...PROBLEM_DEFINITIONS, ...DSA_PROBLEMS];
+
 function deepEqual(a, b) {
   if (a === b) return true;
   if (a === undefined || b === undefined) return a === b;
@@ -475,6 +489,19 @@ export const CodingPractice = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
   
+  // View Switcher & Search States for Complete DSA Integration
+  const [activePracticeTab, setActivePracticeTab] = useState('problems'); // 'problems' | 'knowledge' | 'quizzes'
+  const [problemSearchQuery, setProblemSearchQuery] = useState('');
+  const [knowledgeSearchQuery, setKnowledgeSearchQuery] = useState('');
+  const [selectedKnowledgeCat, setSelectedKnowledgeCat] = useState('All');
+  const [activeKnowledgeDetail, setActiveKnowledgeDetail] = useState(null);
+  const [quizSearchQuery, setQuizSearchQuery] = useState('');
+  const [selectedQuizTopic, setSelectedQuizTopic] = useState('All');
+  const [selectedQuizDiff, setSelectedQuizDiff] = useState('All');
+  const [quizUserAnswers, setQuizUserAnswers] = useState({});
+  const [quizScoreStats, setQuizScoreStats] = useState({ answered: 0, correct: 0 });
+  const [quizCurrentPage, setQuizCurrentPage] = useState(1);
+
   // Multi-Language State
   const [selectedLanguage, setSelectedLanguage] = useState('javascript'); // 'javascript' | 'python' | 'cpp' | 'java'
 
@@ -524,7 +551,7 @@ export const CodingPractice = () => {
         const parsed = JSON.parse(injected);
         if (parsed?.code) {
           localStorage.removeItem('doap_sandbox_injected_code');
-          const targetProb = PROBLEM_DEFINITIONS[0];
+          const targetProb = ALL_PROBLEMS[0];
           setActiveProblem(targetProb);
           setCode(parsed.code);
           if (parsed.lang) setSelectedLanguage(parsed.lang.toLowerCase());
@@ -662,45 +689,96 @@ Act as my Socratic AI Tutor. Do NOT write the entire solved code. Instead, analy
   };
 
   const categories = [
-    "All", "Arrays", "Strings", "Linked Lists", "Trees", "Graphs", 
-    "Dynamic Programming", "Sorting", "Searching"
+    "All", "Arrays", "Strings", "Linked Lists", "Stacks", "Queues", "Trees", "Graphs", 
+    "Dynamic Programming", "Sorting", "Searching", "Bit Manipulation", "Range Queries", "Tries", "Advanced Patterns"
   ];
 
   const difficulties = ["All", "Easy", "Medium", "Hard"];
 
-  const filteredProblems = PROBLEM_DEFINITIONS.filter(p => {
+  const filteredProblems = ALL_PROBLEMS.filter(p => {
     const matchCat = selectedCategory === 'All' || p.category === selectedCategory;
     const matchDiff = selectedDifficulty === 'All' || p.difficulty === selectedDifficulty;
-    return matchCat && matchDiff;
+    const q = problemSearchQuery.trim().toLowerCase();
+    const matchQuery = !q || 
+      (p.title && p.title.toLowerCase().includes(q)) ||
+      (p.pattern && p.pattern.toLowerCase().includes(q)) ||
+      (p.category && p.category.toLowerCase().includes(q)) ||
+      (p.description && p.description.toLowerCase().includes(q));
+    return matchCat && matchDiff && matchQuery;
   });
 
   const getLanguageStarterCode = (prob, lang) => {
     if (!prob) return '';
+    if (prob.starterCodes && prob.starterCodes[lang]) {
+      return prob.starterCodes[lang];
+    }
+    const fnName = prob.functionName || 'solution';
     if (lang === 'python') {
-      return `class Solution:
-    def ${prob.functionName}(self, *args):
-        pass`;
+      return `class Solution:\n    def ${fnName}(self, *args):\n        pass`;
     }
     if (lang === 'cpp') {
-      return `#include <iostream>
-#include <vector>
-using namespace std;
-
-class Solution {
-public:
-    void ${prob.functionName}() {
-        
-    }
-};`;
+      return `#include <iostream>\n#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    void ${fnName}() {\n        \n    }\n};`;
     }
     if (lang === 'java') {
-      return `public class Solution {
-    public void ${prob.functionName}() {
-        
+      return `public class Solution {\n    public void ${fnName}() {\n        \n    }\n}`;
     }
-}`;
+    return prob.starterCode || `function ${fnName}() {\n  \n}`;
+  };
+
+  // DSA Knowledge Base Categories & Filtering
+  const knowledgeCategories = [
+    "All", "General", "Data Structures", "Algorithms", "Arrays", "Linked Lists", 
+    "Stacks", "Queues", "Hashing", "Heaps", "Trees", "Graphs", "Searching", 
+    "Sorting", "Greedy", "Dynamic Programming", "Strings", "Bit Manipulation", 
+    "Range Queries", "Advanced Patterns", "Tries"
+  ];
+
+  const filteredKnowledge = DSA_KNOWLEDGE_BASE.filter(k => {
+    const matchCat = selectedKnowledgeCat === 'All' || k.category === selectedKnowledgeCat;
+    const q = knowledgeSearchQuery.trim().toLowerCase();
+    const matchQuery = !q || 
+      (k.title && k.title.toLowerCase().includes(q)) ||
+      (k.content && k.content.toLowerCase().includes(q)) ||
+      (k.subcategory && k.subcategory.toLowerCase().includes(q)) ||
+      (k.category && k.category.toLowerCase().includes(q));
+    return matchCat && matchQuery;
+  });
+
+  // DSA Concept Quizzes Topics & Filtering
+  const quizTopics = [
+    "All", "Complexity", "Arrays", "Strings", "Linked Lists", "Stacks", "Queues", 
+    "Trees", "Graphs", "DP", "Heaps", "Hashing", "Bit Manipulation", "Sorting", 
+    "Searching", "Range Queries", "Advanced Patterns", "Tries"
+  ];
+
+  const filteredQuizzes = DSA_QUIZZES.filter(q => {
+    const matchTopic = selectedQuizTopic === 'All' || 
+      (q.topic && q.topic.toLowerCase().includes(selectedQuizTopic.toLowerCase()));
+    const matchDiff = selectedQuizDiff === 'All' || q.difficulty === selectedQuizDiff;
+    const query = quizSearchQuery.trim().toLowerCase();
+    const matchQuery = !query || 
+      (q.question && q.question.toLowerCase().includes(query)) ||
+      (q.explanation && q.explanation.toLowerCase().includes(query));
+    return matchTopic && matchDiff && matchQuery;
+  });
+
+  const handleSelectQuizAnswer = (quizId, optIdx, correctIdx) => {
+    if (quizUserAnswers[quizId] !== undefined) return; // Answered already
+    const isCorrect = optIdx === correctIdx;
+    setQuizUserAnswers(prev => ({ ...prev, [quizId]: optIdx }));
+    setQuizScoreStats(prev => ({
+      answered: prev.answered + 1,
+      correct: prev.correct + (isCorrect ? 1 : 0)
+    }));
+  };
+
+  const handleAskAiTutor = (promptText) => {
+    try {
+      sessionStorage.setItem('doap_ai_initial_prompt', promptText);
+      navigateTo('/ai-tutor');
+    } catch (e) {
+      console.warn('Navigation error:', e);
     }
-    return prob.starterCode;
   };
 
   const handleOpenProblem = (prob) => {
@@ -968,6 +1046,17 @@ public:
 
         // Self-Healing Fallback: DOAP AI Neural Code Simulation Engine
         if (!executedSuccessfully) {
+          const activeTests = (activeProblem.tests && activeProblem.tests.length > 0)
+            ? activeProblem.tests
+            : (activeProblem.examples && activeProblem.examples.length > 0)
+              ? activeProblem.examples.map((ex, idx) => ({
+                  id: idx + 1,
+                  display: `${activeProblem.functionName || 'solution'}(${ex.input})`,
+                  expected: ex.output,
+                  input: [ex.input]
+                }))
+              : [{ id: 1, display: `${activeProblem.functionName || 'solution'}()`, expected: true, input: [] }];
+
           const evalPrompt = `You are the DOAP AI Execution Engine for ${selectedLanguage.toUpperCase()}.
 Algorithmic Challenge: "${activeProblem.title}"
 Description: ${activeProblem.description}
@@ -978,7 +1067,7 @@ ${code}
 \`\`\`
 
 Test Cases to verify:
-${activeProblem.tests.map((t, idx) => `Test ${idx + 1}: ${t.display} => Expected: ${JSON.stringify(t.expected)}`).join('\n')}
+${activeTests.map((t, idx) => `Test ${idx + 1}: ${t.display} => Expected: ${JSON.stringify(t.expected)}`).join('\n')}
 
 Evaluate this code strictly:
 1. Does it have compilation or syntax errors?
@@ -1127,23 +1216,34 @@ Evaluate this code strictly:
         console.warn('Web Worker initialization failed, fallback to main thread:', workerInitErr);
       }
 
+      const activeTests = (activeProblem.tests && activeProblem.tests.length > 0)
+        ? activeProblem.tests
+        : (activeProblem.examples && activeProblem.examples.length > 0)
+          ? activeProblem.examples.map((ex, idx) => ({
+              id: idx + 1,
+              display: `${activeProblem.functionName || 'solution'}(${ex.input})`,
+              expected: ex.output,
+              input: [ex.input]
+            }))
+          : [{ id: 1, display: `${activeProblem.functionName || 'solution'}()`, expected: true, input: [] }];
+
       const runMainThreadFallback = () => {
         try {
           const startTime = performance.now();
           const runner = new Function(`
             ${code}
-            if (typeof ${activeProblem.functionName} !== 'function' && typeof solution !== 'function') {
-              throw new Error("Could not find function '${activeProblem.functionName}' or 'solution'. Please check your function definition.");
+            if (typeof ${activeProblem.functionName || 'solution'} !== 'function' && typeof solution !== 'function') {
+              throw new Error("Could not find function '${activeProblem.functionName || 'solution'}' or 'solution'. Please check your function definition.");
             }
-            const targetFn = typeof ${activeProblem.functionName} === 'function' ? ${activeProblem.functionName} : solution;
+            const targetFn = typeof ${activeProblem.functionName || 'solution'} === 'function' ? ${activeProblem.functionName || 'solution'} : solution;
             return targetFn;
           `)();
 
           const testResults = [];
           let allPassed = true;
 
-          for (let i = 0; i < activeProblem.tests.length; i++) {
-            const testCase = activeProblem.tests[i];
+          for (let i = 0; i < activeTests.length; i++) {
+            const testCase = activeTests[i];
             const tStart = performance.now();
             let actual;
             let passed = false;
@@ -1273,8 +1373,8 @@ Evaluate this code strictly:
 
       worker.postMessage({
         code,
-        functionName: activeProblem.functionName,
-        tests: activeProblem.tests
+        functionName: activeProblem.functionName || 'solution',
+        tests: activeTests
       });
     };
 
@@ -1322,99 +1422,594 @@ Evaluate this code strictly:
         </div>
       </div>
 
-      {/* Filter Row: Categories + Difficulty */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        {/* Category Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`
-                px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border
-                ${selectedCategory === cat 
-                  ? (isDarkMode ? 'bg-white text-black border-white' : 'bg-black text-white border-black') 
-                  : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
-                }
-              `}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+      {/* DSA Suite Navigation Switcher */}
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-neutral-900/80 border border-neutral-800 backdrop-blur-md">
+        <button
+          onClick={() => setActivePracticeTab('problems')}
+          className={`flex-1 py-2.5 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activePracticeTab === 'problems'
+              ? (isDarkMode ? 'bg-white text-black shadow-md font-extrabold' : 'bg-black text-white shadow-md font-extrabold')
+              : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
+          }`}
+        >
+          <Code size={16} />
+          <span>DSA Problems ({ALL_PROBLEMS.length})</span>
+        </button>
 
-        {/* Difficulty Selector */}
-        <div className="flex items-center gap-1.5 self-start sm:self-auto shrink-0">
-          {difficulties.map((diff) => (
-            <button
-              key={diff}
-              onClick={() => setSelectedDifficulty(diff)}
-              className={`
-                px-3 py-1.5 rounded-xl text-xs font-mono transition-colors cursor-pointer border
-                ${selectedDifficulty === diff 
-                  ? (isDarkMode ? 'bg-white text-black border-white font-bold' : 'bg-black text-white border-black font-bold') 
-                  : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
-                }
-              `}
-            >
-              {diff}
-            </button>
-          ))}
-        </div>
+        <button
+          onClick={() => setActivePracticeTab('knowledge')}
+          className={`flex-1 py-2.5 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activePracticeTab === 'knowledge'
+              ? (isDarkMode ? 'bg-white text-black shadow-md font-extrabold' : 'bg-black text-white shadow-md font-extrabold')
+              : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
+          }`}
+        >
+          <BookOpen size={16} />
+          <span>Knowledge Base ({DSA_KNOWLEDGE_BASE.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActivePracticeTab('quizzes')}
+          className={`flex-1 py-2.5 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activePracticeTab === 'quizzes'
+              ? (isDarkMode ? 'bg-white text-black shadow-md font-extrabold' : 'bg-black text-white shadow-md font-extrabold')
+              : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
+          }`}
+        >
+          <Zap size={16} />
+          <span>Concept Quizzes ({DSA_QUIZZES.length})</span>
+        </button>
       </div>
 
-      {/* Problems List */}
-      <div className="space-y-3">
-        {filteredProblems.map((prob) => {
-          const isSolved = solvedProblems.includes(prob.id);
+      {/* TAB 1: DSA PROBLEM BANK (147 PROBLEMS) */}
+      {activePracticeTab === 'problems' && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Search Bar */}
+          <div className="relative">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500" />
+            <input
+              type="text"
+              value={problemSearchQuery}
+              onChange={(e) => setProblemSearchQuery(e.target.value)}
+              placeholder="Search 147 DSA challenges by title, pattern (e.g. two pointers, sliding window), or topic..."
+              className={`w-full pl-10 pr-10 py-2.5 rounded-2xl border text-xs sm:text-sm transition-all focus:outline-none ${
+                isDarkMode 
+                  ? 'bg-[#111111] border-neutral-800 text-white placeholder-neutral-500 focus:border-cyan-500/50' 
+                  : 'bg-white border-neutral-200 text-black placeholder-neutral-400 focus:border-black'
+              }`}
+            />
+            {problemSearchQuery && (
+              <button 
+                onClick={() => setProblemSearchQuery('')}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white cursor-pointer"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
 
-          return (
-            <div
-              key={prob.id}
-              onClick={() => handleOpenProblem(prob)}
-              className={`
-                p-4 rounded-2xl flex items-center justify-between transition-all cursor-pointer border doap-card group
-                ${isDarkMode 
-                  ? 'bg-[#111111] border-neutral-800 text-white hover:border-neutral-700' 
-                  : 'bg-white border-neutral-200 text-black hover:border-neutral-300'
-                }
-              `}
-            >
-              <div className="flex items-center gap-4">
-                <div className="text-neutral-400">
-                  {isSolved ? (
-                    <CheckCircle2 size={20} style={{ color: accentHex }} />
-                  ) : (
-                    <Circle size={20} className={isDarkMode ? "text-neutral-600" : "text-neutral-300"} />
-                  )}
+          {/* Filter Row: Categories + Difficulty */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            {/* Category Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`
+                    px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border
+                    ${selectedCategory === cat 
+                      ? (isDarkMode ? 'bg-white text-black border-white' : 'bg-black text-white border-black') 
+                      : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
+                    }
+                  `}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Difficulty Selector */}
+            <div className="flex items-center gap-1.5 self-start sm:self-auto shrink-0">
+              {difficulties.map((diff) => (
+                <button
+                  key={diff}
+                  onClick={() => setSelectedDifficulty(diff)}
+                  className={`
+                    px-3 py-1.5 rounded-xl text-xs font-mono transition-colors cursor-pointer border
+                    ${selectedDifficulty === diff 
+                      ? (isDarkMode ? 'bg-white text-black border-white font-bold' : 'bg-black text-white border-black font-bold') 
+                      : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
+                    }
+                  `}
+                >
+                  {diff}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Count Indicator */}
+          <div className="flex items-center justify-between text-xs font-mono text-neutral-400 px-1">
+            <span>Showing {filteredProblems.length} of {ALL_PROBLEMS.length} DSA Problems</span>
+            <span className="hidden sm:inline">⚡ Real-Time In-Browser Test Suite & Proctoring</span>
+          </div>
+
+          {/* Problems List */}
+          <div className="space-y-3">
+            {filteredProblems.map((prob) => {
+              const isSolved = solvedProblems.includes(prob.id);
+
+              return (
+                <div
+                  key={prob.id}
+                  onClick={() => handleOpenProblem(prob)}
+                  className={`
+                    p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all cursor-pointer border doap-card group
+                    ${isDarkMode 
+                      ? 'bg-[#111111] border-neutral-800 text-white hover:border-neutral-700' 
+                      : 'bg-white border-neutral-200 text-black hover:border-neutral-300'
+                    }
+                  `}
+                >
+                  <div className="flex items-start sm:items-center gap-3.5">
+                    <div className="text-neutral-400 mt-1 sm:mt-0">
+                      {isSolved ? (
+                        <CheckCircle2 size={20} style={{ color: accentHex }} />
+                      ) : (
+                        <Circle size={20} className={isDarkMode ? "text-neutral-600" : "text-neutral-300"} />
+                      )}
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-mono font-bold text-neutral-500">#{prob.id}</span>
+                        <h3 className="text-sm font-bold group-hover:text-cyan-300 transition-colors">{prob.title}</h3>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                          prob.difficulty === 'Easy'
+                            ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
+                            : prob.difficulty === 'Hard'
+                            ? 'border-rose-500/30 text-rose-400 bg-rose-500/10'
+                            : 'border-amber-500/30 text-amber-400 bg-amber-500/10'
+                        }`}>
+                          {prob.difficulty}
+                        </span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-cyan-500/30 text-cyan-300 bg-cyan-500/10">
+                          {prob.category}
+                        </span>
+                        {prob.pattern && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-purple-500/30 text-purple-300 bg-purple-500/10">
+                            🎯 {prob.pattern}
+                          </span>
+                        )}
+                        {prob.target_complexity && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-neutral-700 text-neutral-400 bg-black/40">
+                            ⏱️ {prob.target_complexity}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-neutral-400 line-clamp-2 leading-relaxed">{prob.description}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAskAiTutor(`Explain how to solve "${prob.title}" in DSA from first principles. Include algorithmic intuition, pattern "${prob.pattern || prob.category}", target complexity "${prob.target_complexity || 'optimal'}", and key edge cases.`);
+                      }}
+                      className="px-2.5 py-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+                      title="Ask AI Tutor 🤖"
+                    >
+                      <Bot size={13} />
+                      <span className="hidden md:inline">Ask AI</span>
+                    </button>
+                    <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-500 group-hover:text-white transition-colors pl-2">
+                      <span>{isSolved ? 'Review' : 'Solve'}</span>
+                      <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 2: DSA KNOWLEDGE BASE (105 TOPIC GUIDES) */}
+      {activePracticeTab === 'knowledge' && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Search Bar */}
+          <div className="relative">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500" />
+            <input
+              type="text"
+              value={knowledgeSearchQuery}
+              onChange={(e) => setKnowledgeSearchQuery(e.target.value)}
+              placeholder="Search 105 DSA knowledge base guides (e.g. AVL, Dijkstra, Topological Sort, Segment Tree, Monotonic Stack)..."
+              className={`w-full pl-10 pr-10 py-2.5 rounded-2xl border text-xs sm:text-sm transition-all focus:outline-none ${
+                isDarkMode 
+                  ? 'bg-[#111111] border-neutral-800 text-white placeholder-neutral-500 focus:border-cyan-500/50' 
+                  : 'bg-white border-neutral-200 text-black placeholder-neutral-400 focus:border-black'
+              }`}
+            />
+            {knowledgeSearchQuery && (
+              <button 
+                onClick={() => setKnowledgeSearchQuery('')}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white cursor-pointer"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
+          {/* Category Filter Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {knowledgeCategories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedKnowledgeCat(cat)}
+                className={`
+                  px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border
+                  ${selectedKnowledgeCat === cat 
+                    ? (isDarkMode ? 'bg-white text-black border-white font-bold' : 'bg-black text-white border-black font-bold') 
+                    : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
+                  }
+                `}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Count Indicator */}
+          <div className="flex items-center justify-between text-xs font-mono text-neutral-400 px-1">
+            <span>Showing {filteredKnowledge.length} of {DSA_KNOWLEDGE_BASE.length} DSA Conceptual Guides</span>
+            <span className="text-cyan-400 font-bold">105 Knowledge Records • First-Principles Foundations</span>
+          </div>
+
+          {/* Knowledge Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filteredKnowledge.map((k) => (
+              <div
+                key={k.id}
+                className={`p-5 rounded-2xl border flex flex-col justify-between gap-4 transition-all doap-card ${
+                  isDarkMode 
+                    ? 'bg-[#111111] border-neutral-800 text-white hover:border-neutral-700' 
+                    : 'bg-white border-neutral-200 text-black hover:border-neutral-300'
+                }`}
+              >
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-cyan-500/30 text-cyan-300 bg-cyan-500/10 font-bold">
+                      {k.category}
+                    </span>
+                    {k.subcategory && k.subcategory !== k.category && (
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-purple-500/30 text-purple-300 bg-purple-500/10">
+                        {k.subcategory}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-sm font-bold text-white leading-snug">{k.title}</h3>
+                  <p className="text-xs text-neutral-400 line-clamp-3 leading-relaxed">
+                    {k.content.replace(/[*#`-]/g, '')}
+                  </p>
                 </div>
 
-                <div className="space-y-1">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono font-bold text-neutral-500">#{prob.id}</span>
-                    <h3 className="text-sm font-bold">{prob.title}</h3>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
-                      prob.difficulty === 'Easy'
-                        ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
-                        : 'border-amber-500/30 text-amber-400 bg-amber-500/10'
-                    }`}>
-                      {prob.difficulty}
-                    </span>
-                  </div>
-                  <p className="text-xs text-neutral-400">{prob.description}</p>
+                <div className="flex items-center justify-between gap-2 pt-3 border-t border-neutral-800/80">
+                  <button
+                    onClick={() => setActiveKnowledgeDetail(k)}
+                    className="px-3.5 py-1.5 rounded-xl border border-neutral-700 hover:border-neutral-600 bg-neutral-900/80 text-neutral-200 hover:text-white text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1.5"
+                  >
+                    <BookOpen size={13} />
+                    <span>Read Full Guide</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleAskAiTutor(`Explain "${k.title}" in DSA from first principles. Include complexity invariants, common pitfalls, and real technical interview edge cases.`)}
+                    className="px-3 py-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all"
+                  >
+                    <Bot size={13} />
+                    <span>Ask AI Tutor</span>
+                  </button>
                 </div>
               </div>
+            ))}
+          </div>
+        </div>
+      )}
 
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-mono text-neutral-500 group-hover:text-white transition-colors">
-                  {isSolved ? 'Solved' : 'Solve Challenge'}
-                </span>
-                <ArrowRight size={16} className={isDarkMode ? "text-neutral-600" : "text-neutral-400"} />
+      {/* TAB 3: DSA CONCEPT QUIZZES (315 MCQS) */}
+      {activePracticeTab === 'quizzes' && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Score Tracking Header Banner */}
+          <div className="p-4 md:p-5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-blue-950/30 to-purple-950/30 border border-cyan-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg shadow-cyan-950/20">
+            <div>
+              <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                <Zap size={18} className="text-cyan-400" />
+                <span>DSA Concept Quiz Arena (315 Curated Questions)</span>
+              </h3>
+              <p className="text-xs text-neutral-400 leading-relaxed pt-0.5">
+                Practice rapid algorithmic multiple-choice questions. Tap an option for immediate verification and detailed technical rationale.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 font-mono text-xs shrink-0 self-end sm:self-center">
+              <div className="px-3 py-1.5 rounded-xl bg-black/60 border border-neutral-800 text-neutral-300">
+                Answered: <strong className="text-white">{quizScoreStats.answered}</strong>
+              </div>
+              <div className="px-3 py-1.5 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-bold">
+                Score: {quizScoreStats.correct}/{quizScoreStats.answered || 0} ({quizScoreStats.answered > 0 ? Math.round((quizScoreStats.correct / quizScoreStats.answered) * 100) : 0}%)
               </div>
             </div>
-          );
-        })}
-      </div>
+          </div>
+
+          {/* Quiz Search Bar */}
+          <div className="relative">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-500" />
+            <input
+              type="text"
+              value={quizSearchQuery}
+              onChange={(e) => {
+                setQuizSearchQuery(e.target.value);
+                setQuizCurrentPage(1);
+              }}
+              placeholder="Search 315 questions by keyword, topic, or concept (e.g. Dijkstra, AVL, Binary Search, DP)..."
+              className={`w-full pl-10 pr-10 py-2.5 rounded-2xl border text-xs sm:text-sm transition-all focus:outline-none ${
+                isDarkMode 
+                  ? 'bg-[#111111] border-neutral-800 text-white placeholder-neutral-500 focus:border-cyan-500/50' 
+                  : 'bg-white border-neutral-200 text-black placeholder-neutral-400 focus:border-black'
+              }`}
+            />
+            {quizSearchQuery && (
+              <button 
+                onClick={() => { setQuizSearchQuery(''); setQuizCurrentPage(1); }}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white cursor-pointer"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
+          {/* Topic & Difficulty Filters */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {quizTopics.map((top) => (
+                <button
+                  key={top}
+                  onClick={() => { setSelectedQuizTopic(top); setQuizCurrentPage(1); }}
+                  className={`
+                    px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border
+                    ${selectedQuizTopic === top 
+                      ? (isDarkMode ? 'bg-white text-black border-white font-bold' : 'bg-black text-white border-black font-bold') 
+                      : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
+                    }
+                  `}
+                >
+                  {top}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-1.5 self-start sm:self-auto shrink-0">
+              {difficulties.map((diff) => (
+                <button
+                  key={diff}
+                  onClick={() => { setSelectedQuizDiff(diff); setQuizCurrentPage(1); }}
+                  className={`
+                    px-3 py-1.5 rounded-xl text-xs font-mono transition-colors cursor-pointer border
+                    ${selectedQuizDiff === diff 
+                      ? (isDarkMode ? 'bg-white text-black border-white font-bold' : 'bg-black text-white border-black font-bold') 
+                      : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
+                    }
+                  `}
+                >
+                  {diff}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Count & Page Info */}
+          <div className="flex items-center justify-between text-xs font-mono text-neutral-400 px-1">
+            <span>Showing {filteredQuizzes.length} Questions (Page {quizCurrentPage} of {Math.max(1, Math.ceil(filteredQuizzes.length / 12))})</span>
+            <button 
+              onClick={() => { setQuizUserAnswers({}); setQuizScoreStats({ answered: 0, correct: 0 }); }}
+              className="text-cyan-400 hover:underline cursor-pointer flex items-center gap-1"
+            >
+              <RefreshCw size={12} />
+              <span>Reset All Quiz Answers</span>
+            </button>
+          </div>
+
+          {/* Quiz Questions List (Paginated 12 per page for zero lag) */}
+          <div className="space-y-4">
+            {filteredQuizzes
+              .slice((quizCurrentPage - 1) * 12, quizCurrentPage * 12)
+              .map((q, idx) => {
+                const globalIdx = (quizCurrentPage - 1) * 12 + idx + 1;
+                const userAnswer = quizUserAnswers[q.id];
+                const isAnswered = userAnswer !== undefined;
+                const isCorrect = isAnswered && userAnswer === q.correctIndex;
+
+                return (
+                  <div 
+                    key={q.id || idx}
+                    className={`p-5 rounded-2xl border space-y-4 transition-all ${
+                      isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono font-bold text-neutral-500">Q{globalIdx}</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-cyan-500/30 text-cyan-300 bg-cyan-500/10 font-bold">
+                          {q.topic}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                          q.difficulty === 'Easy'
+                            ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
+                            : q.difficulty === 'Hard'
+                            ? 'border-rose-500/30 text-rose-400 bg-rose-500/10'
+                            : 'border-amber-500/30 text-amber-400 bg-amber-500/10'
+                        }`}>
+                          {q.difficulty}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleAskAiTutor(`Explain this DSA quiz question in detail: "${q.question}". Correct Answer: "${q.options[q.correctIndex]}". Why is this the correct answer and how should I think about it in a coding interview?`)}
+                        className="text-[11px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold cursor-pointer"
+                      >
+                        <Bot size={12} />
+                        <span>Ask AI Tutor</span>
+                      </button>
+                    </div>
+
+                    <h4 className="text-sm sm:text-base font-bold text-neutral-100 leading-relaxed">
+                      {q.question}
+                    </h4>
+
+                    {/* Options Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {q.options.map((opt, optIdx) => {
+                        const isThisSelected = userAnswer === optIdx;
+                        const isThisCorrect = optIdx === q.correctIndex;
+
+                        let styleClasses = isDarkMode 
+                          ? 'bg-[#161a23] border-neutral-800 text-neutral-200 hover:bg-[#1f2430] hover:border-neutral-700' 
+                          : 'bg-neutral-50 border-neutral-200 text-neutral-800 hover:bg-neutral-100';
+
+                        if (isAnswered) {
+                          if (isThisCorrect) {
+                            styleClasses = 'bg-emerald-950/60 border-emerald-500/70 text-emerald-200 font-bold';
+                          } else if (isThisSelected) {
+                            styleClasses = 'bg-rose-950/60 border-rose-500/70 text-rose-200 font-bold';
+                          } else {
+                            styleClasses = 'opacity-40 border-neutral-800';
+                          }
+                        }
+
+                        return (
+                          <button
+                            key={optIdx}
+                            onClick={() => handleSelectQuizAnswer(q.id, optIdx, q.correctIndex)}
+                            disabled={isAnswered}
+                            className={`p-3.5 rounded-xl border text-xs text-left transition-all flex items-center gap-2.5 cursor-pointer ${styleClasses}`}
+                          >
+                            <span className="w-5 h-5 rounded-full border border-current flex items-center justify-center text-[10px] font-bold shrink-0">
+                              {String.fromCharCode(65 + optIdx)}
+                            </span>
+                            <span className="leading-snug">{opt}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Explanation Reveal */}
+                    {isAnswered && (
+                      <div className={`p-4 rounded-xl border text-xs space-y-1.5 animate-fade-in ${
+                        isCorrect ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-200' : 'bg-neutral-900/90 border-neutral-800 text-neutral-300'
+                      }`}>
+                        <div className="font-bold flex items-center gap-1.5 text-cyan-400 font-mono text-[11px] uppercase tracking-wider">
+                          <CheckCircle2 size={14} className={isCorrect ? 'text-emerald-400' : 'text-neutral-400'} />
+                          <span>Detailed Explanation:</span>
+                        </div>
+                        <p className="leading-relaxed font-sans">{q.explanation}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+          </div>
+
+          {/* Pagination Controls */}
+          {filteredQuizzes.length > 12 && (
+            <div className="flex items-center justify-center gap-3 pt-4">
+              <button
+                onClick={() => setQuizCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={quizCurrentPage === 1}
+                className="px-4 py-2 rounded-xl text-xs font-semibold border border-neutral-700 disabled:opacity-30 cursor-pointer hover:bg-neutral-800 text-neutral-300 transition-colors"
+              >
+                Previous
+              </button>
+              <span className="text-xs font-mono text-neutral-400">
+                Page {quizCurrentPage} of {Math.ceil(filteredQuizzes.length / 12)}
+              </span>
+              <button
+                onClick={() => setQuizCurrentPage(prev => Math.min(Math.ceil(filteredQuizzes.length / 12), prev + 1))}
+                disabled={quizCurrentPage >= Math.ceil(filteredQuizzes.length / 12)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold border border-neutral-700 disabled:opacity-30 cursor-pointer hover:bg-neutral-800 text-neutral-300 transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Full Knowledge Base Topic Modal */}
+      {activeKnowledgeDetail && typeof document !== 'undefined' && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md animate-fade-in"
+          onClick={() => setActiveKnowledgeDetail(null)}
+        >
+          <div 
+            className="w-full max-w-2xl rounded-3xl border border-cyan-500/40 bg-[#0d101b] text-white shadow-2xl flex flex-col max-h-[88vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-neutral-800 flex items-center justify-between bg-[#111624] shrink-0">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-cyan-500/30 text-cyan-300 bg-cyan-500/10 font-bold">
+                    {activeKnowledgeDetail.category}
+                  </span>
+                  {activeKnowledgeDetail.subcategory && (
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-purple-500/30 text-purple-300 bg-purple-500/10">
+                      {activeKnowledgeDetail.subcategory}
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-white">{activeKnowledgeDetail.title}</h3>
+              </div>
+              <button 
+                onClick={() => setActiveKnowledgeDetail(null)}
+                className="w-8 h-8 rounded-full border border-neutral-700 hover:bg-neutral-800 flex items-center justify-center text-neutral-300 cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-4 text-xs sm:text-sm text-neutral-200 leading-relaxed font-sans scrollbar-thin select-text">
+              <div className="whitespace-pre-line leading-relaxed space-y-2">
+                {activeKnowledgeDetail.content}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3.5 border-t border-neutral-800 flex items-center justify-between bg-[#111624] shrink-0 gap-3">
+              <button
+                onClick={() => {
+                  const title = activeKnowledgeDetail.title;
+                  setActiveKnowledgeDetail(null);
+                  handleAskAiTutor(`Teach me "${title}" in DSA from first principles. Include algorithmic complexity invariants, pitfalls, and step-by-step interview problem walk-throughs.`);
+                }}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-cyan-400 hover:bg-cyan-300 text-black flex items-center gap-1.5 cursor-pointer shadow-md transition-all hover:scale-105"
+              >
+                <Bot size={14} />
+                <span>Ask AI Tutor About This</span>
+              </button>
+              <button
+                onClick={() => setActiveKnowledgeDetail(null)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold border border-neutral-700 hover:bg-neutral-800 text-neutral-300 cursor-pointer"
+              >
+                Close Guide
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* 1. DOAP Coding Gateway Modal (Choose Casual Sandbox or Proctored Assessment) */}
       {pendingProblem && !isAssessmentActive && typeof document !== 'undefined' && createPortal(
@@ -1700,11 +2295,21 @@ Evaluate this code strictly:
                       <FileCode size={14} />
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-white flex items-center gap-2">
+                      <div className="text-xs font-bold text-white flex items-center gap-2 flex-wrap">
                         <span>Problem Statement</span>
                         <span className="text-[10px] font-mono px-2 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
                           {activeProblem.category}
                         </span>
+                        {activeProblem.pattern && (
+                          <span className="text-[10px] font-mono px-2 py-0.2 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                            🎯 {activeProblem.pattern}
+                          </span>
+                        )}
+                        {activeProblem.target_complexity && (
+                          <span className="text-[10px] font-mono px-2 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            ⏱️ {activeProblem.target_complexity}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -2205,14 +2810,33 @@ Evaluate this code strictly:
             <div className="p-4 flex-1 overflow-y-auto space-y-4 font-mono">
               {/* Question Statement Card ON TOP */}
               <div className="p-4 rounded-2xl bg-black/60 border border-cyan-500/30 space-y-3 font-sans text-xs shadow-lg">
-                <div className="flex items-center justify-between text-neutral-400 text-[11px] font-mono font-bold">
-                  <span className="text-cyan-400 flex items-center gap-1.5">
-                    <FileCode size={14} />
-                    <span>PROBLEM STATEMENT</span>
-                  </span>
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between text-neutral-400 text-[11px] font-mono font-bold flex-wrap gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-cyan-400 flex items-center gap-1.5">
+                      <FileCode size={14} />
+                      <span>PROBLEM STATEMENT</span>
+                    </span>
                     <span className="text-neutral-400">{activeProblem.category}</span>
-                    <span>•</span>
+                    {activeProblem.pattern && (
+                      <span className="px-2 py-0.5 rounded text-[10px] border border-purple-500/30 text-purple-300 bg-purple-500/10">
+                        🎯 {activeProblem.pattern}
+                      </span>
+                    )}
+                    {activeProblem.target_complexity && (
+                      <span className="px-2 py-0.5 rounded text-[10px] border border-emerald-500/30 text-emerald-300 bg-emerald-500/10">
+                        ⏱️ {activeProblem.target_complexity}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleAskAiTutor(`Explain how to solve "${activeProblem.title}" in DSA from first principles. Include algorithmic intuition, pattern "${activeProblem.pattern || activeProblem.category}", target complexity "${activeProblem.target_complexity || 'optimal'}", and key edge cases.`)}
+                      className="px-2.5 py-1 rounded-xl border border-cyan-500/40 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                    >
+                      <Bot size={13} />
+                      <span>Ask AI Tutor</span>
+                    </button>
                     <span className="text-cyan-300">⏱️ {activeProblem.benchmarkMins || 20}m benchmark</span>
                   </div>
                 </div>

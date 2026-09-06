@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { FileCheck2, ArrowRight, X, CheckCircle2, Clock, Award, Play } from 'lucide-react';
+import { FileCheck2, ArrowRight, X, CheckCircle2, Clock, Award, Play, Sparkles, BookOpen } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { DSA_QUIZZES } from '../data/dsa/dsaKnowledgeData.js';
 
 const ASSESSMENT_QUIZZES = {
   'ai-readiness': {
@@ -321,6 +322,7 @@ export const Assessments = () => {
 
   // Active Quiz State
   const [activeQuizKey, setActiveQuizKey] = useState(null);
+  const [activeQuizOverride, setActiveQuizOverride] = useState(null);
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -336,6 +338,38 @@ export const Assessments = () => {
     setSelectedAnswers({});
     setIsSubmitted(false);
     setQuizScore(0);
+
+    if (quizKey === 'dsa-master') {
+      const sample = [...DSA_QUIZZES].sort(() => 0.5 - Math.random()).slice(0, 15).map(q => ({
+        q: q.question,
+        options: q.options,
+        correct: q.correctIndex,
+        explanation: q.explanation,
+        topic: q.topic,
+        difficulty: q.difficulty
+      }));
+      setActiveQuizOverride({
+        title: 'DSA Master Certification Exam (315 Curated Questions Bank)',
+        questions: sample,
+        category: 'Skill'
+      });
+    } else if (quizKey === 'dsa-practice') {
+      const sample = [...DSA_QUIZZES].sort(() => 0.5 - Math.random()).slice(0, 10).map(q => ({
+        q: q.question,
+        options: q.options,
+        correct: q.correctIndex,
+        explanation: q.explanation,
+        topic: q.topic,
+        difficulty: q.difficulty
+      }));
+      setActiveQuizOverride({
+        title: 'DSA Practice Test — Trees, Graphs & DP (Curated Bank)',
+        questions: sample,
+        category: 'Practice Test'
+      });
+    } else {
+      setActiveQuizOverride(null);
+    }
   };
 
   const handleSelectOption = (optionIdx) => {
@@ -343,8 +377,10 @@ export const Assessments = () => {
     setSelectedAnswers(prev => ({ ...prev, [currentQuestionIdx]: optionIdx }));
   };
 
+  const activeQuiz = activeQuizOverride || (activeQuizKey ? ASSESSMENT_QUIZZES[activeQuizKey] : null);
+
   const handleSubmitQuiz = () => {
-    const quiz = ASSESSMENT_QUIZZES[activeQuizKey];
+    const quiz = activeQuiz;
     if (!quiz) return;
 
     let correctCount = 0;
@@ -363,11 +399,11 @@ export const Assessments = () => {
       id: `ass_${Date.now()}`,
       title: quiz.title,
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      duration: '5 min',
+      duration: quiz.questions.length > 10 ? '15 min' : '5 min',
       score: `${percentage}%`,
       scoreNum: percentage,
-      category: activeQuizKey === 'ai-readiness' ? 'AI Readiness' : activeQuizKey === 'dsa-practice' ? 'Practice Test' : 'Job Readiness',
-      tags: ['Verified', 'Cloud Synced']
+      category: activeQuizKey === 'dsa-master' ? 'Skill' : activeQuizKey === 'ai-readiness' ? 'AI Readiness' : activeQuizKey === 'dsa-practice' ? 'Practice Test' : 'Job Readiness',
+      tags: ['Verified', 'Cloud Synced', 'DSA 2.0']
     };
 
     const updated = [newRecord, ...assessments];
@@ -376,8 +412,6 @@ export const Assessments = () => {
 
     updateUserProgress({ assessments: updated }, { aiReadiness: newAverage });
   };
-
-  const activeQuiz = activeQuizKey ? ASSESSMENT_QUIZZES[activeQuizKey] : null;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 md:py-8 space-y-8 animate-fade-in select-none">
@@ -402,6 +436,35 @@ export const Assessments = () => {
           </span>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Card 0: DSA Master Certification Exam */}
+            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card sm:col-span-3 bg-gradient-to-r from-cyan-950/40 via-blue-950/30 to-purple-950/30 border-cyan-500/40 shadow-lg shadow-cyan-950/20`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono border bg-cyan-500/20 border-cyan-500/40 text-cyan-300 font-bold">
+                      ⭐ DSA MASTER BENCHMARK
+                    </span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                      315 CURATED QUESTIONS BANK
+                    </span>
+                  </div>
+                  <h4 className="text-sm sm:text-base font-bold text-white">
+                    DSA Master Certification Exam (Trees, Graphs, DP, Arrays, Heaps & Systems)
+                  </h4>
+                  <p className="text-xs text-neutral-400">
+                    Comprehensive 15-question adaptive assessment dynamically sampled across all 15 authoritative DSA domains.
+                  </p>
+                </div>
+                <button 
+                  onClick={() => handleStartQuiz('dsa-master')}
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer bg-cyan-400 hover:bg-cyan-300 text-black shadow-md shrink-0 self-start sm:self-center transition-all hover:scale-105"
+                >
+                  <Play size={14} />
+                  <span>Start DSA Master Exam</span>
+                </button>
+              </div>
+            </div>
+
             {/* Card 1: AI Readiness */}
             <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
               isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
