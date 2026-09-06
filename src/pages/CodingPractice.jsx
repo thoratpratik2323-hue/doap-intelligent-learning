@@ -1212,101 +1212,152 @@ Evaluate this code strictly:
         })}
       </div>
 
-      {/* 1. DOAP Proctored Coding Assessment Gateway Modal (Permission & System Check) */}
+      {/* 1. DOAP Coding Gateway Modal (Choose Casual Sandbox or Proctored Assessment) */}
       {pendingProblem && !isAssessmentActive && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-fade-in select-none">
-          <div className="w-full max-w-lg rounded-3xl border border-cyan-500/40 bg-[#0b0e17] text-white p-6 shadow-2xl space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/90 backdrop-blur-xl animate-fade-in select-none overflow-y-auto">
+          <div className="w-full max-w-xl rounded-3xl border border-cyan-500/40 bg-[#0b0e17] text-white shadow-2xl flex flex-col max-h-[92vh] sm:max-h-[88vh] overflow-hidden my-auto">
             {/* Modal Header */}
-            <div className="flex items-start justify-between">
+            <div className="px-5 py-4 border-b border-neutral-800 flex items-center justify-between shrink-0 bg-[#0d101b]">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-                  <Shield size={24} className="animate-pulse" />
+                <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shadow-lg shadow-cyan-500/20 shrink-0">
+                  <Shield size={20} className="animate-pulse" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest font-bold">DOAP Assess-Proctor Engine</div>
-                  <h3 className="text-lg font-bold text-white">Coding Proficiency Assessment</h3>
+                  <div className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest font-bold">DOAP Coding Engine</div>
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    <span>{pendingProblem.title}</span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                      pendingProblem.difficulty === 'Easy'
+                        ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
+                        : pendingProblem.difficulty === 'Medium'
+                        ? 'border-amber-500/30 text-amber-400 bg-amber-500/10'
+                        : 'border-rose-500/30 text-rose-400 bg-rose-500/10'
+                    }`}>
+                      {pendingProblem.difficulty}
+                    </span>
+                  </h3>
                 </div>
               </div>
               <button
                 onClick={() => setPendingProblem(null)}
-                className="p-1.5 rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer"
+                className="p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer"
+                title="Close"
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
 
-            {/* Selected Challenge Card */}
-            <div className="p-4 rounded-2xl bg-neutral-900/80 border border-neutral-800 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-mono text-neutral-400">Challenge #{pendingProblem.id}</span>
-                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
-                  pendingProblem.difficulty === 'Easy'
-                    ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
-                    : pendingProblem.difficulty === 'Medium'
-                    ? 'border-amber-500/30 text-amber-400 bg-amber-500/10'
-                    : 'border-rose-500/30 text-rose-400 bg-rose-500/10'
-                }`}>
-                  {pendingProblem.difficulty}
+            {/* Modal Scrollable Body */}
+            <div className="p-5 overflow-y-auto space-y-4 text-xs font-sans">
+              {/* Challenge Brief Summary */}
+              <div className="p-3.5 rounded-2xl bg-neutral-900/80 border border-neutral-800/80 space-y-2">
+                <div className="flex items-center justify-between text-neutral-400 font-mono text-[11px]">
+                  <span>Challenge #{pendingProblem.id} • {pendingProblem.category}</span>
+                  <span className="text-cyan-300 font-bold">⏱️ Benchmark: {pendingProblem.benchmarkMins || 20} Mins</span>
+                </div>
+                <p className="text-neutral-300 leading-relaxed line-clamp-2 select-text font-sans">
+                  {pendingProblem.description}
+                </p>
+              </div>
+
+              {/* Mode Selection Grid */}
+              <div className="text-[11px] font-mono font-bold text-neutral-400 uppercase tracking-wider">
+                Select How You Want to Code:
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Option A: Casual Practice Sandbox */}
+                <div 
+                  onClick={() => handleLaunchCasualSandbox(pendingProblem)}
+                  className="group relative p-4 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 hover:border-emerald-400 hover:bg-emerald-950/30 transition-all cursor-pointer flex flex-col justify-between space-y-3"
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center font-bold">
+                        <Code size={16} />
+                      </div>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold">
+                        Free Practice
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm text-emerald-200 group-hover:text-emerald-100 transition-colors">
+                        Casual Code Sandbox
+                      </h4>
+                      <p className="text-[11px] text-neutral-300 mt-1 leading-snug">
+                        Write, test, and debug code casually in the IDE. No fullscreen lock, no anti-cheat, AI hints available freely.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleLaunchCasualSandbox(pendingProblem);
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-black font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-emerald-500/40"
+                  >
+                    <Play size={13} />
+                    <span>Open Code Editor</span>
+                  </button>
+                </div>
+
+                {/* Option B: Proctored Exam Assessment */}
+                <div 
+                  onClick={() => handleLaunchAssessment(pendingProblem)}
+                  className="group relative p-4 rounded-2xl bg-cyan-950/20 border border-cyan-500/40 hover:border-cyan-300 hover:bg-cyan-950/30 transition-all cursor-pointer flex flex-col justify-between space-y-3"
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="w-8 h-8 rounded-xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center font-bold">
+                        <Shield size={16} />
+                      </div>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-semibold">
+                        Timed Exam
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm text-cyan-200 group-hover:text-cyan-100 transition-colors">
+                        Proctored Assessment
+                      </h4>
+                      <p className="text-[11px] text-neutral-300 mt-1 leading-snug">
+                        Official technical test with fullscreen lock, anti-cheat tab monitor, and verified 0-100 Student Coding Score.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleLaunchAssessment(pendingProblem);
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-black font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-lg shadow-cyan-500/25 group-hover:scale-[1.02] active:scale-95"
+                  >
+                    <Maximize2 size={13} />
+                    <span>Start Proctored Exam</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Proctored Rules Notice */}
+              <div className="p-3 rounded-xl bg-neutral-900/50 border border-neutral-800 text-[11px] text-neutral-400 flex items-start gap-2">
+                <ShieldAlert size={14} className="text-cyan-400 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Tip:</strong> Choose <em>Casual Sandbox</em> if you are learning or practicing solutions. Choose <em>Proctored Exam</em> when you want to earn badges and official skill certification.
                 </span>
               </div>
-              <h4 className="text-base font-bold text-white">{pendingProblem.title}</h4>
-              <p className="text-xs text-neutral-300 leading-relaxed line-clamp-3 select-text border-t border-neutral-800/80 pt-2 font-sans">
-                {pendingProblem.description}
-              </p>
-              <div className="flex items-center gap-3 text-xs text-neutral-400 font-mono pt-1">
-                <span>Category: {pendingProblem.category}</span>
-                <span>•</span>
-                <span className="text-cyan-300 font-bold">⏱️ Benchmark: {pendingProblem.benchmarkMins || 20} Mins</span>
-              </div>
             </div>
 
-            {/* Proctored Assessment Rules */}
-            <div className="space-y-3">
-              <div className="text-xs font-mono font-bold text-neutral-400 uppercase tracking-wide">
-                Assessment Rules & Integrity Agreement:
-              </div>
-              <div className="space-y-2 text-xs text-neutral-300">
-                <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-cyan-500/5 border border-cyan-500/15">
-                  <Maximize2 size={15} className="text-cyan-400 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-cyan-200">Mandatory Fullscreen Mode:</strong> The assessment strictly runs in fullscreen to guarantee focus and simulate official technical exams.
-                  </div>
-                </div>
-                <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-amber-500/5 border border-amber-500/15">
-                  <ShieldAlert size={15} className="text-amber-400 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-amber-200">Anti-Cheat & Tab Lock:</strong> Exiting fullscreen or switching browser tabs is monitored. More than 3 violations flags the evaluation.
-                  </div>
-                </div>
-                <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
-                  <Award size={15} className="text-emerald-400 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="text-emerald-200">Proficiency Evaluation:</strong> Your correctness, completion time, hint autonomy, and proctored integrity generate your verified <strong>Student Coding Proficiency Score (0-100)</strong>.
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="space-y-2 pt-2">
+            {/* Footer */}
+            <div className="px-5 py-3 border-t border-neutral-800 bg-[#07090e] flex items-center justify-between shrink-0">
+              <span className="text-[11px] font-mono text-neutral-500">DOAP Assess Engine v2.4</span>
               <button
                 type="button"
-                onClick={() => handleLaunchAssessment(pendingProblem)}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-teal-500 to-blue-600 text-black font-bold text-sm flex items-center justify-center gap-2 cursor-pointer shadow-xl shadow-cyan-500/25 hover:scale-[1.02] active:scale-95 transition-all"
+                onClick={() => setPendingProblem(null)}
+                className="text-xs text-neutral-400 hover:text-white cursor-pointer px-3 py-1.5 rounded-lg hover:bg-neutral-800 transition-colors"
               >
-                <Maximize2 size={16} />
-                <span>Start Assessment & Enter Fullscreen</span>
+                Cancel & Close
               </button>
-
-              <div className="flex items-center justify-center pt-1">
-                <button
-                  type="button"
-                  onClick={() => setPendingProblem(null)}
-                  className="text-xs text-neutral-400 hover:text-white cursor-pointer transition-colors"
-                >
-                  Cancel & Return to Challenge List
-                </button>
-              </div>
             </div>
           </div>
         </div>
