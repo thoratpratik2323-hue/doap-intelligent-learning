@@ -413,6 +413,13 @@ const playAlertSound = () => {
     gain.connect(ctx.destination);
     osc.start(now);
     osc.stop(now + 0.35);
+
+    // Auto-close hardware context after alert finishes
+    setTimeout(() => {
+      try {
+        if (ctx.state !== 'closed') ctx.close();
+      } catch(e) {}
+    }, 450);
   } catch(e) {}
 };
 
@@ -996,12 +1003,16 @@ Evaluate this code strictly:
               runtimeStr = parsed.runtime || '0.04 s';
               memoryStr = parsed.memory || '4120 KB';
             } else {
-              isSuccess = true;
-              stdout = `[DOAP AI ${selectedLanguage.toUpperCase()} Engine]\nCode executed successfully.\nAll test cases verified.`;
+              const lower = (aiRes || '').toLowerCase();
+              const seemsPassed = lower.includes('pass') && !lower.includes('fail') && !lower.includes('error');
+              isSuccess = seemsPassed;
+              stdout = seemsPassed ? `[DOAP AI ${selectedLanguage.toUpperCase()} Engine]\nCode executed and test assertions verified.` : (aiRes || '');
+              stderr = seemsPassed ? '' : 'Code simulation detected test case failures or runtime errors.';
             }
           } catch (simErr) {
-            isSuccess = true;
-            stdout = `[DOAP AI ${selectedLanguage.toUpperCase()} Engine]\nExecution finished with exit code 0.`;
+            isSuccess = false;
+            stdout = '';
+            stderr = `[DOAP AI ${selectedLanguage.toUpperCase()} Engine] Execution failed: ${simErr?.message || 'Syntax or evaluation error'}. Please verify your code.`;
           }
         }
 
@@ -1038,73 +1049,235 @@ Evaluate this code strictly:
       return;
     }
 
-    // JavaScript client-side automated test suites
-    setTimeout(() => {
+    // JavaScript client-side automated test suites running inside an isolated Web Worker
+    // with a strict 3.0s Hard Timeout to protect against UI freezes & infinite loops
+    const runWorkerSafe = () => {
+      const workerCode = `
+        function deepEqual(a, b) {
+          if (a === b) return true;
+          if (a === undefined || b === undefined) return a === b;
+          if (a === null || b === null) return a === b;
+          if (typeof a !== typeof b) return false;
+          if (typeof a === 'number') {
+            return Math.abs(a - b) < 1e-6;
+          }
+          try {
+            return JSON.stringify(a) === JSON.stringify(b);
+          } catch (e) {
+            return false;
+          }
+        }
+
+        self.onmessage = function(e) {
+          const { code, functionName, tests } = e.data;
+          try {
+            const runner = new Function(\`
+              \${code}
+              if (typeof \${functionName} !== 'function' && typeof solution !== 'function') {
+                throw new Error("Could not find function '\${functionName}' or 'solution'. Please check your function definition.");
+              }
+              const targetFn = typeof \${functionName} === 'function' ? \${functionName} : solution;
+              return targetFn;
+            \`)();
+
+            const testResults = [];
+            let allPassed = true;
+
+            for (let i = 0; i < tests.length; i++) {
+              const testCase = tests[i];
+              const tStart = performance.now();
+              let actual;
+              let passed = false;
+              try {
+                actual = runner(...testCase.input);
+                passed = deepEqual(actual, testCase.expected);
+              } catch (execErr) {
+                passed = false;
+                actual = "Error: " + execErr.message;
+              }
+
+              if (!passed) allPassed = false;
+
+              testResults.push({
+                id: i + 1,
+                display: testCase.display,
+                expected: JSON.stringify(testCase.expected),
+                actual: typeof actual === 'object' ? JSON.stringify(actual) : String(actual),
+                passed,
+                duration: (performance.now() - tStart).toFixed(2) + "ms"
+              });
+            }
+
+            self.postMessage({ success: true, allPassed, testResults });
+          } catch (err) {
+            self.postMessage({ success: false, error: err.message });
+          }
+        };
+      `;
+
+      let worker = null;
+      let workerBlobUrl = null;
+
       try {
-        const startTime = performance.now();
+        const blob = new Blob([workerCode], { type: 'application/javascript' });
+        workerBlobUrl = URL.createObjectURL(blob);
+        worker = new Worker(workerBlobUrl);
+      } catch (workerInitErr) {
+        console.warn('Web Worker initialization failed, fallback to main thread:', workerInitErr);
+      }
 
-        // Safe Function Sandbox
-        const runner = new Function(`
-          ${code}
-          if (typeof ${activeProblem.functionName} !== 'function' && typeof solution !== 'function') {
-            throw new Error("Could not find function '${activeProblem.functionName}' or 'solution'. Please check your function definition.");
+      const runMainThreadFallback = () => {
+        try {
+          const startTime = performance.now();
+          const runner = new Function(`
+            ${code}
+            if (typeof ${activeProblem.functionName} !== 'function' && typeof solution !== 'function') {
+              throw new Error("Could not find function '${activeProblem.functionName}' or 'solution'. Please check your function definition.");
+            }
+            const targetFn = typeof ${activeProblem.functionName} === 'function' ? ${activeProblem.functionName} : solution;
+            return targetFn;
+          `)();
+
+          const testResults = [];
+          let allPassed = true;
+
+          for (let i = 0; i < activeProblem.tests.length; i++) {
+            const testCase = activeProblem.tests[i];
+            const tStart = performance.now();
+            let actual;
+            let passed = false;
+            try {
+              actual = runner(...testCase.input);
+              passed = deepEqual(actual, testCase.expected);
+            } catch (execErr) {
+              passed = false;
+              actual = `Error: ${execErr.message}`;
+            }
+
+            if (!passed) allPassed = false;
+
+            testResults.push({
+              id: i + 1,
+              display: testCase.display,
+              expected: JSON.stringify(testCase.expected),
+              actual: typeof actual === 'object' ? JSON.stringify(actual) : String(actual),
+              passed,
+              duration: `${(performance.now() - tStart).toFixed(2)}ms`
+            });
           }
-          const targetFn = typeof ${activeProblem.functionName} === 'function' ? ${activeProblem.functionName} : solution;
-          return targetFn;
-        `)();
 
-        const testResults = [];
-        let allPassed = true;
+          const totalTime = (performance.now() - startTime).toFixed(1);
 
-        for (let i = 0; i < activeProblem.tests.length; i++) {
-          const testCase = activeProblem.tests[i];
-          const tStart = performance.now();
-          const actual = runner(...testCase.input);
-          const tDuration = (performance.now() - tStart).toFixed(2);
-
-          const passed = deepEqual(actual, testCase.expected);
-          if (!passed) allPassed = false;
-
-          testResults.push({
-            id: i + 1,
-            display: testCase.display,
-            expected: JSON.stringify(testCase.expected),
-            actual: JSON.stringify(actual),
-            passed,
-            duration: `${tDuration}ms`
+          setRunResult({
+            success: true,
+            allPassed,
+            runtime: `${totalTime} ms`,
+            tests: testResults
           });
-        }
 
-        const totalTime = (performance.now() - startTime).toFixed(1);
-
-        setRunResult({
-          success: true,
-          allPassed,
-          runtime: `${totalTime} ms`,
-          tests: testResults
-        });
-
-        // If all tests passed, save to cloud progress and 8-layer memory brain
-        if (allPassed) {
-          if (!solvedProblems.includes(activeProblem.id)) {
-            const updated = [...solvedProblems, activeProblem.id];
-            updateUserProgress({ solvedProblems: updated });
-            memoryBrain.updateKnowledge(activeProblem.title, 'mastered');
-            memoryBrain.recordEpisodic(`Solved Challenge: ${activeProblem.title}`, `Mastered ${activeProblem.category} problem in ${selectedLanguage}.`);
+          if (allPassed) {
+            if (!solvedProblems.includes(activeProblem.id)) {
+              const updated = [...solvedProblems, activeProblem.id];
+              updateUserProgress({ solvedProblems: updated });
+              memoryBrain.updateKnowledge(activeProblem.title, 'mastered');
+              memoryBrain.recordEpisodic(`Solved Challenge: ${activeProblem.title}`, `Mastered ${activeProblem.category} problem in ${selectedLanguage}.`);
+            }
+          } else {
+            memoryBrain.recordWeakness(`${activeProblem.title} (${activeProblem.category})`);
           }
-        } else {
-          memoryBrain.recordWeakness(`${activeProblem.title} (${activeProblem.category})`);
+        } catch (err) {
+          setRunResult({
+            success: false,
+            allPassed: false,
+            error: `Runtime Error: ${err.message}`
+          });
+        } finally {
+          setIsRunning(false);
         }
-      } catch (err) {
+      };
+
+      if (!worker) {
+        runMainThreadFallback();
+        return;
+      }
+
+      const startTime = performance.now();
+      let hasFinished = false;
+
+      // 3.0-second Hard Execution Timeout to protect against infinite loops
+      const timeoutTimer = setTimeout(() => {
+        if (hasFinished) return;
+        hasFinished = true;
+        try { worker.terminate(); } catch (e) {}
+        if (workerBlobUrl) URL.revokeObjectURL(workerBlobUrl);
         setRunResult({
           success: false,
           allPassed: false,
-          error: `Runtime Error: ${err.message}`
+          error: 'Time Limit Exceeded (TLE) - Execution timed out after 3.0s. Check for infinite loops (e.g., while(true)), missing loop increments, or heavy recursions.'
         });
-      } finally {
         setIsRunning(false);
-      }
-    }, 250);
+      }, 3000);
+
+      worker.onmessage = (event) => {
+        if (hasFinished) return;
+        hasFinished = true;
+        clearTimeout(timeoutTimer);
+        try { worker.terminate(); } catch (e) {}
+        if (workerBlobUrl) URL.revokeObjectURL(workerBlobUrl);
+
+        const totalTime = (performance.now() - startTime).toFixed(1);
+        const { success, allPassed, testResults, error } = event.data;
+
+        if (success) {
+          setRunResult({
+            success: true,
+            allPassed,
+            runtime: `${totalTime} ms`,
+            tests: testResults
+          });
+
+          if (allPassed) {
+            if (!solvedProblems.includes(activeProblem.id)) {
+              const updated = [...solvedProblems, activeProblem.id];
+              updateUserProgress({ solvedProblems: updated });
+              memoryBrain.updateKnowledge(activeProblem.title, 'mastered');
+              memoryBrain.recordEpisodic(`Solved Challenge: ${activeProblem.title}`, `Mastered ${activeProblem.category} problem in ${selectedLanguage}.`);
+            }
+          } else {
+            memoryBrain.recordWeakness(`${activeProblem.title} (${activeProblem.category})`);
+          }
+        } else {
+          setRunResult({
+            success: false,
+            allPassed: false,
+            error: `Runtime Error: ${error}`
+          });
+        }
+        setIsRunning(false);
+      };
+
+      worker.onerror = (wErr) => {
+        if (hasFinished) return;
+        hasFinished = true;
+        clearTimeout(timeoutTimer);
+        try { worker.terminate(); } catch (e) {}
+        if (workerBlobUrl) URL.revokeObjectURL(workerBlobUrl);
+        setRunResult({
+          success: false,
+          allPassed: false,
+          error: `Execution Error: ${wErr.message || 'Worker thread execution failed'}`
+        });
+        setIsRunning(false);
+      };
+
+      worker.postMessage({
+        code,
+        functionName: activeProblem.functionName,
+        tests: activeProblem.tests
+      });
+    };
+
+    runWorkerSafe();
   };
 
   return (

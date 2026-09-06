@@ -8,11 +8,11 @@ const STORAGE_KEY = 'doap_unified_memory_brain_v1';
 const DEFAULT_MEMORY = {
   // Layer 1: Identity & Persona
   identity: {
-    userName: 'Pratik Thorat',
-    preferredName: 'Pratik',
-    title: 'Full-Stack & AI Systems Architect',
-    targetRole: 'Senior AI Engineer / Systems Software Engineer',
-    targetCompanies: ['Google', 'OpenAI', 'Microsoft', 'NVIDIA', 'Top AI Startups'],
+    userName: 'Student',
+    preferredName: 'Student',
+    title: 'Software & AI Systems Engineer',
+    targetRole: 'AI Engineer / Full-Stack Developer',
+    targetCompanies: ['Google', 'OpenAI', 'Microsoft', 'NVIDIA', 'Top Tech Firms'],
     primaryLanguages: ['Python', 'JavaScript/TypeScript', 'C++', 'Java']
   },
 
@@ -102,6 +102,19 @@ class MemoryBrain {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.memory));
     } catch (e) {
       console.warn('[Memory Brain] Error persisting storage:', e);
+    }
+  }
+
+  // Layer 1: Update active user identity dynamically from Auth/Session
+  updateIdentity(newIdentity = {}) {
+    if (!newIdentity || typeof newIdentity !== 'object') return;
+    this.memory.identity = {
+      ...this.memory.identity,
+      ...newIdentity
+    };
+    this.saveMemory();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('doap:memory-updated', { detail: this.memory }));
     }
   }
 
@@ -345,7 +358,7 @@ class MemoryBrain {
     const inProgress = mem.semantic.inProgress.slice(-4).join(', ');
 
     return `
-[DOAP 8-LAYER UNIFIED MEMORY BRAIN — PRATIK'S KNOWLEDGE GRAPH]
+[DOAP 8-LAYER UNIFIED MEMORY BRAIN — ${(mem.identity.userName || 'STUDENT').toUpperCase()}'S KNOWLEDGE GRAPH]
 - User: ${mem.identity.userName} (${mem.identity.title})
 - Target Goals: ${mem.identity.targetRole} at ${mem.identity.targetCompanies.join(', ')}
 - Known Key Projects:

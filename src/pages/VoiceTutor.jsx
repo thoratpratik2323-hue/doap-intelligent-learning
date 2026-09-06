@@ -78,6 +78,13 @@ const playBootChime = () => {
       osc.start(now + 0.6 + (idx * 0.04));
       osc.stop(now + 1.6);
     });
+
+    // Auto-close hardware audio context after playback completes
+    setTimeout(() => {
+      try {
+        if (ctx.state !== 'closed') ctx.close();
+      } catch (e) {}
+    }, 1800);
   } catch(e) {}
 };
 
@@ -98,6 +105,13 @@ const playShutdownChime = () => {
     gain.connect(ctx.destination);
     osc.start(now);
     osc.stop(now + 0.35);
+
+    // Auto-close hardware audio context after shutdown chime completes
+    setTimeout(() => {
+      try {
+        if (ctx.state !== 'closed') ctx.close();
+      } catch (e) {}
+    }, 450);
   } catch(e) {}
 };
 
@@ -185,6 +199,7 @@ export const VoiceTutor = () => {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const analyserRef = useRef(null);
+  const audioContextRef = useRef(null);
   const animationFrameRef = useRef(null);
   const vadSilenceTimeoutRef = useRef(null);
   const hasSpokenInSessionRef = useRef(false);
@@ -250,6 +265,14 @@ export const VoiceTutor = () => {
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getTracks().forEach(t => t.stop());
       mediaStreamRef.current = null;
+    }
+    if (audioContextRef.current) {
+      try {
+        if (audioContextRef.current.state !== 'closed') {
+          audioContextRef.current.close();
+        }
+      } catch (e) {}
+      audioContextRef.current = null;
     }
     stopRecognition();
   };
@@ -378,7 +401,16 @@ export const VoiceTutor = () => {
       // Audio frequency analyzer for real-time visualizer & VAD
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) {
+        if (audioContextRef.current) {
+          try {
+            if (audioContextRef.current.state !== 'closed') {
+              audioContextRef.current.close();
+            }
+          } catch (e) {}
+          audioContextRef.current = null;
+        }
         const audioCtx = new AudioCtx();
+        audioContextRef.current = audioCtx;
         const source = audioCtx.createMediaStreamSource(stream);
         const analyser = audioCtx.createAnalyser();
         analyser.fftSize = 256;

@@ -9,6 +9,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { firebaseAuth, db } from '../lib/firebaseClient';
+import { memoryBrain } from '../services/memoryBrain';
 
 const AuthContext = createContext();
 
@@ -229,6 +230,20 @@ export const AuthProvider = ({ children }) => {
       unsubscribeAuth();
     };
   }, []);
+
+  // Proactively synchronize active authenticated user with DOAP Cognitive Memory Brain
+  useEffect(() => {
+    if (profile || user) {
+      const activeName = profile?.full_name || profile?.name || user?.displayName || (user?.email ? user.email.split('@')[0] : '') || 'Student';
+      const firstName = activeName.trim().split(/\s+/)[0] || 'Student';
+      memoryBrain.updateIdentity({
+        userName: activeName,
+        preferredName: firstName,
+        title: profile?.title || profile?.current_status || 'Software & AI Systems Engineer',
+        targetRole: profile?.target_role || 'AI Engineer / Full-Stack Developer'
+      });
+    }
+  }, [profile, user]);
 
   // Real Email / Password Signup with Firebase
   const signUp = async (email, password, fullName) => {
