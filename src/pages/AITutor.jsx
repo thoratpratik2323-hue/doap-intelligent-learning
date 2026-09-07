@@ -137,13 +137,16 @@ export const AITutor = () => {
   const messages = currentSession?.messages || [];
   const [isThinking, setIsThinking] = useState(false);
 
-  // Sync sessions to localStorage whenever they change
+  // Sync sessions to localStorage whenever they change (debounced 400ms to eliminate main-thread freezing during streaming)
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
-    } catch (e) {
-      console.error('Error saving sessions:', e);
-    }
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+      } catch (e) {
+        console.error('Error saving sessions:', e);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
   }, [sessions]);
 
   // Unmount cleanup guard: clear any active streaming interval & stop speech recognition

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Sidebar } from './components/Shell/Sidebar';
@@ -8,26 +8,39 @@ import { FloatingActionButton } from './components/Common/FloatingActionButton';
 import { EditProfileModal } from './components/Modals/EditProfileModal';
 import { SettingsModal } from './components/Modals/SettingsModal';
 import { AuthModal } from './components/Modals/AuthModal';
-import { AuthScreen } from './components/Auth/AuthScreen';
-import { LandingPage } from './components/Landing/LandingPage';
 import { ErrorBoundary } from './components/Common/ErrorBoundary';
 
-// Pages
-import { Home } from './pages/Home';
-import { Dashboard } from './pages/Dashboard';
-import { AITutor } from './pages/AITutor';
-import { VoiceTutor } from './pages/VoiceTutor';
-import { MyLearning } from './pages/MyLearning';
-import { StudyPlan } from './pages/StudyPlan';
-import { CodingPractice } from './pages/CodingPractice';
-import { AIInterview } from './pages/AIInterview';
-import { Assessments } from './pages/Assessments';
-import { JobReadiness } from './pages/JobReadiness';
-import { Events } from './pages/Events';
-import { Resources } from './pages/Resources';
-import { Achievements } from './pages/Achievements';
-import { Profile } from './pages/Profile';
-import { CompanyPrep } from './pages/CompanyPrep';
+// Code-split lazy loaded components for lightweight initial bundle & fast navigation
+const LandingPage = lazy(() => import('./components/Landing/LandingPage').then(m => ({ default: m.LandingPage })));
+const AuthScreen = lazy(() => import('./components/Auth/AuthScreen').then(m => ({ default: m.AuthScreen })));
+
+// Code-split lazy loaded pages
+const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
+const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
+const AITutor = lazy(() => import('./pages/AITutor').then(m => ({ default: m.AITutor })));
+const VoiceTutor = lazy(() => import('./pages/VoiceTutor').then(m => ({ default: m.VoiceTutor })));
+const MyLearning = lazy(() => import('./pages/MyLearning').then(m => ({ default: m.MyLearning })));
+const StudyPlan = lazy(() => import('./pages/StudyPlan').then(m => ({ default: m.StudyPlan })));
+const CodingPractice = lazy(() => import('./pages/CodingPractice').then(m => ({ default: m.CodingPractice })));
+const CompanyPrep = lazy(() => import('./pages/CompanyPrep').then(m => ({ default: m.CompanyPrep })));
+const AIInterview = lazy(() => import('./pages/AIInterview').then(m => ({ default: m.AIInterview })));
+const Assessments = lazy(() => import('./pages/Assessments').then(m => ({ default: m.Assessments })));
+const JobReadiness = lazy(() => import('./pages/JobReadiness').then(m => ({ default: m.JobReadiness })));
+const Events = lazy(() => import('./pages/Events').then(m => ({ default: m.Events })));
+const Resources = lazy(() => import('./pages/Resources').then(m => ({ default: m.Resources })));
+const Achievements = lazy(() => import('./pages/Achievements').then(m => ({ default: m.Achievements })));
+const Profile = lazy(() => import('./pages/Profile').then(m => ({ default: m.Profile })));
+
+// Preload high-frequency routes during browser idle time
+if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+  window.requestIdleCallback(() => {
+    import('./pages/Dashboard');
+    import('./pages/AITutor');
+    import('./pages/MyLearning');
+    import('./pages/CodingPractice');
+    import('./pages/CompanyPrep');
+  });
+}
 
 const LoadingScreen = () => {
   return (
@@ -42,6 +55,17 @@ const LoadingScreen = () => {
           <h3 className="font-bold text-base tracking-tight" style={{ color: 'var(--text-primary, var(--doap-text-prim))' }}>Resolving DOAP Session</h3>
           <p className="text-xs font-mono" style={{ color: 'var(--text-secondary, var(--doap-text-sec))' }}>Verifying session status...</p>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const PageLoader = () => {
+  return (
+    <div className="w-full h-full min-h-[360px] flex flex-col items-center justify-center p-8 select-none animate-fade-in">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-neutral-700 border-t-white animate-spin" />
+        <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">Loading DOAP Workspace...</span>
       </div>
     </div>
   );
@@ -63,25 +87,26 @@ const AppContent = () => {
 
   // 2. Unauthenticated Entry Gate: Public Landing Page & Auth Flow
   if (!user) {
-    if (publicView === 'auth') {
-      return (
-        <AuthScreen 
-          initialMode={authInitialMode} 
-          onBackToLanding={() => setPublicView('landing')} 
-        />
-      );
-    }
     return (
-      <LandingPage 
-        onGetStarted={() => {
-          setAuthInitialMode('signup');
-          setPublicView('auth');
-        }}
-        onSignIn={() => {
-          setAuthInitialMode('login');
-          setPublicView('auth');
-        }}
-      />
+      <Suspense fallback={<LoadingScreen />}>
+        {publicView === 'auth' ? (
+          <AuthScreen 
+            initialMode={authInitialMode} 
+            onBackToLanding={() => setPublicView('landing')} 
+          />
+        ) : (
+          <LandingPage 
+            onGetStarted={() => {
+              setAuthInitialMode('signup');
+              setPublicView('auth');
+            }}
+            onSignIn={() => {
+              setAuthInitialMode('login');
+              setPublicView('auth');
+            }}
+          />
+        )}
+      </Suspense>
     );
   }
 
@@ -161,7 +186,9 @@ const AppContent = () => {
             <main className={`flex-1 min-w-0 ${currentPath === '/ai-tutor' || currentPath === '/voice-tutor' ? 'p-0 h-[100dvh] md:h-[calc(100vh-2rem)] lg:h-[calc(100vh-3rem)] overflow-hidden flex flex-col' : 'p-3 md:p-6 lg:p-8 overflow-y-auto'}`}>
               <ErrorBoundary>
                 <div key={currentPath} className={`animate-page-transition ${currentPath === '/ai-tutor' || currentPath === '/voice-tutor' ? 'h-full flex-1 flex flex-col min-h-0' : ''}`}>
-                  {renderPage()}
+                  <Suspense fallback={<PageLoader />}>
+                    {renderPage()}
+                  </Suspense>
                 </div>
               </ErrorBoundary>
             </main>

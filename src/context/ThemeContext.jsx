@@ -254,7 +254,11 @@ export const ThemeProvider = ({ children }) => {
     if (typeof window !== 'undefined' && window.location.pathname !== path) {
       window.history.pushState({}, '', path);
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    try {
+      window.scrollTo(0, 0);
+      const mainEl = document.querySelector('main');
+      if (mainEl) mainEl.scrollTop = 0;
+    } catch (e) {}
   };
 
   // Derived accent values for components that read them
