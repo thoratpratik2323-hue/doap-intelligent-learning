@@ -34,9 +34,6 @@ export default defineConfig({
             if (id.includes('@google/genai')) {
               return 'vendor-genai';
             }
-            if (id.includes('@supabase')) {
-              return 'vendor-supabase';
-            }
             if (id.includes('react') || id.includes('react-dom')) {
               return 'vendor-react';
             }
