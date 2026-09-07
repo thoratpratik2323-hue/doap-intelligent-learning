@@ -343,7 +343,11 @@ export const AuthProvider = ({ children }) => {
         tasks: [],
         courses: { 'dsa-101': { progress: 60 } },
         solvedProblems: [1, 2, 6],
-        assessments: [{ id: 'mock-1', score: 85 }],
+        assessments: [
+          { id: 'mock-1', title: 'DSA Diagnostic', score: '68%', scoreNum: 68, date: 'Baseline' },
+          { id: 'mock-2', title: 'Core Algorithms', score: '78%', scoreNum: 78, date: 'Week 1' },
+          { id: 'mock-3', title: 'AI Readiness Test', score: '88%', scoreNum: 88, date: 'Recent' }
+        ],
         interviewCount: 1
       }
     };
