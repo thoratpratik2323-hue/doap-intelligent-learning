@@ -509,14 +509,15 @@ Please break down:
           onChange={(e) => setSelectedTopic(e.target.value)}
           className="px-3.5 py-2.5 rounded-xl border text-xs font-sans outline-none cursor-pointer"
           style={{
-            backgroundColor: 'var(--doap-surface)',
+            backgroundColor: 'var(--doap-surface, #141416)',
             borderColor: 'var(--doap-border)',
-            color: 'var(--doap-text-prim)'
+            color: 'var(--doap-text-prim, #f4f4f5)',
+            colorScheme: 'dark'
           }}
         >
-          <option value="All">All Topics ({availableTopics.length})</option>
+          <option value="All" style={{ backgroundColor: '#141416', color: '#f4f4f5' }}>All Topics ({availableTopics.length})</option>
           {availableTopics.map(topic => (
-            <option key={topic} value={topic}>{topic}</option>
+            <option key={topic} value={topic} style={{ backgroundColor: '#141416', color: '#f4f4f5' }}>{topic}</option>
           ))}
         </select>
 
@@ -529,17 +530,18 @@ Please break down:
           onChange={(e) => setSortBy(e.target.value)}
           className="px-3.5 py-2.5 rounded-xl border text-xs font-sans outline-none cursor-pointer"
           style={{
-            backgroundColor: 'var(--doap-surface)',
+            backgroundColor: 'var(--doap-surface, #141416)',
             borderColor: 'var(--doap-border)',
-            color: 'var(--doap-text-prim)'
+            color: 'var(--doap-text-prim, #f4f4f5)',
+            colorScheme: 'dark'
           }}
         >
-          <option value="frequency">Sort: Most Frequent in Interviews</option>
-          <option value="acceptance-desc">Sort: Highest Acceptance Rate</option>
-          <option value="acceptance-asc">Sort: Lowest Acceptance Rate</option>
-          <option value="diff-asc">Sort: Difficulty (Easy → Hard)</option>
-          <option value="diff-desc">Sort: Difficulty (Hard → Easy)</option>
-          <option value="title">Sort: Alphabetical (A → Z)</option>
+          <option value="frequency" style={{ backgroundColor: '#141416', color: '#f4f4f5' }}>Sort: Most Frequent in Interviews</option>
+          <option value="acceptance-desc" style={{ backgroundColor: '#141416', color: '#f4f4f5' }}>Sort: Highest Acceptance Rate</option>
+          <option value="acceptance-asc" style={{ backgroundColor: '#141416', color: '#f4f4f5' }}>Sort: Lowest Acceptance Rate</option>
+          <option value="diff-asc" style={{ backgroundColor: '#141416', color: '#f4f4f5' }}>Sort: Difficulty (Easy → Hard)</option>
+          <option value="diff-desc" style={{ backgroundColor: '#141416', color: '#f4f4f5' }}>Sort: Difficulty (Hard → Easy)</option>
+          <option value="title" style={{ backgroundColor: '#141416', color: '#f4f4f5' }}>Sort: Alphabetical (A → Z)</option>
         </select>
       </div>
 
@@ -780,14 +782,15 @@ Please break down:
                 onChange={(e) => setItemsPerPage(Number(e.target.value))}
                 className="px-2 py-1 rounded-lg border text-xs font-mono outline-none cursor-pointer"
                 style={{
-                  backgroundColor: 'var(--doap-surface)',
+                  backgroundColor: 'var(--doap-surface, #141416)',
                   borderColor: 'var(--doap-border)',
-                  color: 'var(--doap-text-prim)'
+                  color: 'var(--doap-text-prim, #f4f4f5)',
+                  colorScheme: 'dark'
                 }}
               >
-                <option value={25}>25</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
+                <option value={25} style={{ backgroundColor: '#141416', color: '#f4f4f5' }}>25</option>
+                <option value={50} style={{ backgroundColor: '#141416', color: '#f4f4f5' }}>50</option>
+                <option value={100} style={{ backgroundColor: '#141416', color: '#f4f4f5' }}>100</option>
               </select>
             </div>
           </div>
