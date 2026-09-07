@@ -14,6 +14,7 @@ import {
   Check, 
   Copy,
   Volume2,
+  VolumeX,
   RotateCcw,
   Trash2,
   Edit2,
@@ -30,6 +31,13 @@ import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { generateSmartTutorResponse } from '../services/aiTutorEngine';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
 import { VoiceAICallModal } from '../components/Interview/VoiceAICallModal';
+import { 
+  speakElevenLabs, 
+  stopElevenLabsAudio, 
+  unlockAudioContext, 
+  fallbackBrowserSpeech, 
+  humanizeTextForSpeech 
+} from '../services/elevenLabsService';
 
 const STORAGE_KEY = 'doap_ai_chat_sessions';
 
@@ -146,6 +154,7 @@ export const AITutor = () => {
         activeStreamRef.current = null;
       }
       stopListening();
+      stopElevenLabsAudio();
     };
   }, []);
 
@@ -374,21 +383,50 @@ export const AITutor = () => {
   };
 
   const handleSpeakMessage = async (text, msgId) => {
+    // If the same message is currently playing, clicking stops it immediately
     if (speakingMsgId === msgId) {
       setSpeakingMsgId(null);
-      if (typeof window !== 'undefined' && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
+      stopElevenLabsAudio();
       return;
     }
+
+    // Stop any existing playback and mark this message as speaking
+    stopElevenLabsAudio();
     setSpeakingMsgId(msgId);
+    unlockAudioContext();
+
     try {
-      const cleanText = text.replace(/[*_#`[\]()!]/g, '').replace(/https?:\/\/\S+/g, '');
-      await speakElevenLabs(cleanText);
+      const cleanText = humanizeTextForSpeech(text);
+      if (!cleanText || !cleanText.trim()) {
+        setSpeakingMsgId(null);
+        return;
+      }
+
+      await speakElevenLabs(
+        cleanText,
+        'doap',
+        () => {
+          // Finished playback
+          setSpeakingMsgId(null);
+        },
+        (err) => {
+          console.warn('[AITutor] Voice playback error, falling back to browser speech:', err);
+          fallbackBrowserSpeech(cleanText, () => {
+            setSpeakingMsgId(null);
+          });
+        }
+      );
     } catch (e) {
-      console.warn('Speech error:', e);
-    } finally {
-      setSpeakingMsgId(null);
+      console.warn('[AITutor] Speech error:', e);
+      try {
+        const cleanText = humanizeTextForSpeech(text);
+        fallbackBrowserSpeech(cleanText, () => {
+          setSpeakingMsgId(null);
+        });
+      } catch (err2) {
+        console.error('[AITutor] Fallback speech error:', err2);
+        setSpeakingMsgId(null);
+      }
     }
   };
 
@@ -680,12 +718,28 @@ export const AITutor = () => {
 
                         <button
                           onClick={() => handleSpeakMessage(msg.text, msg.id)}
-                          className={`px-2 py-1 rounded-lg border text-xs flex items-center gap-1 transition-colors cursor-pointer ${speakingMsgId === msg.id ? 'text-purple-400 border-purple-500' : 'text-neutral-400 hover:text-white'}`}
-                          style={{ borderColor: 'var(--doap-border)', backgroundColor: 'var(--doap-surface-sec)' }}
-                          title="Read aloud"
+                          className={`px-2 py-1 rounded-lg border text-xs flex items-center gap-1 transition-all cursor-pointer ${
+                            speakingMsgId === msg.id 
+                              ? 'text-purple-400 border-purple-500 bg-purple-500/10' 
+                              : 'text-neutral-400 hover:text-white'
+                          }`}
+                          style={{ 
+                            borderColor: speakingMsgId === msg.id ? undefined : 'var(--doap-border)', 
+                            backgroundColor: speakingMsgId === msg.id ? undefined : 'var(--doap-surface-sec)' 
+                          }}
+                          title={speakingMsgId === msg.id ? "Stop voice playback" : "Read aloud with DOAP Voice"}
                         >
-                          <Volume2 size={12} className={speakingMsgId === msg.id ? 'animate-pulse' : ''} />
-                          <span className="text-[11px]">{speakingMsgId === msg.id ? 'Playing...' : 'Voice'}</span>
+                          {speakingMsgId === msg.id ? (
+                            <>
+                              <VolumeX size={12} className="text-purple-400" />
+                              <span className="text-[11px] text-purple-400 font-medium">Stop</span>
+                            </>
+                          ) : (
+                            <>
+                              <Volume2 size={12} />
+                              <span className="text-[11px]">Voice</span>
+                            </>
+                          )}
                         </button>
 
                         <button
