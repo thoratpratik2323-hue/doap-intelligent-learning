@@ -488,11 +488,11 @@ export const VoiceTutor = () => {
           const isMobile = isMobileDevice();
           // Adaptive noise floor tracking: mobile mics usually have higher gain/AGC
           if (avg < 25) {
-            noiseFloorRef.current = Math.max(3, Math.min(25, noiseFloorRef.current * 0.96 + avg * 0.04));
+            noiseFloorRef.current = Math.max(2, Math.min(25, noiseFloorRef.current * 0.96 + avg * 0.04));
           }
-          // Dynamic threshold with higher margin on mobile to prevent ambient hiss false triggers
-          const minThreshold = isMobile ? 18 : 12;
-          const speechThreshold = Math.max(minThreshold, noiseFloorRef.current + (isMobile ? 8 : 5));
+          // Dynamic threshold sensitive to real-world microphones (normal speech avg ~5-20)
+          const minThreshold = isMobile ? 8 : 4;
+          const speechThreshold = Math.max(minThreshold, noiseFloorRef.current + (isMobile ? 4 : 2));
 
           if (avg > speechThreshold) {
             if (!isUserSpeakingRef.current) {
@@ -506,8 +506,8 @@ export const VoiceTutor = () => {
             }
           } else if (isUserSpeakingRef.current) {
             if (!vadSilenceTimeoutRef.current) {
-              const silenceWait = isMobile ? 950 : 750;
-              const minSpeechDuration = isMobile ? 550 : 350;
+              const silenceWait = isMobile ? 950 : 850;
+              const minSpeechDuration = isMobile ? 220 : 160;
               vadSilenceTimeoutRef.current = setTimeout(() => {
                 vadSilenceTimeoutRef.current = null;
                 const speechDuration = Date.now() - speechStartTimestampRef.current;
@@ -516,8 +516,10 @@ export const VoiceTutor = () => {
 
                 if (speechDuration >= minSpeechDuration && callStateRef.current === 'listening' && !isProcessingSpeechRef.current) {
                   finalizeAndTranscribeWithWhisper();
+                } else if (speechDuration >= 100 && callStateRef.current === 'listening' && !isProcessingSpeechRef.current) {
+                  // If user spoke even a single word, still finalize rather than discard
+                  finalizeAndTranscribeWithWhisper();
                 } else {
-                  // Speech burst too short (likely a breath or mic tap), reset buffer
                   audioChunksRef.current = [];
                 }
               }, silenceWait);
@@ -541,12 +543,8 @@ export const VoiceTutor = () => {
   const startRecognition = () => {
     if (!isMountedRef.current || !isCallActiveRef.current || isMutedRef.current || callStateRef.current !== 'listening' || hasFatalMicErrorRef.current) return;
     
-    // CRITICAL: On mobile devices (Android Chrome, iOS Safari), running SpeechRecognition
-    // invokes the OS-level speech daemon which aggressive cycles ON/OFF, causes mic beeping,
-    // and terminates MediaRecorder chunks. Mobile relies 100% on continuous MediaRecorder + Groq Whisper VAD.
-    if (isMobileDevice()) {
-      return;
-    }
+    // On mobile devices, Web Speech API may be unstable; continuous MediaRecorder + Groq Whisper VAD is the primary engine
+    const isMobile = isMobileDevice();
 
     const SpeechRec = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
     if (!SpeechRec) {
@@ -572,7 +570,7 @@ export const VoiceTutor = () => {
       const rec = new SpeechRec();
       rec.continuous = true;
       rec.interimResults = true;
-      rec.lang = 'en-IN'; // Explicit Indian English recognition for authentic phonetic match
+      rec.lang = (typeof navigator !== 'undefined' && navigator.language) || 'en-IN';
 
       rec.onresult = (e) => {
         if (callStateRef.current !== 'listening' || isProcessingSpeechRef.current) return;
@@ -591,7 +589,7 @@ export const VoiceTutor = () => {
             clearTimeout(chromeSpeechTimerRef.current);
           }
 
-          // Ultra-responsive conversational pause (450ms for zero-latency turn-taking)
+          // Conversational pause: 1100ms so user has time to finish their sentence naturally
           chromeSpeechTimerRef.current = setTimeout(() => {
             if (callStateRef.current === 'listening' && clean.length > 0 && !isProcessingSpeechRef.current) {
               isProcessingSpeechRef.current = true;
@@ -601,7 +599,7 @@ export const VoiceTutor = () => {
               stopUniversalRecorder();
               handleUserSpeechComplete(clean);
             }
-          }, 450);
+          }, 1100);
         }
       };
 
@@ -610,27 +608,26 @@ export const VoiceTutor = () => {
           return;
         }
         console.warn('[SpeechRec] Status:', e.error);
-        if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        if (e.error === 'not-allowed') {
           hasFatalMicErrorRef.current = true;
           setMicError('Microphone permission blocked. Click the lock/mic icon in your address bar to allow mic access.');
         } else if (e.error === 'audio-capture') {
-          hasFatalMicErrorRef.current = true;
-          setMicError('Microphone not detected. Please verify your microphone is plugged in.');
+          console.warn('[SpeechRec] Audio capture glitch, relying on MediaRecorder VAD');
         } else if (e.error === 'network') {
-          setMicError('Speech recognition network timeout. Reconnecting...');
+          console.warn('[SpeechRec] Speech recognition network timeout, relying on MediaRecorder VAD');
         }
       };
 
       rec.onend = () => {
         recognitionRef.current = null;
         isStartingRecognitionRef.current = false;
-        if (hasFatalMicErrorRef.current || isMobileDevice()) return;
+        if (hasFatalMicErrorRef.current) return;
         if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening' && !isProcessingSpeechRef.current) {
           setTimeout(() => {
             if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening' && !isProcessingSpeechRef.current && !hasFatalMicErrorRef.current) {
               startRecognition();
             }
-          }, 600);
+          }, 200);
         }
       };
 
@@ -640,13 +637,6 @@ export const VoiceTutor = () => {
     } catch(err) {
       isStartingRecognitionRef.current = false;
       console.warn('[SpeechRec] Start error:', err);
-      if (!hasFatalMicErrorRef.current && !isMobileDevice()) {
-        setTimeout(() => {
-          if (isMountedRef.current && isCallActiveRef.current && !isMutedRef.current && callStateRef.current === 'listening' && !hasFatalMicErrorRef.current) {
-            startRecognition();
-          }
-        }, 600);
-      }
     }
   };
 
@@ -838,16 +828,6 @@ export const VoiceTutor = () => {
       chromeSpeechTimerRef.current = null;
     }
 
-    // HARD MUTE MIC TRACKS WHILE AI IS SPEAKING:
-    // Physical protection preventing speaker echo or user room noise from cutting DOAP AI off mid-sentence
-    if (mediaStreamRef.current) {
-      try {
-        mediaStreamRef.current.getAudioTracks().forEach(t => {
-          t.enabled = false;
-        });
-      } catch (e) {}
-    }
-
     let finished = false;
     const safeComplete = () => {
       if (finished) return;
@@ -859,21 +839,12 @@ export const VoiceTutor = () => {
       activeUtteranceRef.current = null;
       if (typeof window !== 'undefined') window._doapActiveUtterance = null;
 
-      // Re-enable microphone tracks ONLY after speech playback has 100% finished
-      if (mediaStreamRef.current && !isMutedRef.current) {
-        try {
-          mediaStreamRef.current.getAudioTracks().forEach(t => {
-            t.enabled = true;
-          });
-        } catch (e) {}
-      }
-
-      // 450ms acoustic room clearance guard before restarting listening cycle
+      // Small clearance guard before restarting listening cycle
       setTimeout(() => {
         if (onComplete && isMountedRef.current && isCallActiveRef.current) {
           onComplete();
         }
-      }, 450);
+      }, 200);
     };
 
     // Safety watchdog timer (120s) so long explanations are never cut off prematurely
@@ -1264,6 +1235,30 @@ export const VoiceTutor = () => {
               {isMuted ? <MicOff size={16} /> : <Mic size={16} />}
               <span className="hidden sm:inline">{isMuted ? 'Muted' : 'Mute'}</span>
             </button>
+
+            {/* Manual Send / Done Speaking Button for Instant Turn Taking */}
+            {callState === 'listening' && !isMuted && (
+              <button
+                onClick={() => {
+                  const prompt = (userTranscript || lastSpokenTextRef.current || '').trim();
+                  if (prompt) {
+                    isProcessingSpeechRef.current = true;
+                    updateCallState('thinking');
+                    stopRecognition();
+                    stopUniversalRecorder();
+                    handleUserSpeechComplete(prompt);
+                  } else {
+                    finalizeAndTranscribeWithWhisper();
+                  }
+                }}
+                className="px-4 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-lg shadow-cyan-600/30 hover:scale-105 active:scale-95"
+                title="Send recorded speech to DOAP AI immediately"
+              >
+                <Check size={14} />
+                <span>Send Voice</span>
+              </button>
+            )}
+
             {/* End Call Button */}
             <button
               onClick={handleEndCall}

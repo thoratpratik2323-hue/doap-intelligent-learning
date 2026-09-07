@@ -1,6 +1,7 @@
 /**
- * DOAP Unified 8-Layer Memory Brain (Inspired by IP-Verse-Mafia & Project-Brain)
+ * DOAP Unified 9-Layer Memory Brain (Inspired by IP-Verse-Mafia, Project-Brain & Claw Code CLAUDE.md)
  * Persistent, self-updating cognitive memory that ensures DOAP never forgets.
+ * Layer 9 (new): Session tracking, skill progress, company-specific prep state.
  */
 
 const STORAGE_KEY = 'doap_unified_memory_brain_v1';
@@ -75,6 +76,27 @@ const DEFAULT_MEMORY = {
     currentPhase: 'Stage 3: Advanced Engineering & Autonomous Systems',
     readinessScore: 88,
     solvedProblemCount: 12
+  },
+
+  // Layer 8: Skill Progress (Claw Code Skills System — per-topic mastery %)
+  skillProgress: {
+    'dsa-arrays': 0,
+    'dsa-graphs': 0,
+    'dsa-dp': 0,
+    'system-design': 0,
+    'company-amazon': 0,
+    'company-google': 0,
+    'company-microsoft': 0,
+    'ai-ml': 0,
+  },
+
+  // Layer 9: Agent & Session State (Claw Code CLAUDE.md equivalent)
+  agentState: {
+    preferredAgents: [],
+    lastAgentUsed: null,
+    totalAgentCalls: 0,
+    companyTargetProgress: {},  // e.g. { amazon: { lpReady: false, codingReady: true } }
+    activeSessionId: null,
   }
 };
 
@@ -390,6 +412,94 @@ ${recentEp}
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('doap:memory-updated', { detail: this.memory }));
     }
+  }
+
+  // ==================== FEATURE 5: CLAUDE.md EQUIVALENT ====================
+
+  /**
+   * Generates a CLAUDE.md-style persistent memory string.
+   * Injected into every AI session so the AI always knows the user.
+   * @returns {string}
+   */
+  generateClaudeMd() {
+    const mem = this.memory;
+    const skillLines = Object.entries(mem.skillProgress || {})
+      .filter(([, v]) => v > 0)
+      .map(([k, v]) => `  - ${k}: ${v}% mastery`)
+      .join('\n');
+
+    const companyLines = Object.entries(mem.agentState?.companyTargetProgress || {})
+      .map(([co, prog]) => `  - ${co}: ${JSON.stringify(prog)}`)
+      .join('\n');
+
+    return `
+[USER PERSISTENT MEMORY — CLAUDE.md EQUIVALENT]
+Name: ${mem.identity?.userName || 'Student'}
+Role Target: ${mem.identity?.targetRole || 'Software Engineer'}
+Target Companies: ${(mem.identity?.targetCompanies || []).join(', ')}
+Current Phase: ${mem.milestones?.currentPhase || 'Learning'}
+Readiness: ${mem.milestones?.readinessScore || 85}/100
+Problems Solved: ${mem.milestones?.solvedProblemCount || 0}
+
+Mastered Topics: ${(mem.semantic?.mastered || []).slice(-8).join(', ') || 'None yet'}
+In Progress: ${(mem.semantic?.inProgress || []).slice(-4).join(', ') || 'None'}
+Weak Areas (focus here): ${(mem.weaknesses?.reviewTopics || []).join(', ') || 'None identified'}
+${skillLines ? `\nSkill Progress:\n${skillLines}` : ''}
+${companyLines ? `\nCompany Prep Progress:\n${companyLines}` : ''}
+Last Agent Used: ${mem.agentState?.lastAgentUsed || 'None'}
+[END PERSISTENT MEMORY]
+`.trim();
+  }
+
+  /**
+   * Update per-skill mastery progress (0-100%).
+   * @param {string} skillId
+   * @param {number} increment - How much to increase (default 5)
+   */
+  updateSkillProgress(skillId, increment = 5) {
+    if (!skillId) return;
+    if (!this.memory.skillProgress) {
+      this.memory.skillProgress = {};
+    }
+    const current = this.memory.skillProgress[skillId] || 0;
+    this.memory.skillProgress[skillId] = Math.min(100, current + increment);
+    this.saveMemory();
+  }
+
+  /**
+   * Track which agents are being used.
+   * @param {string} agentName
+   */
+  trackAgentUsage(agentName) {
+    if (!agentName) return;
+    if (!this.memory.agentState) {
+      this.memory.agentState = {
+        preferredAgents: [],
+        lastAgentUsed: null,
+        totalAgentCalls: 0,
+        companyTargetProgress: {},
+        activeSessionId: null,
+      };
+    }
+    this.memory.agentState.lastAgentUsed = agentName;
+    this.memory.agentState.totalAgentCalls = (this.memory.agentState.totalAgentCalls || 0) + 1;
+
+    const preferred = this.memory.agentState.preferredAgents || [];
+    if (!preferred.includes(agentName)) {
+      preferred.push(agentName);
+      this.memory.agentState.preferredAgents = preferred.slice(-5);
+    }
+    this.saveMemory();
+  }
+
+  /**
+   * Set active session ID in memory.
+   * @param {string} sessionId
+   */
+  setActiveSession(sessionId) {
+    if (!this.memory.agentState) this.memory.agentState = {};
+    this.memory.agentState.activeSessionId = sessionId;
+    this.saveMemory();
   }
 
   resetBrain() {

@@ -20,6 +20,9 @@ export const useSpeechRecognition = ({ onTranscriptChange } = {}) => {
 
   const isNativeSupported = Boolean(SpeechRecognition);
 
+  const shouldListenRef = useRef(false);
+  const isStartingRef = useRef(false);
+
   useEffect(() => {
     if (!isNativeSupported) return;
 
@@ -27,46 +30,65 @@ export const useSpeechRecognition = ({ onTranscriptChange } = {}) => {
       const recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = 'en-US';
+      recognition.lang = (typeof navigator !== 'undefined' && navigator.language) || 'en-IN';
 
       recognition.onstart = () => {
+        isStartingRef.current = false;
         setIsListening(true);
         setError(null);
       };
 
       recognition.onresult = (event) => {
-        let currentTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const text = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            currentTranscript += text + ' ';
-          } else {
-            currentTranscript += text;
+        let fullTranscript = '';
+        for (let i = 0; i < event.results.length; i++) {
+          fullTranscript += event.results[i][0].transcript;
+          if (event.results[i].isFinal && !fullTranscript.endsWith(' ')) {
+            fullTranscript += ' ';
           }
         }
 
-        if (currentTranscript) {
-          setTranscript(currentTranscript);
+        const clean = fullTranscript.trim();
+        if (clean) {
+          setTranscript(clean);
           if (onTranscriptChangeRef.current) {
-            onTranscriptChangeRef.current(currentTranscript);
+            onTranscriptChangeRef.current(clean);
           }
         }
       };
 
       recognition.onerror = (event) => {
+        isStartingRef.current = false;
         if (event.error === 'no-speech' || event.error === 'aborted') {
+          // Normal pause in speech or aborted for restart, do not flag as fatal error
           return;
         }
         let msg = `Microphone error: ${event.error}`;
         if (event.error === 'not-allowed' || event.error === 'permission-denied') {
           msg = 'Microphone permission denied. Please allow microphone access in your browser.';
+          shouldListenRef.current = false;
+          setIsListening(false);
         }
         setError(msg);
-        setIsListening(false);
       };
 
       recognition.onend = () => {
-        setIsListening(false);
+        isStartingRef.current = false;
+        // In Chrome, recognition stops after silence even with continuous=true.
+        // If user still wants to listen, auto-restart immediately.
+        if (shouldListenRef.current) {
+          setTimeout(() => {
+            if (shouldListenRef.current && recognitionRef.current && !isStartingRef.current) {
+              try {
+                isStartingRef.current = true;
+                recognitionRef.current.start();
+              } catch (e) {
+                isStartingRef.current = false;
+              }
+            }
+          }, 150);
+        } else {
+          setIsListening(false);
+        }
       };
 
       recognitionRef.current = recognition;
@@ -75,6 +97,7 @@ export const useSpeechRecognition = ({ onTranscriptChange } = {}) => {
     }
 
     return () => {
+      shouldListenRef.current = false;
       if (recognitionRef.current) {
         try { recognitionRef.current.stop(); } catch(e){}
       }
@@ -142,15 +165,23 @@ export const useSpeechRecognition = ({ onTranscriptChange } = {}) => {
 
   const startListening = useCallback(() => {
     setError(null);
+    shouldListenRef.current = true;
     if (isNativeSupported && recognitionRef.current) {
       try {
         setTranscript('');
+        isStartingRef.current = true;
         recognitionRef.current.start();
         setIsListening(true);
       } catch (err) {
         try {
           recognitionRef.current.stop();
-          setTimeout(() => recognitionRef.current.start(), 100);
+          setTimeout(() => {
+            if (shouldListenRef.current && recognitionRef.current) {
+              isStartingRef.current = true;
+              recognitionRef.current.start();
+              setIsListening(true);
+            }
+          }, 100);
         } catch (e) {
           startAudioStreamFallback();
         }
@@ -162,12 +193,14 @@ export const useSpeechRecognition = ({ onTranscriptChange } = {}) => {
   }, [isNativeSupported]);
 
   const stopListening = useCallback(() => {
-    if (recognitionRef.current && isListening) {
+    shouldListenRef.current = false;
+    isStartingRef.current = false;
+    if (recognitionRef.current) {
       try { recognitionRef.current.stop(); } catch(e){}
     }
     stopAudioStreamFallback();
     setIsListening(false);
-  }, [isListening]);
+  }, []);
 
   const toggleListening = useCallback(() => {
     if (isListening) {

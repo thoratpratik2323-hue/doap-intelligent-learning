@@ -5,6 +5,7 @@
  * 2. In-Chat Interactive Flash Quiz Engine (/quiz [c|py|java|dsa])
  * 3. Flux AI Image Generation (/image <prompt>)
  * 4. A-to-Z Universal Knowledge Coverage (Coding, Science, Math, Essays, Chat, Ideas)
+ * 5. Claw Code Agentic Architecture (Tool Registry, Skills, Sub-Agents, Hooks, Sessions)
  */
 
 import { 
@@ -15,12 +16,18 @@ import {
 } from '../data/questionBanks.js';
 import { DSA_QUIZZES } from '../data/dsa/dsaKnowledgeData.js';
 import { memoryBrain } from './memoryBrain.js';
+import { runAgentLoop, shouldUseAgentLoop } from './agentLoop.js';
+import { runPreHooks, runPostHooks } from './hooksEngine.js';
+import { getSkillPromptInjection, getActiveSkillNames } from './skillsRegistry.js';
+import { orchestrate, getMatchingAgentName } from './agentOrchestrator.js';
+import { sessionManager } from './sessionManager.js';
 
 const defaultGk = [
   'gsk',
   '_15WoQKTz6UaWI4I1QoSh',
   'WGdyb3FYZzu8zBQjddTZfcCfBtzyq5V9'
 ].join('');
+
 
 export async function generateSmartTutorResponse(message, userName = 'there', history = [], options = {}) {
   // Normalize polymorphic argument calling patterns (e.g. generateSmartTutorResponse(msg, history) or generateSmartTutorResponse(msg, userName, options))
@@ -156,9 +163,12 @@ ${JSON.stringify(quizData, null, 2)}
 | \`/code <prompt>\` | 💻 **Code Generator** | Clean, runnable code with complexity analysis |
 | \`/explain <topic>\` | 💡 **Deep Dive** | Intuitive conceptual breakdown with analogies |
 | \`/interview <topic>\` | 🎯 **Mock Interview** | Simulates a live FAANG technical question |
+| \`/resume\` | 📂 **Session Resume** | Shows recent sessions to continue from where you left off |
+| \`/resume [N]\` | 🔄 **Resume #N** | Directly resumes session number N |
+| \`/agents\` | 🤖 **Agent List** | Shows all active specialized AI agents |
 | \`/joke\` | 😄 **Dev Humor** | Generates a witty programmer/tech joke |
 
-*Tip: You can ask anything from A to Z in Hindi, Hinglish, or English!*`;
+*Tip: Agents activate **automatically** — just ask about Amazon/Google interviews, DSA, code review, or study plans!*`;
   }
 
   // D. /joke — Developer Humor
@@ -271,6 +281,127 @@ Developed by **Pratik Thorat** for **Sanjivani College of Engineering (SCOE) / S
   const effectivePrompt = cleanText.replace(/^(\/code|\/explain|\/interview)\s+/i, '');
 
   // ==========================================
+  // 1.5. AGENTIC LAYER (Claw Code Architecture)
+  // ==========================================
+
+  // A. Session management — auto-save messages
+  if (!options.agentMode && !options.voiceMode) {
+    try {
+      if (!sessionManager.getCurrentSession()) {
+        sessionManager.startSession(effectivePrompt);
+      }
+      sessionManager.appendMessage({ sender: 'user', text: rawText });
+    } catch (e) { /* silent */ }
+  }
+
+  // B. /resume slash command — show session picker
+  if (cleanText === '/resume' || cleanText.startsWith('/resume ')) {
+    const num = parseInt(cleanText.split(' ')[1], 10);
+    if (!isNaN(num)) {
+      const sessions = sessionManager.listSessions();
+      const target = sessions[num - 1];
+      if (target) {
+        const { session } = sessionManager.resumeSession(target.id) || {};
+        return session
+          ? `### ✅ Session Resumed: "${session.title}"\n\nContinuing your **${session.topic}** session from ${new Date(session.lastActiveAt).toLocaleDateString('en-IN')} (${session.messageCount} messages). What were we working on? 🔄`
+          : `❌ Could not resume that session.`;
+      }
+    }
+    return sessionManager.generateResumeSummary();
+  }
+
+  // C. /agents command — show available agents
+  if (cleanText === '/agents') {
+    const agents = listAgents();
+    const lines = agents.map((a) => `- 🤖 **${a.name}**: ${a.description}`).join('\n');
+    return `### 🤖 DOAP Active Agents\n\n${lines}\n\n*Agents activate automatically based on your message context!*`;
+  }
+
+  // D. Pre-Hooks — educational guardrails (attempt check, difficulty calibration)
+  if (!options.voiceMode && !options.agentMode) {
+    try {
+      const memory = memoryBrain.getMemory();
+      const { gate, response: gatedResponse } = runPreHooks(effectivePrompt, memory);
+      if (gate && gatedResponse) {
+        try {
+          sessionManager.appendMessage({ sender: 'ai', text: gatedResponse });
+        } catch (e) { /* silent */ }
+        return gatedResponse;
+      }
+    } catch (e) { /* silent — hooks must never crash the engine */ }
+  }
+
+  // E. Agent Orchestrator — route to specialized agent if detected
+  if (!options.voiceMode && !options.agentMode) {
+    try {
+      const agentName = getMatchingAgentName(effectivePrompt);
+      if (agentName) {
+        const { response: agentResponse } = await orchestrate(
+          effectivePrompt,
+          userName,
+          history,
+          options
+        );
+        if (agentResponse) {
+          // Post-hooks on agent response
+          let finalResp = agentResponse;
+          try {
+            const { finalResponse } = runPostHooks(effectivePrompt, agentResponse);
+            finalResp = finalResponse;
+          } catch (e) { /* silent */ }
+
+          // Track agent usage in memory
+          try {
+            memoryBrain.trackAgentUsage(agentName);
+            sessionManager.appendMessage({ sender: 'ai', text: finalResp });
+            sessionManager.tagSession(agentName, []);
+          } catch (e) { /* silent */ }
+
+          memoryBrain.learnFromInteraction(effectivePrompt, finalResp, 'text');
+          return finalResp;
+        }
+      }
+    } catch (e) {
+      console.warn('[DOAP AI] Agent orchestrator error:', e.message || e);
+    }
+  }
+
+  // F. Agent Loop — use tool calling for tool-trigger messages
+  if (!options.voiceMode && !options.agentMode && shouldUseAgentLoop(effectivePrompt)) {
+    try {
+      const { response: loopResponse, toolsUsed } = await runAgentLoop(
+        effectivePrompt,
+        userName,
+        '', // systemPrompt built inside agentLoop with skill injection
+        (history || []).slice(-6).map((m) => ({
+          role: m.sender === 'user' ? 'user' : 'assistant',
+          content: m.text || m.content || '',
+        })),
+      );
+
+      if (loopResponse && !loopResponse.includes(`Hey ${userName}! I'm ready`)) {
+        // Post-hooks
+        let finalResp = loopResponse;
+        try {
+          const { finalResponse } = runPostHooks(effectivePrompt, loopResponse);
+          finalResp = finalResponse;
+        } catch (e) { /* silent */ }
+
+        try {
+          sessionManager.appendMessage({ sender: 'ai', text: finalResp });
+          if (toolsUsed.length > 0) {
+            sessionManager.tagSession(null, getActiveSkillNames(effectivePrompt));
+          }
+        } catch (e) { /* silent */ }
+
+        return finalResp;
+      }
+    } catch (e) {
+      console.warn('[DOAP AI] Agent loop error:', e.message || e);
+    }
+  }
+
+  // ==========================================
   // 2. Resolve Working API Keys
   // ==========================================
   const storedGroq = typeof localStorage !== 'undefined' ? localStorage.getItem('doap_groq_key') : null;
@@ -281,6 +412,10 @@ Developed by **Pratik Thorat** for **Sanjivani College of Engineering (SCOE) / S
   ].filter(Boolean)));
 
   const workingMemory = memoryBrain.getSynthesizedWorkingMemory();
+
+  // Skill injection (Feature 3) & CLAUDE.md memory (Feature 5)
+  const skillInjection = !options.voiceMode ? getSkillPromptInjection(effectivePrompt) : '';
+  const claudeMd = !options.voiceMode ? memoryBrain.generateClaudeMd() : '';
 
   const SANJIVANI_KNOWLEDGE_BASE = `
 INSTITUTIONAL KNOWLEDGE BASE (SANJIVANI UNIVERSITY & SRES):
@@ -348,7 +483,10 @@ DOAP Platform Identity:
 
 ${workingMemory}
 
+${claudeMd}
+
 ${SANJIVANI_KNOWLEDGE_BASE}
+${skillInjection}
 
 CRITICAL COGNITIVE SELF-THINKING & REASONING PROTOCOL:
 For complex, technical, or multi-step questions (coding problems, DSA algorithms, system architecture, debugging, logic, math, or complex analysis):
@@ -479,6 +617,28 @@ Core Persona & Vibe:
             } catch (e) {
               console.warn('[aiTutorEngine] learnFromInteraction error:', e);
             }
+
+            // Post-Hooks — educational guardrails (complexity check, weakness tracking, progress)
+            if (!options.voiceMode && !options.agentMode) {
+              try {
+                const { finalResponse } = runPostHooks(cleanText, reply);
+                reply = finalResponse;
+              } catch (e) { /* silent */ }
+
+              // Save to session
+              try {
+                sessionManager.appendMessage({ sender: 'ai', text: reply });
+                const activeSkills = getActiveSkillNames(cleanText);
+                if (activeSkills.length > 0) {
+                  sessionManager.tagSession(null, activeSkills);
+                  activeSkills.forEach((skillName) => {
+                    const skillId = skillName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+                    memoryBrain.updateSkillProgress(skillId, 3);
+                  });
+                }
+              } catch (e) { /* silent */ }
+            }
+
             return reply;
           }
         }

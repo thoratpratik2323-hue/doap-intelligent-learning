@@ -496,7 +496,6 @@ export async function speakDOAPVoice(text, onComplete, onError) {
   // Fallback to browser speech if ElevenLabs could not start
   if (!hasStartedPlaying && !isAudioCancelled) {
     fallbackBrowserSpeech(cleanText, onComplete);
-    if (onError) onError(new Error("ElevenLabs unavailable"));
   }
 }
 
