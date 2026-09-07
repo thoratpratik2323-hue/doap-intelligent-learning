@@ -190,62 +190,188 @@ export const COURSES_DATA = [
     title: "Data Structures & Algorithms",
     level: "Intermediate",
     category: "Data Structures",
-    modulesCount: 5,
-    duration: "10h",
+    modulesCount: 16,
+    duration: "24h",
     progress: 0,
     modules: [
-      { 
-        id: 1, 
-        title: "Arrays & Strings", 
-        completed: false, 
+      {
+        id: 1,
+        title: "Complexity Notation & Analysis",
+        completed: false,
         isCurrent: true,
         subTopics: [
-          { id: "dsa-1-1", title: "Two Pointer Technique", desc: "Optimal O(N) convergence patterns for pair sums, palindrome checks, and container area." },
-          { id: "dsa-1-2", title: "Sliding Window Patterns", desc: "Fixed and dynamic window paradigms for longest substrings, minimum window search." },
-          { id: "dsa-1-3", title: "Prefix Sum & Kadane's Algorithm", desc: "O(1) range sum lookups, maximum contiguous subarray sums, and circular arrays." },
-          { id: "dsa-1-4", title: "In-Place Array Manipulations", desc: "Dutch National Flag algorithm (0/1/2 partitioning), rotations, and cycle marking." }
+          { id: "dsa-1-1", title: "Asymptotic Upper & Lower Bounds (O, Ω, Θ)", desc: "Growth rates from O(1) to O(n!), ignoring lower-order terms and constants." },
+          { id: "dsa-1-2", title: "Time vs Auxiliary Space Complexity", desc: "Distinguishing total memory, working memory, and call-stack allocations." },
+          { id: "dsa-1-3", title: "Worst-Case vs Average vs Amortized Analysis", desc: "Accounting for dynamic array geometric doubling and hash table expansions." },
+          { id: "dsa-1-4", title: "Core 7-Step Problem-Solving Workflow", desc: "Clarify inputs/outputs/constraints, choose representation, match patterns, test edge cases." }
         ]
       },
-      { 
-        id: 2, 
-        title: "Linked Lists", 
+      {
+        id: 2,
+        title: "Arrays & Dynamic Arrays",
         completed: false,
         subTopics: [
-          { id: "dsa-2-1", title: "Singly & Doubly Linked Lists", desc: "Node traversal, head/tail insertion, deletion, and memory footprint comparisons." },
-          { id: "dsa-2-2", title: "Floyd's Cycle Finding Algorithm", desc: "Slow and fast pointer mechanics for loop detection and finding cycle starting nodes." },
-          { id: "dsa-2-3", title: "In-Place List Reversals", desc: "Iterative and recursive list reversals, reversing nodes in k-groups." },
-          { id: "dsa-2-4", title: "LRU Cache Architecture", desc: "Combining Hash Maps with Doubly Linked Lists for guaranteed O(1) operations." }
+          { id: "dsa-2-1", title: "Contiguous Random Access & In-Place Shifts", desc: "Constant-time indexing via base address offset; O(n) middle insertions." },
+          { id: "dsa-2-2", title: "Two Pointer Convergence & Partitioning", desc: "Converging pointers for pair sums, in-place reversal, and Dutch National Flag." },
+          { id: "dsa-2-3", title: "Prefix Sum & Difference Arrays", desc: "O(1) range sum answering with prefix accumulation; offline range additions in O(n+q)." },
+          { id: "dsa-2-4", title: "Sliding Window Paradigms", desc: "Fixed and dynamic window adjustments for maximum subsegments and subarrays." }
         ]
       },
-      { 
-        id: 3, 
-        title: "Stacks & Queues", 
+      {
+        id: 3,
+        title: "Strings & Pattern Matching",
         completed: false,
         subTopics: [
-          { id: "dsa-3-1", title: "Monotonic Stack Pattern", desc: "Next Greater Element, Next Smaller Element, and Largest Rectangle in Histogram in O(N)." },
-          { id: "dsa-3-2", title: "Expression Evaluation", desc: "Infix to Postfix conversion, prefix parsing, and balanced multi-bracket validation." },
-          { id: "dsa-3-3", title: "Circular Queues & Deques", desc: "Modulo arithmetic wrap-around, sliding window maximums using double-ended queues." }
+          { id: "dsa-3-1", title: "Frequency Mapping & Character Traversals", desc: "O(n) single-pass frequency tables, anagram validation, and first unique character." },
+          { id: "dsa-3-2", title: "Two Pointers for Palindromes", desc: "Inward convergence ignoring non-alphanumerics and case normalization." },
+          { id: "dsa-3-3", title: "KMP Prefix Function & Substring Search", desc: "Building the π table to skip redundant character comparisons in linear O(n) time." },
+          { id: "dsa-3-4", title: "Substrings vs Subsequences", desc: "Contiguous window algorithms vs relative-order dynamic programming invariants." }
         ]
       },
-      { 
-        id: 4, 
-        title: "Binary Trees & BST", 
+      {
+        id: 4,
+        title: "Linked Lists",
         completed: false,
         subTopics: [
-          { id: "dsa-4-1", title: "Tree Traversals (DFS & BFS)", desc: "Preorder, Inorder, Postorder, and Level-Order traversals using recursion and queues." },
-          { id: "dsa-4-2", title: "Lowest Common Ancestor (LCA)", desc: "Recursive and iterative node search, tree diameter, and maximum path sums." },
-          { id: "dsa-4-3", title: "BST Invariants & Tree Balancing", desc: "Kth smallest element, BST validation, and AVL tree self-balancing rotations." },
-          { id: "dsa-4-4", title: "Tree Serialization & Reconstruction", desc: "Serializing trees to byte streams with sentinels and rebuilding in linear time." }
+          { id: "dsa-4-1", title: "Singly & Doubly Linked List Traversal", desc: "Pointer manipulation, head/tail additions, and avoiding pointer dereference leaks." },
+          { id: "dsa-4-2", title: "Floyd's Fast & Slow Pointer Mechanics", desc: "Detecting cycles, finding cycle entry points, and middle node retrieval." },
+          { id: "dsa-4-3", title: "In-Place List Reversal & Node Merging", desc: "Iterative pointer swapping, merging two sorted lists, and k-group reversals." },
+          { id: "dsa-4-4", title: "LRU Cache Architecture", desc: "Combining hash maps with doubly linked lists for O(1) get and put operations." }
         ]
       },
-      { 
-        id: 5, 
-        title: "Heaps & Priority Queues", 
+      {
+        id: 5,
+        title: "Stacks & Monotonic Patterns",
         completed: false,
         subTopics: [
-          { id: "dsa-5-1", title: "Min-Heap & Max-Heap Invariants", desc: "Array-backed binary heaps, heapify in O(N), bubble-up and bubble-down." },
-          { id: "dsa-5-2", title: "Top-K Elements & Streaming Median", desc: "Two-heap median maintenance (max-heap for lower half, min-heap for upper half)." },
-          { id: "dsa-5-3", title: "K-Way Merge with Min-Heap", desc: "Merging K sorted lists/arrays in O(N log K) time with optimal space efficiency." }
+          { id: "dsa-5-1", title: "LIFO Operations & Balanced Delimiters", desc: "Matching brackets with push, pop, and top; syntax parsing invariants." },
+          { id: "dsa-5-2", title: "Postfix Expression Evaluation", desc: "Reverse Polish notation evaluation and operator precedence stack engines." },
+          { id: "dsa-5-3", title: "Monotonic Stack Pattern", desc: "Next Greater Element, daily temperature wait times, and largest histogram area in O(n)." },
+          { id: "dsa-5-4", title: "Min-Stack in O(1) Auxiliary Time", desc: "Maintaining minimum value history alongside primary element stack." }
+        ]
+      },
+      {
+        id: 6,
+        title: "Queues & Deques",
+        completed: false,
+        subTopics: [
+          { id: "dsa-6-1", title: "FIFO Discipline & Circular Arrays", desc: "Modulo capacity wrapping for efficient enqueue and dequeue without shifting." },
+          { id: "dsa-6-2", title: "Queue Implementation using Two Stacks", desc: "Amortized O(1) enqueue and dequeue through lazy transfer mechanics." },
+          { id: "dsa-6-3", title: "Monotonic Double-Ended Queue (Deque)", desc: "Sliding window maximum in O(n) by preserving elements in decreasing order." },
+          { id: "dsa-6-4", title: "Breadth-First Queue Driving", desc: "Level-order traversal and shortest path exploration in unweighted graphs." }
+        ]
+      },
+      {
+        id: 7,
+        title: "Hash Tables & Sets",
+        completed: false,
+        subTopics: [
+          { id: "dsa-7-1", title: "Hash Functions & Uniform Distribution", desc: "Mapping arbitrary keys to bucket indices while minimizing collision clusters." },
+          { id: "dsa-7-2", title: "Collision Resolution: Chaining vs Open Addressing", desc: "Separate chaining buckets vs linear/quadratic probing and Robin Hood hashing." },
+          { id: "dsa-7-3", title: "Load Factors & Dynamic Resizing", desc: "Rehashing when ratio n/k exceeds threshold to maintain expected O(1) bounds." },
+          { id: "dsa-7-4", title: "Two Sum & Longest Consecutive Subsequence", desc: "Complement lookup in O(1) and boundary set expansion in linear time." }
+        ]
+      },
+      {
+        id: 8,
+        title: "Recursion & Backtracking",
+        completed: false,
+        subTopics: [
+          { id: "dsa-8-1", title: "Base Cases & Call Stack Unwinding", desc: "Designing recursive state reductions, avoiding stack overflows and duplicate work." },
+          { id: "dsa-8-2", title: "Combinations & Subsets Generation", desc: "Choose/exclude recursion trees, accumulating valid states at leaf nodes." },
+          { id: "dsa-8-3", title: "Permutations & State Restoration", desc: "Backtracking template: choose, apply, recurse, undo choice, try next." },
+          { id: "dsa-8-4", title: "Constrained Pruning: N-Queens & Sudoku", desc: "Early search tree pruning when partial configurations violate problem invariants." }
+        ]
+      },
+      {
+        id: 9,
+        title: "Binary Search",
+        completed: false,
+        subTopics: [
+          { id: "dsa-9-1", title: "Interval Halving & Monotonic Predicates", desc: "Discarding half the search space in sorted arrays in guaranteed O(log n) time." },
+          { id: "dsa-9-2", title: "Lower Bound & Upper Bound Implementations", desc: "Finding first and last target occurrences without off-by-one boundary traps." },
+          { id: "dsa-9-3", title: "Rotated Sorted Array Search", desc: "Identifying the sorted half to navigate pivot offsets and inflection points." },
+          { id: "dsa-9-4", title: "Binary Search on Answer Range", desc: "Applying feasibility predicates to continuous or discrete parameter bounds." }
+        ]
+      },
+      {
+        id: 10,
+        title: "Sorting Algorithms",
+        completed: false,
+        subTopics: [
+          { id: "dsa-10-1", title: "Comparison Bounds & Sort Stability", desc: "Proof of Ω(n log n) comparison lower bound; stability of insertion sort." },
+          { id: "dsa-10-2", title: "Merge Sort & Inversion Counting", desc: "Divide-and-conquer recursion, linear merging, and counting array inversions in O(n log n)." },
+          { id: "dsa-10-3", title: "Quicksort & Partitioning Schemes", desc: "Lomuto vs Hoare partitioning, randomized pivot selection, and handling sorted inputs." },
+          { id: "dsa-10-4", title: "Heap Sort & In-Place Operations", desc: "Building bottom-up heaps in O(n) and extracting elements with O(1) auxiliary space." }
+        ]
+      },
+      {
+        id: 11,
+        title: "Binary Trees & BST",
+        completed: false,
+        subTopics: [
+          { id: "dsa-11-1", title: "Tree Traversals (DFS & BFS)", desc: "Preorder, inorder, postorder recursive/iterative traversals and level-order width." },
+          { id: "dsa-11-2", title: "Tree Height, Diameter & Path Sums", desc: "Postorder bottom-up aggregation computing maximum path between any two nodes." },
+          { id: "dsa-11-3", title: "BST Ordering Invariant & Validation", desc: "Passing valid range bounds [low, high] downward to strictly validate BST integrity." },
+          { id: "dsa-11-4", title: "Lowest Common Ancestor (LCA)", desc: "Branch convergence in general binary trees and ordered divergence in BSTs." }
+        ]
+      },
+      {
+        id: 12,
+        title: "Heaps & Balanced Trees",
+        completed: false,
+        subTopics: [
+          { id: "dsa-12-1", title: "Binary Heap Invariants & Array Storage", desc: "Children at 2i+1, 2i+2; parent at (i-1)//2; sift-up and sift-down mechanics." },
+          { id: "dsa-12-2", title: "Bottom-Up Heapify in O(n)", desc: "Mathematical proof why building a heap from bottom up is linear O(n), not O(n log n)." },
+          { id: "dsa-12-3", title: "Top-K & Streaming Median", desc: "Dual heap architecture (Max-Heap for low half, Min-Heap for high half) for live streams." },
+          { id: "dsa-12-4", title: "AVL Tree Rotations", desc: "Balancing factor (-1, 0, +1); LL, RR, LR, and RL rotations for guaranteed O(log n)." }
+        ]
+      },
+      {
+        id: 13,
+        title: "Graph Traversal & DAGs",
+        completed: false,
+        subTopics: [
+          { id: "dsa-13-1", title: "Adjacency Matrix vs Adjacency List", desc: "Space trade-offs O(V²) vs O(V+E); edge existence checks vs neighbor iterations." },
+          { id: "dsa-13-2", title: "Breadth-First Search (BFS)", desc: "Layer-by-layer exploration, visited markings, and shortest path in unweighted networks." },
+          { id: "dsa-13-3", title: "Depth-First Search (DFS) & Components", desc: "Recursive exploration, connected components, and cycle detection in undirected graphs." },
+          { id: "dsa-13-4", title: "Topological Sort (Kahn's Algorithm)", desc: "In-degree calculation, zero-indegree queue processing, and dependency feasibility." }
+        ]
+      },
+      {
+        id: 14,
+        title: "Shortest Paths & Spanning Trees",
+        completed: false,
+        subTopics: [
+          { id: "dsa-14-1", title: "Dijkstra's Algorithm with Min-Heap", desc: "Greedy relaxation for non-negative edge weights in O((V+E) log V) time." },
+          { id: "dsa-14-2", title: "Bellman-Ford & Negative Cycles", desc: "V-1 relaxation passes, handling negative weights, and detecting reachable negative cycles." },
+          { id: "dsa-14-3", title: "Floyd-Warshall All-Pairs Shortest Path", desc: "O(V³) dynamic programming considering intermediate vertices in matrix form." },
+          { id: "dsa-14-4", title: "Disjoint Set Union (DSU / Union-Find)", desc: "Path compression and union-by-rank/size achieving O(α(n)) inverse-Ackermann time." },
+          { id: "dsa-14-5", title: "Minimum Spanning Tree (Kruskal & Prim)", desc: "Sorting edges with DSU cycle avoidance vs priority queue vertex tree growth." }
+        ]
+      },
+      {
+        id: 15,
+        title: "Greedy & Dynamic Programming",
+        completed: false,
+        subTopics: [
+          { id: "dsa-15-1", title: "Greedy Choice Property & Substructure", desc: "Proving local choices yield global optima; activity selection and Huffman encoding." },
+          { id: "dsa-15-2", title: "DP Foundations: Memoization vs Tabulation", desc: "Overlapping subproblems, state definition, base cases, and transition orders." },
+          { id: "dsa-15-3", title: "0/1 Knapsack & 1D Space Optimization", desc: "Capacity iteration from W downward to prevent item reuse in O(nW) time and O(W) space." },
+          { id: "dsa-15-4", title: "Longest Common Subsequence & Edit Distance", desc: "2D state transition matching prefixes in O(nm) time; reconstructing alignment solutions." },
+          { id: "dsa-15-5", title: "Longest Increasing Subsequence (LIS)", desc: "O(n²) DP transitions optimized to O(n log n) using patience sorting and binary search." }
+        ]
+      },
+      {
+        id: 16,
+        title: "Tries, Range Trees & Bits",
+        completed: false,
+        subTopics: [
+          { id: "dsa-16-1", title: "Trie (Prefix Tree) Architecture", desc: "Character edge traversal for prefix lookups, dictionary autocomplete, and word search." },
+          { id: "dsa-16-2", title: "Binary Trie for Maximum XOR Pairs", desc: "Greedy opposite-bit navigation at highest bit positions in O(31n) time." },
+          { id: "dsa-16-3", title: "Segment Tree for Range Queries", desc: "Associative range aggregation (sum, min, max) and point updates in O(log n)." },
+          { id: "dsa-16-4", title: "Fenwick Tree (Binary Indexed Tree)", desc: "Prefix sum accumulation using isolated lowest set bits: i -= i & -i." },
+          { id: "dsa-16-5", title: "Bit Manipulation Primitives", desc: "Clearing lowest bit x & (x-1), testing power of two, and finding single elements with XOR." }
         ]
       }
     ]
