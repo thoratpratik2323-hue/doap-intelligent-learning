@@ -39,12 +39,14 @@ export const AIInterview = () => {
     setStep('report');
   };
 
-  const handleInterviewTerminated = (violations) => {
+  const handleInterviewTerminated = (termData) => {
+    const violationList = Array.isArray(termData) ? termData : (termData?.violations || []);
     setInterviewResults({
-      answers: [],
-      violations,
-      strikeCount: 3,
-      status: 'TERMINATED_PROCTORING_VIOLATION'
+      answers: termData?.answers || [],
+      violations: violationList,
+      strikeCount: termData?.strikeCount || 3,
+      status: 'TERMINATED_PROCTORING_VIOLATION',
+      setupData
     });
     setStep('report');
   };

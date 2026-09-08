@@ -67,16 +67,17 @@ export const LiveInterviewWorkspace = ({ setupData, onInterviewComplete, onInter
     isFullscreen,
     strikeCount,
     violations,
+    addViolation,
     requestFullscreen,
     exitFullscreen
   } = useProctoring({
     isInterviewActive: true,
-    onStrikeLimitExceeded: () => {
+    onStrikeLimitExceeded: (latestViolation) => {
       stopMedia();
       onInterviewTerminated({
         status: 'TERMINATED_PROCTORING_VIOLATION',
         strikeCount: 3,
-        violations: violations,
+        violations: violations.length ? violations : (latestViolation ? [latestViolation] : []),
         answers: recordedAnswers
       });
     }
@@ -86,7 +87,13 @@ export const LiveInterviewWorkspace = ({ setupData, onInterviewComplete, onInter
     faceStatus,
     headPose,
     eyeContactPercentage
-  } = useFaceDetection({ videoRef, isStreamActive: isCameraOn });
+  } = useFaceDetection({ 
+    videoRef, 
+    isStreamActive: isCameraOn,
+    onViolation: (type, desc) => {
+      addViolation(type, desc, 'HIGH', true);
+    }
+  });
 
   useEffect(() => {
     const qList = generateQuestionsForPosition(
@@ -333,27 +340,24 @@ export const LiveInterviewWorkspace = ({ setupData, onInterviewComplete, onInter
               )}
             </div>
 
-            {/* Media Controls Bar */}
-            <div className="flex items-center justify-center gap-4 pt-1">
-              <button
-                type="button"
-                onClick={toggleMic}
-                className="w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer border"
-                style={{ backgroundColor: isMicOn ? 'var(--doap-surface-sec)' : 'rgba(239, 68, 68, 0.2)', borderColor: 'var(--doap-border)', color: isMicOn ? 'var(--doap-text-prim)' : '#ef4444' }}
-                title={isMicOn ? "Mute Mic" : "Unmute Mic"}
-              >
-                {isMicOn ? <Mic size={16} /> : <MicOff size={16} />}
-              </button>
+            {/* Locked Proctored Hardware Status Bar */}
+            <div className="pt-2 border-t border-neutral-800/60 space-y-1.5">
+              <div className="flex items-center justify-between gap-2 text-[11px] font-mono">
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/40 border border-emerald-800/70 text-emerald-400 font-semibold shadow-inner">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <Mic size={12} />
+                  <span>Mic Locked ON (Proctored)</span>
+                </div>
 
-              <button
-                type="button"
-                onClick={toggleCamera}
-                className="w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer border"
-                style={{ backgroundColor: isCameraOn ? 'var(--doap-surface-sec)' : 'rgba(239, 68, 68, 0.2)', borderColor: 'var(--doap-border)', color: isCameraOn ? 'var(--doap-text-prim)' : '#ef4444' }}
-                title={isCameraOn ? "Turn Camera Off" : "Turn Camera On"}
-              >
-                {isCameraOn ? <Camera size={16} /> : <VideoOff size={16} />}
-              </button>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/40 border border-emerald-800/70 text-emerald-400 font-semibold shadow-inner">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <Camera size={12} />
+                  <span>Webcam Locked ON</span>
+                </div>
+              </div>
+              <p className="text-[10px] text-center font-mono text-neutral-400">
+                🔒 Hardware controls locked. Disabling camera or audio triggers instant disqualification.
+              </p>
             </div>
           </div>
 
@@ -365,6 +369,48 @@ export const LiveInterviewWorkspace = ({ setupData, onInterviewComplete, onInter
           />
         </div>
       </div>
+
+      {/* Strict Fullscreen Required Overlay Modal */}
+      {!isFullscreen && (
+        <div className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 animate-fade-in">
+          <div className="max-w-md w-full p-6 sm:p-8 rounded-3xl bg-neutral-900 border-2 border-rose-600 text-center space-y-5 shadow-2xl shadow-rose-950/60">
+            <div className="w-16 h-16 rounded-2xl bg-rose-600/20 border border-rose-500 text-rose-500 mx-auto flex items-center justify-center animate-pulse">
+              <ShieldAlert size={36} />
+            </div>
+
+            <div className="space-y-2">
+              <span className="px-3 py-1 rounded-full text-[10px] font-mono font-black uppercase bg-rose-950 border border-rose-700 text-rose-400">
+                PROCTORING INTEGRITY BREACH
+              </span>
+              <h2 className="text-xl font-black text-white tracking-tight">
+                Mandatory Fullscreen Exited!
+              </h2>
+              <p className="text-xs text-neutral-300 leading-relaxed">
+                This is an enterprise AI-proctored technical interview. Exiting fullscreen mode or switching focus violates exam regulations. 
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-black/60 border border-neutral-800 text-xs font-mono space-y-1 text-neutral-300">
+              <div className="flex justify-between items-center text-rose-400 font-bold">
+                <span>Proctor Strikes:</span>
+                <span>{strikeCount} / 3</span>
+              </div>
+              <p className="text-[11px] text-neutral-400">
+                ⚠️ Accumulating 3 strikes results in immediate interview termination and disqualification.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={requestFullscreen}
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-extrabold text-xs shadow-lg shadow-rose-600/30 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02] active:scale-95"
+            >
+              <Maximize2 size={16} />
+              <span>Return to Fullscreen Immediately</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

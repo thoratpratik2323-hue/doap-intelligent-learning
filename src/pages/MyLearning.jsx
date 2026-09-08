@@ -9,11 +9,7 @@ import {
   Layers, 
   Code,
   Check,
-  Briefcase,
-  Building2,
-  ArrowRight,
-  ExternalLink,
-  ShieldAlert
+  ArrowRight
 } from 'lucide-react';
 import { COURSES_DATA } from '../data/mockData';
 import { useTheme } from '../context/ThemeContext';
@@ -31,23 +27,13 @@ export const MyLearning = () => {
   const [expandedCourseId, setExpandedCourseId] = useState('ai-fundamentals');
   const [expandedModuleKey, setExpandedModuleKey] = useState('ai-fundamentals-1');
 
-  const TOP_COMPANIES = [
-    { name: 'Google', tier: 'FAANG / Tier 1', color: '#4285F4', count: '1,400+' },
-    { name: 'Amazon', tier: 'FAANG / Tier 1', color: '#FF9900', count: '1,800+' },
-    { name: 'Microsoft', tier: 'Big Tech', color: '#00A4EF', count: '1,200+' },
-    { name: 'Apple', tier: 'FAANG / Tier 1', color: '#A2AAAD', count: '850+' },
-    { name: 'Meta', tier: 'FAANG / Tier 1', color: '#0668E1', count: '1,100+' },
-    { name: 'TCS', tier: 'Mass Recruiter', color: '#1B365D', count: '450+' },
-    { name: 'Infosys', tier: 'Mass Recruiter', color: '#007CC3', count: '520+' },
-    { name: 'Accenture', tier: 'Mass Recruiter', color: '#A100FF', count: '600+' },
-    { name: 'Cognizant', tier: 'Mass Recruiter', color: '#0033A0', count: '380+' },
-  ];
-
   const categories = [
     "All", 
     "Computer Science", 
+    "System Design",
     "Artificial Intelligence", 
     "Programming", 
+    "Cloud & DevOps",
     "Data Structures", 
     "Cyber Security", 
     "Mathematics"
@@ -181,98 +167,6 @@ export const MyLearning = () => {
         ))}
       </div>
 
-      {/* Dedicated Company-Based Interview Hub */}
-      <div 
-        className={`p-6 rounded-3xl border transition-all doap-card relative overflow-hidden ${
-          isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
-        }`}
-      >
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-3 max-w-2xl">
-            <div className="flex items-center gap-2">
-              <span 
-                className="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase tracking-wider border"
-                style={{ borderColor: accentHex, color: accentHex }}
-              >
-                Specialized Track
-              </span>
-              <span className={`text-xs font-mono ${isDarkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>
-                8,600+ Questions Archive
-              </span>
-            </div>
-
-            <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2.5">
-              <Building2 size={24} style={{ color: accentHex }} />
-              <span>Company-Specific Interview Question Hub</span>
-            </h2>
-
-            <p className={`text-xs sm:text-sm leading-relaxed ${isDarkMode ? 'text-neutral-300' : 'text-neutral-600'}`}>
-              Master real DSA and Problem Solving questions frequently asked by top product firms (Google, Amazon, Microsoft, Apple, Meta) and mass recruiters (TCS, Infosys, Accenture, Cognizant).
-            </p>
-
-            {/* LeetCode Account Instruction Note */}
-            <div className={`p-3 rounded-2xl border text-xs flex items-start gap-2.5 ${
-              isDarkMode ? 'bg-neutral-900/80 border-neutral-800 text-neutral-300' : 'bg-neutral-50 border-neutral-200 text-neutral-700'
-            }`}>
-              <ShieldAlert size={16} className="text-amber-400 shrink-0 mt-0.5" />
-              <div className="space-y-0.5">
-                <p className="font-semibold text-amber-400">Important Instruction:</p>
-                <p className="text-[11px] opacity-90">
-                  Please make sure you have an active <strong>LeetCode</strong> account logged in. All company-specific problems link directly into their live LeetCode problem runners for full test cases and automated evaluations.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Hub Buttons */}
-          <div className="flex flex-col sm:flex-row lg:flex-col gap-2.5 shrink-0">
-            <button
-              type="button"
-              onClick={() => navigateTo('/company-prep')}
-              className="px-5 py-3 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 shadow-lg transition-transform hover:scale-[1.02] cursor-pointer"
-              style={{ backgroundColor: accentHex, color: isDarkMode ? '#000000' : '#ffffff' }}
-            >
-              <Briefcase size={16} />
-              <span>Open Company Prep Hub</span>
-              <ArrowRight size={15} />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => navigateTo('/coding')}
-              className={`px-5 py-3 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 border transition-colors hover:bg-neutral-500/10 cursor-pointer ${
-                isDarkMode ? 'border-neutral-800 text-white' : 'border-neutral-300 text-black'
-              }`}
-            >
-              <Code size={16} />
-              <span>Solve Coding Drills</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Company Quick-Launch Pills */}
-        <div className="mt-5 pt-4 border-t border-neutral-800/60 flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-mono text-neutral-500 mr-1 flex items-center gap-1">
-            Top Targets:
-          </span>
-          {TOP_COMPANIES.map((company) => (
-            <button
-              key={company.name}
-              type="button"
-              onClick={() => navigateTo('/company-prep')}
-              className={`px-3 py-1 rounded-lg text-xs font-medium border flex items-center gap-2 transition-all hover:scale-105 cursor-pointer ${
-                isDarkMode 
-                  ? 'bg-neutral-900/60 border-neutral-800 text-neutral-300 hover:border-neutral-600 hover:text-white' 
-                  : 'bg-neutral-50 border-neutral-200 text-neutral-700 hover:border-neutral-400 hover:text-black'
-              }`}
-            >
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: company.color }} />
-              <span>{company.name}</span>
-              <span className="text-[10px] font-mono text-neutral-500">({company.count})</span>
-            </button>
-          ))}
-        </div>
-      </div>
 
       {/* Courses List */}
       <div className="space-y-6">

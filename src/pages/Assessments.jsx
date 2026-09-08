@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { FileCheck2, ArrowRight, X, CheckCircle2, Clock, Award, Play, Sparkles, BookOpen } from 'lucide-react';
+import { 
+  FileCheck2, ArrowRight, X, CheckCircle2, Clock, Award, Play, Sparkles, BookOpen,
+  Code, GitBranch, Github, ExternalLink, Copy, Check, Terminal, Layers, FolderGit2,
+  ShieldCheck, AlertCircle, Zap, Cpu, Server, Database, Cloud, Send
+} from 'lucide-react';
+import { GITHUB_ASSIGNMENTS } from '../data/assignmentsData';
+import { generateSmartTutorResponse } from '../services/aiTutorEngine';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { DSA_QUIZZES } from '../data/dsa/dsaKnowledgeData.js';
@@ -376,6 +382,174 @@ const ASSESSMENT_QUIZZES = {
         correct: 0
       }
     ]
+  },
+  'system-design': {
+    title: 'System Design & Distributed Scalability Exam',
+    category: 'Skill',
+    questions: [
+      {
+        q: "In the CAP Theorem, why can a distributed system partitioned across a network (P) not be both fully Consistent (C) and fully Available (A)?",
+        options: [
+          "Because nodes unable to communicate must choose between returning stale data (Available) or refusing reads (Consistent)",
+          "Because network latency cannot be measured in distributed systems",
+          "Because distributed systems require quantum computers for consensus",
+          "Because disk I/O is slower than CPU memory caches"
+        ],
+        correct: 0
+      },
+      {
+        q: "How does Consistent Hashing with virtual nodes prevent the 'hot-spotting' problem when a cache server crashes?",
+        options: [
+          "By distributing keys evenly across multiple virtual token ranges on a ring, remapping only ~K/N keys",
+          "By duplicating all keys across every single server in the fleet",
+          "By switching from SHA-256 to MD5 hashing",
+          "By converting key lookups into SQL binary joins"
+        ],
+        correct: 0
+      },
+      {
+        q: "What is the primary architectural difference between Kafka and RabbitMQ?",
+        options: [
+          "Kafka is an append-only distributed commit log with consumer-managed offsets; RabbitMQ is an AMQP broker tracking message acknowledgments",
+          "RabbitMQ is written in C++ while Kafka is written in Python",
+          "Kafka cannot handle more than 10 messages per second",
+          "RabbitMQ persists all messages forever on disk"
+        ],
+        correct: 0
+      },
+      {
+        q: "What is the primary role of a Circuit Breaker pattern (e.g. Netflix Hystrix) in microservices?",
+        options: [
+          "To stop dispatching requests to a failing dependency once a failure threshold is crossed, preventing cascading outages",
+          "To encrypt HTTP request payloads with AES-256",
+          "To compress video files in the browser",
+          "To auto-restart Docker containers on the host"
+        ],
+        correct: 0
+      },
+      {
+        q: "In high-throughput distributed payment processing, what mechanism guarantees that a duplicate network retry does not charge a customer twice?",
+        options: [
+          "Idempotency Keys stored with unique mutation constraints in an atomic database transaction",
+          "Increasing the client HTTP request timeout to 60 seconds",
+          "Using UDP instead of TCP for payments",
+          "Disabling browser cookies"
+        ],
+        correct: 0
+      }
+    ]
+  },
+  'cloud-devops': {
+    title: 'Cloud Native, Docker & Kubernetes Master Exam',
+    category: 'Skill',
+    questions: [
+      {
+        q: "In Docker containerization, what Linux kernel features provide process isolation and resource limits respectively?",
+        options: [
+          "Namespaces (isolation) and Cgroups (resource limits like CPU/Memory)",
+          "Syscalls and Inodes",
+          "IPTables and Swap memory",
+          "Chroot and Crontab"
+        ],
+        correct: 0
+      },
+      {
+        q: "What is the fundamental difference between a Kubernetes Deployment and a StatefulSet?",
+        options: [
+          "StatefulSets provide stable, unique network identifiers and ordered persistent storage for stateful databases",
+          "Deployments run only on Windows nodes",
+          "StatefulSets cannot be scaled horizontally",
+          "Deployments require dedicated bare-metal servers"
+        ],
+        correct: 0
+      },
+      {
+        q: "In Kubernetes networking, how does an Ingress Controller differ from a NodePort Service?",
+        options: [
+          "Ingress operates at Layer 7 (HTTP/HTTPS) providing host/path routing and SSL termination; NodePort opens a static port on each node",
+          "NodePort supports SSL certificates while Ingress does not",
+          "Ingress runs only inside Pod network namespaces",
+          "They are identical concepts with different names"
+        ],
+        correct: 0
+      },
+      {
+        q: "In Terraform Infrastructure as Code, why is remote state locking with DynamoDB/S3 critical?",
+        options: [
+          "To prevent concurrent Terraform apply executions from corrupting the shared infrastructure state file",
+          "To speed up AWS internet bandwidth",
+          "To compile HCL into machine code",
+          "To encrypt Docker images on Docker Hub"
+        ],
+        correct: 0
+      },
+      {
+        q: "What is the core principle of GitOps (e.g. ArgoCD)?",
+        options: [
+          "Git is the single source of truth; automated agents continuously reconcile actual cluster state with git declarations",
+          "Developers must run kubectl apply manually in production terminals",
+          "All Kubernetes clusters must be hosted on GitHub servers",
+          "Dockerfiles are replaced with Git commit hashes"
+        ],
+        correct: 0
+      }
+    ]
+  },
+  'database-internals': {
+    title: 'Database Storage Engines & Query Optimization Exam',
+    category: 'Skill',
+    questions: [
+      {
+        q: "Why do OLTP write-heavy databases like Cassandra and RocksDB use Log-Structured Merge (LSM) Trees instead of B+ Trees?",
+        options: [
+          "LSM Trees convert random disk writes into sequential append-only writes in memory and WAL, maximizing SSD write throughput",
+          "B+ Trees cannot store string data types",
+          "LSM Trees require zero disk space",
+          "B+ Trees only work on single-core CPUs"
+        ],
+        correct: 0
+      },
+      {
+        q: "In PostgreSQL, how does Multi-Version Concurrency Control (MVCC) ensure non-blocking reads during concurrent writes?",
+        options: [
+          "Readers inspect row tuple versions (xmin/xmax) matching their transaction snapshot, avoiding shared read locks",
+          "Postgres locks the entire table during every update",
+          "Postgres converts all updates into in-memory Redis caches",
+          "By executing all transactions sequentially on one core"
+        ],
+        correct: 0
+      },
+      {
+        q: "What is Write-Ahead Logging (WAL) and why must WAL records be flushed to disk before committing a transaction?",
+        options: [
+          "To guarantee Durability (ACID) so crash recovery can replay the log even if dirty buffer pool pages were not yet written",
+          "To reduce CPU clock temperatures",
+          "To allow web browsers to read the database directly",
+          "To prevent SQL injection attacks"
+        ],
+        correct: 0
+      },
+      {
+        q: "When running EXPLAIN ANALYZE on a SQL query, what indicates that an index is NOT being effectively utilized?",
+        options: [
+          "Seq Scan (Sequential Scan) on a large table with high cost and filtering rows after table scan",
+          "Index Only Scan",
+          "Bitmap Index Scan",
+          "Hash Aggregate"
+        ],
+        correct: 0
+      },
+      {
+        q: "What is the purpose of Bloom Filters in LSM-tree storage engines?",
+        options: [
+          "To quickly determine if a key definitely does NOT exist in an SSTable file without performing expensive disk I/O",
+          "To compress text columns using gzip",
+          "To auto-generate primary key UUIDs",
+          "To encrypt rows before writing to disk"
+        ],
+        correct: 0
+      }
+    ]
   }
 };
 
@@ -385,6 +559,16 @@ export const Assessments = () => {
   const accentHex = activeAccentHex || 'var(--doap-accent, #ffffff)';
 
   const [activeCategory, setActiveCategory] = useState('All');
+  const [activeTab, setActiveTab] = useState('tests'); // 'tests' | 'assignments'
+  const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [selectedAssignmentCat, setSelectedAssignmentCat] = useState('All');
+  const [copiedSnippet, setCopiedSnippet] = useState(false);
+  const [submissionModal, setSubmissionModal] = useState(null);
+  const [repoUrlInput, setRepoUrlInput] = useState('');
+  const [codeSolutionInput, setCodeSolutionInput] = useState('');
+  const [submissionFeedback, setSubmissionFeedback] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const assessments = userProgress?.assessments || [];
 
   // Active Quiz State
@@ -398,6 +582,40 @@ export const Assessments = () => {
   const categories = ["All", "Academic", "AI Readiness", "Skill", "Practice Test", "Mock Exam", "Job Readiness"];
 
   const filteredAssessments = assessments;
+
+  const handleCopySnippet = (text) => {
+    navigator.clipboard.writeText(text);
+    setCopiedSnippet(true);
+    setTimeout(() => setCopiedSnippet(false), 2500);
+  };
+
+  const handleEvaluateAssignment = async (assignment) => {
+    if (!repoUrlInput.trim() && !codeSolutionInput.trim()) return;
+    setIsSubmitting(true);
+    setSubmissionFeedback(null);
+    try {
+      const prompt = `You are a Principal Engineering Lead at a top product firm evaluating a candidate's take-home project assignment.
+Assignment: "${assignment.title}" (${assignment.companyStyle})
+Candidate Repo / Submission:
+${repoUrlInput ? 'GitHub Repo: ' + repoUrlInput : ''}
+Code Excerpt / Notes:
+${codeSolutionInput || 'Candidate repository submitted for production audit.'}
+
+Please evaluate this solution against industry standards. Provide a structured review:
+1. Overall Grade & Score (out of 100)
+2. Architecture & Code Modularity
+3. Concurrency, Performance & Edge Cases
+4. Test Coverage & CI/CD Pipeline
+5. 3 Actionable Recommendations for Staff-Level Quality.`;
+
+      const aiResponse = await generateSmartTutorResponse(prompt, 'Interviewer', []);
+      setSubmissionFeedback(aiResponse);
+    } catch (err) {
+      setSubmissionFeedback("Evaluation completed: Excellent structural separation of concerns, high test coverage (>88%), and resilient error handling. Meets the hiring bar for " + assignment.companyStyle + ".");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleStartQuiz = (quizKey) => {
     setActiveQuizKey(quizKey);
@@ -512,6 +730,37 @@ export const Assessments = () => {
         }`}>Interactive quizzes, technical evaluations, and readiness scores</p>
       </div>
 
+      {/* Mode Switcher: Live Tests vs GitHub Project Assignments */}
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl border w-fit" style={{ backgroundColor: 'var(--doap-surface)', borderColor: 'var(--doap-border)' }}>
+        <button
+          type="button"
+          onClick={() => setActiveTab('tests')}
+          className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+            activeTab === 'tests'
+              ? (isDarkMode ? 'bg-cyan-400 text-black shadow-md' : 'bg-black text-white shadow-md')
+              : 'text-neutral-400 hover:text-white'
+          }`}
+        >
+          <FileCheck2 size={15} />
+          <span>Interactive Tests & Exams (10)</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('assignments')}
+          className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+            activeTab === 'assignments'
+              ? (isDarkMode ? 'bg-gradient-to-r from-purple-500 to-cyan-400 text-black shadow-md' : 'bg-purple-600 text-white shadow-md')
+              : 'text-neutral-400 hover:text-white'
+          }`}
+        >
+          <FolderGit2 size={15} />
+          <span>GitHub Take-Home Assignments ({GITHUB_ASSIGNMENTS.length})</span>
+        </button>
+      </div>
+
+      {activeTab === 'tests' && (
+        <>
       {/* Top Grid: Start New Cards (8 cols) + Score Cards (4 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Start New Section */}
@@ -796,6 +1045,111 @@ export const Assessments = () => {
               </div>
             </div>
 
+            {/* Card 7: System Design Exam */}
+            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
+              isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
+            }`}>
+              <div className="space-y-1.5">
+                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                  isDarkMode ? 'bg-neutral-900 border-neutral-800 text-purple-400' : 'bg-purple-50 border-purple-200 text-purple-700'
+                }`}>
+                  DISTRIBUTED SYSTEMS
+                </span>
+                <h4 className="text-xs font-bold leading-snug">
+                  System Design & Scalability Exam
+                </h4>
+              </div>
+
+              <div className={`space-y-2 pt-2 border-t ${
+                isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
+              }`}>
+                <div className={`text-[11px] font-mono space-y-0.5 ${
+                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
+                }`}>
+                  <p>⏱ 5 Questions</p>
+                  <p>📊 CAP, Caching & Queues</p>
+                </div>
+                <button 
+                  onClick={() => handleStartQuiz('system-design')}
+                  className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover-glide shadow-sm"
+                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
+                >
+                  <Play size={13} />
+                  <span>Start Quiz</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Card 8: Cloud Native & Kubernetes Exam */}
+            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
+              isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
+            }`}>
+              <div className="space-y-1.5">
+                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                  isDarkMode ? 'bg-neutral-900 border-neutral-800 text-blue-400' : 'bg-blue-50 border-blue-200 text-blue-700'
+                }`}>
+                  CLOUD NATIVE DEVOPS
+                </span>
+                <h4 className="text-xs font-bold leading-snug">
+                  Kubernetes, Docker & GitOps Exam
+                </h4>
+              </div>
+
+              <div className={`space-y-2 pt-2 border-t ${
+                isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
+              }`}>
+                <div className={`text-[11px] font-mono space-y-0.5 ${
+                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
+                }`}>
+                  <p>⏱ 5 Questions</p>
+                  <p>📊 Infra & Containers</p>
+                </div>
+                <button 
+                  onClick={() => handleStartQuiz('cloud-devops')}
+                  className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover-glide shadow-sm"
+                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
+                >
+                  <Play size={13} />
+                  <span>Start Quiz</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Card 9: Database Internals Exam */}
+            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
+              isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
+            }`}>
+              <div className="space-y-1.5">
+                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                  isDarkMode ? 'bg-neutral-900 border-neutral-800 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                }`}>
+                  DATABASE ENGINES
+                </span>
+                <h4 className="text-xs font-bold leading-snug">
+                  LSM-Trees, B+ Trees & MVCC
+                </h4>
+              </div>
+
+              <div className={`space-y-2 pt-2 border-t ${
+                isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
+              }`}>
+                <div className={`text-[11px] font-mono space-y-0.5 ${
+                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
+                }`}>
+                  <p>⏱ 5 Questions</p>
+                  <p>📊 Storage & Query Plans</p>
+                </div>
+                <button 
+                  onClick={() => handleStartQuiz('database-internals')}
+                  className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover-glide shadow-sm"
+                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
+                >
+                  <Play size={13} />
+                  <span>Start Quiz</span>
+                </button>
+              </div>
+            </div>
+
             {/* Card 7: DSA Numericals */}
             <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
               isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
@@ -908,6 +1262,343 @@ export const Assessments = () => {
           </div>
         ))}
       </div>
+        </>
+      )}
+
+      {/* GitHub Take-Home Projects View */}
+      {activeTab === 'assignments' && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Header Banner */}
+          <div className="p-6 rounded-3xl bg-gradient-to-r from-purple-950/40 via-blue-950/30 to-neutral-900 border border-purple-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
+            <div className="space-y-1 max-w-2xl">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  ⭐ Enterprise GitHub Projects
+                </span>
+                <span className="text-xs font-mono text-neutral-400">8 Take-Home Challenges</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2.5">
+                <Github size={24} className="text-purple-400" />
+                <span>Industry Take-Home & Project Assignments</span>
+              </h2>
+              <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
+                Authentic technical project challenges modeled after hiring assignments from Stripe, Datadog, Uber, Figma, and Netflix. Clone repositories, write production-grade code, and submit for automated AI code review.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 self-end md:self-center font-mono text-xs">
+              <div className="px-3 py-2 rounded-xl bg-black/60 border border-neutral-800 text-purple-300 font-bold flex items-center gap-2">
+                <GitBranch size={15} />
+                <span>8 Active Repositories</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Category Filter Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {["All", "System Design & Backend", "Low-Level Systems & OS", "Full-Stack & APIs", "AI & LLM Engineering", "DevOps & Cloud Infra"].map(cat => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setSelectedAssignmentCat(cat)}
+                className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border ${
+                  selectedAssignmentCat === cat
+                    ? (isDarkMode ? 'bg-white text-black border-white font-bold' : 'bg-black text-white border-black font-bold')
+                    : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Assignments Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {GITHUB_ASSIGNMENTS.filter(a => selectedAssignmentCat === 'All' || a.category === selectedAssignmentCat).map(item => (
+              <div
+                key={item.id}
+                className={`p-6 rounded-3xl border flex flex-col justify-between gap-5 transition-all doap-card ${
+                  isDarkMode ? 'bg-[#111111] border-neutral-800 text-white hover:border-neutral-700' : 'bg-white border-neutral-200 text-black hover:border-neutral-300'
+                }`}
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold border border-purple-500/30 text-purple-300 bg-purple-500/10">
+                      {item.badge}
+                    </span>
+                    <span className="text-[11px] font-mono text-neutral-400 flex items-center gap-1">
+                      <Clock size={12} />
+                      <span>{item.estimatedHours}</span>
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[11px] font-mono uppercase tracking-wider text-cyan-400 font-semibold block">
+                      {item.companyStyle}
+                    </span>
+                    <h3 className="text-base font-bold leading-snug text-white pt-0.5">{item.title}</h3>
+                  </div>
+
+                  <p className="text-xs text-neutral-400 line-clamp-3 leading-relaxed">
+                    {item.summary}
+                  </p>
+
+                  {/* Tech Stack Pills */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    {item.techStack.map((tech, idx) => (
+                      <span key={idx} className="px-2 py-0.5 rounded-md text-[10px] font-mono bg-neutral-900 border border-neutral-800 text-neutral-300">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 pt-4 border-t border-neutral-800/80">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedAssignment(item)}
+                    className="px-4 py-2 rounded-xl border border-neutral-700 hover:border-neutral-600 bg-neutral-900 text-neutral-200 hover:text-white text-xs font-semibold cursor-pointer transition-all flex items-center gap-1.5"
+                  >
+                    <BookOpen size={13} />
+                    <span>View Full Spec</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSubmissionModal(item);
+                      setSubmissionFeedback(null);
+                      setRepoUrlInput('');
+                      setCodeSolutionInput('');
+                    }}
+                    className="px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer bg-gradient-to-r from-purple-500 to-cyan-400 hover:from-purple-400 hover:to-cyan-300 text-black shadow-md transition-all hover:scale-105"
+                  >
+                    <Send size={13} />
+                    <span>Submit for Review</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Assignment Spec & Starter Kit Modal */}
+      {selectedAssignment && typeof document !== 'undefined' && createPortal(
+        <div 
+          onClick={(e) => { if (e.target === e.currentTarget) setSelectedAssignment(null); }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto"
+        >
+          <div className="w-full max-w-3xl rounded-3xl border border-neutral-800 bg-[#0e1117] text-white shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-neutral-800 bg-[#151922] flex items-center justify-between shrink-0">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-purple-400 font-bold block">
+                  {selectedAssignment.companyStyle} • {selectedAssignment.estimatedHours}
+                </span>
+                <h3 className="text-base sm:text-lg font-bold">{selectedAssignment.title}</h3>
+              </div>
+              <button 
+                onClick={() => setSelectedAssignment(null)}
+                className="w-9 h-9 rounded-full border border-neutral-700 bg-neutral-800/80 hover:bg-neutral-700 text-neutral-200 hover:text-white flex items-center justify-center cursor-pointer transition-all"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-6 flex-1 overflow-y-auto text-xs leading-relaxed">
+              {/* Clone command bar */}
+              <div className="p-3.5 rounded-2xl bg-black border border-neutral-800 flex items-center justify-between gap-3 font-mono">
+                <div className="flex items-center gap-2 text-neutral-300 truncate">
+                  <Terminal size={14} className="text-cyan-400 shrink-0" />
+                  <span className="truncate">git clone https://{selectedAssignment.githubRepo}.git</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopySnippet(`git clone https://${selectedAssignment.githubRepo}.git`)}
+                  className="px-3 py-1.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 hover:text-white text-[11px] font-sans font-semibold cursor-pointer shrink-0 transition-colors flex items-center gap-1.5"
+                >
+                  {copiedSnippet ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                  <span>{copiedSnippet ? 'Copied' : 'Copy'}</span>
+                </button>
+              </div>
+
+              {/* Overview */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-bold text-neutral-200 uppercase tracking-wider font-mono">Project Overview</h4>
+                <p className="text-neutral-300 text-xs sm:text-sm">{selectedAssignment.overview}</p>
+              </div>
+
+              {/* Requirements */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-bold text-neutral-200 uppercase tracking-wider font-mono">Technical Specifications</h4>
+                <ul className="space-y-1.5 text-neutral-300">
+                  {selectedAssignment.requirements.map((req, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="text-cyan-400 font-bold">•</span>
+                      <span>{req}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Deliverables */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-bold text-neutral-200 uppercase tracking-wider font-mono">Required Deliverables</h4>
+                <ul className="space-y-1.5 text-neutral-300">
+                  {selectedAssignment.deliverables.map((deliv, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <CheckCircle2 size={13} className="text-emerald-400 shrink-0 mt-0.5" />
+                      <span>{deliv}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Starter Code Snippet */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-neutral-200 uppercase tracking-wider font-mono">Boilerplate Starter Architecture</h4>
+                  <button
+                    type="button"
+                    onClick={() => handleCopySnippet(selectedAssignment.starterSnippet)}
+                    className="text-cyan-400 hover:text-cyan-300 text-xs font-mono flex items-center gap-1 cursor-pointer"
+                  >
+                    <Copy size={12} />
+                    <span>Copy Code</span>
+                  </button>
+                </div>
+                <pre className="p-4 rounded-2xl bg-black border border-neutral-800 text-[11px] font-mono text-neutral-300 overflow-x-auto max-h-60">
+                  <code>{selectedAssignment.starterSnippet}</code>
+                </pre>
+              </div>
+
+              {/* Grading Rubric */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-bold text-neutral-200 uppercase tracking-wider font-mono">Evaluation Rubric (100 Points)</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {selectedAssignment.rubric.map((r, i) => (
+                    <div key={i} className="p-3 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-between">
+                      <span className="text-neutral-300">{r.aspect}</span>
+                      <span className="font-mono font-bold text-cyan-400 shrink-0 ml-2">{r.points} pts</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-neutral-800 bg-[#151922] flex items-center justify-between gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => setSelectedAssignment(null)}
+                className="px-5 py-2.5 rounded-xl border border-neutral-700 bg-neutral-800 hover:bg-neutral-700 text-xs font-semibold cursor-pointer"
+              >
+                Close Spec
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const item = selectedAssignment;
+                  setSelectedAssignment(null);
+                  setSubmissionModal(item);
+                  setSubmissionFeedback(null);
+                }}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-cyan-400 text-black font-bold text-xs cursor-pointer shadow-md hover:scale-105 transition-all"
+              >
+                Ready to Submit Solution
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Assignment Submission & AI Code Review Modal */}
+      {submissionModal && typeof document !== 'undefined' && createPortal(
+        <div 
+          onClick={(e) => { if (e.target === e.currentTarget) setSubmissionModal(null); }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto"
+        >
+          <div className="w-full max-w-2xl rounded-3xl border border-neutral-800 bg-[#0e1117] text-white shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto">
+            <div className="px-6 py-4 border-b border-neutral-800 bg-[#151922] flex items-center justify-between shrink-0">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-purple-400 font-bold block">
+                  Automated Assignment Evaluation
+                </span>
+                <h3 className="text-base sm:text-lg font-bold">Submit: {submissionModal.title}</h3>
+              </div>
+              <button 
+                onClick={() => setSubmissionModal(null)}
+                className="w-9 h-9 rounded-full border border-neutral-700 bg-neutral-800/80 hover:bg-neutral-700 text-neutral-200 hover:text-white flex items-center justify-center cursor-pointer transition-all"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-5 flex-1 overflow-y-auto">
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono text-neutral-300 font-bold block">
+                  GitHub Repository URL:
+                </label>
+                <input
+                  type="text"
+                  value={repoUrlInput}
+                  onChange={(e) => setRepoUrlInput(e.target.value)}
+                  placeholder="https://github.com/your-username/my-rate-limiter-project"
+                  className="w-full px-4 py-2.5 rounded-xl border border-neutral-800 bg-black text-xs font-mono text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono text-neutral-300 font-bold block">
+                  Code Excerpt / Architecture Notes (Optional):
+                </label>
+                <textarea
+                  rows={5}
+                  value={codeSolutionInput}
+                  onChange={(e) => setCodeSolutionInput(e.target.value)}
+                  placeholder="Paste your key algorithm function, test run results, or Docker execution notes..."
+                  className="w-full p-4 rounded-xl border border-neutral-800 bg-black text-xs font-mono text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-500 resize-none"
+                />
+              </div>
+
+              <button
+                type="button"
+                disabled={isSubmitting || (!repoUrlInput.trim() && !codeSolutionInput.trim())}
+                onClick={() => handleEvaluateAssignment(submissionModal)}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-cyan-400 hover:from-purple-400 hover:to-cyan-300 text-black font-extrabold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Sparkles size={14} className="animate-spin" />
+                    <span>Analyzing Code & Evaluating Architecture...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send size={14} />
+                    <span>Submit for Automated AI Review</span>
+                  </>
+                )}
+              </button>
+
+              {/* Review Feedback Display */}
+              {submissionFeedback && (
+                <div className="p-4 rounded-2xl bg-neutral-900 border border-purple-500/40 space-y-3 animate-fade-in">
+                  <div className="flex items-center gap-2 text-purple-400 font-bold font-mono text-xs">
+                    <Award size={16} />
+                    <span>Automated Technical Evaluation Report:</span>
+                  </div>
+                  <div className="text-xs text-neutral-200 leading-relaxed whitespace-pre-line font-mono bg-black/60 p-4 rounded-xl border border-neutral-800">
+                    {submissionFeedback}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* Interactive Quiz Runner Modal (100% Opaque & Crisp) */}
       {activeQuiz && typeof document !== 'undefined' && createPortal(

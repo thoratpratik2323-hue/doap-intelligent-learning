@@ -1,10 +1,12 @@
 import React, { useState, Suspense, lazy } from 'react';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { AITutorProvider } from './context/AITutorContext';
 import { Sidebar } from './components/Shell/Sidebar';
 import { Header } from './components/Shell/Header';
 import { AmbientBackground } from './components/Shell/AmbientBackground';
 import { FloatingActionButton } from './components/Common/FloatingActionButton';
+import { AITutorBackgroundNotification } from './components/Common/AITutorBackgroundNotification';
 import { EditProfileModal } from './components/Modals/EditProfileModal';
 import { SettingsModal } from './components/Modals/SettingsModal';
 import { AuthModal } from './components/Modals/AuthModal';
@@ -196,7 +198,8 @@ const AppContent = () => {
         </div>
       </div>
 
-      {/* Floating Action Button & Modals */}
+      {/* Floating Action Button, Background AI Notifications & Modals */}
+      <AITutorBackgroundNotification />
       <FloatingActionButton />
       <EditProfileModal />
       <SettingsModal />
@@ -209,7 +212,9 @@ export default function App() {
   return (
     <AuthProvider>
       <ThemeProvider>
-        <AppContent />
+        <AITutorProvider>
+          <AppContent />
+        </AITutorProvider>
       </ThemeProvider>
     </AuthProvider>
   );

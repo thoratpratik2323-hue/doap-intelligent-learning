@@ -23,6 +23,8 @@ import {
   Award,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   FileCode,
   HelpCircle,
   Eye,
@@ -758,79 +760,138 @@ Act as my Socratic AI Tutor. Do NOT write the entire solved code. Instead, analy
     }
   };
 
+  const companyScrollRef = useRef(null);
+
+  const scrollCompanyList = (direction) => {
+    if (companyScrollRef.current) {
+      const scrollAmount = direction === 'left' ? -350 : 350;
+      companyScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
   const categories = [
-    "All", "Arrays", "Strings", "Linked Lists", "Stacks", "Queues", "Trees", "Graphs", 
-    "Dynamic Programming", "Sorting", "Searching", "Bit Manipulation", "Range Queries", "Tries", "Advanced Patterns"
+    "All", "Arrays", "Strings", "Hash Table", "Linked Lists", "Stacks", "Queues", "Trees", "Graphs", 
+    "Dynamic Programming", "Binary Search", "Two Pointers", "Sliding Window", "Sorting", "Searching", 
+    "Greedy", "Backtracking", "Recursion", "Matrix", "Math", "Bit Manipulation", "Heap"
   ];
 
   const difficulties = ["All", "Easy", "Medium", "Hard"];
   const platforms = ["All", "HackerRank", "LeetCode", "Blind 75"];
 
-  // Unified Problem Pool (Foundational 167+ or Company Placement Questions)
+  // Flattened pool of all company placement problems across all companies
+  const allFlattenedCompanyProblems = useMemo(() => {
+    const list = [];
+    Object.keys(companyProblemsData).forEach(compId => {
+      const comp = companyProblemsData[compId];
+      const compMeta = companyCatalog.find(c => c.id === compId);
+      if (comp && Array.isArray(comp.problems)) {
+        comp.problems.forEach((p, idx) => {
+          const localMatch = localProblemsMap.get(p.title?.toLowerCase().trim());
+          if (localMatch) {
+            list.push({
+              ...localMatch,
+              id: `comp-${compId}-${idx + 1}`,
+              company: compMeta?.name || comp.name,
+              companyId: compId,
+              companyLogo: COMPANY_ICONS[compId] || compMeta?.logo || '🏢',
+              frequency: p.frequency,
+              acceptanceRate: p.acceptanceRate,
+              leetcodeLink: p.link,
+              isCompanyProblem: true
+            });
+          } else {
+            const fnName = (p.title || 'solution').replace(/[^a-zA-Z0-9]/g, '');
+            const camelCaseName = fnName ? fnName.charAt(0).toLowerCase() + fnName.slice(1) : 'solution';
+
+            list.push({
+              id: `comp-${compId}-${idx + 1}`,
+              title: p.title,
+              difficulty: p.difficulty || 'Medium',
+              category: (p.topics && p.topics[0]) || 'Algorithms',
+              topics: p.topics || [],
+              company: compMeta?.name || comp.name,
+              companyId: compId,
+              companyLogo: COMPANY_ICONS[compId] || compMeta?.logo || '🏢',
+              frequency: p.frequency || 50,
+              acceptanceRate: p.acceptanceRate || '50%',
+              functionName: camelCaseName,
+              benchmarkMins: p.difficulty === 'Easy' ? 15 : p.difficulty === 'Hard' ? 45 : 30,
+              description: `Authentic technical interview question asked in ${compMeta?.name || 'Top Tech'} hiring rounds.\n\nTopics: ${p.topics?.join(', ') || 'Data Structures & Algorithms'}\nInterview Frequency: ${p.frequency || 50}%\nHistorical Acceptance Rate: ${p.acceptanceRate || 'N/A'}\n\nWrite your complete algorithmic solution below in ${selectedLanguage.toUpperCase()} and click "Run Code" to test in-browser.`,
+              starterCodes: {
+                javascript: `/**\n * Question: ${p.title} (${compMeta?.name || 'Company'} Placement)\n * Difficulty: ${p.difficulty || 'Medium'}\n */\nfunction ${camelCaseName}() {\n  // Write your solution here\n  \n}`,
+                python: `# Question: ${p.title} (${compMeta?.name || 'Company'} Placement)\n# Difficulty: ${p.difficulty || 'Medium'}\n\nclass Solution:\n    def ${camelCaseName}(self, *args):\n        # Write your solution here\n        pass`,
+                cpp: `// Question: ${p.title} (${compMeta?.name || 'Company'} Placement)\n// Difficulty: ${p.difficulty || 'Medium'}\n\n#include <iostream>\n#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    void ${camelCaseName}() {\n        // Write your solution here\n    }\n};`,
+                java: `// Question: ${p.title} (${compMeta?.name || 'Company'} Placement)\n// Difficulty: ${p.difficulty || 'Medium'}\n\npublic class Solution {\n    public void ${camelCaseName}() {\n        // Write your solution here\n    }\n}`
+              },
+              tests: [
+                { id: 1, display: `${camelCaseName}()`, expected: true, input: [] }
+              ],
+              leetcodeLink: p.link,
+              isCompanyProblem: true
+            });
+          }
+        });
+      }
+    });
+    return list;
+  }, [companyProblemsData, companyCatalog, localProblemsMap, selectedLanguage]);
+
+  // Unified Problem Pool (Foundational 167+ and all 8,699 Company Placement Questions)
   const currentProblemPool = useMemo(() => {
     if (selectedCompanyId === 'All') {
+      // Returns complete combined universe of 8,866+ questions
+      return [...ALL_PROBLEMS, ...allFlattenedCompanyProblems];
+    }
+    if (selectedCompanyId === 'curated') {
       return ALL_PROBLEMS;
     }
-
-    const compMeta = companyCatalog.find(c => c.id === selectedCompanyId);
-    const compData = companyProblemsData[selectedCompanyId];
-    if (!compData || !Array.isArray(compData.problems)) return ALL_PROBLEMS;
-
-    return compData.problems.map((p, idx) => {
-      // If problem title matches a local problem with full test suites, inherit it!
-      const localMatch = localProblemsMap.get(p.title?.toLowerCase().trim());
-      if (localMatch) {
-        return {
-          ...localMatch,
-          company: compMeta?.name || compData.name,
-          companyLogo: COMPANY_ICONS[selectedCompanyId] || compMeta?.logo || '🏢',
-          frequency: p.frequency,
-          acceptanceRate: p.acceptanceRate,
-          leetcodeLink: p.link,
-          isCompanyProblem: true
-        };
-      }
-
-      // Format as complete DOAP problem solvable in IDE
-      const fnName = (p.title || 'solution').replace(/[^a-zA-Z0-9]/g, '');
-      const camelCaseName = fnName ? fnName.charAt(0).toLowerCase() + fnName.slice(1) : 'solution';
-
-      return {
-        id: `comp-${selectedCompanyId}-${idx + 1}`,
-        title: p.title,
-        difficulty: p.difficulty || 'Medium',
-        category: (p.topics && p.topics[0]) || 'Algorithms',
-        topics: p.topics || [],
-        company: compMeta?.name || compData.name,
-        companyLogo: COMPANY_ICONS[selectedCompanyId] || compMeta?.logo || '🏢',
-        frequency: p.frequency || 50,
-        acceptanceRate: p.acceptanceRate || '50%',
-        functionName: camelCaseName,
-        benchmarkMins: p.difficulty === 'Easy' ? 15 : p.difficulty === 'Hard' ? 45 : 30,
-        description: `Authentic technical interview question asked in ${compMeta?.name || 'Top Tech'} hiring rounds.\n\nTopics: ${p.topics?.join(', ') || 'Data Structures & Algorithms'}\nInterview Frequency: ${p.frequency || 50}%\nHistorical Acceptance Rate: ${p.acceptanceRate || 'N/A'}\n\nWrite your complete algorithmic solution below in ${selectedLanguage.toUpperCase()} and click "Run Code" to test in-browser.`,
-        starterCodes: {
-          javascript: `/**\n * Question: ${p.title} (${compMeta?.name || 'Company'} Placement)\n * Difficulty: ${p.difficulty || 'Medium'}\n */\nfunction ${camelCaseName}() {\n  // Write your solution here\n  \n}`,
-          python: `# Question: ${p.title} (${compMeta?.name || 'Company'} Placement)\n# Difficulty: ${p.difficulty || 'Medium'}\n\nclass Solution:\n    def ${camelCaseName}(self, *args):\n        # Write your solution here\n        pass`,
-          cpp: `// Question: ${p.title} (${compMeta?.name || 'Company'} Placement)\n// Difficulty: ${p.difficulty || 'Medium'}\n\n#include <iostream>\n#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    void ${camelCaseName}() {\n        // Write your solution here\n    }\n};`,
-          java: `// Question: ${p.title} (${compMeta?.name || 'Company'} Placement)\n// Difficulty: ${p.difficulty || 'Medium'}\n\npublic class Solution {\n    public void ${camelCaseName}() {\n        // Write your solution here\n    }\n}`
-        },
-        tests: [
-          { id: 1, display: `${camelCaseName}()`, expected: true, input: [] }
-        ],
-        leetcodeLink: p.link,
-        isCompanyProblem: true
-      };
-    });
-  }, [selectedCompanyId, companyCatalog, companyProblemsData, localProblemsMap, selectedLanguage]);
+    return allFlattenedCompanyProblems.filter(p => p.companyId === selectedCompanyId);
+  }, [selectedCompanyId, allFlattenedCompanyProblems]);
 
   const filteredProblems = useMemo(() => {
     return currentProblemPool.filter(p => {
-      const matchCat = selectedCategory === 'All' || p.category === selectedCategory || (Array.isArray(p.topics) && p.topics.includes(selectedCategory));
-      const matchDiff = selectedDifficulty === 'All' || p.difficulty === selectedDifficulty;
+      // Topic/Category Matching (handles variations like Arrays/Array, Hash Table/Hashing, DP, etc.)
+      const matchCat = selectedCategory === 'All' || (() => {
+        const sel = selectedCategory.toLowerCase().trim();
+        const pCat = (p.category || '').toLowerCase().trim();
+        if (pCat === sel) return true;
+        if (sel.endsWith('s') && pCat === sel.slice(0, -1)) return true;
+        if (pCat.endsWith('s') && sel === pCat.slice(0, -1)) return true;
+        if (pCat.includes(sel) || sel.includes(pCat)) return true;
+
+        if (Array.isArray(p.topics)) {
+          return p.topics.some(t => {
+            const tl = t.toLowerCase().trim();
+            if (tl === sel) return true;
+            if (sel.endsWith('s') && tl === sel.slice(0, -1)) return true;
+            if (tl.endsWith('s') && sel === tl.slice(0, -1)) return true;
+            if (tl.includes(sel) || sel.includes(tl)) return true;
+            if (sel === 'dynamic programming' && (tl === 'dp' || tl.includes('dynamic'))) return true;
+            if (sel.includes('array') && tl.includes('array')) return true;
+            if (sel.includes('string') && tl.includes('string')) return true;
+            if (sel.includes('tree') && tl.includes('tree')) return true;
+            if (sel.includes('graph') && tl.includes('graph')) return true;
+            if (sel.includes('stack') && tl.includes('stack')) return true;
+            if (sel.includes('queue') && tl.includes('queue')) return true;
+            if (sel.includes('heap') && tl.includes('heap')) return true;
+            if (sel.includes('hash') && (tl.includes('hash') || tl.includes('map'))) return true;
+            if (sel.includes('binary search') && tl.includes('binary search')) return true;
+            return false;
+          });
+        }
+        return false;
+      })();
+
+      // Difficulty Matching
+      const matchDiff = selectedDifficulty === 'All' || 
+        (p.difficulty && p.difficulty.toLowerCase() === selectedDifficulty.toLowerCase());
+
       const matchPlatform = selectedPlatform === 'All' ||
         (selectedPlatform === 'HackerRank' && p.platform === 'HackerRank') ||
         (selectedPlatform === 'LeetCode' && (p.platform === 'LeetCode' || p.isCompanyProblem || !p.platform)) ||
         (selectedPlatform === 'Blind 75' && (p.isBlind75 || (typeof p.id === 'number' && p.id <= 75 && p.platform !== 'HackerRank')));
+
+      // Search Query
       const q = problemSearchQuery.trim().toLowerCase();
       const matchQuery = !q || 
         (p.title && p.title.toLowerCase().includes(q)) ||
@@ -841,6 +902,7 @@ Act as my Socratic AI Tutor. Do NOT write the entire solved code. Instead, analy
         (p.platform && p.platform.toLowerCase().includes(q)) ||
         (p.track && p.track.toLowerCase().includes(q)) ||
         (p.description && p.description.toLowerCase().includes(q));
+
       return matchCat && matchDiff && matchPlatform && matchQuery;
     });
   }, [currentProblemPool, selectedCategory, selectedDifficulty, selectedPlatform, problemSearchQuery]);
@@ -1633,7 +1695,7 @@ Evaluate this code strictly:
               aria-label="Search DSA challenges"
               value={problemSearchQuery}
               onChange={(e) => setProblemSearchQuery(e.target.value)}
-              placeholder={`Search ${totalCombinedProblemsCount.toLocaleString()}+ DSA & Company placement challenges (LeetCode, HackerRank, Google, Amazon, TCS)...`}
+              placeholder={`Search ${totalCombinedProblemsCount.toLocaleString()}+ DSA & Company placement challenges (Google, Amazon, Microsoft, Apple, Meta, TCS)...`}
               className={`w-full pl-10 pr-10 py-2.5 rounded-2xl border text-xs sm:text-sm transition-all focus:outline-none ${
                 isDarkMode 
                   ? 'bg-[#111111] border-neutral-800 text-white placeholder-neutral-500 focus:border-cyan-500/50' 
@@ -1650,12 +1712,12 @@ Evaluate this code strictly:
             )}
           </div>
 
-          {/* Target Company Filter Bar */}
-          <div className="space-y-2 p-3 rounded-2xl bg-neutral-900/40 border border-neutral-800/80 backdrop-blur-sm">
+          {/* 1. Target Company Filter Bar */}
+          <div className="space-y-2 p-3.5 rounded-2xl bg-neutral-900/40 border border-neutral-800/80 backdrop-blur-sm">
             <div className="flex items-center justify-between text-xs font-mono text-neutral-400">
               <span className="flex items-center gap-1.5 font-bold text-neutral-200">
                 <Building2 size={14} className="text-cyan-400" />
-                <span>Target Company Archive ({companyCatalog.length > 0 ? '8,699+ Placement Problems' : 'Top Tech Firms'}):</span>
+                <span>Company Placement Archive ({totalCombinedProblemsCount.toLocaleString()}+ Problems):</span>
               </span>
               {selectedCompanyId !== 'All' && (
                 <button
@@ -1663,93 +1725,195 @@ Evaluate this code strictly:
                   onClick={() => setSelectedCompanyId('All')}
                   className="text-cyan-400 hover:text-cyan-300 underline cursor-pointer text-[11px] font-sans transition-colors"
                 >
-                  Reset to Curated Core ({ALL_PROBLEMS.length})
+                  Show All ({totalCombinedProblemsCount.toLocaleString()})
                 </button>
               )}
             </div>
 
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            <div className="relative flex items-center gap-1.5">
+              {/* Scroll Left Button */}
               <button
                 type="button"
-                onClick={() => setSelectedCompanyId('All')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border flex items-center gap-1.5 ${
-                  selectedCompanyId === 'All'
-                    ? (isDarkMode ? 'bg-cyan-400 text-black border-cyan-400 font-bold shadow-sm' : 'bg-black text-white border-black font-bold shadow-sm')
-                    : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white hover:border-neutral-700' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
-                }`}
+                onClick={() => scrollCompanyList('left')}
+                className="shrink-0 w-8 h-8 rounded-xl bg-neutral-900/90 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-neutral-700 shadow-md flex items-center justify-center cursor-pointer transition-all active:scale-90 z-10"
+                title="Scroll Left"
+                aria-label="Scroll companies left"
               >
-                <span>🌐 Curated Core ({ALL_PROBLEMS.length})</span>
+                <ChevronLeft size={16} />
               </button>
 
-              {companyCatalog.map((comp) => (
+              {/* Scrollable Companies Container */}
+              <div 
+                ref={companyScrollRef}
+                className="flex-1 flex items-center gap-2 overflow-x-auto py-1 scroll-smooth scrollbar-thin"
+                style={{ scrollbarWidth: 'thin' }}
+              >
+                {/* All Companies Combined */}
                 <button
                   type="button"
-                  key={comp.id}
-                  onClick={() => setSelectedCompanyId(comp.id)}
+                  onClick={() => setSelectedCompanyId('All')}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border flex items-center gap-1.5 ${
-                    selectedCompanyId === comp.id
-                      ? (isDarkMode ? 'bg-gradient-to-r from-blue-500 to-cyan-400 text-black border-cyan-400 font-bold shadow-sm' : 'bg-blue-600 text-white border-blue-600 font-bold shadow-sm')
-                      : (isDarkMode ? 'bg-neutral-900 text-neutral-300 border-neutral-800 hover:border-neutral-700 hover:text-white' : 'bg-neutral-100 text-neutral-700 border-neutral-200 hover:text-black')
+                    selectedCompanyId === 'All'
+                      ? (isDarkMode ? 'bg-cyan-400 text-black border-cyan-400 font-bold shadow-sm' : 'bg-black text-white border-black font-bold shadow-sm')
+                      : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white hover:border-neutral-700' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
                   }`}
                 >
-                  <span>{COMPANY_ICONS[comp.id] || '🏢'}</span>
-                  <span>{comp.name}</span>
-                  <span className="text-[10px] opacity-75 font-mono font-normal">({(comp.totalCount || comp.count || 0).toLocaleString()})</span>
+                  <span>✨ All Companies ({totalCombinedProblemsCount.toLocaleString()})</span>
                 </button>
-              ))}
+
+                {/* Foundational Core */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedCompanyId('curated')}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border flex items-center gap-1.5 ${
+                    selectedCompanyId === 'curated'
+                      ? (isDarkMode ? 'bg-cyan-400 text-black border-cyan-400 font-bold shadow-sm' : 'bg-black text-white border-black font-bold shadow-sm')
+                      : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white hover:border-neutral-700' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
+                  }`}
+                >
+                  <span>🌐 Curated Core ({ALL_PROBLEMS.length})</span>
+                </button>
+
+                {companyCatalog.map((comp) => (
+                  <button
+                    type="button"
+                    key={comp.id}
+                    onClick={() => setSelectedCompanyId(comp.id)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border flex items-center gap-1.5 ${
+                      selectedCompanyId === comp.id
+                        ? (isDarkMode ? 'bg-gradient-to-r from-blue-500 to-cyan-400 text-black border-cyan-400 font-bold shadow-sm' : 'bg-blue-600 text-white border-blue-600 font-bold shadow-sm')
+                        : (isDarkMode ? 'bg-neutral-900 text-neutral-300 border-neutral-800 hover:border-neutral-700 hover:text-white' : 'bg-neutral-100 text-neutral-700 border-neutral-200 hover:text-black')
+                    }`}
+                  >
+                    <span>{COMPANY_ICONS[comp.id] || '🏢'}</span>
+                    <span>{comp.name}</span>
+                    <span className="text-[10px] opacity-75 font-mono font-normal">({(comp.totalCount || comp.count || 0).toLocaleString()})</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Scroll Right Button */}
+              <button
+                type="button"
+                onClick={() => scrollCompanyList('right')}
+                className="shrink-0 w-8 h-8 rounded-xl bg-neutral-900/90 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-neutral-700 shadow-md flex items-center justify-center cursor-pointer transition-all active:scale-90 z-10"
+                title="Scroll Right"
+                aria-label="Scroll companies right"
+              >
+                <ChevronRight size={16} />
+              </button>
             </div>
           </div>
 
-          {/* Filter Row: Categories + Difficulty */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            {/* Category Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-              {categories.map((cat) => (
+          {/* 2. Level (Difficulty) & Problem Type (Category) Filter Bar */}
+          <div className="space-y-3 p-3.5 rounded-2xl bg-neutral-900/30 border border-neutral-800/70 backdrop-blur-sm">
+            {/* Level / Difficulty Filter */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="text-xs font-mono font-bold text-neutral-300 flex items-center gap-1.5 shrink-0">
+                <Filter size={13} className="text-cyan-400" />
+                <span>Level:</span>
+              </span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {difficulties.map((diff) => {
+                  const isDiffActive = selectedDifficulty === diff;
+                  let badgeDot = null;
+                  if (diff === 'Easy') badgeDot = <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />;
+                  if (diff === 'Medium') badgeDot = <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />;
+                  if (diff === 'Hard') badgeDot = <span className="w-2 h-2 rounded-full bg-rose-400 shrink-0" />;
+
+                  return (
+                    <button
+                      type="button"
+                      key={diff}
+                      onClick={() => setSelectedDifficulty(diff)}
+                      className={`
+                        px-3.5 py-1.5 rounded-xl text-xs font-mono font-semibold transition-all cursor-pointer border flex items-center gap-1.5
+                        ${isDiffActive 
+                          ? (diff === 'Easy' 
+                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500 font-bold shadow-sm' 
+                              : diff === 'Medium'
+                              ? 'bg-amber-500/20 text-amber-300 border-amber-500 font-bold shadow-sm'
+                              : diff === 'Hard'
+                              ? 'bg-rose-500/20 text-rose-300 border-rose-500 font-bold shadow-sm'
+                              : (isDarkMode ? 'bg-white text-black border-white font-bold' : 'bg-black text-white border-black font-bold')
+                            )
+                          : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
+                        }
+                      `}
+                    >
+                      {badgeDot}
+                      <span>{diff}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {(selectedDifficulty !== 'All' || selectedCategory !== 'All' || selectedCompanyId !== 'All' || problemSearchQuery) && (
                 <button
                   type="button"
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`
-                    px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border
-                    ${selectedCategory === cat 
-                      ? (isDarkMode ? 'bg-white text-black border-white' : 'bg-black text-white border-black') 
-                      : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
-                    }
-                  `}
+                  onClick={() => {
+                    setSelectedDifficulty('All');
+                    setSelectedCategory('All');
+                    setSelectedCompanyId('All');
+                    setProblemSearchQuery('');
+                  }}
+                  className="ml-auto text-xs text-neutral-400 hover:text-cyan-300 underline cursor-pointer font-mono"
                 >
-                  {cat}
+                  Reset All Filters
                 </button>
-              ))}
+              )}
             </div>
 
-            {/* Difficulty Selector */}
-            <div className="flex items-center gap-1.5 self-start sm:self-auto shrink-0">
-              {difficulties.map((diff) => (
-                <button
-                  type="button"
-                  key={diff}
-                  onClick={() => setSelectedDifficulty(diff)}
-                  className={`
-                    px-3 py-1.5 rounded-xl text-xs font-mono transition-colors cursor-pointer border
-                    ${selectedDifficulty === diff 
-                      ? (isDarkMode ? 'bg-white text-black border-white font-bold' : 'bg-black text-white border-black font-bold') 
-                      : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
-                    }
-                  `}
-                >
-                  {diff}
-                </button>
-              ))}
+            {/* Problem Type / Topic Filter */}
+            <div className="space-y-1.5 pt-2 border-t border-neutral-800/50">
+              <div className="flex items-center justify-between text-xs font-mono text-neutral-400">
+                <span className="flex items-center gap-1.5 text-neutral-300 font-bold">
+                  <Layers size={13} className="text-purple-400" />
+                  <span>Problem Type / Topic:</span>
+                </span>
+                {selectedCategory !== 'All' && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCategory('All')}
+                    className="text-cyan-400 hover:underline cursor-pointer text-[11px]"
+                  >
+                    All Types
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                {categories.map((cat) => (
+                  <button
+                    type="button"
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`
+                      px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors cursor-pointer border
+                      ${selectedCategory === cat 
+                        ? (isDarkMode ? 'bg-white text-black border-white font-bold shadow-sm' : 'bg-black text-white border-black font-bold shadow-sm') 
+                        : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
+                      }
+                    `}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
           {/* Count Indicator */}
           <div className="flex items-center justify-between text-xs font-mono text-neutral-400 px-1">
             <span>
-              Showing {filteredProblems.length === 0 ? 0 : (problemPage - 1) * itemsPerPage + 1} - {Math.min(problemPage * itemsPerPage, filteredProblems.length)} of {filteredProblems.length} Problems
-              {selectedCompanyId !== 'All' && (
+              Showing {filteredProblems.length === 0 ? 0 : (problemPage - 1) * itemsPerPage + 1} - {Math.min(problemPage * itemsPerPage, filteredProblems.length).toLocaleString()} of {filteredProblems.length.toLocaleString()} Problems
+              {selectedCompanyId !== 'All' && selectedCompanyId !== 'curated' && (
                 <span className="ml-1.5 text-cyan-400 font-bold">
                   ({companyCatalog.find(c => c.id === selectedCompanyId)?.name || selectedCompanyId} Placement Archive)
+                </span>
+              )}
+              {selectedCompanyId === 'curated' && (
+                <span className="ml-1.5 text-cyan-400 font-bold">
+                  (Curated Core Suite)
                 </span>
               )}
             </span>
@@ -1874,20 +2038,6 @@ Evaluate this code strictly:
                       <span className="hidden md:inline">Ask AI</span>
                     </button>
 
-                    {/* Optional External Reference Link */}
-                    {prob.leetcodeLink && (
-                      <a
-                        href={prob.leetcodeLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="px-2 py-1.5 rounded-xl border border-neutral-800 bg-neutral-900/60 hover:bg-neutral-800 text-neutral-400 hover:text-white text-xs font-mono flex items-center gap-1 transition-all shrink-0"
-                        title="View problem reference on LeetCode"
-                      >
-                        <ExternalLink size={12} />
-                        <span className="hidden lg:inline">LeetCode</span>
-                      </a>
-                    )}
 
                     <div className="flex items-center gap-1 text-xs font-mono text-neutral-500 group-hover:text-white transition-colors pl-1">
                       <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
@@ -2021,7 +2171,7 @@ Evaluate this code strictly:
           {/* Count Indicator */}
           <div className="flex items-center justify-between text-xs font-mono text-neutral-400 px-1">
             <span>Showing {filteredKnowledge.length} of {DSA_KNOWLEDGE_BASE.length} DSA Conceptual Guides</span>
-            <span className="text-cyan-400 font-bold">105 Knowledge Records • First-Principles Foundations</span>
+            <span className="text-cyan-400 font-bold">{DSA_KNOWLEDGE_BASE.length} Knowledge Records • First-Principles Foundations</span>
           </div>
 
           {/* Knowledge Cards Grid */}
@@ -2112,7 +2262,7 @@ Evaluate this code strictly:
                 setQuizSearchQuery(e.target.value);
                 setQuizCurrentPage(1);
               }}
-              placeholder="Search 315 questions by keyword, topic, or concept (e.g. Dijkstra, AVL, Binary Search, DP)..."
+              placeholder={`Search ${DSA_QUIZZES.length} questions by keyword, topic, or concept (e.g. Dijkstra, AVL, Binary Search, DP)...`}
               className={`w-full pl-10 pr-10 py-2.5 rounded-2xl border text-xs sm:text-sm transition-all focus:outline-none ${
                 isDarkMode 
                   ? 'bg-[#111111] border-neutral-800 text-white placeholder-neutral-500 focus:border-cyan-500/50' 

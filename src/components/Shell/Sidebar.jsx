@@ -24,6 +24,7 @@ import {
 import { NAVIGATION_ITEMS } from '../../data/mockData';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
+import { useAITutor } from '../../context/AITutorContext';
 
 const ICON_MAP = {
   Home: Home,
@@ -55,6 +56,7 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
   } = useTheme();
 
   const { isDevBypass } = useAuth();
+  const { isThinking: isAIThinking, hasUnreadResponse: hasAIUnread } = useAITutor();
 
   const handleNavClick = (path) => {
     navigateTo(path);
@@ -133,6 +135,7 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         {NAVIGATION_ITEMS.map((item) => {
           const IconComponent = ICON_MAP[item.label] || Home;
           const isActive = currentPath === item.path;
+          const isAITutorItem = item.id === 'ai-tutor' || item.label === 'AI Tutor';
 
           return (
             <button
@@ -146,15 +149,33 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                 color: isActive ? (isDarkMode ? '#000000' : '#ffffff') : 'var(--doap-text-sec)'
               }}
             >
-              <IconComponent 
-                size={18} 
-                className="shrink-0 transition-transform"
-                style={{ color: isActive ? (isDarkMode ? '#000000' : '#ffffff') : 'var(--doap-text-sec)' }} 
-              />
+              <div className="relative shrink-0 flex items-center justify-center">
+                <IconComponent 
+                  size={18} 
+                  className="transition-transform"
+                  style={{ color: isActive ? (isDarkMode ? '#000000' : '#ffffff') : 'var(--doap-text-sec)' }} 
+                />
+                {isAITutorItem && isAIThinking && (
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-cyan-400 rounded-full animate-ping" />
+                )}
+                {isAITutorItem && !isAIThinking && hasAIUnread && (
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full" />
+                )}
+              </div>
 
               {!isSidebarCollapsed && (
-                <span className="truncate text-xs font-semibold tracking-tight text-left">
-                  {item.label}
+                <span className="truncate text-xs font-semibold tracking-tight text-left flex-1 flex items-center justify-between">
+                  <span>{item.label}</span>
+                  {isAITutorItem && isAIThinking && (
+                    <span className="px-1.5 py-0.5 rounded-full text-[9px] font-mono bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 animate-pulse font-bold">
+                      Working...
+                    </span>
+                  )}
+                  {isAITutorItem && !isAIThinking && hasAIUnread && (
+                    <span className="px-1.5 py-0.5 rounded-full text-[9px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold">
+                      Ready!
+                    </span>
+                  )}
                 </span>
               )}
             </button>

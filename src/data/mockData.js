@@ -532,6 +532,463 @@ export const COURSES_DATA = [
         ]
       }
     ]
+  },
+  {
+    id: "system-design",
+    title: "System Design & Distributed Architecture",
+    level: "Advanced",
+    category: "System Design",
+    modulesCount: 8,
+    duration: "20h",
+    progress: 0,
+    modules: [
+      {
+        id: 1,
+        title: "Scalability, Latency & Throughput",
+        completed: false,
+        isCurrent: true,
+        subTopics: [
+          { id: "sys-1-1", title: "Horizontal vs Vertical Scaling", desc: "Stateless server tiers, autoscaling groups, stateful persistence, and cost trade-offs." },
+          { id: "sys-1-2", title: "Latency vs Throughput vs Availability", desc: "p95/p99 tail latency metrics, SLA/SLO/SLI definitions, and High Availability (99.999%)." },
+          { id: "sys-1-3", title: "CAP Theorem & PACELC Theorem", desc: "Consistency vs Availability under network partitions, and latency vs consistency trade-offs." },
+          { id: "sys-1-4", title: "Consistent Hashing & Virtual Nodes", desc: "Minimizing remapping on node joins/failures in distributed caches and DHTs." }
+        ]
+      },
+      {
+        id: 2,
+        title: "Load Balancing & Reverse Proxies",
+        completed: false,
+        subTopics: [
+          { id: "sys-2-1", title: "Layer 4 vs Layer 7 Load Balancing", desc: "TCP/UDP transport load balancing vs HTTP/HTTPS path-based intelligent routing." },
+          { id: "sys-2-2", title: "Balancing Algorithms (Round Robin, Least Conn, IP Hash)", desc: "Selection criteria for diverse client workloads, sticky sessions, and health checks." },
+          { id: "sys-2-3", title: "SSL/TLS Termination & Reverse Proxying", desc: "Offloading cryptographic overhead, request buffering, and Nginx/HAProxy setups." },
+          { id: "sys-2-4", title: "DNS Routing & Anycast BGP", desc: "GeoDNS, latency-based routing, CDN edge resolution, and multi-region failover." }
+        ]
+      },
+      {
+        id: 3,
+        title: "Caching Strategies & Distributed In-Memory Stores",
+        completed: false,
+        subTopics: [
+          { id: "sys-3-1", title: "Cache-Aside, Read-Through, Write-Through & Write-Back", desc: "Consistency guarantees, write amplification, and dirty cache management." },
+          { id: "sys-3-2", title: "Cache Invalidation & Eviction (LRU, LFU, FIFO)", desc: "TTL strategies, event-driven cache invalidation, and memory pressure policies." },
+          { id: "sys-3-3", title: "Thundering Herd & Cache Stampede Defense", desc: "Probabilistic early expiration (XFetch), mutex locking, and warm-up pipelines." },
+          { id: "sys-3-4", title: "Redis vs Memcached Distributed Topologies", desc: "Redis Cluster sharding, sentinel failover, persistence (RDB/AOF), and data structures." }
+        ]
+      },
+      {
+        id: 4,
+        title: "Data Partitioning, Sharding & Replication",
+        completed: false,
+        subTopics: [
+          { id: "sys-4-1", title: "Horizontal Sharding vs Vertical Partitioning", desc: "Shard key selection, hot-spotting prevention, and range vs hash partitioning." },
+          { id: "sys-4-2", title: "Leader-Follower (Master-Slave) Replication", desc: "Synchronous vs asynchronous replication, read scaling, and replication lag." },
+          { id: "sys-4-3", title: "Multi-Leader & Leaderless Replication (Dynamo-Style)", desc: "Quorum reads/writes (R + W > N), Sloppy Quorum, Hinted Handoff, and Anti-Entropy." },
+          { id: "sys-4-4", title: "Cross-Shard Queries & Distributed Transactions", desc: "Two-Phase Commit (2PC), Saga pattern, and eventual consistency reconciliations." }
+        ]
+      },
+      {
+        id: 5,
+        title: "Message Queues & Event-Driven Architecture",
+        completed: false,
+        subTopics: [
+          { id: "sys-5-1", title: "Point-to-Point Queues vs Publish/Subscribe", desc: "RabbitMQ AMQP exchange routing vs Kafka partitioned log stream consumer groups." },
+          { id: "sys-5-2", title: "Message Delivery Semantics", desc: "At-least-once, at-most-once, exactly-once delivery guarantees and idempotent consumers." },
+          { id: "sys-5-3", title: "Backpressure & Dead Letter Queues (DLQ)", desc: "Graceful degradation, poison pill handling, and exponential backoff retries." },
+          { id: "sys-5-4", title: "Event Sourcing & CQRS Pattern", desc: "Separating read and write models with append-only audit event ledgers." }
+        ]
+      },
+      {
+        id: 6,
+        title: "API Gateways, Rate Limiting & Resilience",
+        completed: false,
+        subTopics: [
+          { id: "sys-6-1", title: "Token Bucket vs Leaky Bucket vs Sliding Window Counter", desc: "Mathematical rate-limiting algorithms and distributed Redis implementation." },
+          { id: "sys-6-2", title: "Circuit Breaker & Bulkhead Patterns", desc: "Preventing cascading failures with Netflix Hystrix / Resilience4j state machines." },
+          { id: "sys-6-3", title: "API Gateway Responsibilities", desc: "Authentication, authorization, rate limiting, request transformation, and telemetry." },
+          { id: "sys-6-4", title: "Idempotency Keys in Distributed Payment Systems", desc: "Safe retries of financial mutations using unique idempotency tokens." }
+        ]
+      },
+      {
+        id: 7,
+        title: "Distributed Consensus & Coordination",
+        completed: false,
+        subTopics: [
+          { id: "sys-7-1", title: "Raft Consensus Algorithm", desc: "Leader election, log replication, safety guarantees, and term changes." },
+          { id: "sys-7-2", title: "Paxos & Byzantine Fault Tolerance", desc: "Basic Paxos, Multi-Paxos, and handling malicious / arbitrary faulty nodes." },
+          { id: "sys-7-3", title: "Distributed Coordination with ZooKeeper & etcd", desc: "Distributed locks, leader election recipes, and cluster configuration synchronization." },
+          { id: "sys-7-4", title: "Vector Clocks & Version Vectors", desc: "Tracking causality and detecting concurrent conflicting updates in distributed nodes." }
+        ]
+      },
+      {
+        id: 8,
+        title: "Real-World System Design Case Studies",
+        completed: false,
+        subTopics: [
+          { id: "sys-8-1", title: "Design YouTube / Netflix Video Streaming", desc: "Chunked encoding, adaptive bitrate (HLS/DASH), CDN architecture, and metadata DB." },
+          { id: "sys-8-2", title: "Design WhatsApp / Messenger Real-Time Chat", desc: "WebSocket gateways, presence servers, message store, and push notification services." },
+          { id: "sys-8-3", title: "Design Uber / Grab Geospatial Ride-Hailing", desc: "QuadTree / Google S2 geospatial indexing, driver location streaming, and dispatch." },
+          { id: "sys-8-4", title: "Design Twitter / X Real-Time News Feed", desc: "Fan-out on write vs fan-out on read for celebrity users, Redis timeline caching." }
+        ]
+      }
+    ]
+  },
+  {
+    id: "full-stack-web",
+    title: "Full-Stack Web Architecture & Engineering",
+    level: "Intermediate",
+    category: "Programming",
+    modulesCount: 6,
+    duration: "18h",
+    progress: 0,
+    modules: [
+      {
+        id: 1,
+        title: "Modern JavaScript Engine & TypeScript Mastery",
+        completed: false,
+        isCurrent: true,
+        subTopics: [
+          { id: "fs-1-1", title: "V8 Engine Internals & JIT Pipeline", desc: "Ignition interpreter, Sparkplug, TurboFan optimizing compiler, and Hidden Classes." },
+          { id: "fs-1-2", title: "Event Loop, Microtasks & Macrotasks", desc: "Promise resolution order, process.nextTick, requestAnimationFrame, and starvation." },
+          { id: "fs-1-3", title: "Advanced TypeScript Type System", desc: "Generics, mapped types, conditional types, template literal types, and type guards." },
+          { id: "fs-1-4", title: "Memory Leaks & V8 Garbage Collection", desc: "Mark-and-sweep, generational GC (Scavenge vs Mark-Compact), heap profiling." }
+        ]
+      },
+      {
+        id: 2,
+        title: "Modern React Architecture & Next.js App Router",
+        completed: false,
+        subTopics: [
+          { id: "fs-2-1", title: "React 19 Server Components (RSC) vs Client Components", desc: "Zero-bundle-size server components, streaming SSR, and Suspense boundaries." },
+          { id: "fs-2-2", title: "Concurrent Rendering & Fiber Architecture", desc: "Time-slicing, interruptible rendering, useTransition, and useDeferredValue hooks." },
+          { id: "fs-2-3", title: "Next.js App Router & Server Actions", desc: "Nested layouts, route handlers, server mutations, revalidation, and caching tiers." },
+          { id: "fs-2-4", title: "Global State: Zustand vs Redux Toolkit vs TanStack Query", desc: "Server state vs client UI state, cache deduplication, optimistic updates." }
+        ]
+      },
+      {
+        id: 3,
+        title: "Backend API Engineering (REST, GraphQL & gRPC)",
+        completed: false,
+        subTopics: [
+          { id: "fs-3-1", title: "RESTful API Best Practices & HATEOAS", desc: "Idempotent verbs, standard error contracts, semantic HTTP status codes, versioning." },
+          { id: "fs-3-2", title: "GraphQL Schema Design & N+1 DataLoader", desc: "Queries, mutations, subscriptions, solving the N+1 problem with batching/caching." },
+          { id: "fs-3-3", title: "High-Performance gRPC & Protocol Buffers", desc: "Binary serialization, HTTP/2 multiplexing, bidirectional streaming, and microservice IPC." },
+          { id: "fs-3-4", title: "Real-Time WebSockets & Server-Sent Events (SSE)", desc: "Stateful persistent connections, heartbeat ping/pong, reconnect backoff, and SSE streams." }
+        ]
+      },
+      {
+        id: 4,
+        title: "Enterprise Authentication & Security",
+        completed: false,
+        subTopics: [
+          { id: "fs-4-1", title: "OAuth 2.0 & OpenID Connect (OIDC)", desc: "Authorization Code Flow with PKCE, token refresh rotations, and ID tokens." },
+          { id: "fs-4-2", title: "JWT Deep Dive: Signatures, Algorithms & Pitfalls", desc: "RS256 vs HS256, expiration, revocation strategies, and httpOnly cookie storage." },
+          { id: "fs-4-3", title: "Role-Based (RBAC) & Attribute-Based (ABAC) Access Control", desc: "Fine-grained permission matrices, policy decision points, and tenant isolation." },
+          { id: "fs-4-4", title: "Web Security Hardening", desc: "CSP headers, CORS preflight policies, CSRF tokens, and subresource integrity (SRI)." }
+        ]
+      },
+      {
+        id: 5,
+        title: "Database Integration & Query Optimization",
+        completed: false,
+        subTopics: [
+          { id: "fs-5-1", title: "Prisma & Drizzle ORM Architecture", desc: "Type-safe schemas, automated migrations, connection pooling, and raw query escape hatches." },
+          { id: "fs-5-2", title: "Preventing N+1 Queries & Index Tuning", desc: "EXPLAIN ANALYZE interpretation, compound indices, index-only scans, and eager joins." },
+          { id: "fs-5-3", title: "Database Connection Pooling with PgBouncer", desc: "Managing high-concurrency client connections and server thread exhaustion." },
+          { id: "fs-5-4", title: "Transactions & Isolation Levels in Production", desc: "Dirty reads, non-repeatable reads, phantom reads, and SERIALIZABLE isolation." }
+        ]
+      },
+      {
+        id: 6,
+        title: "Web Performance, Observability & Testing",
+        completed: false,
+        subTopics: [
+          { id: "fs-6-1", title: "Core Web Vitals Optimization (LCP, INP, CLS)", desc: "Code splitting, dynamic imports, image optimization, and font preloading." },
+          { id: "fs-6-2", title: "End-to-End Testing with Playwright", desc: "Automated browser tests, network mocking, visual regression, and CI execution." },
+          { id: "fs-6-3", title: "Unit & Integration Testing with Vitest / Jest", desc: "Test-driven development (TDD), mocking modules, snapshot testing, and code coverage." },
+          { id: "fs-6-4", title: "Application Performance Monitoring (APM)", desc: "Distributed tracing with OpenTelemetry, error tracking with Sentry, and log aggregation." }
+        ]
+      }
+    ]
+  },
+  {
+    id: "cloud-devops",
+    title: "Cloud Native DevOps & Kubernetes",
+    level: "Advanced",
+    category: "Cloud & DevOps",
+    modulesCount: 6,
+    duration: "16h",
+    progress: 0,
+    modules: [
+      {
+        id: 1,
+        title: "Linux Systems & Production Shell Scripting",
+        completed: false,
+        isCurrent: true,
+        subTopics: [
+          { id: "cd-1-1", title: "Process Management & Systemd Services", desc: "PID lifecycle, daemons, signals (SIGTERM/SIGKILL), and systemd unit configurations." },
+          { id: "cd-1-2", title: "Linux Networking & Firewall Controls", desc: "iptables, netfilter, DNS resolution (/etc/resolv.conf), and socket inspection with ss/lsof." },
+          { id: "cd-1-3", title: "Production Bash Scripting & Automation", desc: "Strict error handling (set -euo pipefail), trap cleanup, cron scheduling, and stdout/stderr redirection." },
+          { id: "cd-1-4", title: "SSH Hardening & Key Management", desc: "ED25519 keys, disabling root password login, bastion jump hosts, and agent forwarding." }
+        ]
+      },
+      {
+        id: 2,
+        title: "Docker Containerization & Image Optimization",
+        completed: false,
+        subTopics: [
+          { id: "cd-2-1", title: "Linux Namespaces & Cgroups Internals", desc: "How container isolation works: PID/NET/MNT namespaces and CPU/memory limits." },
+          { id: "cd-2-2", title: "Multi-Stage Dockerfile Builds", desc: "Minimizing production images using Alpine/Distroless bases and caching build layers." },
+          { id: "cd-2-3", title: "Container Security & Non-Root Execution", desc: "Preventing container breakout, dropping Linux capabilities, and scanning with Trivy." },
+          { id: "cd-2-4", title: "Docker Compose Multi-Container Stacks", desc: "Networking, persistent volumes, environment interpolation, and dependency health checks." }
+        ]
+      },
+      {
+        id: 3,
+        title: "Kubernetes Core Architecture & Orchestration",
+        completed: false,
+        subTopics: [
+          { id: "cd-3-1", title: "Control Plane Architecture (API Server, etcd, Kubelet)", desc: "Controller Manager, Scheduler, etcd state store, and node-level Kubelet reconciliation." },
+          { id: "cd-3-2", title: "Pods, Deployments & ReplicaSets", desc: "Rolling updates, zero-downtime deployments, rollback strategies, and Pod disruption budgets." },
+          { id: "cd-3-3", title: "Networking: ClusterIP, NodePort, LoadBalancer & Ingress", desc: "Overlay networks (Calico/Flannel), kube-proxy iptables, and Nginx Ingress controllers." },
+          { id: "cd-3-4", title: "ConfigMaps, Secrets & External Secret Operators", desc: "Decoupling configuration, KMS encryption at rest, and secret rotation workflows." }
+        ]
+      },
+      {
+        id: 4,
+        title: "Kubernetes Storage, Autoscaling & Helm",
+        completed: false,
+        subTopics: [
+          { id: "cd-4-1", title: "Persistent Volumes (PV) & PVCs (CSI)", desc: "Dynamic storage provisioning, storage classes, and stateful workload persistence." },
+          { id: "cd-4-2", title: "Horizontal Pod Autoscaling (HPA) & KEDA", desc: "Autoscaling based on CPU/memory utilization and custom event metrics (Kafka/Redis queues)." },
+          { id: "cd-4-3", title: "Helm Charts Packaging & Release Management", desc: "Templating manifests, values.yaml overrides, chart dependencies, and rollback hooks." },
+          { id: "cd-4-4", title: "StatefulSets vs DaemonSets", desc: "Ordered deployment of stateful clusters vs node-level agent log collectors." }
+        ]
+      },
+      {
+        id: 5,
+        title: "Infrastructure as Code (IaC) with Terraform",
+        completed: false,
+        subTopics: [
+          { id: "cd-5-1", title: "Terraform Providers, Resources & State Files", desc: "Declarative infrastructure, remote state locking with S3 and DynamoDB, state migrations." },
+          { id: "cd-5-2", title: "Modular Infrastructure & Reusability", desc: "Creating VPC, subnet, security group, and managed Kubernetes cluster (EKS/GKE) modules." },
+          { id: "cd-5-3", title: "Terraform Plan, Apply & Drift Detection", desc: "Safe execution workflows, resource lifecycle meta-arguments, and automated drift alerts." },
+          { id: "cd-5-4", title: "Zero Trust Cloud Networking Architecture", desc: "Private subnets, NAT gateways, VPC peering, Transit Gateways, and Bastion bastions." }
+        ]
+      },
+      {
+        id: 6,
+        title: "CI/CD Automation & Observability",
+        completed: false,
+        subTopics: [
+          { id: "cd-6-1", title: "GitHub Actions Enterprise Pipelines", desc: "Multi-job workflows, caching dependencies, matrix testing, OIDC AWS/GCP auth." },
+          { id: "cd-6-2", title: "GitOps Continuous Deployment with ArgoCD", desc: "Declarative cluster synchronization, automated reconciliation, and canary deployments." },
+          { id: "cd-6-3", title: "Prometheus Metrics & Alertmanager", desc: "Pull-based scraping, PromQL queries, SLO alerting rules, and Grafana dashboarding." },
+          { id: "cd-6-4", title: "Centralized Logging with FluentBit & OpenSearch", desc: "Log shipping pipelines, structured JSON logging, and distributed correlation IDs." }
+        ]
+      }
+    ]
+  },
+  {
+    id: "os-internals",
+    title: "Operating Systems & Concurrency Internals",
+    level: "Advanced",
+    category: "Computer Science",
+    modulesCount: 5,
+    duration: "15h",
+    progress: 0,
+    modules: [
+      {
+        id: 1,
+        title: "Processes, Threads & CPU Scheduling",
+        completed: false,
+        isCurrent: true,
+        subTopics: [
+          { id: "os-1-1", title: "Process Control Block (PCB) & Context Switching", desc: "Register preservation, stack pointer updates, TLB flush overhead, and cache misses." },
+          { id: "os-1-2", title: "User Space vs Kernel Space & Syscall Transition", desc: "CPU privilege rings (Ring 0 vs Ring 3), software interrupts, and trap handlers." },
+          { id: "os-1-3", title: "CPU Scheduling Algorithms", desc: "CFS (Completely Fair Scheduler), Round Robin, Multi-Level Feedback Queue (MLFQ)." },
+          { id: "os-1-4", title: "Threads: User-Level vs Kernel-Level vs Green/Virtual Threads", desc: "1:1 OS threading vs M:N hybrid fibers (Go goroutines, Java Project Loom)." }
+        ]
+      },
+      {
+        id: 2,
+        title: "Synchronization, Locks & Deadlocks",
+        completed: false,
+        subTopics: [
+          { id: "os-2-1", title: "Race Conditions & Critical Section Problem", desc: "Mutual exclusion, progress, and bounded waiting requirements." },
+          { id: "os-2-2", title: "Hardware Primitives: Test-And-Set & Compare-And-Swap (CAS)", desc: "Atomic operations, memory barriers, acquire-release semantics, lock-free programming." },
+          { id: "os-2-3", title: "Mutexes, Semaphores & Condition Variables", desc: "Futexes in Linux, binary/counting semaphores, and monitor synchronization." },
+          { id: "os-2-4", title: "Coffman's Four Deadlock Conditions & Prevention", desc: "Mutual exclusion, Hold & Wait, No Preemption, Circular Wait; Banker's Algorithm." }
+        ]
+      },
+      {
+        id: 3,
+        title: "Virtual Memory & Memory Management",
+        completed: false,
+        subTopics: [
+          { id: "os-3-1", title: "Paging, Page Tables & Multi-Level Paging", desc: "Virtual-to-physical address translation, CR3 register, and page table walks." },
+          { id: "os-3-2", title: "Translation Lookaside Buffer (TLB) & Page Faults", desc: "TLB hit/miss latency, hardware page table walker, and handling minor/major page faults." },
+          { id: "os-3-3", title: "Page Replacement Algorithms (LRU, Clock, Belady's Anomaly)", desc: "Optimal offline page replacement vs Clock second-chance approximation." },
+          { id: "os-3-4", title: "Memory Allocation: Malloc, Brk & Mmap", desc: "Heap expansion via brk/sbrk, anonymous mmap for large allocations, memory fragmentation." }
+        ]
+      },
+      {
+        id: 4,
+        title: "File Systems & Storage Architecture",
+        completed: false,
+        subTopics: [
+          { id: "os-4-1", title: "Inodes, Directories & Hard/Soft Links", desc: "File metadata representation, directory entries, reference counting, and dangling links." },
+          { id: "os-4-2", title: "VFS (Virtual File System) Abstraction Layer", desc: "Standardized POSIX file API across Ext4, ZFS, Btrfs, and network file systems (NFS)." },
+          { id: "os-4-3", title: "Journaling File Systems & Crash Consistency", desc: "Write-ahead logging in file systems, write ordering, and fsck recovery." },
+          { id: "os-4-4", title: "Page Cache & Buffer Cache", desc: "Dirty page flushing (sync/fsync), read-ahead heuristic, and Direct I/O (O_DIRECT)." }
+        ]
+      },
+      {
+        id: 5,
+        title: "High-Performance I/O & Network Stack",
+        completed: false,
+        subTopics: [
+          { id: "os-5-1", title: "I/O Multiplexing: Select, Poll, Epoll & Kqueue", desc: "Solving the C10K problem with event-driven O(1) file descriptor notifications." },
+          { id: "os-5-2", title: "Linux io_uring Asynchronous I/O", desc: "Submission and completion ring buffers, avoiding syscall overhead, zero-copy transfers." },
+          { id: "os-5-3", title: "Linux TCP/IP Socket Lifecycle", desc: "SYN/ACK 3-way handshake, socket states (ESTABLISHED, TIME_WAIT), epoll integration." },
+          { id: "os-5-4", title: "Zero-Copy Data Transfer (sendfile, splice)", desc: "Bypassing user-space memory copies between socket buffers and file caches." }
+        ]
+      }
+    ]
+  },
+  {
+    id: "db-internals",
+    title: "Database Internals & Advanced SQL Engine Design",
+    level: "Intermediate",
+    category: "Computer Science",
+    modulesCount: 5,
+    duration: "14h",
+    progress: 0,
+    modules: [
+      {
+        id: 1,
+        title: "Storage Engines: B+ Trees vs LSM-Trees",
+        completed: false,
+        isCurrent: true,
+        subTopics: [
+          { id: "db-1-1", title: "B+ Tree Index Architecture", desc: "Node fan-out, root-to-leaf searches, range scan sequential links, and page splits/merges." },
+          { id: "db-1-2", title: "LSM-Tree (Log-Structured Merge-Tree) Storage", desc: "Memtable in RAM, Write-Ahead Log, SSTables on disk, and Bloom filters for fast misses." },
+          { id: "db-1-3", title: "Compaction Strategies: Size-Tiered vs Leveled Compaction", desc: "Managing write amplification, space amplification, and read amplification in RocksDB." },
+          { id: "db-1-4", title: "Row-Oriented vs Column-Oriented Storage", desc: "OLTP row storage (Postgres/MySQL) vs OLAP columnar projection & vectorization (ClickHouse/BigQuery)." }
+        ]
+      },
+      {
+        id: 2,
+        title: "Query Processing & Cost-Based Optimizer (CBO)",
+        completed: false,
+        subTopics: [
+          { id: "db-2-1", title: "SQL Parsing, AST & Logical Query Plan", desc: "Grammar parsing, semantic catalog checks, query rewrite rules, and predicate pushdown." },
+          { id: "db-2-2", title: "Physical Plan Generation & Cost Estimation", desc: "Table statistics, histogram selectivity calculations, CPU vs I/O cost modeling." },
+          { id: "db-2-3", title: "Join Algorithms: Nested Loop, Hash Join & Merge Join", desc: "Algorithm selection based on table sizes, available indices, and sort orders." },
+          { id: "db-2-4", title: "Analyzing EXPLAIN & EXPLAIN ANALYZE Output", desc: "Diagnosing sequential scans, sorting bottlenecks, and inaccurate planner estimates." }
+        ]
+      },
+      {
+        id: 3,
+        title: "ACID Transactions & Concurrency Control (MVCC)",
+        completed: false,
+        subTopics: [
+          { id: "db-3-1", title: "Multi-Version Concurrency Control (MVCC) in Postgres", desc: "xmin/xmax row headers, snapshot isolation, non-blocking reads, and VACUUM cleanup." },
+          { id: "db-3-2", title: "Two-Phase Locking (2PL) & Deadlock Detection", desc: "Strict 2PL, shared vs exclusive row locks, lock upgrade deadlocks, and wait-for graphs." },
+          { id: "db-3-3", title: "Transaction Isolation Levels (Read Committed to Serializable)", desc: "Preventing write skew, phantom reads, and SSI (Serializable Snapshot Isolation)." },
+          { id: "db-3-4", title: "Pessimistic vs Optimistic Concurrency Control (OCC)", desc: "SELECT FOR UPDATE vs version column compare-and-set in distributed environments." }
+        ]
+      },
+      {
+        id: 4,
+        title: "Crash Recovery & Write-Ahead Logging (WAL)",
+        completed: false,
+        subTopics: [
+          { id: "db-4-1", title: "WAL (Write-Ahead Logging) Principles", desc: "Append-only durability logging before flushing dirty buffer pool pages to disk." },
+          { id: "db-4-2", title: "ARIES Crash Recovery Algorithm", desc: "Analysis pass, Redo pass (repeating history), and Undo pass (rolling back uncommitted work)." },
+          { id: "db-4-3", title: "Checkpoints: Fuzzy Checkpointing & Dirty Pages", desc: "Limiting crash recovery duration without locking database transactions." },
+          { id: "db-4-4", title: "Physical vs Logical Replication Streams", desc: "WAL byte-level shipping vs logical decoding of row mutations." }
+        ]
+      },
+      {
+        id: 5,
+        title: "Advanced SQL Mastery & Analytical Queries",
+        completed: false,
+        subTopics: [
+          { id: "db-5-1", title: "Window Functions: ROW_NUMBER, RANK, DENSE_RANK & LEAD/LAG", desc: "Partitioned computations, running totals, and moving averages without self-joins." },
+          { id: "db-5-2", title: "Common Table Expressions (CTEs) & Recursive SQL", desc: "Hierarchical tree/graph traversal, organizational charts, and dependency paths in SQL." },
+          { id: "db-5-3", title: "Lateral Joins & JSONB Semi-Structured Indexing", desc: "Correlated subqueries with LATERAL and GIN indexing for fast nested JSON search." },
+          { id: "db-5-4", title: "Database Partitioning: Range, List & Hash", desc: "Partition pruning by query planner, declarative table partitioning, and data retention drops." }
+        ]
+      }
+    ]
+  },
+  {
+    id: "modern-llm-systems",
+    title: "Modern AI & LLM Systems Engineering",
+    level: "Advanced",
+    category: "Artificial Intelligence",
+    modulesCount: 5,
+    duration: "16h",
+    progress: 0,
+    modules: [
+      {
+        id: 1,
+        title: "Transformer Deep Architecture & Attention Mechanisms",
+        completed: false,
+        isCurrent: true,
+        subTopics: [
+          { id: "llm-1-1", title: "Multi-Head, Multi-Query & Grouped-Query Attention (GQA)", desc: "Optimizing KV-cache memory bandwidth during auto-regressive token generation." },
+          { id: "llm-1-2", title: "RoPE (Rotary Position Embeddings) & Context Extension", desc: "Relative positional encoding, YaRN, and scaling context windows to 1M+ tokens." },
+          { id: "llm-1-3", title: "FlashAttention & GPU Hardware Acceleration", desc: "Tiling attention computations to fit in SRAM, avoiding high-bandwidth memory (HBM) latency." },
+          { id: "llm-1-4", title: "Mixture-of-Experts (MoE) Architectures", desc: "Sparse routing, top-k expert selection, load balancing loss, and inference efficiency." }
+        ]
+      },
+      {
+        id: 2,
+        title: "Production RAG (Retrieval-Augmented Generation)",
+        completed: false,
+        subTopics: [
+          { id: "llm-2-1", title: "Dense vs Sparse Retrieval & Hybrid Search", desc: "Combining vector embeddings with BM25 keyword search using Reciprocal Rank Fusion (RRF)." },
+          { id: "llm-2-2", title: "Chunking Strategies: Semantic, Recursive & Document-Aware", desc: "Optimal chunk overlap, markdown structure preservation, and parent-document retrieval." },
+          { id: "llm-2-3", title: "Cross-Encoder Re-Ranking Models (Cohere, BGE)", desc: "Scoring document relevancy with deep cross-attention before LLM synthesis." },
+          { id: "llm-2-4", title: "Query Transformation & Hypothetical Document Embeddings (HyDE)", desc: "Generating pseudo-answers to bridge semantic gap between question and corpus." }
+        ]
+      },
+      {
+        id: 3,
+        title: "Fine-Tuning & Parameter-Efficient Tuning (PEFT)",
+        completed: false,
+        subTopics: [
+          { id: "llm-3-1", title: "LoRA (Low-Rank Adaptation) & QLoRA", desc: "Freezing base weights, decomposing weight updates into rank matrices (W = W0 + B*A)." },
+          { id: "llm-3-2", title: "Supervised Fine-Tuning (SFT) Dataset Preparation", desc: "Instruction formatting, prompt-completion pairs, data deduplication, and quality filtering." },
+          { id: "llm-3-3", title: "Direct Preference Optimization (DPO) vs PPO", desc: "Aligning models with human preferences using closed-form policy loss without separate reward model." },
+          { id: "llm-3-4", title: "Quantization: AWQ, GPTQ, GGUF & FP8 Precision", desc: "Weight-only vs weight-and-activation quantization, inference on edge devices and consumer GPUs." }
+        ]
+      },
+      {
+        id: 4,
+        title: "Autonomous Agent Architectures & Tool Use",
+        completed: false,
+        subTopics: [
+          { id: "llm-4-1", title: "Function Calling & Structured JSON Schemas", desc: "Constrained decoding, Pydantic tool definitions, and zero-shot tool selection." },
+          { id: "llm-4-2", title: "ReAct (Reasoning + Acting) Agent Loops", desc: "Thought-Action-Observation cognitive cycles, self-correction, and termination conditions." },
+          { id: "llm-4-3", title: "Multi-Agent Orchestration (Supervisor & Swarm Models)", desc: "Role specialization, shared memory buses, and agent-to-agent negotiation protocols." },
+          { id: "llm-4-4", title: "Long-Term Memory & Working Memory Management", desc: "Session compaction, vector recall of user profile facts, and context window pruning." }
+        ]
+      },
+      {
+        id: 5,
+        title: "High-Throughput LLM Serving & Observability",
+        completed: false,
+        subTopics: [
+          { id: "llm-5-1", title: "vLLM & PagedAttention Memory Management", desc: "Eliminating KV cache memory fragmentation with virtual memory page tables." },
+          { id: "llm-5-2", title: "Continuous Batching & Speculative Decoding", desc: "Scheduling dynamic prompt arrivals and draft model verification for 2x-3x speedup." },
+          { id: "llm-5-3", title: "LLM Guardrails & Hallucination Detection", desc: "NeMo Guardrails, regex output validators, and automated Ragas evaluation metrics." },
+          { id: "llm-5-4", title: "Latency Tracking: TTFT (Time to First Token) & Token/s", desc: "Benchmarking streaming throughput, GPU compute utilization, and concurrency scaling." }
+        ]
+      }
+    ]
   }
 ];
 

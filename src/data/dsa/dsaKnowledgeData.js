@@ -1,3 +1,5 @@
+import { EXPANDED_KNOWLEDGE_BASE, EXPANDED_QUIZZES } from './dsaExpandedKnowledge.js';
+
 // DOAP DSA LLM Knowledge Base Complete v2.0
 // Sourced from authoritative DSA LLM Knowledge Base:
 // 105 Knowledge Base Records | 137 Curated Problems | 315 Concept Quizzes
@@ -5519,7 +5521,7 @@ export const DSA_PROBLEMS = [
   }
 ];
 
-export const DSA_QUIZZES = [
+const BASE_DSA_QUIZZES = [
   {
     "id": "q-001",
     "topic": "Complexity",
@@ -10877,7 +10879,9 @@ export const DSA_QUIZZES = [
   }
 ];
 
-export const DSA_KNOWLEDGE_BASE = [
+export const DSA_QUIZZES = [...BASE_DSA_QUIZZES, ...EXPANDED_QUIZZES];
+
+const BASE_DSA_KNOWLEDGE_BASE = [
   {
     "id": "how_this_knowledge_base_should_be_used",
     "title": "How this knowledge base should be used",
@@ -13766,3 +13770,5 @@ export const DSA_KNOWLEDGE_BASE = [
     "source": "expanded_model_knowledge"
   }
 ];
+
+export const DSA_KNOWLEDGE_BASE = [...BASE_DSA_KNOWLEDGE_BASE, ...EXPANDED_KNOWLEDGE_BASE];

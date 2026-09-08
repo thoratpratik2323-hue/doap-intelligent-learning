@@ -28,8 +28,8 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { useAITutor } from '../context/AITutorContext';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
-import { generateSmartTutorResponse } from '../services/aiTutorEngine';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
 import { VoiceAICallModal } from '../components/Interview/VoiceAICallModal';
 import { 
@@ -73,38 +73,20 @@ export const AITutor = () => {
   const accentHex = activeAccentHex || 'var(--doap-accent, #ffffff)';
   const userName = profile?.name ? profile.name.split(' ')[0] : 'there';
 
-  // Initialize persistent chat sessions from localStorage
-  const [sessions, setSessions] = useState(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        }
-      } catch (e) {
-        console.error('Error loading chat sessions:', e);
-      }
-    }
-    const initialId = 'session-1';
-    return [
-      {
-        id: initialId,
-        title: "New Conversation",
-        createdAt: Date.now(),
-        category: "TODAY",
-        messages: [
-          {
-            id: '1',
-            sender: 'ai',
-            text: `Hey ${userName} bhai! 👋 Kya haal-chaal? Bata aaj kya kaam karna hai ya kya plan hai?\n\nChahe coding ho, project building, problem solving, ya bas normal baatein — bol bhai, main poori tarah ready hoon! 🚀🔥`
-          }
-        ]
-      }
-    ];
-  });
+  // Consume persistent chat sessions and background execution from global AITutorContext
+  const {
+    sessions,
+    setSessions,
+    activeSessionId,
+    setActiveSessionId,
+    currentSession,
+    isThinking,
+    executeSend,
+    handleNewChat,
+    handleDeleteSession,
+    handleRenameSession
+  } = useAITutor();
 
-  const [activeSessionId, setActiveSessionId] = useState(() => sessions[0]?.id || 'session-1');
   const [searchQuery, setSearchQuery] = useState('');
   const [inputText, setInputText] = useState('');
   const [baseInputText, setBaseInputText] = useState('');
@@ -116,7 +98,6 @@ export const AITutor = () => {
 
   const chipsScrollRef = useRef(null);
   const messagesEndRef = useRef(null);
-  const activeStreamRef = useRef(null);
 
   // Settings / API Key Modal State
   const [showKeyModal, setShowKeyModal] = useState(false);
@@ -133,30 +114,12 @@ export const AITutor = () => {
     toggleListening
   } = useSpeechRecognition();
 
-  // Current active session and messages
-  const currentSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
+  // Current active session messages
   const messages = currentSession?.messages || [];
-  const [isThinking, setIsThinking] = useState(false);
 
-  // Sync sessions to localStorage whenever they change (debounced 400ms to eliminate main-thread freezing during streaming)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
-      } catch (e) {
-        console.error('Error saving sessions:', e);
-      }
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [sessions]);
-
-  // Unmount cleanup guard: clear any active streaming interval & stop speech recognition
+  // Cleanup speech/audio on unmount
   useEffect(() => {
     return () => {
-      if (activeStreamRef.current) {
-        clearInterval(activeStreamRef.current);
-        activeStreamRef.current = null;
-      }
       stopListening();
       stopElevenLabsAudio();
     };
@@ -188,128 +151,15 @@ export const AITutor = () => {
     }
   };
 
-  const streamResponseText = (fullText, sessionId) => {
-    if (activeStreamRef.current) {
-      clearInterval(activeStreamRef.current);
-    }
-
-    const aiMsgId = (Date.now() + 1).toString();
-    setIsThinking(false);
-
-    // Append blank streaming message
-    setSessions(prev => prev.map(s => {
-      if (s.id === sessionId) {
-        return {
-          ...s,
-          messages: [
-            ...s.messages,
-            { id: aiMsgId, sender: 'ai', text: '', isStreaming: true }
-          ]
-        };
-      }
-      return s;
-    }));
-
-    let currentIndex = 0;
-    const speed = 12; // ms per tick
-    const charsPerTick = 4;
-
-    activeStreamRef.current = setInterval(() => {
-      currentIndex += charsPerTick;
-      const currentChunk = fullText.slice(0, currentIndex);
-      const isDone = currentIndex >= fullText.length;
-
-      setSessions(prev => prev.map(s => {
-        if (s.id === sessionId) {
-          return {
-            ...s,
-            messages: s.messages.map(m => m.id === aiMsgId ? { ...m, text: currentChunk, isStreaming: !isDone } : m)
-          };
-        }
-        return s;
-      }));
-
-      if (isDone) {
-        clearInterval(activeStreamRef.current);
-        activeStreamRef.current = null;
-      }
-    }, speed);
-  };
-
-  const executeSend = async (messageToSend) => {
-    const currentInput = messageToSend.trim();
+  const handleSendMessage = (e) => {
+    e?.preventDefault();
+    const currentInput = inputText.trim();
     if (!currentInput || isThinking) return;
 
     if (isListening) stopListening();
-
-    if (activeStreamRef.current) {
-      clearInterval(activeStreamRef.current);
-      activeStreamRef.current = null;
-    }
-
-    const userMsg = {
-      id: Date.now().toString(),
-      sender: 'user',
-      text: currentInput
-    };
-
-    const targetSessionId = activeSessionId;
-    const isFirstUserMessage = (currentSession?.messages || []).filter(m => m.sender === 'user').length === 0;
-    const newTitle = isFirstUserMessage && (currentSession?.title === 'New Conversation' || !currentSession?.title)
-      ? generateTitleFromPrompt(currentInput)
-      : currentSession?.title || 'New Conversation';
-
-    const updatedMessages = [...(currentSession?.messages || []), userMsg];
-
-    setSessions(prev => prev.map(s => {
-      if (s.id === targetSessionId) {
-        return {
-          ...s,
-          title: newTitle,
-          messages: updatedMessages
-        };
-      }
-      return s;
-    }));
-
     setInputText('');
     setBaseInputText('');
-    setIsThinking(true);
-
-    try {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      const smartReply = await generateSmartTutorResponse(
-        currentInput, 
-        userName,
-        updatedMessages
-      );
-      streamResponseText(smartReply, targetSessionId);
-    } catch (err) {
-      console.error('[AITutor] Error generating response:', err);
-      setIsThinking(false);
-      setSessions(prev => prev.map(s => {
-        if (s.id === targetSessionId) {
-          return {
-            ...s,
-            messages: [
-              ...s.messages,
-              {
-                id: (Date.now() + 1).toString(),
-                sender: 'ai',
-                text: `I ran into a temporary hiccup processing that. Please try asking again!`,
-                isStreaming: false
-              }
-            ]
-          };
-        }
-        return s;
-      }));
-    }
-  };
-
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    executeSend(inputText);
+    executeSend(currentInput);
   };
 
   // Auto-send incoming prompt when navigated from Company Prep or external action
@@ -327,42 +177,10 @@ export const AITutor = () => {
     }
   }, []);
 
-  // Create New Chat Session
-  const handleNewChat = () => {
+  const onNewChatClick = () => {
     if (isListening) stopListening();
-    if (activeStreamRef.current) {
-      clearInterval(activeStreamRef.current);
-      activeStreamRef.current = null;
-    }
-    const newSession = {
-      id: 'session-' + Date.now(),
-      title: "New Conversation",
-      createdAt: Date.now(),
-      category: "TODAY",
-      messages: [
-        {
-          id: '1',
-          sender: 'ai',
-          text: `Hey ${userName}! 👋 What would you like to explore or solve in this new session?`
-        }
-      ]
-    };
-    setSessions([newSession, ...sessions]);
-    setActiveSessionId(newSession.id);
-  };
-
-  // Delete Chat Session
-  const handleDeleteSession = (sessionId, e) => {
-    e.stopPropagation();
-    if (sessions.length <= 1) {
-      handleNewChat();
-      return;
-    }
-    const remaining = sessions.filter(s => s.id !== sessionId);
-    setSessions(remaining);
-    if (activeSessionId === sessionId) {
-      setActiveSessionId(remaining[0].id);
-    }
+    stopElevenLabsAudio();
+    handleNewChat();
   };
 
   // Rename Session Title
@@ -374,7 +192,7 @@ export const AITutor = () => {
 
   const handleSaveRename = (sessionId) => {
     if (editTitleInput.trim()) {
-      setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, title: editTitleInput.trim() } : s));
+      handleRenameSession(sessionId, editTitleInput.trim());
     }
     setEditingSessionId(null);
   };
