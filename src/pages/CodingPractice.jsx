@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { 
   Code, 
@@ -52,6 +52,7 @@ import {
 } from '../data/dsa/dsaKnowledgeData';
 import { HACKERRANK_PROBLEMS } from '../data/dsa/hackerRankProblems';
 import { runPythonTestsInBrowser } from '../services/pyodideRunner';
+import { CompanyPrep } from './CompanyPrep';
 
 const PROBLEM_DEFINITIONS = [
   {
@@ -481,7 +482,7 @@ const formatTimer = (totalSecs) => {
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 };
 
-export const CodingPractice = () => {
+export const CodingPractice = ({ initialTab = 'problems' }) => {
   const { isDarkMode, activeAccentHex, navigateTo } = useTheme();
   const { userProgress, updateUserProgress } = useAuth();
   const accentHex = activeAccentHex || 'var(--doap-accent, #ffffff)';
@@ -493,7 +494,21 @@ export const CodingPractice = () => {
   const [selectedPlatform, setSelectedPlatform] = useState('All');
   
   // View Switcher & Search States for Complete DSA Integration
-  const [activePracticeTab, setActivePracticeTab] = useState('problems'); // 'problems' | 'knowledge' | 'quizzes'
+  const [activePracticeTab, setActivePracticeTab] = useState(() => {
+    if (initialTab && initialTab !== 'problems') return initialTab;
+    if (typeof window !== 'undefined' && window.location.pathname.includes('company')) return 'company';
+    return 'problems';
+  });
+
+  // Fast O(1) title lookup map for linking company problems directly to DOAP automated test IDE
+  const localProblemsMap = useMemo(() => {
+    const map = new Map();
+    ALL_PROBLEMS.forEach(p => {
+      if (p?.title) map.set(p.title.toLowerCase().trim(), p);
+    });
+    return map;
+  }, []);
+
   const [problemSearchQuery, setProblemSearchQuery] = useState('');
   const [knowledgeSearchQuery, setKnowledgeSearchQuery] = useState('');
   const [selectedKnowledgeCat, setSelectedKnowledgeCat] = useState('All');
@@ -820,6 +835,10 @@ Act as my Socratic AI Tutor. Do NOT write the entire solved code. Instead, analy
     setShowHint(false);
     setShowQuestionDetails(true);
     setIsAssessmentActive(false);
+  };
+
+  const handleSolveLocalFromCompany = (prob) => {
+    handleOpenProblem(prob);
   };
 
   const handleExitAssessment = async () => {
@@ -1439,10 +1458,10 @@ Evaluate this code strictly:
       </div>
 
       {/* DSA Suite Navigation Switcher */}
-      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-neutral-900/80 border border-neutral-800 backdrop-blur-md">
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-neutral-900/80 border border-neutral-800 backdrop-blur-md overflow-x-auto scrollbar-none">
         <button
           onClick={() => setActivePracticeTab('problems')}
-          className={`flex-1 py-2.5 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`flex-1 py-2.5 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
             activePracticeTab === 'problems'
               ? (isDarkMode ? 'bg-white text-black shadow-md font-extrabold' : 'bg-black text-white shadow-md font-extrabold')
               : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
@@ -1453,8 +1472,20 @@ Evaluate this code strictly:
         </button>
 
         <button
+          onClick={() => setActivePracticeTab('company')}
+          className={`flex-1 py-2.5 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+            activePracticeTab === 'company'
+              ? (isDarkMode ? 'bg-gradient-to-r from-blue-500 to-cyan-400 text-black shadow-md font-extrabold' : 'bg-black text-white shadow-md font-extrabold')
+              : 'text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10'
+          }`}
+        >
+          <Building2 size={16} />
+          <span>Company Archives (8,699)</span>
+        </button>
+
+        <button
           onClick={() => setActivePracticeTab('knowledge')}
-          className={`flex-1 py-2.5 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`flex-1 py-2.5 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
             activePracticeTab === 'knowledge'
               ? (isDarkMode ? 'bg-white text-black shadow-md font-extrabold' : 'bg-black text-white shadow-md font-extrabold')
               : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
@@ -1466,7 +1497,7 @@ Evaluate this code strictly:
 
         <button
           onClick={() => setActivePracticeTab('quizzes')}
-          className={`flex-1 py-2.5 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`flex-1 py-2.5 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
             activePracticeTab === 'quizzes'
               ? (isDarkMode ? 'bg-white text-black shadow-md font-extrabold' : 'bg-black text-white shadow-md font-extrabold')
               : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
@@ -1522,6 +1553,18 @@ Evaluate this code strictly:
                 {plat === 'HackerRank' ? '🟩 HackerRank' : plat === 'LeetCode' ? '🟧 LeetCode' : plat === 'Blind 75' ? '🔥 Blind 75' : '🌐 All Platforms'}
               </button>
             ))}
+
+            <button
+              onClick={() => setActivePracticeTab('company')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border flex items-center gap-1.5 ${
+                isDarkMode 
+                  ? 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border-cyan-500/30' 
+                  : 'bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border-cyan-300'
+              }`}
+            >
+              <Building2 size={13} />
+              <span>🏢 Company Archives (8,699) →</span>
+            </button>
           </div>
 
           {/* Filter Row: Categories + Difficulty */}
@@ -1995,6 +2038,16 @@ Evaluate this code strictly:
               </button>
             </div>
           )}
+        </div>
+      )}
+
+      {/* TAB 4: COMPANY PLACEMENT ARCHIVES (8,699 QUESTIONS ACROSS 16 FIRMS) */}
+      {activePracticeTab === 'company' && (
+        <div className="space-y-6 animate-fade-in">
+          <CompanyPrep 
+            onSolveInEditor={handleSolveLocalFromCompany}
+            localProblemsMap={localProblemsMap}
+          />
         </div>
       )}
 

@@ -26,7 +26,6 @@ export const NAVIGATION_ITEMS = [
   { id: 'learning', label: 'My Learning', path: '/learning', icon: 'BookOpen' },
   { id: 'study-plan', label: 'Study Plan', path: '/study-plan', icon: 'Calendar' },
   { id: 'coding', label: 'Coding Practice', path: '/coding', icon: 'Code' },
-  { id: 'company-prep', label: 'Company Prep', path: '/company-prep', icon: 'Building2' },
   { id: 'interview', label: 'AI Interview', path: '/interview', icon: 'Video' },
   { id: 'assessments', label: 'Assessments', path: '/assessments', icon: 'FileCheck2' },
   { id: 'job-readiness', label: 'Job Readiness', path: '/job-readiness', icon: 'Briefcase' }

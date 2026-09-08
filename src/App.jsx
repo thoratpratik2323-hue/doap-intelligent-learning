@@ -130,7 +130,7 @@ const AppContent = () => {
         return <CodingPractice />;
       case '/company-prep':
       case '/company-questions':
-        return <CompanyPrep />;
+        return <CodingPractice initialTab="company" />;
       case '/interview':
         return <AIInterview />;
       case '/assessments':

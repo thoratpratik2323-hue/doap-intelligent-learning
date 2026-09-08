@@ -78,6 +78,7 @@ Created for the landmark **"Build Sanjivani's Own Large Language Model — Build
 ```
  🧠 DOAP Thinking 120B Brain  │ ⚡ Deep Cognitive Self-Thinking & Sub-150ms Groq LPU Inference
  🎙️ Neural Studio Voice Core  │ 🔊 Zero-Key High-Fidelity Audio (Andrew, Neerja Expressive, Jenny, Prabhat)
+ 🏢 Company Placement Archive │ 🏛️ 8,699+ Curated Questions across 16 Tech Giants (TCS, Google, Amazon)
  🟩 HackerRank Placement Track│ 🎯 20 Iconic Interview Prep Kit & Problem Solving Cert Challenges
  🌐 Multi-Platform Filtering  │ 🔍 1-Click Switch: All (167+), HackerRank, LeetCode & Blind 75
  📜 HackerRank Cert Mock Exam │ ⏱️ Timed Problem Solving Assessment in /assessments

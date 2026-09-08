@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
-export const CompanyPrep = () => {
+export const CompanyPrep = ({ onSolveInEditor, localProblemsMap }) => {
   const { isDarkMode, activeAccentHex, navigateTo } = useTheme();
 
   // 1. Data States
@@ -600,6 +600,7 @@ Please break down:
           <div className="divide-y divide-white/5">
             {paginatedProblems.map((prob, idx) => {
               const globalIndex = (currentPage - 1) * itemsPerPage + idx + 1;
+              const localMatch = localProblemsMap && prob?.title ? localProblemsMap.get(prob.title.toLowerCase().trim()) : null;
               const diffColor = 
                 prob.difficulty === 'Easy' 
                   ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' 
@@ -687,6 +688,17 @@ Please break down:
 
                   {/* Right Column: CTA Buttons */}
                   <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+                    {localMatch && onSolveInEditor && (
+                      <button
+                        onClick={() => onSolveInEditor(localMatch)}
+                        className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 text-black font-extrabold text-xs flex items-center gap-1.5 shadow-md shadow-cyan-500/20 transition-all hover:scale-105 cursor-pointer"
+                        title="Solve with DOAP Automated Tests, Python Wasm & AI Tutor"
+                      >
+                        <Code2 size={13} />
+                        <span>Solve in IDE</span>
+                      </button>
+                    )}
+
                     <button
                       onClick={() => handleAskDoapAI(prob)}
                       className="px-3 py-1.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
