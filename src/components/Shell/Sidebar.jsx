@@ -200,18 +200,6 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
           <Settings size={17} className="shrink-0" />
           {!isSidebarCollapsed && <span>Settings</span>}
         </button>
-
-        {!isSidebarCollapsed && (
-          <button
-            onClick={() => setIsSidebarHidden(true)}
-            className="w-full flex items-center gap-3.5 px-3.5 py-2 rounded-2xl transition-all text-xs font-semibold group cursor-pointer border-0 outline-none hover:bg-white/5 hover:text-white"
-            style={{ color: 'var(--doap-text-sec)' }}
-            title="Hide Sidebar (Full-Screen View • Ctrl+B)"
-          >
-            <PanelLeftClose size={17} className="shrink-0 text-neutral-400 group-hover:text-rose-300 transition-colors" />
-            <span>Hide Sidebar</span>
-          </button>
-        )}
       </div>
     </aside>
   );
