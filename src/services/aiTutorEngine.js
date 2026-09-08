@@ -21,6 +21,7 @@ import { runPreHooks, runPostHooks } from './hooksEngine.js';
 import { getSkillPromptInjection, getActiveSkillNames } from './skillsRegistry.js';
 import { orchestrate, getMatchingAgentName } from './agentOrchestrator.js';
 import { sessionManager } from './sessionManager.js';
+import { DEPARTMENT_DATA, DEPARTMENT_KNOWLEDGE_PROMPT } from '../data/departmentData.js';
 
 const defaultGk = [
   'gsk',
@@ -278,6 +279,109 @@ Developed by **Pratik Thorat** for **Sanjivani College of Engineering (SCOE) / S
     return platformOverview;
   }
 
+  // F. Department Faculty, Subject & Cabin Information Query Handler
+  const isFacultyQuery = (
+    /\b(faculty|faculties|teacher|teachers|prof|professor|professors|staff|hod|head of department|coordinator)\b/i.test(cleanText) ||
+    /\b(vishwesh|nagamalla|prashant kamkar|kamkar|ganesh phopase|phopase|sarvjeet|tanay ghosh|sarika maske|hirak chatterjee|tanvi chatse|shreeparna|kishor jhadav|jhadav)\b/i.test(cleanText) ||
+    /\b(who teaches|kaun padhata|koun padhata|padhate|padhati|kiska cabin|cabin address|cabin number|cabin kahan|cabin batao)\b/i.test(cleanText) ||
+    ((lowerText.includes('python') || lowerText.includes('math') || lowerText.includes('physics') || lowerText.includes('chemistry') || lowerText.includes('german') || lowerText.includes('communication') || lowerText.includes('data structure') || lowerText.includes('programming')) &&
+     (lowerText.includes('faculty') || lowerText.includes('teacher') || lowerText.includes('prof') || lowerText.includes('sir') || lowerText.includes('madam') || lowerText.includes('maam') || lowerText.includes('kaun') || lowerText.includes('who') || lowerText.includes('cabin') || lowerText.includes('kahan')))
+  );
+
+  if (isFacultyQuery) {
+    if (options.voiceMode) {
+      const voiceReply = `Here is the Artificial Intelligence and Data Science department directory. The Head of Department is Dr. Kishor Jhadav, contact 9890423309. Dr. Shreeparna Das is the First Year Class Coordinator on the 9th floor. Dr. Vishwesh Nagamalla teaches Programming and Data Structures on the 9th floor. Prashant Kamkar from IBM teaches Python. Sarvjeet Singh teaches Engineering Mathematics on the 2nd floor. Dr. Tanay Ghosh teaches Physics theory on the 2nd floor, and Mrs. Sarika Maske takes Physics practicals in the Extension Building. Dr. Hirak Chatterjee teaches Applied Chemistry on the 10th floor, Ganesh Phopase teaches Technical Communication, and Ms. Tanvi Chatse teaches German. Let me know if you need to connect with any specific professor!`;
+      try {
+        memoryBrain.learnFromInteraction(cleanText, voiceReply, 'voice');
+      } catch (e) {}
+      return voiceReply;
+    }
+
+    const isHindiOrHinglish = /[\u0900-\u097F]|\b(bhai|yaar|kaise|kya|karo|batao|karna|mera|meri|mujhe|tum|aap|chal|theek|suno|bol|ye|kaun|kiska|kaha|kahan|hai|hain)\b/i.test(rawText);
+
+    const facultyReply = isHindiOrHinglish ? `### 🏛️ Department of Artificial Intelligence & Data Science (AI & DS)
+#### 👨‍🏫 Faculty, Subject & Cabin Directory
+
+Here are the complete details for all faculty members and leadership in **AI & DS Department**:
+
+**👑 Department Leadership:**
+- 🎖️ **Head of Department (HOD):** **Dr. Kishor Jhadav**
+  - 📞 **Contact Number:** \`9890423309\`
+  - ✉️ **Email:** —
+- 🎓 **First Year Class Coordinator:** **Dr. Shreeparna Das**
+  - 🏢 **Cabin Location:** **9th Floor**
+
+---
+
+### 📋 Subject Teachers & Cabin Addresses:
+
+| # | Faculty Name | Subject / Course | Cabin Address | Designation / Role |
+| :---: | :--- | :--- | :--- | :--- |
+| 1 | **Dr. Vishwesh Nagamalla** | Introduction to Programming and Data Structure | 🏢 **9th Floor** | Senior Faculty |
+| 2 | **Prashant Kamkar** | Python | 💻 **IBM Center / Lab** | IBM Industry Expert |
+| 3 | **Ganesh Phopase** | Technical & Professional Communication Skills | 🏢 **Department** | Communication Skills |
+| 4 | **Sarvjeet Singh** | Engineering Mathematics | 🏢 **2nd Floor** | Mathematics Faculty |
+| 5 | **Dr. Tanay Ghosh** | Applied Physics (Theory) | 🏢 **2nd Floor** | Physics Faculty |
+| 6 | **Mrs. Sarika Maske** | Applied Physics (Practical) | 🏢 **Extension Building** | Physics Lab Incharge |
+| 7 | **Dr. Hirak Chatterjee** | Applied Chemistry (Theory & Practical) | 🏢 **10th Floor** | Chemistry Faculty |
+| 8 | **Ms. Tanvi Chatse** | German | 🏢 **Language Wing** | Foreign Language Trainer |
+| 9 | **Dr. Shreeparna Das** | First Year Class Coordinator | 🏢 **9th Floor** | Class Coordinator |
+
+---
+
+💡 **Key Notes & Quick Assistance:**
+- **HOD Desk:** Dr. Kishor Jhadav se urgent official query ke liye unke direct number \`9890423309\` par reach out kar sakte hain.
+- **DSA / Programming:** Programming and Data Structures ke doubts ke liye **Dr. Vishwesh Nagamalla** sir 9th floor par milenge.
+- **Python Guidance:** **Prashant Kamkar** (IBM Faculty) Python lab aur industry projects guide karte hain.
+- **First Year Coordination:** Koi bhi academic coordination issue ho toh **Dr. Shreeparna Das** ma'am 9th floor par help karti hain.
+- **Physics Practicals:** Lab **Extension Building** mai **Mrs. Sarika Maske** ma'am ke under conduct hoti hai.
+
+Batao ${userName}, kisi specific teacher ya cabin ke baare me aur kuch puchna hai? 😊` : `### 🏛️ Department of Artificial Intelligence & Data Science (AI & DS)
+#### 👨‍🏫 Faculty, Subject & Cabin Directory
+
+Here is the official faculty and subject directory for the **Artificial Intelligence & Data Science** department:
+
+**👑 Department Leadership & Coordination:**
+- 🎖️ **Head of Department (HOD):** **Dr. Kishor Jhadav**
+  - 📞 **Contact Number:** \`9890423309\`
+  - ✉️ **Email:** —
+- 🎓 **First Year Class Coordinator:** **Dr. Shreeparna Das**
+  - 🏢 **Cabin Location:** **9th Floor**
+
+---
+
+### 📋 Faculty, Course & Cabin Directory:
+
+| # | Faculty Name | Subject / Course | Cabin Address | Role |
+| :---: | :--- | :--- | :--- | :--- |
+| 1 | **Dr. Vishwesh Nagamalla** | Introduction to Programming and Data Structure | 🏢 **9th Floor** | Professor |
+| 2 | **Prashant Kamkar** | Python | 💻 **IBM Center / Lab** | IBM Faculty |
+| 3 | **Ganesh Phopase** | Technical & Professional Communication Skills | 🏢 **Department Wing** | Faculty |
+| 4 | **Sarvjeet Singh** | Engineering Mathematics | 🏢 **2nd Floor** | Assistant Professor |
+| 5 | **Dr. Tanay Ghosh** | Applied Physics (Theory) | 🏢 **2nd Floor** | Associate Professor |
+| 6 | **Mrs. Sarika Maske** | Applied Physics (Practical) | 🏢 **Extension Building** | Assistant Professor |
+| 7 | **Dr. Hirak Chatterjee** | Applied Chemistry (Theory & Practical) | 🏢 **10th Floor** | Associate Professor |
+| 8 | **Ms. Tanvi Chatse** | German | 🏢 **Language Wing** | Foreign Language Faculty |
+| 9 | **Dr. Shreeparna Das** | First Year Class Coordinator | 🏢 **9th Floor** | Coordinator & Faculty |
+
+---
+
+💡 **Quick Reference:**
+- **HOD Contact:** Dr. Kishor Jhadav — \`9890423309\`.
+- **First Year Coordinator:** Dr. Shreeparna Das — 9th Floor.
+- **Programming & Data Structures:** Dr. Vishwesh Nagamalla — 9th Floor.
+- **Physics Practicals:** Mrs. Sarika Maske — Extension Building.
+- **Engineering Mathematics:** Sarvjeet Singh — 2nd Floor.
+- **Applied Chemistry:** Dr. Hirak Chatterjee — 10th Floor.
+
+Feel free to ask if you need details about office hours or syllabus for any subject!`;
+
+    try {
+      memoryBrain.learnFromInteraction(cleanText, facultyReply, 'text');
+    } catch (e) {}
+    return facultyReply;
+  }
+
   const effectivePrompt = cleanText.replace(/^(\/code|\/explain|\/interview)\s+/i, '');
 
   // ==========================================
@@ -438,7 +542,9 @@ INSTITUTIONAL KNOWLEDGE BASE (SANJIVANI UNIVERSITY & SRES):
 - Innovation & LLM Challenge:
   * Active Institution's Innovation Council (IIC) and School of Engineering & Technology.
   * Theme: "Build Sanjivani's Own Large Language Model — Build AI for Sanjivani, by Sanjivani" organized on the occasion of the Birthday of Hon. Shri Nitindada S. Kolhe Saheb.
-Whenever ${userName} or an examiner asks about Sanjivani, its founders, Chairman Hon. Shri Nitindada Kolhe Saheb, departments, campus placement statistics, or the LLM challenge, respond with authentic institutional accuracy, high respect, and insightful detail!`;
+Whenever ${userName} or an examiner asks about Sanjivani, its founders, Chairman Hon. Shri Nitindada Kolhe Saheb, departments, campus placement statistics, or the LLM challenge, respond with authentic institutional accuracy, high respect, and insightful detail!
+
+${DEPARTMENT_KNOWLEDGE_PROMPT}`;
 
   const systemInstruction = options.voiceMode
     ? `You are DOAP AI (DOAP stands for "Discover Opportunities and Progress Platform"), ${userName}'s trusted best friend and personal ultra-smart voice tutor and companion.

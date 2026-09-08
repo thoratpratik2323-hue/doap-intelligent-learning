@@ -17,13 +17,29 @@ if (apiKey && apiKey !== 'your-gemini-api-key-here') {
 export async function getTutorResponse({ message, history = [], userContext = {} }) {
   if (ai) {
     try {
-      const systemInstruction = `You are DOAP AI, a world-class AI engineering mentor and computer science tutor.
-You help students with DSA, algorithms, software engineering, AI/ML, system design, and coding interviews.
+      const systemInstruction = `You are DOAP AI, a world-class AI engineering mentor, computer science tutor, and institutional guide for Sanjivani University.
+You help students with DSA, algorithms, software engineering, AI/ML, system design, coding interviews, and department academic queries.
 Guidelines:
 - Give clear, structured, pedagogical explanations with code snippets where helpful.
 - Keep explanations concise yet deep.
 - Tone: friendly, encouraging, sharp, and academic.
-- User info: ${userContext.name || 'Student'}, Year: ${userContext.year || '3rd Year'}, Major: ${userContext.course || 'Computer Science'}.`;
+- User info: ${userContext.name || 'Student'}, Year: ${userContext.year || '3rd Year'}, Major: ${userContext.course || 'Computer Science'}.
+
+DEPARTMENT FACULTY & SUBJECT DIRECTORY (Artificial Intelligence & Data Science - AI & DS):
+- Department: Artificial Intelligence and Data Science
+- Head of Department (HOD): Dr. Kishor Jhadav (Contact: 9890423309)
+- First Year Class Coordinator: Dr. Shreeparna Das (Cabin: 9th Floor)
+- Faculty, Subject & Cabin Mapping:
+  1. Dr. Vishwesh Nagamalla — Introduction to Programming and Data Structure | Cabin: 9th Floor
+  2. Prashant Kamkar (IBM Faculty) — Python | Industry Expert Faculty (IBM)
+  3. Ganesh Phopase — Technical and Professional Communication Skills
+  4. Sarvjeet Singh — Engineering Mathematics | Cabin: 2nd Floor
+  5. Dr. Tanay Ghosh — Applied Physics (Theory) | Cabin: 2nd Floor
+  6. Mrs. Sarika Maske — Applied Physics (Practical) | Cabin: Extension Building
+  7. Dr. Hirak Chatterjee — Applied Chemistry (Theory and Practical) | Cabin: 10th Floor
+  8. Ms. Tanvi Chatse — German (Foreign Language)
+  9. Dr. Shreeparna Das — First Year Class Coordinator | Cabin: 9th Floor
+When asked about any faculty, teachers, HOD, contact numbers, cabin locations, or subjects in AI & DS, provide these exact details accurately.`;
 
       // Build conversation contents
       const contents = history.map(item => ({
@@ -116,6 +132,10 @@ Analyze the candidate's answers and respond ONLY with a valid JSON object matchi
 function generateOfflineTutorResponse(message) {
   const q = (message || '').toLowerCase();
   
+  if (q.includes('faculty') || q.includes('teacher') || q.includes('hod') || q.includes('prof') || q.includes('cabin') || q.includes('vishwesh') || q.includes('jhadav') || q.includes('kamkar') || q.includes('shreeparna') || q.includes('sarvjeet') || q.includes('tanay') || q.includes('hirak')) {
+    return `### 🏛️ Department of Artificial Intelligence & Data Science (AI & DS)\n#### 👨‍🏫 Faculty, Subject & Cabin Directory\n\n**👑 Leadership:**\n- **Head of Department (HOD):** **Dr. Kishor Jhadav** | 📞 Contact: \`9890423309\`\n- **First Year Class Coordinator:** **Dr. Shreeparna Das** | 🏢 Cabin: **9th Floor**\n\n| Faculty Name | Subject | Cabin Location |\n| :--- | :--- | :--- |\n| **Dr. Vishwesh Nagamalla** | Introduction to Programming and Data Structure | 🏢 **9th Floor** |\n| **Prashant Kamkar** (IBM) | Python | 💻 **IBM Center / Lab** |\n| **Ganesh Phopase** | Technical & Professional Communication Skills | 🏢 **Department** |\n| **Sarvjeet Singh** | Engineering Mathematics | 🏢 **2nd Floor** |\n| **Dr. Tanay Ghosh** | Applied Physics (Theory) | 🏢 **2nd Floor** |\n| **Mrs. Sarika Maske** | Applied Physics (Practical) | 🏢 **Extension Building** |\n| **Dr. Hirak Chatterjee** | Applied Chemistry (Theory & Practical) | 🏢 **10th Floor** |\n| **Ms. Tanvi Chatse** | German | 🏢 **Language Wing** |\n| **Dr. Shreeparna Das** | First Year Class Coordinator | 🏢 **9th Floor** |`;
+  }
+
   if (q.includes('recursion')) {
     return `### Understanding Recursion in Computer Science\n\n**Recursion** is a programming pattern where a function solves a problem by calling a smaller instance of itself.\n\nEvery recursive algorithm requires two critical components:\n1. **Base Case:** The condition that halts the recursion to prevent an infinite stack overflow.\n2. **Recursive Step:** The logic that reduces the problem size towards the base case.\n\n\`\`\`javascript\n// Classic Example: Factorial\nfunction factorial(n) {\n  if (n <= 1) return 1; // Base case\n  return n * factorial(n - 1); // Recursive step\n}\n\`\`\`\n\n**Time Complexity:** O(N) | **Space Complexity:** O(N) auxiliary stack memory.`;
   }
