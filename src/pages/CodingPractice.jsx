@@ -1700,24 +1700,6 @@ Evaluate this code strictly:
             </div>
           </div>
 
-          {/* Platform Selector */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-            {platforms.map((plat) => (
-              <button
-                type="button"
-                key={plat}
-                onClick={() => setSelectedPlatform(plat)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border ${
-                  selectedPlatform === plat 
-                    ? (isDarkMode ? 'bg-cyan-400 text-black border-cyan-400 font-bold shadow-sm' : 'bg-black text-white border-black font-bold shadow-sm') 
-                    : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white hover:border-neutral-700' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
-                }`}
-              >
-                {plat === 'HackerRank' ? '🟩 HackerRank' : plat === 'LeetCode' ? '🟧 LeetCode' : plat === 'Blind 75' ? '🔥 Blind 75' : '🌐 All Platforms'}
-              </button>
-            ))}
-          </div>
-
           {/* Filter Row: Categories + Difficulty */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             {/* Category Pills */}
