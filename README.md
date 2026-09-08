@@ -20,6 +20,7 @@
 [![Pyodide Wasm](https://img.shields.io/badge/Pyodide_Python_Wasm-3776AB?style=flat-square&logo=python&logoColor=white)](https://pyodide.org/)
 [![vLLM](https://img.shields.io/badge/vLLM_Serving-9333EA?style=flat-square&logo=ray&logoColor=white)](https://github.com/vllm-project/vllm)
 [![Kokoro TTS](https://img.shields.io/badge/Kokoro_82M_TTS-EC4899?style=flat-square&logo=podcast&logoColor=white)](https://github.com/hexgrad/kokoro)
+[![DOAP Neural Voice](https://img.shields.io/badge/DOAP_Neural_TTS-Zero_API_Key_Studio-00c853?style=flat-square&logo=soundcharts&logoColor=white)](https://github.com/thoratpratik2323-hue/doap-intelligent-learning)
 [![Piston Sandbox](https://img.shields.io/badge/Piston_Sandbox-E11D48?style=flat-square&logo=docker&logoColor=white)](https://github.com/engineer-man/piston)
 [![Groq LPU](https://img.shields.io/badge/Groq_LPU_120B-F55036?style=flat-square&logo=speedtest&logoColor=white)](https://groq.com/)
 [![Whisper STT](https://img.shields.io/badge/Whisper_Large_v3_Turbo-00A67E?style=flat-square&logo=openai&logoColor=white)](https://groq.com/)
@@ -51,11 +52,13 @@ Created for the landmark **"Build Sanjivani's Own Large Language Model — Build
 - [🌐 Open-Source Repositories & Ecosystem Architecture (A to Z)](#-open-source-repositories--ecosystem-architecture-a-to-z)
 - [🏛️ Sanjivani LLM Studio (Unsloth, vLLM & Ollama)](#️-sanjivani-llm-studio-unsloth-vllm--ollama)
 - [⚡ Open-Source Runtimes: Pyodide Wasm, Kokoro TTS & Piston](#-open-source-runtimes-pyodide-wasm-kokoro-tts--piston)
+- [🎙️ DOAP Neural Studio Voice Engine (Zero-Key Lifelike Speech)](#️-doap-neural-studio-voice-engine-zero-key-lifelike-speech)
 - [🟩 HackerRank Interview Preparation Kit & Placement Suite](#-hackerrank-interview-preparation-kit--placement-suite)
 - [🧠 Brain Vault (Visual 8-Layer Memory Inspector)](#-brain-vault-visual-8-layer-memory-inspector)
 - [🎙️ Real-Time Voice AI Tutor with Live I/O Console (`IO`)](#️-real-time-voice-ai-tutor-with-live-io-console-io)
 - [📱 Mobile Speech STT & Floating Widgets Stability](#-mobile-speech-stt--floating-widgets-stability)
 - [🛡️ Proctored Fullscreen Coding Assessment & Proficiency Engine](#️-proctored-fullscreen-coding-assessment--proficiency-engine)
+- [⚙️ Header Quick-Access Menu (3-Dots Action Dropdown)](#️-header-quick-access-menu-3-dots-action-dropdown)
 - [🧠 Cognitive Self-Thinking Super-Brain (`/ai-tutor`)](#-cognitive-self-thinking-super-brain-ai-tutor)
 - [🎯 Job Description (JD) ATS Matcher & Resume Optimizer](#-job-description-jd-ats-matcher--resume-optimizer)
 - [🔥 Daily DOAP Streak & Challenge Drill Engine](#-daily-doap-streak--challenge-drill-engine)
@@ -74,15 +77,17 @@ Created for the landmark **"Build Sanjivani's Own Large Language Model — Build
 
 ```
  🧠 DOAP Thinking 120B Brain  │ ⚡ Deep Cognitive Self-Thinking & Sub-150ms Groq LPU Inference
+ 🎙️ Neural Studio Voice Core  │ 🔊 Zero-Key High-Fidelity Audio (Andrew, Neerja Expressive, Jenny, Prabhat)
  🟩 HackerRank Placement Track│ 🎯 20 Iconic Interview Prep Kit & Problem Solving Cert Challenges
  🌐 Multi-Platform Filtering  │ 🔍 1-Click Switch: All (167+), HackerRank, LeetCode & Blind 75
  📜 HackerRank Cert Mock Exam │ ⏱️ Timed Problem Solving Assessment in /assessments
- 🎙️ Studio Voice AI + Live IO │ 🔊 ElevenLabs Charon Turbo + Groq Whisper + Mobile STT Fallback
+ 🎙️ Studio Voice AI + Live IO │ 🔊 Neural Voice + Groq Whisper + Mobile STT Fallback
  🧠 Visual Brain Vault (8L)   │ 🔍 Interactive Knowledge Graph, Friction Points & Context Engine
  🛡️ Proctored Fullscreen Exam │ 🔒 Strict Native Fullscreen, Anti-Cheat Tab Lock & Violation Blocker
  📊 Student Proficiency Score │ 🎓 0-100 Verified Metric (Correctness, Speed, Autonomy & Integrity)
  📌 Top-Mounted Problem Card  │ 📋 Prominent Statements, Benchmarks, Constraints & Examples on Top
  ❌ Strict Automated Tests    │ 🚫 Manual "Mark as Solved" Removed (Pass Tests to Solve)
+ ⚙️ Header Quick-Access (⋮)   │ ⚡ Clean 3-Dots Menu beside Profile for Settings & Instant Auth
  🎯 JD ATS Matcher & Tailor   │ 💼 Real Company Match Score (Google, Amazon, TCS) + XYZ Bullet Writer
  🔥 Daily DOAP Streak Engine  │ 📅 Interactive Daily Problem Drills, Week Badges & Local Persistence
  💻 Multi-Language Sandbox    │ ⚡ In-Browser Execution for JavaScript, Python 3, C++ (GCC) & Java
@@ -143,6 +148,48 @@ DOAP eliminates third-party subscription limits and API bottlenecks through nati
 * **🐳 Self-Hosted Multi-Language Sandbox ([`docker-compose.piston.yml`](file:///docker-compose.piston.yml))**:
   * Pre-configured Docker Compose specification for **Engineer-man Piston**.
   * Executes Python, C++, Java, Node.js, Rust, and Go in secure, disposable containers.
+
+---
+
+## 🎙️ DOAP Neural Studio Voice Engine (Zero-Key Lifelike Speech)
+
+DOAP features an enterprise-grade, zero-API-key **Neural Studio Voice Engine** (`POST /api/ai/tts`) powered by `msedge-tts`, delivering natural, human-like voice synthesis with sub-second streaming audio:
+
+```
+                      ┌──────────────────────────────────────────────┐
+                      │        DOAP React 18 / Vite Frontend         │
+                      │  (VoiceAICallModal / AIInterviewerAvatar)    │
+                      └──────────────────────┬───────────────────────┘
+                                             │ POST /api/ai/tts
+                                             │ { text, voiceId, pitch, rate }
+                                             ▼
+                      ┌──────────────────────────────────────────────┐
+                      │         DOAP Express Backend Proxy           │
+                      │               (server/index.js)              │
+                      └──────────────────────┬───────────────────────┘
+                                             │ Streams 24kHz MP3
+                                             ▼
+                      ┌──────────────────────────────────────────────┐
+                      │    Microsoft Neural Edge Cloud Pipeline     │
+                      │   (Zero Quotas, Zero Costs, 100% Uptime)     │
+                      └──────────────────────────────────────────────┘
+```
+
+### 🌟 Key Studio Voice Personas
+
+| Persona Name | Voice Identifier | Accent & Speaking Persona | Best Suited For |
+|---|---|---|---|
+| **Andrew / Charon** | `en-US-AndrewMultilingualNeural` | Deep, articulate, authoritative US English | Principal Engineer Mock Interviews |
+| **Neerja Expressive** | `en-IN-NeerjaExpressiveNeural` | Warm, expressive Indian English with natural inflections | Daily Socratic Mentorship & Voice Tutor |
+| **Prabhat** | `en-IN-PrabhatNeural` | Crisp, academic, articulate Indian English | Technical Concept Explanations & Theory |
+| **Jenny** | `en-US-JennyNeural` | Energetic, crisp, contemporary Silicon Valley lead | Dynamic Speed Coding & Daily Drills |
+| **Brian** | `en-US-BrianNeural` | Grounded, professional UK/US technical lead | Behavioral & System Design Interviews |
+
+### 🚀 Technical Features & Zero-Key Architecture
+* **Zero API Exhaustion**: Does not rely on paid third-party token quotas (e.g. ElevenLabs free tier limits). Provides unlimited speech generation for students and faculty.
+* **Full Express Streaming**: Directly pipes binary MP3 chunks (`audio/mpeg`) with native HTTP chunked transfer encoding, resulting in sub-300ms time-to-first-byte (TTFB).
+* **Appearance Studio Integration**: Students can select their favorite voice persona, adjust pitch and speaking rate, and test their voice with the **"🎧 Preview Human Voice"** button in **Settings $\rightarrow$ Appearance & Sound**.
+* **Resilient Multi-Tier Fallback**: Automatically cascades from DOAP Neural Voice $\rightarrow$ ElevenLabs Charon Turbo $\rightarrow$ Local Kokoro TTS $\rightarrow$ Tuned Browser Web Speech SpeechSynthesis.
 
 ---
 
@@ -255,6 +302,19 @@ Upon submitting the assessment, DOAP AI evaluates performance across 4 critical 
 * The manual `Mark as Solved` toggle button has been **completely eliminated**.
 * A problem is strictly marked as solved **only** when all automated test cases pass or when the assessment is submitted with a passing grade.
 * Replaced with a real-time status indicator: `✓ Verified Solved` or `⚪ Unsolved (Pass all tests to mark solved)`.
+
+---
+
+## ⚙️ Header Quick-Access Menu (3-Dots Action Dropdown)
+
+To maximize code editing and learning canvas real estate, navigation and profile controls have been thoughtfully streamlined:
+
+* **3-Dots (`⋮`) Menu**: Positioned directly to the left of the student profile avatar in the main top header ([`src/components/Shell/Header.jsx`](file:///src/components/Shell/Header.jsx)).
+* **Quick Access Options**:
+  * ⚙️ **Settings**: 1-click modal for Theme, Neural Voice selection, API Keys, and Campus Runtime configuration.
+  * 🚪 **Sign Out / 🔑 Sign In**: Seamless account session management.
+* **Distraction-Free Sidebar**:
+  * Unnecessary footer controls and redundant sidebar buttons (such as bottom "Hide Sidebar" and footer sign-out actions) have been removed from [`src/components/Shell/Sidebar.jsx`](file:///src/components/Shell/Sidebar.jsx), giving students an unobstructed, full-height curriculum navigation panel.
 
 ---
 
@@ -411,6 +471,10 @@ doap-intelligent-learning/
 │   ├── serve_vllm.sh              # Production-grade OpenAI-compatible vLLM serving script
 │   ├── Modelfile                  # 1-click Ollama local CPU/GPU serving configuration
 │   └── README.md                  # Complete training and campus deployment guide
+├── 📁 server/                     # Express Proxy & DOAP Neural Studio Voice Engine
+│   ├── index.js                   # Express server entry point (port 5000 with CORS & proxying)
+│   └── routes/
+│       └── ai.js                  # POST /api/ai/tts (Zero-key 24kHz msedge-tts speech streaming)
 ├── docker-compose.piston.yml      # Self-hosted Dockerized multi-language code execution engine
 ├── firestore.rules                # Granular Firestore security policies
 ├── firebase.json                  # Firebase Hosting routing & hardened CSP configuration
@@ -491,7 +555,8 @@ npx firebase deploy --only hosting
 | **Frontend Framework** | React 18, Vite 6 |
 | **Styling & UI Design** | Tailwind CSS v4, Lucide Icons, Glassmorphism & Print Media Engine |
 | **Large Language Models** | Groq LPU (GPT-OSS 120B Flagship, Qwen 27B) + Deep Cognitive Self-Thinking |
-| **Speech & Audio** | Groq Whisper Large v3 Turbo, ElevenLabs Charon Studio Voice Core (`eleven_turbo_v2_5`) |
+| **Speech & Audio** | DOAP Neural Studio Voice Engine (`msedge-tts` / `/api/ai/tts`), Groq Whisper Large v3 Turbo, ElevenLabs Charon Studio (`eleven_turbo_v2_5`), Kokoro TTS |
+| **Backend & Proxy** | Node.js Express (`server/index.js`) + Vite Dynamic Proxy Engine |
 | **Cognitive Memory** | Unified 8-Layer Living Memory Brain (`memoryBrain.js`) + Interactive Brain Vault Modal |
 | **Proctored Assessment** | Fullscreen API, Anti-Cheat Tab Monitor (`visibilitychange`), Automated Test Runner, 0-100 Proficiency Evaluation |
 | **Career & ATS Engine** | Harvard Vector PDF Generator, JD ATS Keyword Matcher, Google XYZ Bullet Generator |
