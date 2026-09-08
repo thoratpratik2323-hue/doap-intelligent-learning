@@ -13,11 +13,8 @@ import {
   Folder, 
   Trophy, 
   User, 
-  Settings, 
   ChevronLeft,
   ChevronRight,
-  LogIn,
-  LogOut,
   Sun,
   Moon,
   Radio,
@@ -26,7 +23,6 @@ import {
 } from 'lucide-react';
 import { NAVIGATION_ITEMS } from '../../data/mockData';
 import { useTheme } from '../../context/ThemeContext';
-import { useAuth } from '../../context/AuthContext';
 
 const ICON_MAP = {
   Home: Home,
@@ -54,12 +50,8 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
     setIsSidebarCollapsed, 
     isSidebarHidden,
     setIsSidebarHidden,
-    setIsSettingsOpen,
-    isDarkMode,
-    toggleThemeMode
+    isDarkMode
   } = useTheme();
-
-  const { user, signOut, openAuthModal, isDevBypass } = useAuth();
 
   const handleNavClick = (path) => {
     navigateTo(path);
@@ -165,41 +157,6 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
             </button>
           );
         })}
-      </div>
-
-      {/* Sidebar Footer */}
-      <div className="p-3 border-t space-y-1" style={{ borderColor: 'var(--doap-border)' }}>
-        {user ? (
-          <button
-            onClick={signOut}
-            className="w-full flex items-center gap-3.5 px-3.5 py-2 rounded-2xl transition-all text-xs font-semibold group cursor-pointer border-0 outline-none hover:opacity-80"
-            style={{ color: 'var(--doap-text-sec)' }}
-            title="Sign Out"
-          >
-            <LogOut size={17} className="shrink-0" />
-            {!isSidebarCollapsed && <span>Sign Out</span>}
-          </button>
-        ) : (
-          <button
-            onClick={() => openAuthModal('login')}
-            className="w-full flex items-center gap-3.5 px-3.5 py-2 rounded-2xl transition-all text-xs font-semibold group cursor-pointer border-0 outline-none hover:opacity-80"
-            style={{ color: 'var(--doap-text-prim)' }}
-            title="Sign In"
-          >
-            <LogIn size={17} className="shrink-0" />
-            {!isSidebarCollapsed && <span>Sign In</span>}
-          </button>
-        )}
-
-
-        <button
-          onClick={() => setIsSettingsOpen(true)}
-          className="w-full flex items-center gap-3.5 px-3.5 py-2 rounded-2xl transition-all text-xs font-semibold group cursor-pointer border-0 outline-none hover:opacity-80"
-          style={{ color: 'var(--doap-text-sec)' }}
-        >
-          <Settings size={17} className="shrink-0" />
-          {!isSidebarCollapsed && <span>Settings</span>}
-        </button>
       </div>
     </aside>
   );

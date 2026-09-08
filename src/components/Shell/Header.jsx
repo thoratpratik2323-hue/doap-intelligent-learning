@@ -1,12 +1,41 @@
-import React from 'react';
-import { Menu, Sun, Moon, Monitor, PanelLeftOpen } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Menu, Sun, Moon, Monitor, PanelLeftOpen, MoreVertical, Settings, LogOut, LogIn } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { NAVIGATION_ITEMS } from '../../data/mockData';
 
 export const Header = ({ onOpenMobileSidebar }) => {
-  const { currentPath, navigateTo, profile, isDarkMode, settings, appearance, updatePersonalization, updateAppearance, isSidebarHidden, setIsSidebarHidden } = useTheme();
-  const { user, openAuthModal } = useAuth();
+  const { 
+    currentPath, 
+    navigateTo, 
+    profile, 
+    isDarkMode, 
+    settings, 
+    appearance, 
+    updatePersonalization, 
+    updateAppearance, 
+    isSidebarHidden, 
+    setIsSidebarHidden,
+    setIsSettingsOpen
+  } = useTheme();
+  const { user, openAuthModal, signOut } = useAuth();
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setIsMenuOpen(false);
+      }
+    };
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMenuOpen]);
 
   const activeSettings = settings || appearance || {};
   const currentItem = (NAVIGATION_ITEMS || []).find(i => i.path === currentPath) || { label: 'DOAP' };
@@ -100,6 +129,80 @@ export const Header = ({ onOpenMobileSidebar }) => {
           >
             AUTO
           </button>
+        </div>
+
+        {/* Three Dots Menu (Settings & Sign Out/In) */}
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer border hover:opacity-90 active:scale-95"
+            style={{
+              backgroundColor: isMenuOpen
+                ? (isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)')
+                : 'var(--surface-elevated, var(--doap-surface-sec))',
+              borderColor: 'var(--border, var(--doap-border))',
+              color: 'var(--text-primary, var(--doap-text-prim))'
+            }}
+            title="Options & Settings"
+            aria-label="Options"
+            aria-expanded={isMenuOpen}
+          >
+            <MoreVertical size={16} />
+          </button>
+
+          {isMenuOpen && (
+            <div 
+              className="absolute right-0 mt-2 w-48 rounded-2xl border p-1.5 shadow-2xl z-50 animate-scale-in"
+              style={{
+                backgroundColor: isDarkMode ? 'rgba(13, 17, 27, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+                borderColor: 'var(--border, var(--doap-border))',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                boxShadow: isDarkMode ? '0 16px 40px -10px rgba(0, 0, 0, 0.8)' : '0 16px 40px -10px rgba(0, 0, 0, 0.15)'
+              }}
+            >
+              {/* Settings Option */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  setIsSettingsOpen(true);
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer hover:bg-white/10 text-left border-0 outline-none"
+                style={{ color: 'var(--text-primary, var(--doap-text-prim))' }}
+              >
+                <Settings size={15} className="text-cyan-400 shrink-0" />
+                <span>Settings</span>
+              </button>
+
+              {/* Sign Out / Sign In Option */}
+              {user ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    signOut();
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer hover:bg-rose-500/10 text-rose-400 text-left border-0 outline-none mt-0.5"
+                >
+                  <LogOut size={15} className="shrink-0" />
+                  <span>Sign Out</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    openAuthModal('login');
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer hover:bg-cyan-500/10 text-cyan-400 text-left border-0 outline-none mt-0.5"
+                >
+                  <LogIn size={15} className="shrink-0" />
+                  <span>Sign In</span>
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {user ? (
