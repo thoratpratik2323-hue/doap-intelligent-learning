@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Sparkles, 
   Coffee, 
@@ -264,10 +265,10 @@ export const SmartCoachRecommendation = ({ className = '' }) => {
         </div>
       </div>
 
-      {/* 5-Min Ambient Chill / Pomodoro Break Modal */}
-      {isBreakModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in select-none">
-          <div className={`rounded-3xl max-w-md w-full p-6 sm:p-8 text-center space-y-6 shadow-2xl border relative ${
+      {/* 5-Min Ambient Chill / Pomodoro Break Modal (React Portal for viewport-level centering) */}
+      {isBreakModalOpen && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md select-none">
+          <div className={`rounded-3xl max-w-md w-full p-6 sm:p-8 text-center space-y-6 shadow-2xl border relative animate-scale-in ${
             isDarkMode ? 'bg-[#0e0e0e] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
           }`}>
             <button
@@ -345,7 +346,8 @@ export const SmartCoachRecommendation = ({ className = '' }) => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

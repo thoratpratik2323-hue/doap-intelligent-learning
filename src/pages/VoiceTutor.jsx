@@ -322,21 +322,42 @@ export const VoiceTutor = () => {
     isUserSpeakingRef.current = false;
     stopRecognition();
 
+    let didFinish = false;
+    const finishTranscribe = (cb) => {
+      if (didFinish) return;
+      didFinish = true;
+      if (thinkingWatchdog) clearTimeout(thinkingWatchdog);
+      if (cb) cb();
+    };
+
+    // Watchdog: If Groq or MediaRecorder hangs for > 5s, auto-resume listening
+    const thinkingWatchdog = setTimeout(() => {
+      finishTranscribe(() => {
+        if (callStateRef.current === 'thinking') {
+          console.warn('[VoiceTutor] Transcription timed out, recovering listening cycle');
+          resumeListeningCycle();
+        }
+      });
+    }, 5000);
+
     recorder.onstop = async () => {
       try {
-        const mimeType = getOptimalMimeType() || 'audio/webm';
+        const mimeType = recorder.mimeType || getOptimalMimeType() || 'audio/webm';
         const blob = new Blob(audioChunksRef.current, { type: mimeType });
         audioChunksRef.current = [];
 
         // STRICT GUARD: If state is no longer 'thinking' or call is inactive, abort immediately
         if (!isMountedRef.current || !isCallActiveRef.current || callStateRef.current !== 'thinking') {
+          finishTranscribe();
           return;
         }
 
-        if (!blob || blob.size < 300) {
-          if (callStateRef.current === 'thinking') {
-            resumeListeningCycle();
-          }
+        if (!blob || blob.size < 200) {
+          finishTranscribe(() => {
+            if (callStateRef.current === 'thinking') {
+              resumeListeningCycle();
+            }
+          });
           return;
         }
 
@@ -345,29 +366,43 @@ export const VoiceTutor = () => {
 
         // STRICT GUARD: Check again after network fetch
         if (!isMountedRef.current || !isCallActiveRef.current || callStateRef.current !== 'thinking') {
+          finishTranscribe();
           return;
         }
 
         if (text && text.trim()) {
-          setUserTranscript(text.trim());
-          handleUserSpeechComplete(text.trim());
-        } else if (callStateRef.current === 'thinking') {
-          resumeListeningCycle();
+          finishTranscribe(() => {
+            setUserTranscript(text.trim());
+            handleUserSpeechComplete(text.trim());
+          });
+        } else {
+          finishTranscribe(() => {
+            if (callStateRef.current === 'thinking') {
+              resumeListeningCycle();
+            }
+          });
         }
       } catch (err) {
         console.warn('[VoiceTutor] Whisper transcribe error:', err);
-        if (callStateRef.current === 'thinking') {
-          resumeListeningCycle();
-        }
+        finishTranscribe(() => {
+          if (callStateRef.current === 'thinking') {
+            resumeListeningCycle();
+          }
+        });
       }
     };
 
     try {
+      if (recorder.state === 'recording') {
+        try { recorder.requestData(); } catch(e) {}
+      }
       recorder.stop();
     } catch (e) {
-      if (callStateRef.current === 'thinking') {
-        resumeListeningCycle();
-      }
+      finishTranscribe(() => {
+        if (callStateRef.current === 'thinking') {
+          resumeListeningCycle();
+        }
+      });
     }
   };
 
@@ -405,7 +440,9 @@ export const VoiceTutor = () => {
         isRecordingRef.current = false;
       };
 
-      recorder.start(250);
+      const isIOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+      const timeslice = isIOS ? 1000 : 250;
+      recorder.start(timeslice);
       mediaRecorderRef.current = recorder;
     } catch (err) {
       console.warn('[MediaRecorder] Start failed:', err);
@@ -416,6 +453,20 @@ export const VoiceTutor = () => {
   const initUniversalMicrophone = async () => {
     setMicError('');
     hasFatalMicErrorRef.current = false;
+
+    // Guard: Remote devices must use HTTPS for Web Audio & Microphone permissions
+    if (typeof window !== 'undefined' && !window.isSecureContext && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      hasFatalMicErrorRef.current = true;
+      setMicError('Microphone requires HTTPS on mobile and remote devices. Please open the live app at: https://doap-1908.web.app');
+      return false;
+    }
+
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      hasFatalMicErrorRef.current = true;
+      setMicError('Microphone input is not supported in this browser. Please use Chrome, Edge, or Safari on HTTPS.');
+      return false;
+    }
+
     try {
       let stream = null;
       try {
@@ -423,7 +474,8 @@ export const VoiceTutor = () => {
           audio: { 
             echoCancellation: true, 
             noiseSuppression: true, 
-            autoGainControl: true 
+            autoGainControl: true,
+            channelCount: 1
           } 
         });
       } catch (err1) {
@@ -445,6 +497,12 @@ export const VoiceTutor = () => {
         }
         const audioCtx = new AudioCtx();
         audioContextRef.current = audioCtx;
+
+        // Auto-resume AudioContext on mobile where it initializes in suspended state
+        if (audioCtx.state === 'suspended') {
+          await audioCtx.resume().catch(() => {});
+        }
+
         const source = audioCtx.createMediaStreamSource(stream);
         const analyser = audioCtx.createAnalyser();
         analyser.fftSize = 256;
@@ -461,6 +519,12 @@ export const VoiceTutor = () => {
 
         const checkAudioVolume = () => {
           if (!isMountedRef.current || !mediaStreamRef.current) return;
+
+          // Keep audio context awake on mobile
+          if (audioCtx.state === 'suspended') {
+            audioCtx.resume().catch(() => {});
+          }
+
           analyser.getByteFrequencyData(dataArray);
 
           let sum = 0;
@@ -486,13 +550,13 @@ export const VoiceTutor = () => {
           }
 
           const isMobile = isMobileDevice();
-          // Adaptive noise floor tracking: mobile mics usually have higher gain/AGC
+          // Adaptive noise floor tracking: calibrated for mobile and desktop
           if (avg < 25) {
-            noiseFloorRef.current = Math.max(2, Math.min(25, noiseFloorRef.current * 0.96 + avg * 0.04));
+            noiseFloorRef.current = Math.max(1.5, Math.min(20, noiseFloorRef.current * 0.96 + avg * 0.04));
           }
-          // Dynamic threshold sensitive to real-world microphones (normal speech avg ~5-20)
-          const minThreshold = isMobile ? 8 : 4;
-          const speechThreshold = Math.max(minThreshold, noiseFloorRef.current + (isMobile ? 4 : 2));
+          // Dynamically calibrated threshold: sensitive to both mobile and desktop mics
+          const minThreshold = isMobile ? 3.0 : 3.5;
+          const speechThreshold = Math.max(minThreshold, noiseFloorRef.current + (isMobile ? 2.5 : 2.0));
 
           if (avg > speechThreshold) {
             if (!isUserSpeakingRef.current) {
@@ -506,8 +570,8 @@ export const VoiceTutor = () => {
             }
           } else if (isUserSpeakingRef.current) {
             if (!vadSilenceTimeoutRef.current) {
-              const silenceWait = isMobile ? 950 : 850;
-              const minSpeechDuration = isMobile ? 220 : 160;
+              const silenceWait = isMobile ? 850 : 800;
+              const minSpeechDuration = isMobile ? 120 : 150;
               vadSilenceTimeoutRef.current = setTimeout(() => {
                 vadSilenceTimeoutRef.current = null;
                 const speechDuration = Date.now() - speechStartTimestampRef.current;
@@ -516,8 +580,8 @@ export const VoiceTutor = () => {
 
                 if (speechDuration >= minSpeechDuration && callStateRef.current === 'listening' && !isProcessingSpeechRef.current) {
                   finalizeAndTranscribeWithWhisper();
-                } else if (speechDuration >= 100 && callStateRef.current === 'listening' && !isProcessingSpeechRef.current) {
-                  // If user spoke even a single word, still finalize rather than discard
+                } else if (speechDuration >= 80 && callStateRef.current === 'listening' && !isProcessingSpeechRef.current) {
+                  // If user spoke even a short word, still finalize rather than discard
                   finalizeAndTranscribeWithWhisper();
                 } else {
                   audioChunksRef.current = [];
@@ -570,7 +634,7 @@ export const VoiceTutor = () => {
       const rec = new SpeechRec();
       rec.continuous = true;
       rec.interimResults = true;
-      rec.lang = (typeof navigator !== 'undefined' && navigator.language) || 'en-IN';
+      rec.lang = 'en-IN';
 
       rec.onresult = (e) => {
         if (callStateRef.current !== 'listening' || isProcessingSpeechRef.current) return;
@@ -589,7 +653,7 @@ export const VoiceTutor = () => {
             clearTimeout(chromeSpeechTimerRef.current);
           }
 
-          // Conversational pause: 1100ms so user has time to finish their sentence naturally
+          // Conversational pause: 1000ms so user has time to finish their sentence naturally
           chromeSpeechTimerRef.current = setTimeout(() => {
             if (callStateRef.current === 'listening' && clean.length > 0 && !isProcessingSpeechRef.current) {
               isProcessingSpeechRef.current = true;
@@ -599,7 +663,7 @@ export const VoiceTutor = () => {
               stopUniversalRecorder();
               handleUserSpeechComplete(clean);
             }
-          }, 1100);
+          }, 1000);
         }
       };
 
@@ -609,8 +673,14 @@ export const VoiceTutor = () => {
         }
         console.warn('[SpeechRec] Status:', e.error);
         if (e.error === 'not-allowed') {
-          hasFatalMicErrorRef.current = true;
-          setMicError('Microphone permission blocked. Click the lock/mic icon in your address bar to allow mic access.');
+          // Only treat as fatal if mediaStream is ALSO inactive.
+          // Safari/Brave/iOS often flags not-allowed on Web Speech API while getUserMedia works flawlessly.
+          if (!mediaStreamRef.current || !mediaStreamRef.current.active) {
+            hasFatalMicErrorRef.current = true;
+            setMicError('Microphone permission blocked. Click the lock/mic icon in your address bar to allow mic access.');
+          } else {
+            console.log('[SpeechRec] Browser restricted Web Speech API, seamlessly relying on Groq Whisper VAD');
+          }
         } else if (e.error === 'audio-capture') {
           console.warn('[SpeechRec] Audio capture glitch, relying on MediaRecorder VAD');
         } else if (e.error === 'network') {
@@ -847,10 +917,13 @@ export const VoiceTutor = () => {
       }, 200);
     };
 
-    // Safety watchdog timer (120s) so long explanations are never cut off prematurely
+    // Dynamic safety watchdog timer based on word count (min 6s, max 30s) so speech is never frozen
+    const wordCount = (text || '').trim().split(/\s+/).length;
+    const dynamicTimeout = Math.max(6000, Math.min(30000, wordCount * 450 + 4000));
     speechWatchdogTimerRef.current = setTimeout(() => {
+      console.warn('[VoiceTutor] Speech watchdog timer triggered after', dynamicTimeout, 'ms, recovering');
       safeComplete();
-    }, 120000);
+    }, dynamicTimeout);
 
     try {
       await speakElevenLabs(
@@ -985,16 +1058,6 @@ export const VoiceTutor = () => {
       {/* 1. Sleek Modern Header Bar */}
       <div className="flex items-center justify-between z-20 pb-3 border-b border-white/10 gap-2">
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Voice Tutor Sidebar Toggle Button */}
-          <button
-            onClick={() => setIsSidebarHidden(prev => !prev)}
-            className="px-2.5 py-1.5 rounded-xl text-xs font-medium border border-white/15 bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
-            title={isSidebarHidden ? "Show Navigation Sidebar (Ctrl+B)" : "Hide Navigation Sidebar for Full Immersion (Ctrl+B)"}
-          >
-            {isSidebarHidden ? <PanelLeftOpen size={14} className="text-cyan-400" /> : <PanelLeftClose size={14} className="text-neutral-400" />}
-            <span className="hidden md:inline font-mono text-[11px]">{isSidebarHidden ? "Show Menu" : "Hide Menu"}</span>
-          </button>
-
           <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs sm:text-sm font-bold tracking-wide shadow-sm">
             <span className={`w-2.5 h-2.5 rounded-full bg-cyan-400 ${isCallActive ? "animate-ping" : ""}`} />
             <span>DOAP AI</span>
@@ -1202,15 +1265,30 @@ export const VoiceTutor = () => {
                 </p>
               </div>
 
-              {callState === 'listening' && isUserSpeaking && (
+              {callState === 'listening' && (
                 <button
                   type="button"
-                  onClick={() => finalizeAndTranscribeWithWhisper()}
-                  className="px-3 py-1 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[11px] font-mono flex items-center gap-1.5 cursor-pointer shadow-lg animate-pulse transition-all"
+                  onClick={() => {
+                    const prompt = (userTranscript || lastSpokenTextRef.current || '').trim();
+                    if (prompt) {
+                      isProcessingSpeechRef.current = true;
+                      updateCallState('thinking');
+                      stopRecognition();
+                      stopUniversalRecorder();
+                      handleUserSpeechComplete(prompt);
+                    } else {
+                      finalizeAndTranscribeWithWhisper();
+                    }
+                  }}
+                  className={`px-3.5 py-1.5 rounded-full border text-[11px] font-mono flex items-center gap-1.5 cursor-pointer shadow-lg transition-all ${
+                    isUserSpeaking 
+                      ? 'bg-emerald-500/25 hover:bg-emerald-500/35 text-emerald-300 border-emerald-500/50 animate-pulse' 
+                      : 'bg-white/10 hover:bg-white/15 text-neutral-300 border-white/20'
+                  }`}
                   title="Done speaking? Tap to send immediately"
                 >
-                  <Check size={12} />
-                  <span>Done Speaking • Tap to Send</span>
+                  <Check size={12} className={isUserSpeaking ? 'text-emerald-400' : 'text-cyan-400'} />
+                  <span>{isUserSpeaking ? 'Done Speaking • Tap to Send' : 'Tap When Done Speaking'}</span>
                 </button>
               )}
             </div>
@@ -1444,7 +1522,7 @@ export const VoiceTutor = () => {
                     <div className="flex items-center gap-2 mt-2 text-[10px] font-mono text-neutral-500">
                       <span className="text-emerald-400 font-medium">ElevenLabs Studio Voice</span>
                       <span>•</span>
-                      <span>DOAP 120B Reasoning</span>
+                      <span>DOAP Thinking Engine</span>
                     </div>
                   </div>
                 ) : (

@@ -43,8 +43,10 @@ Created for the landmark **"Build Sanjivani's Own Large Language Model — Build
 
 ## 📖 Table of Contents
 - [✨ Key Highlights](#-key-highlights)
+- [🟩 HackerRank Interview Preparation Kit & Placement Suite](#-hackerrank-interview-preparation-kit--placement-suite)
 - [🧠 Brain Vault (Visual 8-Layer Memory Inspector)](#-brain-vault-visual-8-layer-memory-inspector)
 - [🎙️ Real-Time Voice AI Tutor with Live I/O Console (`IO`)](#️-real-time-voice-ai-tutor-with-live-io-console-io)
+- [📱 Mobile Speech STT & Floating Widgets Stability](#-mobile-speech-stt--floating-widgets-stability)
 - [🛡️ Proctored Fullscreen Coding Assessment & Proficiency Engine](#️-proctored-fullscreen-coding-assessment--proficiency-engine)
 - [🧠 Cognitive Self-Thinking Super-Brain (`/ai-tutor`)](#-cognitive-self-thinking-super-brain-ai-tutor)
 - [🎯 Job Description (JD) ATS Matcher & Resume Optimizer](#-job-description-jd-ats-matcher--resume-optimizer)
@@ -63,11 +65,12 @@ Created for the landmark **"Build Sanjivani's Own Large Language Model — Build
 ## ✨ Key Highlights
 
 ```
- 🧠 Groq 120B Super-Brain     │ ⚡ Sub-150ms Inference (GPT-OSS 120B Flagship & Qwen 27B)
- 🔬 Deep Self-Thinking        │ 🧩 DeepSeek-R1 / o1 Style <think> Chain-of-Thought Reflection
- 🎙️ Studio Voice AI           │ 🔊 ElevenLabs Charon Turbo (Zero Drift, Sub-Second Latency)
- 🖥️ Live I/O Console (IO)     │ ⚡ Real-Time Voice Input, Output & Syntax-Highlighted Code Drawer
- 🧠 Visual Brain Vault (8L)   │ 🔍 Interactive Knowledge Graph, Friction Points & LLM Context Engine
+ 🧠 DOAP Thinking 120B Brain  │ ⚡ Deep Cognitive Self-Thinking & Sub-150ms Groq LPU Inference
+ 🟩 HackerRank Placement Track│ 🎯 20 Iconic Interview Prep Kit & Problem Solving Cert Challenges
+ 🌐 Multi-Platform Filtering  │ 🔍 1-Click Switch: All (167+), HackerRank, LeetCode & Blind 75
+ 📜 HackerRank Cert Mock Exam │ ⏱️ Timed Problem Solving Assessment in /assessments
+ 🎙️ Studio Voice AI + Live IO │ 🔊 ElevenLabs Charon Turbo + Groq Whisper + Mobile STT Fallback
+ 🧠 Visual Brain Vault (8L)   │ 🔍 Interactive Knowledge Graph, Friction Points & Context Engine
  🛡️ Proctored Fullscreen Exam │ 🔒 Strict Native Fullscreen, Anti-Cheat Tab Lock & Violation Blocker
  📊 Student Proficiency Score │ 🎓 0-100 Verified Metric (Correctness, Speed, Autonomy & Integrity)
  📌 Top-Mounted Problem Card  │ 📋 Prominent Statements, Benchmarks, Constraints & Examples on Top
@@ -79,6 +82,43 @@ Created for the landmark **"Build Sanjivani's Own Large Language Model — Build
  📄 Harvard ATS Resume Studio │ 📥 1-Click Vector PDF Export (100/100 ATS Pass Rate)
  ☁️ Multi-Device Cloud Sync   │ 🔄 Real-Time Firestore Persistence & Fast Multi-CDN Hosting
 ```
+
+## 🟩 HackerRank Interview Preparation Kit & Placement Suite
+
+DOAP now natively integrates **20 of the most iconic, high-yield challenges** from HackerRank's acclaimed **Interview Preparation Kit** and **Problem Solving Certification** curricula ([`src/data/dsa/hackerRankProblems.js`](file:///src/data/dsa/hackerRankProblems.js)):
+
+* **Platform Filter Pill Selector**:
+  * 🌐 **All Platforms**: Comprehensive access to all 167+ interactive challenges.
+  * 🟩 **HackerRank**: 20 specialized challenges mapped directly to tech campus placements and certification tests.
+  * 🟧 **LeetCode**: 147 classic algorithmic challenges across all 15 DSA domains.
+  * 🔥 **Blind 75**: Curated essential 75 high-frequency problems.
+* **Featured HackerRank Challenges**:
+  * *Sales by Match (Sock Merchant)* — O(N) Hash Map frequency pairing.
+  * *Counting Valleys* — Sea-level simulation & invariant tracking.
+  * *Jumping on the Clouds* & *Repeated String* — Greedy & modular arithmetic.
+  * *2D Array - DS (Hourglass Sum)* & *Left Rotation* — Matrix & cyclic array manipulations.
+  * *New Year Chaos* & *Minimum Swaps 2* — Permutations & cycle detection.
+  * *Two Strings*, *Ransom Note* & *Sherlock and Anagrams* — String canonical hashing & frequency maps.
+  * *Balanced Brackets* — LIFO stack evaluation.
+  * *Max Array Sum* & *Common Child* — Non-adjacent DP & Longest Common Subsequence (LCS).
+  * *Binary Tree Height* & *BST Lowest Common Ancestor (LCA)* — Tree traversals.
+* **Automated Multi-Language In-Browser Testing**:
+  * Instant starter templates in **JavaScript (ES6)**, **Python 3**, **C++ (GCC)**, and **Java**.
+  * Isolated Web Worker test execution with hard 3.0s timeout and self-healing DOAP AI Neural Code Simulation Engine.
+* **HackerRank Problem Solving Certification Mock (`/assessments`)**:
+  * Dedicated 6-question timed mock assessment testing core algorithmic principles, DP state transitions, and complexity invariants required to pass HackerRank's official skill certification tests.
+
+---
+
+## 📱 Mobile Speech STT & Floating Widgets Stability
+
+* **Cross-Browser Mobile Speech Fallback**:
+  * [`src/hooks/useSpeechRecognition.js`](file:///src/hooks/useSpeechRecognition.js) automatically pairs the Web Speech API with a resilient Web Audio API `MediaRecorder` pipeline.
+  * Seamlessly falls back to Groq Whisper Large v3 Turbo transcription when mobile browsers (such as Android Chrome or iOS Safari) restrict native speech recognition.
+* **Dismissible Assessment Gateway**:
+  * Fixed backdrop click and `ESC` key handlers on coding assessment modals so users can freely cancel or exit dialogs without being locked in.
+* **Responsive Fixed Floating Widgets**:
+  * Standardized z-index layers (`z-40` to `z-50`) across Pomodoro Break Timers, Floating Audio HUDs, and Bottom Drawers, preventing overlap and clipping on mobile viewports.
 
 ---
 
@@ -274,7 +314,9 @@ doap-intelligent-learning/
 │   │   ├── 📁 Shell/              # Header, Sidebar (with Brain Vault link), AmbientBackground
 │   │   └── MarkdownRenderer.jsx   # Deep-thinking reasoning accordion & code formatter
 │   ├── 📁 context/                # AuthContext (Firestore sync) & ThemeContext (Brain Vault state)
-│   ├── 📁 data/                   # 10 comprehensive DSA problems with benchmarks & test suites
+│   ├── 📁 data/                   # 167+ DSA challenges & Knowledge Base
+│   │   ├── hackerRankProblems.js  # 20 HackerRank Interview Preparation Kit challenges & test suites
+│   │   └── dsaKnowledgeData.js    # 147 LeetCode problems, 105 Topic Guides & 315 Concept Quizzes
 │   ├── 📁 hooks/                  # Camera, FaceDetection, Proctoring, SpeechRecognition
 │   ├── 📁 lib/                    # Firebase client initialization
 │   ├── 📁 pages/                  # Main application views

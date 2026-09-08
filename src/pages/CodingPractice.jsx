@@ -50,6 +50,7 @@ import {
   DSA_QUIZZES, 
   DSA_KNOWLEDGE_BASE 
 } from '../data/dsa/dsaKnowledgeData';
+import { HACKERRANK_PROBLEMS } from '../data/dsa/hackerRankProblems';
 
 const PROBLEM_DEFINITIONS = [
   {
@@ -394,7 +395,7 @@ const PROBLEM_DEFINITIONS = [
   }
 ];
 
-export const ALL_PROBLEMS = [...PROBLEM_DEFINITIONS, ...DSA_PROBLEMS];
+export const ALL_PROBLEMS = [...PROBLEM_DEFINITIONS, ...DSA_PROBLEMS, ...HACKERRANK_PROBLEMS];
 
 function deepEqual(a, b) {
   if (a === b) return true;
@@ -488,6 +489,7 @@ export const CodingPractice = () => {
 
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
+  const [selectedPlatform, setSelectedPlatform] = useState('All');
   
   // View Switcher & Search States for Complete DSA Integration
   const [activePracticeTab, setActivePracticeTab] = useState('problems'); // 'problems' | 'knowledge' | 'quizzes'
@@ -694,17 +696,24 @@ Act as my Socratic AI Tutor. Do NOT write the entire solved code. Instead, analy
   ];
 
   const difficulties = ["All", "Easy", "Medium", "Hard"];
+  const platforms = ["All", "HackerRank", "LeetCode", "Blind 75"];
 
   const filteredProblems = ALL_PROBLEMS.filter(p => {
     const matchCat = selectedCategory === 'All' || p.category === selectedCategory;
     const matchDiff = selectedDifficulty === 'All' || p.difficulty === selectedDifficulty;
+    const matchPlatform = selectedPlatform === 'All' ||
+      (selectedPlatform === 'HackerRank' && p.platform === 'HackerRank') ||
+      (selectedPlatform === 'LeetCode' && p.platform !== 'HackerRank') ||
+      (selectedPlatform === 'Blind 75' && (p.isBlind75 || (p.id <= 75 && p.platform !== 'HackerRank')));
     const q = problemSearchQuery.trim().toLowerCase();
     const matchQuery = !q || 
       (p.title && p.title.toLowerCase().includes(q)) ||
       (p.pattern && p.pattern.toLowerCase().includes(q)) ||
       (p.category && p.category.toLowerCase().includes(q)) ||
+      (p.platform && p.platform.toLowerCase().includes(q)) ||
+      (p.track && p.track.toLowerCase().includes(q)) ||
       (p.description && p.description.toLowerCase().includes(q));
-    return matchCat && matchDiff && matchQuery;
+    return matchCat && matchDiff && matchPlatform && matchQuery;
   });
 
   const getLanguageStarterCode = (prob, lang) => {
@@ -1393,35 +1402,6 @@ Evaluate this code strictly:
         }`}>Sharpen problem solving with real-time in-browser automated test suites</p>
       </div>
 
-      {/* Company Prep LeetCode Archive Cross-Link Banner */}
-      <div 
-        onClick={() => navigateTo('/company-prep')}
-        className="p-4 md:p-5 rounded-2xl border transition-all cursor-pointer group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-emerald-500/10 hover:from-blue-500/20 hover:to-cyan-500/20 border-cyan-500/30 shadow-lg shadow-cyan-500/5 hover:border-cyan-500/60"
-      >
-        <div className="flex items-center gap-3.5">
-          <div className="p-2.5 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 group-hover:scale-110 transition-transform shrink-0">
-            <Building2 size={22} />
-          </div>
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-sm md:text-base font-bold text-cyan-300 group-hover:text-cyan-200">
-                🏢 Looking for Company-Specific Questions?
-              </h3>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold">
-                8,600+ LEETCODE QUESTIONS
-              </span>
-            </div>
-            <p className="text-xs text-neutral-400 leading-relaxed">
-              Explore authentic interview questions asked by <strong>TCS, Infosys, Accenture, Cognizant, Google, Amazon, Microsoft, Apple & Meta</strong> on the Company Prep Dashboard.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-cyan-400 group-hover:text-cyan-300 shrink-0 self-end sm:self-center">
-          <span>Open Company Archive</span>
-          <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-        </div>
-      </div>
-
       {/* DSA Suite Navigation Switcher */}
       <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-neutral-900/80 border border-neutral-800 backdrop-blur-md">
         <button
@@ -1474,7 +1454,7 @@ Evaluate this code strictly:
               aria-label="Search DSA challenges"
               value={problemSearchQuery}
               onChange={(e) => setProblemSearchQuery(e.target.value)}
-              placeholder="Search 147 DSA challenges by title, pattern (e.g. two pointers, sliding window), or topic..."
+              placeholder={`Search ${ALL_PROBLEMS.length}+ DSA challenges across LeetCode & HackerRank by title, pattern, or track...`}
               className={`w-full pl-10 pr-10 py-2.5 rounded-2xl border text-xs sm:text-sm transition-all focus:outline-none ${
                 isDarkMode 
                   ? 'bg-[#111111] border-neutral-800 text-white placeholder-neutral-500 focus:border-cyan-500/50' 
@@ -1489,6 +1469,23 @@ Evaluate this code strictly:
                 <X size={14} />
               </button>
             )}
+          </div>
+
+          {/* Platform Selector */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            {platforms.map((plat) => (
+              <button
+                key={plat}
+                onClick={() => setSelectedPlatform(plat)}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border ${
+                  selectedPlatform === plat 
+                    ? (isDarkMode ? 'bg-cyan-400 text-black border-cyan-400 font-bold shadow-sm' : 'bg-black text-white border-black font-bold shadow-sm') 
+                    : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white hover:border-neutral-700' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
+                }`}
+              >
+                {plat === 'HackerRank' ? '🟩 HackerRank' : plat === 'LeetCode' ? '🟧 LeetCode' : plat === 'Blind 75' ? '🔥 Blind 75' : '🌐 All Platforms'}
+              </button>
+            ))}
           </div>
 
           {/* Filter Row: Categories + Difficulty */}
@@ -1568,6 +1565,16 @@ Evaluate this code strictly:
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs font-mono font-bold text-neutral-500">#{prob.id}</span>
                         <h3 className="text-sm font-bold group-hover:text-cyan-300 transition-colors">{prob.title}</h3>
+                        {prob.platform === 'HackerRank' && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-emerald-500/40 text-emerald-400 bg-emerald-950/50 font-bold">
+                            🟩 HackerRank
+                          </span>
+                        )}
+                        {prob.track && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-emerald-500/30 text-emerald-300 bg-emerald-500/10">
+                            📜 {prob.track}
+                          </span>
+                        )}
                         <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
                           prob.difficulty === 'Easy'
                             ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
@@ -2600,6 +2607,9 @@ Evaluate this code strictly:
                     <span>{code.split('\n').length} lines</span>
                   </div>
                   <textarea
+                    id="proctored-exam-code-editor"
+                    name="proctoredCode"
+                    aria-label="Proctored assessment code editor"
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                     className="flex-1 w-full p-3.5 text-xs leading-relaxed focus:outline-none font-mono resize-none bg-transparent text-neutral-100 overflow-y-auto scrollbar-thin select-text"
@@ -3005,6 +3015,9 @@ Evaluate this code strictly:
                 </div>
 
                 <textarea
+                  id="casual-sandbox-code-editor"
+                  name="sandboxCode"
+                  aria-label="Casual sandbox code editor"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   rows={11}

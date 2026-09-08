@@ -192,7 +192,7 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'signup' && (
               <div className="space-y-1">
-                <label className={`block text-[11px] font-mono uppercase tracking-wider ml-1 ${
+                <label htmlFor="auth-fullname" className={`block text-[11px] font-mono uppercase tracking-wider ml-1 ${
                   isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
                 }`}>
                   Full Name
@@ -200,6 +200,9 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
                 <div className="relative">
                   <User size={18} className={`absolute left-4 top-3.5 ${isDarkMode ? 'text-neutral-500' : 'text-neutral-400'}`} />
                   <input 
+                    id="auth-fullname"
+                    name="fullName"
+                    autoComplete="name"
                     type="text"
                     required={!isDevBypass}
                     disabled={isSubmitting}
@@ -217,7 +220,7 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
             )}
 
             <div className="space-y-1">
-              <label className={`block text-[11px] font-mono uppercase tracking-wider ml-1 ${
+              <label htmlFor="auth-email" className={`block text-[11px] font-mono uppercase tracking-wider ml-1 ${
                 isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
               }`}>
                 Email Address
@@ -225,6 +228,9 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
               <div className="relative">
                 <Mail size={18} className={`absolute left-4 top-3.5 ${isDarkMode ? 'text-neutral-500' : 'text-neutral-400'}`} />
                 <input 
+                  id="auth-email"
+                  name="email"
+                  autoComplete="email"
                   type="email"
                   required={!isDevBypass}
                   disabled={isSubmitting}
@@ -242,7 +248,7 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
 
             {mode !== 'reset' && (
               <div className="space-y-1">
-                <label className={`block text-[11px] font-mono uppercase tracking-wider ml-1 ${
+                <label htmlFor="auth-password" className={`block text-[11px] font-mono uppercase tracking-wider ml-1 ${
                   isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
                 }`}>
                   Password
@@ -250,6 +256,9 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
                 <div className="relative">
                   <Lock size={18} className={`absolute left-4 top-3.5 ${isDarkMode ? 'text-neutral-500' : 'text-neutral-400'}`} />
                   <input 
+                    id="auth-password"
+                    name="password"
+                    autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
                     type={showPassword ? 'text' : 'password'}
                     required={!isDevBypass}
                     disabled={isSubmitting}
@@ -264,6 +273,7 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
                   />
                   <button
                     type="button"
+                    aria-label="Toggle password visibility"
                     disabled={isSubmitting}
                     onClick={() => setShowPassword(!showPassword)}
                     className={`absolute right-3.5 top-3.5 focus:outline-none disabled:opacity-50 transition-colors ${
@@ -278,7 +288,7 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
 
             {mode === 'signup' && (
               <div className="space-y-1">
-                <label className={`block text-[11px] font-mono uppercase tracking-wider ml-1 ${
+                <label htmlFor="auth-confirm-password" className={`block text-[11px] font-mono uppercase tracking-wider ml-1 ${
                   isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
                 }`}>
                   Confirm Password
@@ -286,6 +296,9 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
                 <div className="relative">
                   <Lock size={18} className={`absolute left-4 top-3.5 ${isDarkMode ? 'text-neutral-500' : 'text-neutral-400'}`} />
                   <input 
+                    id="auth-confirm-password"
+                    name="confirmPassword"
+                    autoComplete="new-password"
                     type={showConfirmPassword ? 'text' : 'password'}
                     required={!isDevBypass}
                     disabled={isSubmitting}
@@ -300,6 +313,7 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
                   />
                   <button
                     type="button"
+                    aria-label="Toggle confirm password visibility"
                     disabled={isSubmitting}
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className={`absolute right-3.5 top-3.5 focus:outline-none disabled:opacity-50 transition-colors ${

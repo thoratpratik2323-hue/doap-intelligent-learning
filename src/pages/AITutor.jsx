@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Plus, 
   Search, 
@@ -181,10 +182,10 @@ export const AITutor = () => {
   const handleMicClick = () => {
     if (!isListening) {
       setBaseInputText(inputText);
+      toggleListening();
     } else {
       stopListening();
     }
-    toggleListening();
   };
 
   const streamResponseText = (fullText, sessionId) => {
@@ -779,7 +780,7 @@ export const AITutor = () => {
                 }}
               >
                 <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                <span className="font-mono">AI Tutor 120B is thinking...</span>
+                <span className="font-mono">DOAP is thinking...</span>
               </div>
             </div>
           )}
@@ -917,10 +918,13 @@ export const AITutor = () => {
       )}
 
       {/* Key Modal */}
-      {showKeyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 animate-fade-in">
+      {showKeyModal && typeof document !== 'undefined' && createPortal(
+        <div 
+          onClick={(e) => { if (e.target === e.currentTarget) setShowKeyModal(false); }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in"
+        >
           <div 
-            className="w-full max-w-md rounded-3xl border p-6 space-y-4 shadow-2xl relative"
+            className="w-full max-w-md rounded-3xl border p-6 space-y-4 shadow-2xl relative my-auto"
             style={{
               backgroundColor: 'var(--doap-surface, #111111)',
               borderColor: 'var(--doap-border, #262626)'
@@ -940,16 +944,16 @@ export const AITutor = () => {
               </div>
               <div>
                 <h3 className="font-bold text-sm" style={{ color: 'var(--doap-text-prim)' }}>
-                  AI Tutor 120B Super-Brain Active
+                  DOAP Thinking Super-Brain Active
                 </h3>
                 <p className="text-xs" style={{ color: 'var(--doap-text-sec)' }}>
-                  Powered by Groq LPU (GPT-OSS 120B) & Flux Image AI
+                  Powered by DOAP High-Speed LPU & Flux Image AI
                 </p>
               </div>
             </div>
 
             <div className="p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 text-xs text-emerald-400">
-              ⚡ <strong>120 Billion Parameters Active:</strong> Sub-150ms instant universal reasoning, coding tutor, and live image generation.
+              ⚡ <strong>DOAP Thinking Active:</strong> Sub-150ms instant universal reasoning, coding mentor, and live visual generation.
             </div>
 
             <button
@@ -960,7 +964,8 @@ export const AITutor = () => {
               Done
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -134,24 +134,18 @@
 @keyframes pageFadeGlide {
   from { 
     opacity: 0; 
-    transform: translateY(3px) translateZ(0); 
+    transform: translateY(3px); 
   }
   to { 
     opacity: 1; 
-    transform: translateY(0) translateZ(0); 
+    transform: none; 
   }
 }
 .animate-page-transition {
   animation: pageFadeGlide 160ms cubic-bezier(.25,.8,.25,1);
-  will-change: opacity, transform;
-  transform: translateZ(0);
-  backface-visibility: hidden;
 }
 .animate-fade-in {
   animation: pageFadeGlide 150ms cubic-bezier(.25,.8,.25,1);
-  will-change: opacity, transform;
-  transform: translateZ(0);
-  backface-visibility: hidden;
 }
 
 main, .overflow-y-auto {

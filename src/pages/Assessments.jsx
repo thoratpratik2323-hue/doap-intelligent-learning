@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { FileCheck2, ArrowRight, X, CheckCircle2, Clock, Award, Play, Sparkles, BookOpen } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -309,6 +310,72 @@ const ASSESSMENT_QUIZZES = {
         correct: 0
       }
     ]
+  },
+  'hackerrank-cert': {
+    title: 'HackerRank Problem Solving Certification Mock',
+    category: 'Skill',
+    questions: [
+      {
+        q: "In HackerRank's 'Sales by Match' problem, given n socks with color numbers, what data structure yields the optimal O(n) solution?",
+        options: [
+          "Hash Map / Frequency Counter or Set to track pairs",
+          "Nested loops with O(n²) comparisons",
+          "Binary Search Tree with O(n log n) lookups",
+          "Matrix Transposition"
+        ],
+        correct: 0
+      },
+      {
+        q: "In 'Counting Valleys', a hiker steps U (up) and D (down). When exactly is a completed valley recorded?",
+        options: [
+          "When taking a 'U' step that brings current sea level back to 0 from -1",
+          "When taking a 'D' step from 0 to -1",
+          "Whenever the altitude is negative",
+          "At the highest peak"
+        ],
+        correct: 0
+      },
+      {
+        q: "For HackerRank's 'Sherlock and Anagrams', what is the fundamental technique to detect if two substrings are anagrams in linear time?",
+        options: [
+          "Sort each substring's characters or count character frequencies as a canonical hash key",
+          "Compare their lengths only",
+          "Check first and last characters",
+          "Calculate ASCII product"
+        ],
+        correct: 0
+      },
+      {
+        q: "In 'Balanced Brackets' ({[]}), which data structure is required to ensure brackets close in correct reverse chronological order?",
+        options: [
+          "LIFO Stack",
+          "FIFO Queue",
+          "Max Heap",
+          "Disjoint Set Union (DSU)"
+        ],
+        correct: 0
+      },
+      {
+        q: "In HackerRank's 'Max Array Sum' (non-adjacent subset sum), what is the dynamic programming state transition for dp[i]?",
+        options: [
+          "dp[i] = max(arr[i], dp[i-1], dp[i-2] + arr[i])",
+          "dp[i] = dp[i-1] + arr[i]",
+          "dp[i] = max(arr[i], arr[i-1])",
+          "dp[i] = dp[i-1] * arr[i]"
+        ],
+        correct: 0
+      },
+      {
+        q: "In 'Common Child' (longest string that can be formed from two strings without rearranging), which classical algorithmic pattern is this equivalent to?",
+        options: [
+          "Longest Common Subsequence (LCS) using 2D DP",
+          "Longest Increasing Subsequence (LIS)",
+          "Edit Distance (Levenshtein)",
+          "Knapsack 0/1"
+        ],
+        correct: 0
+      }
+    ]
   }
 };
 
@@ -377,7 +444,27 @@ export const Assessments = () => {
     setSelectedAnswers(prev => ({ ...prev, [currentQuestionIdx]: optionIdx }));
   };
 
+  const handleCloseQuiz = () => {
+    setActiveQuizKey(null);
+    setActiveQuizOverride(null);
+    setIsSubmitted(false);
+    setSelectedAnswers({});
+    setCurrentQuestionIdx(0);
+    setQuizScore(0);
+  };
+
   const activeQuiz = activeQuizOverride || (activeQuizKey ? ASSESSMENT_QUIZZES[activeQuizKey] : null);
+
+  React.useEffect(() => {
+    if (!activeQuiz) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        handleCloseQuiz();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeQuiz]);
 
   const handleSubmitQuiz = () => {
     const quiz = activeQuiz;
@@ -461,6 +548,40 @@ export const Assessments = () => {
                 >
                   <Play size={14} />
                   <span>Start DSA Master Exam</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Featured HackerRank Certification Mock */}
+            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
+              isDarkMode ? 'bg-[#111111] border-emerald-500/40 text-white' : 'bg-emerald-50/50 border-emerald-300 text-black'
+            }`}>
+              <div className="space-y-1.5">
+                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                  isDarkMode ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-400' : 'bg-emerald-100 border-emerald-300 text-emerald-800'
+                }`}>
+                  🟩 HACKERRANK CERTIFICATION
+                </span>
+                <h4 className="text-xs font-bold leading-snug">
+                  HackerRank Problem Solving Mock (Basic & Intermediate)
+                </h4>
+              </div>
+
+              <div className={`space-y-2 pt-2 border-t ${
+                isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
+              }`}>
+                <div className={`text-[11px] font-mono space-y-0.5 ${
+                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
+                }`}>
+                  <p>⏱ 6 Assessment Questions</p>
+                  <p>📊 Problem Solving Track</p>
+                </div>
+                <button 
+                  onClick={() => handleStartQuiz('hackerrank-cert')}
+                  className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer bg-emerald-500 hover:bg-emerald-400 text-black shadow-sm transition-all"
+                >
+                  <Play size={13} />
+                  <span>Start Mock Exam</span>
                 </button>
               </div>
             </div>
@@ -789,17 +910,20 @@ export const Assessments = () => {
       </div>
 
       {/* Interactive Quiz Runner Modal (100% Opaque & Crisp) */}
-      {activeQuiz && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-fade-in">
+      {activeQuiz && typeof document !== 'undefined' && createPortal(
+        <div 
+          onClick={(e) => { if (e.target === e.currentTarget) handleCloseQuiz(); }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto"
+        >
           <div 
-            className={`w-full max-w-2xl rounded-3xl border shadow-2xl overflow-hidden flex flex-col max-h-[92vh] ${
+            className={`w-full max-w-2xl rounded-3xl border shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto ${
               isDarkMode 
                 ? 'bg-[#0e1117] border-neutral-800 text-white shadow-black/80' 
                 : 'bg-white border-neutral-300 text-neutral-900 shadow-xl'
             }`}
           >
             {/* Modal Header */}
-            <div className={`px-6 py-4 border-b flex items-center justify-between ${
+            <div className={`px-6 py-4 border-b flex items-center justify-between shrink-0 ${
               isDarkMode ? 'bg-[#151922] border-neutral-800' : 'bg-neutral-50 border-neutral-200'
             }`}>
               <div>
@@ -807,14 +931,16 @@ export const Assessments = () => {
                 <h3 className="text-base sm:text-lg font-bold">{activeQuiz.title}</h3>
               </div>
               <button 
-                onClick={() => setActiveQuizKey(null)}
-                className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all cursor-pointer ${
+                onClick={handleCloseQuiz}
+                title="Close Assessment"
+                aria-label="Close Assessment"
+                className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all cursor-pointer ${
                   isDarkMode 
-                    ? 'bg-neutral-800/80 border-neutral-700 hover:bg-neutral-700 text-neutral-200' 
+                    ? 'bg-neutral-800/80 border-neutral-700 hover:bg-neutral-700 text-neutral-200 hover:text-white' 
                     : 'bg-neutral-100 border-neutral-300 hover:bg-neutral-200 text-neutral-700'
                 }`}
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
 
@@ -892,7 +1018,7 @@ export const Assessments = () => {
             </div>
 
             {/* Modal Footer Navigation */}
-            <div className={`px-6 py-4 border-t flex items-center justify-between gap-3 ${
+            <div className={`px-6 py-4 border-t flex items-center justify-between gap-3 shrink-0 ${
               isDarkMode ? 'bg-[#151922] border-neutral-800' : 'bg-neutral-50 border-neutral-200'
             }`}>
               {!isSubmitted ? (
@@ -923,7 +1049,7 @@ export const Assessments = () => {
                 </>
               ) : (
                 <button
-                  onClick={() => setActiveQuizKey(null)}
+                  onClick={handleCloseQuiz}
                   className="w-full py-3 rounded-xl text-xs font-bold cursor-pointer bg-cyan-500 hover:bg-cyan-400 text-black shadow-md transition-all"
                 >
                   Close & View Scorecard
@@ -931,7 +1057,8 @@ export const Assessments = () => {
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

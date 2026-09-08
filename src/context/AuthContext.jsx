@@ -411,8 +411,9 @@ export const AuthProvider = ({ children }) => {
       return next;
     });
 
-    // Save to Firestore Cloud Database if user is logged in
-    if (db && user && nextProfile) {
+    // Save to Firestore Cloud Database if real authenticated Firebase user
+    const isGuest = !user || user.isGuest || user.uid?.startsWith('guest_') || !firebaseAuth?.currentUser;
+    if (db && !isGuest && nextProfile) {
       try {
         await setDoc(doc(db, 'users', uid), nextProfile, { merge: true });
       } catch (err) {
@@ -450,7 +451,8 @@ export const AuthProvider = ({ children }) => {
       return next;
     });
 
-    if (db && user && nextProfile) {
+    const isGuest = !user || user.isGuest || user.uid?.startsWith('guest_') || !firebaseAuth?.currentUser;
+    if (db && !isGuest && nextProfile) {
       try {
         await setDoc(doc(db, 'users', uid), nextProfile, { merge: true });
       } catch (err) {

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Mail, Lock, User, LogIn, UserPlus, KeyRound, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -17,6 +18,15 @@ export const AuthModal = () => {
   } = useAuth();
 
   const { isDarkMode } = useTheme();
+
+  useEffect(() => {
+    if (!isAuthModalOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setIsAuthModalOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAuthModalOpen, setIsAuthModalOpen]);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -52,9 +62,15 @@ export const AuthModal = () => {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in select-none">
-      <div className={`rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl border transition-colors relative ${
+  if (!isAuthModalOpen) return null;
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div 
+      onClick={(e) => { if (e.target === e.currentTarget) setIsAuthModalOpen(false); }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in select-none overflow-y-auto"
+    >
+      <div className={`rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl border transition-colors relative my-auto ${
         isDarkMode ? 'bg-[#0a0a0a] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
       }`}>
         {/* Header */}
@@ -71,7 +87,7 @@ export const AuthModal = () => {
 
           <button 
             onClick={() => setIsAuthModalOpen(false)}
-            className={`p-2 rounded-full transition-colors ${
+            className={`p-2 rounded-full transition-colors cursor-pointer ${
               isDarkMode ? 'text-neutral-400 hover:text-white hover:bg-neutral-900' : 'text-neutral-500 hover:text-black hover:bg-neutral-100'
             }`}
           >
@@ -244,6 +260,7 @@ export const AuthModal = () => {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

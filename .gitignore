@@ -19,6 +19,7 @@ build/
 # ─── Vite / editor cache ─────────────────────────────────────
 .vite/
 *.local
+.firebase/
 
 # ─── OS / system files ───────────────────────────────────────
 .DS_Store

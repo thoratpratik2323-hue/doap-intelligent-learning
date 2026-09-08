@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { CheckCircle2, Circle, Clock, Sparkles, Plus, Trash2, X, Check } from 'lucide-react';
 import { SmartCoachRecommendation } from '../components/Common/SmartCoachRecommendation';
 import { useTheme } from '../context/ThemeContext';
@@ -327,15 +328,22 @@ export const StudyPlan = () => {
       </div>
 
       {/* Add Task Modal */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+      {isAddModalOpen && typeof document !== 'undefined' && createPortal(
+        <div 
+          onClick={(e) => { if (e.target === e.currentTarget) setIsAddModalOpen(false); }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in select-none overflow-y-auto"
+        >
           <div 
-            className="w-full max-w-md p-6 rounded-3xl border shadow-2xl space-y-4"
+            className="w-full max-w-md p-6 rounded-3xl border shadow-2xl space-y-4 my-auto"
             style={{ backgroundColor: 'var(--doap-surface, #111111)', borderColor: 'var(--doap-border, #333333)' }}
           >
             <div className="flex items-center justify-between border-b pb-3" style={{ borderColor: 'var(--doap-border)' }}>
               <h3 className="font-bold text-base" style={{ color: 'var(--doap-text-prim)' }}>Add New Study Task</h3>
-              <button onClick={() => setIsAddModalOpen(false)} className="p-1 rounded-full hover:opacity-80">
+              <button 
+                onClick={() => setIsAddModalOpen(false)} 
+                className="p-1 rounded-full hover:opacity-80 cursor-pointer"
+                style={{ color: 'var(--doap-text-sec)' }}
+              >
                 <X size={18} />
               </button>
             </div>
@@ -377,7 +385,7 @@ export const StudyPlan = () => {
                   <select
                     value={newTaskDuration}
                     onChange={(e) => setNewTaskDuration(e.target.value)}
-                    className="w-full p-3 rounded-xl border text-sm focus:outline-none"
+                    className="w-full p-3 rounded-xl border text-sm focus:outline-none cursor-pointer"
                     style={{ backgroundColor: 'var(--doap-bg, #000)', borderColor: 'var(--doap-border)', color: 'var(--doap-text-prim)' }}
                   >
                     <option value="15m">15 min</option>
@@ -400,7 +408,8 @@ export const StudyPlan = () => {
               </button>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

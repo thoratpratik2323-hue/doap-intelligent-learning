@@ -28,13 +28,26 @@ let isAudioCancelled = false;
 export function unlockAudioContext() {
   if (typeof window === 'undefined') return;
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
-  if (!AudioCtx) return;
-  if (!sharedAudioCtx) {
-    sharedAudioCtx = new AudioCtx();
+  if (AudioCtx) {
+    if (!sharedAudioCtx) {
+      sharedAudioCtx = new AudioCtx();
+    }
+    if (sharedAudioCtx.state === 'suspended') {
+      sharedAudioCtx.resume().catch(() => {});
+    }
   }
-  if (sharedAudioCtx.state === 'suspended') {
-    sharedAudioCtx.resume().catch(() => {});
-  }
+
+  // Prime HTMLAudioElement to satisfy iOS Safari & Chrome Android Autoplay Policy
+  try {
+    const silentAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
+    silentAudio.volume = 0.001;
+    const playPromise = silentAudio.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        silentAudio.pause();
+      }).catch(() => {});
+    }
+  } catch (e) {}
 }
 
 export function stopElevenLabsAudio() {

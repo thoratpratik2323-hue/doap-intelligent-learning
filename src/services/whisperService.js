@@ -16,14 +16,36 @@ export async function transcribeAudioWithGroq(audioBlob) {
     return '';
   }
 
-  const mime = (audioBlob.type || '').toLowerCase();
   let filename = 'audio.webm';
-  if (mime.includes('ogg')) {
-    filename = 'audio.ogg';
-  } else if (mime.includes('mp4') || mime.includes('m4a')) {
-    filename = 'audio.mp4';
-  } else if (mime.includes('wav')) {
-    filename = 'audio.wav';
+  const mime = (audioBlob.type || '').toLowerCase();
+
+  try {
+    const headerBuffer = await audioBlob.slice(0, 16).arrayBuffer();
+    const header = new Uint8Array(headerBuffer);
+    // Check ftyp magic bytes for MP4 / M4A / AAC (iOS Safari & WebKit)
+    if (header.length >= 8 && header[4] === 0x66 && header[5] === 0x74 && header[6] === 0x79 && header[7] === 0x70) {
+      filename = 'audio.mp4';
+    } else if (header.length >= 4 && header[0] === 0x4F && header[1] === 0x67 && header[2] === 0x67 && header[3] === 0x53) {
+      filename = 'audio.ogg';
+    } else if (header.length >= 4 && header[0] === 0x52 && header[1] === 0x49 && header[2] === 0x46 && header[3] === 0x46) {
+      filename = 'audio.wav';
+    } else if (header.length >= 4 && header[0] === 0x1A && header[1] === 0x45 && header[2] === 0xDF && header[3] === 0xA3) {
+      filename = 'audio.webm';
+    } else if (mime.includes('mp4') || mime.includes('m4a') || mime.includes('aac')) {
+      filename = 'audio.mp4';
+    } else if (mime.includes('ogg')) {
+      filename = 'audio.ogg';
+    } else if (mime.includes('wav')) {
+      filename = 'audio.wav';
+    }
+  } catch (e) {
+    if (mime.includes('mp4') || mime.includes('m4a') || mime.includes('aac')) {
+      filename = 'audio.mp4';
+    } else if (mime.includes('ogg')) {
+      filename = 'audio.ogg';
+    } else if (mime.includes('wav')) {
+      filename = 'audio.wav';
+    }
   }
 
   const keys = getGroqKeys();

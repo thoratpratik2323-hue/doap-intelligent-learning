@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Search, FileText, Video, BookOpen, ChevronRight, Download, Copy, Check, X, Clock, Sparkles } from 'lucide-react';
 import { RESOURCES_DATA } from '../data/mockData';
 import { useTheme } from '../context/ThemeContext';
@@ -194,17 +195,20 @@ export const Resources = () => {
       </div>
 
       {/* Interactive Resource Inspection & Download Modal */}
-      {activeResourceModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in select-none">
+      {activeResourceModal && typeof document !== 'undefined' && createPortal(
+        <div 
+          onClick={(e) => { if (e.target === e.currentTarget) setActiveResourceModal(null); }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in select-none overflow-y-auto"
+        >
           <div 
-            className={`w-full max-w-xl rounded-3xl border shadow-2xl overflow-hidden flex flex-col max-h-[90vh] ${
+            className={`w-full max-w-xl rounded-3xl border shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto ${
               isDarkMode 
                 ? 'bg-[#0c0f17] border-neutral-800 text-white shadow-black/90' 
                 : 'bg-white border-neutral-200 text-neutral-900 shadow-2xl'
             }`}
           >
             {/* Modal Header */}
-            <div className={`px-6 py-4 border-b flex items-center justify-between ${
+            <div className={`px-6 py-4 border-b flex items-center justify-between shrink-0 ${
               isDarkMode ? 'bg-[#121622] border-neutral-800' : 'bg-neutral-50 border-neutral-200'
             }`}>
               <div className="flex items-center gap-2.5">
@@ -292,7 +296,7 @@ export const Resources = () => {
             </div>
 
             {/* Modal Bottom Actions */}
-            <div className={`p-4 border-t flex flex-wrap items-center justify-between gap-3 ${
+            <div className={`p-4 border-t flex flex-wrap items-center justify-between gap-3 shrink-0 ${
               isDarkMode ? 'bg-[#0e121d] border-neutral-800' : 'bg-neutral-50 border-neutral-200'
             }`}>
               <button
@@ -318,7 +322,8 @@ export const Resources = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

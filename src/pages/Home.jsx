@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   MessageSquare, 
   BookOpen, 
@@ -14,7 +15,8 @@ import {
   CheckCircle2,
   AlertCircle,
   Check,
-  RotateCcw
+  RotateCcw,
+  Building2
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { memoryBrain } from '../services/memoryBrain';
@@ -302,6 +304,39 @@ export const Home = () => {
         </div>
       </div>
 
+      {/* Company Prep LeetCode Archive Cross-Link Banner */}
+      <div 
+        onClick={() => navigateTo('/company-prep')}
+        className={`p-4 md:p-5 rounded-3xl border transition-all cursor-pointer group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 max-w-2xl mx-auto shadow-lg hover:scale-[1.01] ${
+          isDarkMode
+            ? 'bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-emerald-500/10 hover:from-blue-500/20 hover:to-cyan-500/20 border-cyan-500/30 shadow-cyan-500/5 hover:border-cyan-500/60'
+            : 'bg-gradient-to-r from-blue-50 via-cyan-50 to-emerald-50 hover:from-blue-100 hover:to-cyan-100 border-cyan-300 shadow-cyan-500/10 hover:border-cyan-400'
+        }`}
+      >
+        <div className="flex items-center gap-3.5">
+          <div className="p-2.5 rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 group-hover:scale-110 transition-transform shrink-0">
+            <Building2 size={22} />
+          </div>
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className={`text-sm md:text-base font-bold ${isDarkMode ? 'text-cyan-300 group-hover:text-cyan-200' : 'text-cyan-900 group-hover:text-cyan-950'}`}>
+                🏢 Looking for Company-Specific Questions?
+              </h3>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 font-bold">
+                8,600+ LEETCODE QUESTIONS
+              </span>
+            </div>
+            <p className={`text-xs leading-relaxed ${isDarkMode ? 'text-neutral-400' : 'text-neutral-600'}`}>
+              Explore authentic interview questions asked by <strong>TCS, Infosys, Accenture, Cognizant, Google, Amazon, Microsoft, Apple & Meta</strong> on the Company Prep Dashboard.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-cyan-400 group-hover:text-cyan-300 shrink-0 self-end sm:self-center">
+          <span>Open Company Archive</span>
+          <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+        </div>
+      </div>
+
       {/* Main Action Card (Ask DOAP below cards) */}
       <div className="space-y-3 max-w-2xl mx-auto pt-2">
         {actions.map((act, index) => {
@@ -348,13 +383,13 @@ export const Home = () => {
       </div>
 
       {/* Choose DOAP Tutor Mode Modal (Text vs Voice) */}
-      {isTutorModalOpen && (
+      {isTutorModalOpen && typeof document !== 'undefined' && createPortal(
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto"
           onClick={() => setIsTutorModalOpen(false)}
         >
           <div 
-            className={`relative w-full max-w-lg rounded-3xl border p-6 sm:p-7 shadow-2xl transition-all animate-scale-in space-y-6 ${
+            className={`relative w-full max-w-lg rounded-3xl border p-6 sm:p-7 shadow-2xl transition-all animate-scale-in space-y-6 my-auto ${
               isDarkMode ? 'bg-[#121215] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
             }`}
             onClick={(e) => e.stopPropagation()}
@@ -471,7 +506,8 @@ export const Home = () => {
               <span>Unified 8-Layer Brain</span>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

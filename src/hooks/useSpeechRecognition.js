@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { transcribeAudioWithGroq } from '../services/whisperService';
 
 export const useSpeechRecognition = ({ onTranscriptChange } = {}) => {
   const [isListening, setIsListening] = useState(false);
@@ -104,7 +105,10 @@ export const useSpeechRecognition = ({ onTranscriptChange } = {}) => {
     };
   }, [isNativeSupported]);
 
-  // Fallback Audio Stream for Firefox / non-webkit browsers
+  const fallbackRecorderRef = useRef(null);
+  const fallbackChunksRef = useRef([]);
+
+  // Fallback Audio Stream for Firefox / Safari / non-webkit browsers with Groq Whisper
   const startAudioStreamFallback = async () => {
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -118,6 +122,9 @@ export const useSpeechRecognition = ({ onTranscriptChange } = {}) => {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (AudioContext) {
         const audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') {
+          await audioCtx.resume().catch(() => {});
+        }
         audioContextRef.current = audioCtx;
         const source = audioCtx.createMediaStreamSource(stream);
         const analyser = audioCtx.createAnalyser();
@@ -140,6 +147,23 @@ export const useSpeechRecognition = ({ onTranscriptChange } = {}) => {
         updateVolume();
       }
 
+      // Record audio for Whisper STT fallback
+      if (typeof MediaRecorder !== 'undefined') {
+        fallbackChunksRef.current = [];
+        try {
+          const recorder = new MediaRecorder(stream);
+          recorder.ondataavailable = (e) => {
+            if (e.data && e.data.size > 0) {
+              fallbackChunksRef.current.push(e.data);
+            }
+          };
+          recorder.start(500);
+          fallbackRecorderRef.current = recorder;
+        } catch(e) {
+          console.warn('[useSpeechRecognition] Fallback MediaRecorder init failed:', e);
+        }
+      }
+
       setIsListening(true);
       setError(null);
     } catch (err) {
@@ -149,18 +173,42 @@ export const useSpeechRecognition = ({ onTranscriptChange } = {}) => {
     }
   };
 
-  const stopAudioStreamFallback = () => {
+  const stopAudioStreamFallback = async () => {
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-    if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach(t => t.stop());
-      mediaStreamRef.current = null;
-    }
     if (audioContextRef.current) {
       try { audioContextRef.current.close(); } catch(e){}
       audioContextRef.current = null;
     }
     setAudioVolume(0);
     setIsListening(false);
+
+    if (fallbackRecorderRef.current && fallbackRecorderRef.current.state !== 'inactive') {
+      try {
+        const rec = fallbackRecorderRef.current;
+        rec.onstop = async () => {
+          try {
+            const blob = new Blob(fallbackChunksRef.current, { type: rec.mimeType || 'audio/webm' });
+            fallbackChunksRef.current = [];
+            if (blob.size > 300) {
+              const text = await transcribeAudioWithGroq(blob);
+              if (text && text.trim()) {
+                setTranscript(text.trim());
+                if (onTranscriptChangeRef.current) {
+                  onTranscriptChangeRef.current(text.trim());
+                }
+              }
+            }
+          } catch(e) {}
+        };
+        rec.stop();
+      } catch(e) {}
+      fallbackRecorderRef.current = null;
+    }
+
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach(t => t.stop());
+      mediaStreamRef.current = null;
+    }
   };
 
   const startListening = useCallback(() => {

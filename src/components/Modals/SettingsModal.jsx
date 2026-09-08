@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { AppearancePage } from '../Shell/AppearancePage';
@@ -6,12 +7,26 @@ import { AppearancePage } from '../Shell/AppearancePage';
 export const SettingsModal = () => {
   const { isSettingsOpen, setIsSettingsOpen } = useTheme();
 
+  useEffect(() => {
+    if (!isSettingsOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setIsSettingsOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSettingsOpen, setIsSettingsOpen]);
+
   if (!isSettingsOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xl animate-fade-in select-none">
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div 
+      onClick={(e) => { if (e.target === e.currentTarget) setIsSettingsOpen(false); }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-xl animate-fade-in select-none overflow-y-auto"
+    >
       <div
-        className="rounded-3xl max-w-6xl w-full shadow-2xl border flex flex-col"
+        className="rounded-3xl max-w-6xl w-full shadow-2xl border flex flex-col my-auto"
         style={{
           backgroundColor: 'var(--doap-bg)',
           borderColor: 'var(--doap-border)',
@@ -44,6 +59,7 @@ export const SettingsModal = () => {
           <AppearancePage />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
