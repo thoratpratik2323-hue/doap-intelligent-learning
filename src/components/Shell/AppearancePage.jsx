@@ -69,21 +69,46 @@ export const AppearancePage = () => {
   const [activeTab, setActiveTab] = useState('theme');
 
   // Open-Source Engine States
-  const [ttsProvider, setTtsProvider] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_tts_provider') || 'elevenlabs' : 'elevenlabs'));
+  const [ttsProvider, setTtsProvider] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_tts_provider') || 'neural' : 'neural'));
+  const [voicePersona, setVoicePersona] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_voice_persona') || 'charon' : 'charon'));
+  const [elevenKey, setElevenKey] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_elevenlabs_key') || '' : ''));
   const [kokoroUrl, setKokoroUrl] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_kokoro_url') || 'http://localhost:8880/v1/audio/speech' : 'http://localhost:8880/v1/audio/speech'));
   const [pistonUrl, setPistonUrl] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_piston_url') || 'http://localhost:2000' : 'http://localhost:2000'));
   const [campusLlmUrl, setCampusLlmUrl] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_campus_llm_url') || 'http://localhost:8000/v1' : 'http://localhost:8000/v1'));
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
 
   const handleSaveEngines = () => {
     try {
       localStorage.setItem('doap_tts_provider', ttsProvider);
+      localStorage.setItem('doap_voice_persona', voicePersona);
+      if (elevenKey) localStorage.setItem('doap_elevenlabs_key', elevenKey);
+      else localStorage.removeItem('doap_elevenlabs_key');
       localStorage.setItem('doap_kokoro_url', kokoroUrl);
       localStorage.setItem('doap_piston_url', pistonUrl);
       localStorage.setItem('doap_campus_llm_url', campusLlmUrl);
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 2500);
     } catch (e) {}
+  };
+
+  const handlePreviewVoice = async () => {
+    if (isPreviewPlaying) return;
+    setIsPreviewPlaying(true);
+    try {
+      const { speakDOAPVoice } = await import('../../services/elevenLabsService');
+      const samplePhrases = {
+        charon: "Hello! I am Andrew, your DOAP AI technical mentor. My voice is powered by high-definition neural speech synthesis. How are your data structures studies going?",
+        neerja: "Namaste! Main Neerja hoon, aapki DOAP AI mentor. We will make complex algorithmic problems feel intuitive and simple. Chalo, shuru karte hain!",
+        prabhat: "Hello student! I am Prabhat from Sanjeevani DOAP learning studio. Together, we are going to crack your upcoming technical placements.",
+        jenny: "Hey there! I am Jenny, your conversational study partner. Whenever you hit a bug or get stuck, I am right here to help you debug.",
+        brian: "Greetings. I am Brian, your academic research tutor. We will analyze time complexity, amortized bounds, and optimal memory layouts."
+      };
+      const text = samplePhrases[voicePersona] || samplePhrases.charon;
+      await speakDOAPVoice(text, () => setIsPreviewPlaying(false), () => setIsPreviewPlaying(false), voicePersona);
+    } catch (e) {
+      setIsPreviewPlaying(false);
+    }
   };
 
   const TABS = [
@@ -156,16 +181,28 @@ export const AppearancePage = () => {
                 </div>
 
                 {/* 1. Voice Synthesis Engine */}
-                <Section title="Voice Synthesis Engine (TTS)" subtitle="Select cloud or self-hosted open-weights voice.">
-                  <div className="grid grid-cols-2 gap-2">
+                <Section title="Voice Synthesis Engine (TTS)" subtitle="Select ultra-realistic neural human voices, cloud API, or self-hosted open-weights.">
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      onClick={() => setTtsProvider('neural')}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                        ttsProvider === 'neural' ? 'border-cyan-400 bg-cyan-500/10' : 'border-neutral-800 bg-neutral-900/40'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-bold text-white">🌟 DOAP Neural Studio</p>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono">FREE</span>
+                      </div>
+                      <p className="text-[10px] text-neutral-400 mt-1">100% human-grade, zero API keys, unlimited usage</p>
+                    </button>
                     <button
                       onClick={() => setTtsProvider('elevenlabs')}
                       className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                        ttsProvider === 'elevenlabs' ? 'border-cyan-400 bg-cyan-500/10' : 'border-neutral-800 bg-neutral-900/40'
+                        ttsProvider === 'elevenlabs' ? 'border-purple-400 bg-purple-500/10' : 'border-neutral-800 bg-neutral-900/40'
                       }`}
                     >
                       <p className="text-xs font-bold text-white">🎙️ ElevenLabs Cloud</p>
-                      <p className="text-[10px] text-neutral-400 mt-0.5">Charon Studio voice (Cloud API)</p>
+                      <p className="text-[10px] text-neutral-400 mt-1">Personal API key required for Charon voice</p>
                     </button>
                     <button
                       onClick={() => setTtsProvider('kokoro')}
@@ -174,9 +211,69 @@ export const AppearancePage = () => {
                       }`}
                     >
                       <p className="text-xs font-bold text-white">⚡ Kokoro TTS (Local)</p>
-                      <p className="text-[10px] text-neutral-400 mt-0.5">82M lightweight open-weights</p>
+                      <p className="text-[10px] text-neutral-400 mt-1">82M lightweight open-weights Docker container</p>
                     </button>
                   </div>
+
+                  {/* Voice Persona Selector & Preview */}
+                  <div className="p-3 rounded-xl border border-neutral-800 bg-black/30 space-y-2 mt-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-neutral-300">Voice Persona & Accent:</label>
+                      <button
+                        type="button"
+                        onClick={handlePreviewVoice}
+                        disabled={isPreviewPlaying}
+                        className="px-3 py-1 rounded-lg text-xs font-bold bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 border border-cyan-500/30 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      >
+                        {isPreviewPlaying ? (
+                          <>
+                            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                            Speaking...
+                          </>
+                        ) : (
+                          <>🎧 Preview Human Voice</>
+                        )}
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+                      {[
+                        { id: 'charon', label: 'Andrew / Charon', desc: 'Resonant Studio Voice (Male)' },
+                        { id: 'neerja', label: 'Neerja Expressive', desc: 'Warm Indian Mentor (Female)' },
+                        { id: 'prabhat', label: 'Prabhat Neural', desc: 'Articulate Indian Mentor (Male)' },
+                        { id: 'jenny', label: 'Jenny Natural', desc: 'Friendly Conversational (Female)' },
+                        { id: 'brian', label: 'Brian Academic', desc: 'Deep Technical Mentor (Male)' }
+                      ].map(v => (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => setVoicePersona(v.id)}
+                          className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
+                            voicePersona === v.id
+                              ? 'border-cyan-400 bg-cyan-500/15 text-white'
+                              : 'border-neutral-800 bg-neutral-900/30 text-neutral-400 hover:border-neutral-700'
+                          }`}
+                        >
+                          <p className="text-xs font-bold">{v.label}</p>
+                          <p className="text-[10px] text-neutral-400 mt-0.5">{v.desc}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {ttsProvider === 'elevenlabs' && (
+                    <div className="pt-2">
+                      <label className="text-[11px] text-neutral-400 block mb-1">Your Personal ElevenLabs API Key:</label>
+                      <input
+                        type="password"
+                        value={elevenKey}
+                        onChange={(e) => setElevenKey(e.target.value)}
+                        placeholder="sk_..."
+                        className="w-full px-3 py-2 rounded-xl text-xs bg-black/40 border border-neutral-800 text-white font-mono focus:border-purple-500 focus:outline-none"
+                      />
+                      <p className="text-[10px] text-neutral-500 mt-1">Leave blank to use DOAP Neural Studio Voice for free.</p>
+                    </div>
+                  )}
 
                   {ttsProvider === 'kokoro' && (
                     <div className="pt-2">

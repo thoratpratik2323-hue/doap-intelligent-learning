@@ -78,63 +78,55 @@ export function stopElevenLabsAudio() {
 
 /**
  * Intelligent Neural Voice Selector for Browser SpeechSynthesis
- * Prioritizes Authentic Indian English & Hindi Natural & Neural Voices (Edge Neerja/Prabhat, Swara, Google English India, Google Hindi)
- * Strictly excludes legacy Windows SAPI5 robotic voices (Microsoft Ravi, Heera).
+ * Prioritizes Authentic Neural & Natural Voices (Edge Online Natural, Google Chrome Neural, Neerja/Prabhat).
+ * Intelligently softens and tunes pitch/rate to prevent monotone robotic output.
  */
 export function getBestNaturalVoice(synth, mode = 'indian') {
   if (!synth) return null;
   const voices = synth.getVoices ? synth.getVoices() : [];
   if (!voices || voices.length === 0) return null;
 
-  // Strict check: exclude robotic, low-quality desktop/SAPI5 synthesizers
-  const isRobotic = (name) => {
-    const n = (name || '').toLowerCase();
-    return (
-      n.includes('ravi') || 
-      n.includes('heera') || 
-      n.includes('desktop') || 
-      n.includes('sapi') || 
-      n.includes('espeak') ||
-      n.includes('sam')
-    );
-  };
+  // 1. Highest Priority: Authentic Microsoft Edge Online Natural / Neural Voices
+  const edgeNatural = voices.find(v => {
+    const n = (v.name || '').toLowerCase();
+    return (n.includes('online (natural)') || n.includes('natural') || n.includes('neural')) &&
+           (n.includes('neerja') || n.includes('prabhat') || n.includes('guy') || n.includes('aria') || n.includes('jenny') || n.includes('andrew'));
+  });
+  if (edgeNatural) return edgeNatural;
 
-  // 1. Prioritize authentic Indian English / Hindi Neural Voices
-  const indianNaturalVoice = voices.find(v => {
+  // 2. High-Quality Indian English / Hindi Voices
+  const indianVoice = voices.find(v => {
     const name = (v.name || '').toLowerCase();
     const lang = (v.lang || '').toLowerCase().replace('_', '-');
-    const isIndian = lang === 'en-in' || lang === 'hi-in' || 
-                     name.includes('india') || name.includes('neerja') || 
-                     name.includes('prabhat') || name.includes('swara') || 
-                     name.includes('madhur') || name.includes('rishi') ||
-                     name.includes('lekha') || name.includes('हिन्दी') ||
-                     name.includes('hindi');
-    return isIndian && !isRobotic(name);
+    return (lang === 'en-in' || lang === 'hi-in' || 
+            name.includes('india') || name.includes('neerja') || 
+            name.includes('prabhat') || name.includes('swara') || 
+            name.includes('madhur') || name.includes('rishi') ||
+            name.includes('lekha') || name.includes('hindi')) &&
+           !name.includes('desktop');
   });
-  if (indianNaturalVoice) return indianNaturalVoice;
+  if (indianVoice) return indianVoice;
 
-  // 2. High-Quality Natural Online Voices (Edge / Chrome Natural)
-  const naturalOnline = voices.find(v => 
-    (v.name.includes('Online (Natural)') || v.name.includes('Natural')) &&
-    !isRobotic(v.name)
-  );
-  if (naturalOnline) return naturalOnline;
-
-  // 3. Google High-Quality Voices (Chrome)
-  const googleVoice = voices.find(v => 
-    (v.name.includes('Google') && (v.lang || '').startsWith('en')) &&
-    !isRobotic(v.name)
-  );
+  // 3. Google Chrome Natural Neural Voices
+  const googleVoice = voices.find(v => {
+    const name = (v.name || '').toLowerCase();
+    return name.includes('google') && (v.lang || '').startsWith('en');
+  });
   if (googleVoice) return googleVoice;
 
-  // 4. Any clean non-robotic English voice
-  const cleanEnglish = voices.find(v => 
-    (v.lang || '').toLowerCase().startsWith('en') && 
-    !isRobotic(v.name)
+  // 4. Any Edge / Safari / Mobile Natural Online Voice
+  const anyNatural = voices.find(v => 
+    v.name.includes('Natural') || v.name.includes('Online') || v.name.includes('Siri')
   );
-  if (cleanEnglish) return cleanEnglish;
+  if (anyNatural) return anyNatural;
 
-  return null;
+  // 5. Windows Desktop Fallback: Prefer Zira (much softer/warmer than David)
+  const ziraVoice = voices.find(v => (v.name || '').toLowerCase().includes('zira'));
+  if (ziraVoice) return ziraVoice;
+
+  // 6. Any English voice as final safety fallback
+  const fallbackEnglish = voices.find(v => (v.lang || '').toLowerCase().startsWith('en'));
+  return fallbackEnglish || voices[0] || null;
 }
 
 /**
@@ -417,10 +409,12 @@ export function fallbackBrowserSpeech(text, onComplete) {
 }
 
 /**
- * Unified DOAP AI Charon Voice Engine
- * Speaks crystal-clear English with deep, resonant, lifelike studio clarity (Charon Voice Core).
+ * Unified DOAP AI Neural Voice Engine
+ * Speaks crystal-clear English with deep, resonant, human-grade studio clarity.
+ * Uses DOAP Neural Studio Voice Engine (powered by Azure/Edge Neural via /api/ai/tts),
+ * Kokoro local open-weights, or personal ElevenLabs key.
  */
-export async function speakDOAPVoice(text, onComplete, onError) {
+export async function speakDOAPVoice(text, onComplete, onError, voiceKey = 'charon') {
   if (!text || !text.trim()) {
     if (onComplete) onComplete();
     return;
@@ -431,12 +425,11 @@ export async function speakDOAPVoice(text, onComplete, onError) {
   unlockAudioContext();
 
   const cleanText = humanizeTextForSpeech(text);
-  const voiceId = 'pNInz6obpgDQGcFmaJgB'; // Charon Voice Core (Adam)
-
-  // 1. Support Open-Source Local TTS Engine (Kokoro TTS / Kokoro-FastAPI)
-  const ttsProvider = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_tts_provider') : 'elevenlabs');
+  const ttsProvider = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_tts_provider') : 'neural') || 'neural';
+  const customElevenKey = typeof localStorage !== 'undefined' ? localStorage.getItem('doap_elevenlabs_key') : '';
   const kokoroUrl = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_kokoro_url') : '') || 'http://localhost:8880/v1/audio/speech';
 
+  // 1. Support Open-Source Local TTS Engine (Kokoro TTS / Kokoro-FastAPI)
   if (ttsProvider === 'kokoro') {
     try {
       const kokoroVoice = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_kokoro_voice') : '') || 'af_bella';
@@ -453,6 +446,7 @@ export async function speakDOAPVoice(text, onComplete, onError) {
 
       if (kokoroRes.ok) {
         const audioBlob = await kokoroRes.blob();
+        if (isAudioCancelled) return;
         const audioBlobUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioBlobUrl);
         currentAudioElement = audio;
@@ -472,29 +466,20 @@ export async function speakDOAPVoice(text, onComplete, onError) {
         return;
       }
     } catch (kokoroErr) {
-      console.warn("Kokoro Local TTS endpoint unreachable, falling back to ElevenLabs/Browser:", kokoroErr);
+      console.warn("[DOAP TTS] Kokoro Local TTS endpoint unreachable, falling back:", kokoroErr);
     }
   }
 
-  const apiKeys = [
-    (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_elevenlabs_key') : ''),
-    'sk_49242a8b562bd43cd0c8ff30db444b69216a64c89ef7d3d2',
-    (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_ELEVENLABS_KEY),
-    'sk_5f91a262d00d2924db057bf3fd48a71b8857415c268c9452'
-  ].filter(Boolean);
-
-  let hasStartedPlaying = false;
-
-  for (const key of apiKeys) {
-    if (isAudioCancelled) return;
+  // 2. Personal ElevenLabs API Key if user configured one in Settings
+  if (ttsProvider === 'elevenlabs' && customElevenKey) {
     try {
-      // Use eleven_turbo_v2_5 with high stability & style 0.0 to prevent timbre drift / accent switching
-      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`, {
+      const elevenVoiceId = ELEVEN_VOICES[voiceKey]?.id || 'pNInz6obpgDQGcFmaJgB';
+      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenVoiceId}/stream`, {
         method: 'POST',
         headers: {
           'Accept': 'audio/mpeg',
           'Content-Type': 'application/json',
-          'xi-api-key': key
+          'xi-api-key': customElevenKey
         },
         body: JSON.stringify({
           text: cleanText,
@@ -508,14 +493,46 @@ export async function speakDOAPVoice(text, onComplete, onError) {
         })
       });
 
-      if (!response.ok) {
-        console.warn(`[DOAP Charon Voice] Key returned status ${response.status}, trying fallback...`);
-        continue;
+      if (response.ok) {
+        const blob = await response.blob();
+        if (isAudioCancelled) return;
+        const audioUrl = URL.createObjectURL(blob);
+        const audio = new Audio(audioUrl);
+        currentAudioElement = audio;
+        audio.onended = () => {
+          URL.revokeObjectURL(audioUrl);
+          currentAudioElement = null;
+          if (onComplete) onComplete();
+        };
+        audio.onerror = () => {
+          URL.revokeObjectURL(audioUrl);
+          currentAudioElement = null;
+          fallbackBrowserSpeech(cleanText, onComplete);
+        };
+        await audio.play();
+        return;
       }
+    } catch (err) {
+      console.warn("[DOAP TTS] Custom ElevenLabs failed, falling back:", err);
+    }
+  }
 
-      const blob = await response.blob();
+  // 3. DOAP High-Fidelity Studio Neural Voice Engine (via /api/ai/tts)
+  // Powered by Azure / Microsoft Edge Neural Voices: 100% human-grade, zero API keys, unlimited characters!
+  try {
+    const activePersona = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_voice_persona') : '') || voiceKey || 'charon';
+    const ttsRes = await fetch('/api/ai/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: cleanText,
+        voice: activePersona
+      })
+    });
+
+    if (ttsRes.ok) {
+      const blob = await ttsRes.blob();
       if (isAudioCancelled) return;
-
       const audioUrl = URL.createObjectURL(blob);
       const audio = new Audio(audioUrl);
       currentAudioElement = audio;
@@ -529,40 +546,36 @@ export async function speakDOAPVoice(text, onComplete, onError) {
       audio.onerror = (e) => {
         try { URL.revokeObjectURL(audioUrl); } catch (e) {}
         currentAudioElement = null;
-        if (!hasStartedPlaying) {
-          console.warn('[DOAP Charon Voice] Audio load error, falling back:', e);
-          if (onError) onError(e);
-          else fallbackBrowserSpeech(cleanText, onComplete);
-        } else {
-          if (onComplete) onComplete();
-        }
+        console.warn('[DOAP Neural Voice] Playback error, falling back to browser:', e);
+        fallbackBrowserSpeech(cleanText, onComplete);
       };
 
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         await playPromise;
-        hasStartedPlaying = true;
       }
-      return; // Charon voice is playing exclusively!
-    } catch (err) {
-      console.warn('[DOAP Charon Voice] Request error:', err);
+      return; // High-fidelity neural speech active!
+    } else {
+      console.warn(`[DOAP Neural Voice] /api/ai/tts returned status ${ttsRes.status}`);
     }
+  } catch (neuralErr) {
+    console.warn('[DOAP Neural Voice] Backend TTS call failed, falling back to browser:', neuralErr);
   }
 
-  // Fallback to browser speech if ElevenLabs could not start
-  if (!hasStartedPlaying && !isAudioCancelled) {
+  // 4. Final Fallback: Browser Native SpeechSynthesis with softened pitch & rate
+  if (!isAudioCancelled) {
     fallbackBrowserSpeech(cleanText, onComplete);
   }
 }
 
 /**
- * Backward-compatible alias for all components
+ * Backward-compatible alias for all DOAP components
  */
-export async function speakElevenLabs(text, voiceKey = 'doap', onComplete, onError) {
+export async function speakElevenLabs(text, voiceKey = 'charon', onComplete, onError) {
   if (typeof voiceKey === 'function') {
     onError = onComplete;
     onComplete = voiceKey;
-    voiceKey = 'doap';
+    voiceKey = 'charon';
   }
-  return speakDOAPVoice(text, onComplete, onError);
+  return speakDOAPVoice(text, onComplete, onError, voiceKey);
 }

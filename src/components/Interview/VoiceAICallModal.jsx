@@ -283,15 +283,15 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
 
     const spokenHumanText = humanizeTextForSpeech(text);
     const utterance = new SpeechSynthesisUtterance(spokenHumanText);
-    utterance.rate = 0.98;
-    utterance.pitch = 1.0;
+    utterance.rate = 1.02;
+    utterance.pitch = 1.04;
 
     const naturalVoice = getBestNaturalVoice(synthRef.current, 'indian');
     if (naturalVoice) {
       utterance.voice = naturalVoice;
-      utterance.lang = naturalVoice.lang || 'en-IN';
+      utterance.lang = naturalVoice.lang || 'en-US';
     } else {
-      utterance.lang = 'en-IN';
+      utterance.lang = 'en-US';
     }
 
     utterance.onend = () => {

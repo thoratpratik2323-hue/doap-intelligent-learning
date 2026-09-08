@@ -955,15 +955,15 @@ export const VoiceTutor = () => {
       synthRef.current.cancel();
       const spokenHumanText = humanizeTextForSpeech(text);
       const utterance = new SpeechSynthesisUtterance(spokenHumanText);
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
+      utterance.rate = 1.02;
+      utterance.pitch = 1.04;
 
       const chosenVoice = specificVoice || getBestNaturalVoice(synthRef.current, 'indian');
       if (chosenVoice) {
         utterance.voice = chosenVoice;
-        utterance.lang = chosenVoice.lang || 'en-IN';
+        utterance.lang = chosenVoice.lang || 'en-US';
       } else {
-        utterance.lang = 'en-IN';
+        utterance.lang = 'en-US';
       }
 
       // Keep live reference so Chrome does not garbage-collect utterance mid-speech
