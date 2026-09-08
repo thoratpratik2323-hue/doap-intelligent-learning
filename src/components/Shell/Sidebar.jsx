@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { NAVIGATION_ITEMS } from '../../data/mockData';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 
 const ICON_MAP = {
   Home: Home,
@@ -52,6 +53,8 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
     setIsSidebarHidden,
     isDarkMode
   } = useTheme();
+
+  const { isDevBypass } = useAuth();
 
   const handleNavClick = (path) => {
     navigateTo(path);
