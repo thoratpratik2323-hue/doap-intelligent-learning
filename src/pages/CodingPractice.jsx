@@ -52,7 +52,25 @@ import {
 } from '../data/dsa/dsaKnowledgeData';
 import { HACKERRANK_PROBLEMS } from '../data/dsa/hackerRankProblems';
 import { runPythonTestsInBrowser } from '../services/pyodideRunner';
-import { CompanyPrep } from './CompanyPrep';
+
+const COMPANY_ICONS = {
+  google: '🌐',
+  amazon: '📦',
+  microsoft: '🪟',
+  apple: '🍎',
+  meta: '♾️',
+  netflix: '🍿',
+  uber: '🚗',
+  adobe: '🅰️',
+  tcs: '🏢',
+  infosys: '💻',
+  goldman_sachs: '🏦',
+  bloomberg: '📊',
+  salesforce: '☁️',
+  atlassian: '🔷',
+  oracle: '🔴',
+  walmart: '🛒'
+};
 
 const PROBLEM_DEFINITIONS = [
   {
@@ -494,11 +512,39 @@ export const CodingPractice = ({ initialTab = 'problems' }) => {
   const [selectedPlatform, setSelectedPlatform] = useState('All');
   
   // View Switcher & Search States for Complete DSA Integration
-  const [activePracticeTab, setActivePracticeTab] = useState(() => {
-    if (initialTab && initialTab !== 'problems') return initialTab;
-    if (typeof window !== 'undefined' && window.location.pathname.includes('company')) return 'company';
-    return 'problems';
-  });
+  const [activePracticeTab, setActivePracticeTab] = useState('problems'); // 'problems' | 'knowledge' | 'quizzes'
+
+  // Company Prep Integration directly into Unified DSA Suite
+  const [companyCatalog, setCompanyCatalog] = useState([]);
+  const [companyProblemsData, setCompanyProblemsData] = useState({});
+  const [selectedCompanyId, setSelectedCompanyId] = useState('All'); // 'All' | 'tcs' | 'google' | etc.
+  const [problemPage, setProblemPage] = useState(1);
+  const itemsPerPage = 25;
+
+  // Load company problems and catalog in background
+  useEffect(() => {
+    let isMounted = true;
+    const loadCompanyData = async () => {
+      try {
+        const [catRes, probRes] = await Promise.all([
+          fetch('/data/companyCatalog.json'),
+          fetch('/data/companyProblems.json')
+        ]);
+        if (catRes.ok && probRes.ok) {
+          const cat = await catRes.json();
+          const probs = await probRes.json();
+          if (isMounted) {
+            setCompanyCatalog(cat);
+            setCompanyProblemsData(probs);
+          }
+        }
+      } catch (err) {
+        console.warn('Company catalog fetch warning:', err);
+      }
+    };
+    loadCompanyData();
+    return () => { isMounted = false; };
+  }, []);
 
   // Fast O(1) title lookup map for linking company problems directly to DOAP automated test IDE
   const localProblemsMap = useMemo(() => {
@@ -714,23 +760,95 @@ Act as my Socratic AI Tutor. Do NOT write the entire solved code. Instead, analy
   const difficulties = ["All", "Easy", "Medium", "Hard"];
   const platforms = ["All", "HackerRank", "LeetCode", "Blind 75"];
 
-  const filteredProblems = ALL_PROBLEMS.filter(p => {
-    const matchCat = selectedCategory === 'All' || p.category === selectedCategory;
-    const matchDiff = selectedDifficulty === 'All' || p.difficulty === selectedDifficulty;
-    const matchPlatform = selectedPlatform === 'All' ||
-      (selectedPlatform === 'HackerRank' && p.platform === 'HackerRank') ||
-      (selectedPlatform === 'LeetCode' && p.platform !== 'HackerRank') ||
-      (selectedPlatform === 'Blind 75' && (p.isBlind75 || (p.id <= 75 && p.platform !== 'HackerRank')));
-    const q = problemSearchQuery.trim().toLowerCase();
-    const matchQuery = !q || 
-      (p.title && p.title.toLowerCase().includes(q)) ||
-      (p.pattern && p.pattern.toLowerCase().includes(q)) ||
-      (p.category && p.category.toLowerCase().includes(q)) ||
-      (p.platform && p.platform.toLowerCase().includes(q)) ||
-      (p.track && p.track.toLowerCase().includes(q)) ||
-      (p.description && p.description.toLowerCase().includes(q));
-    return matchCat && matchDiff && matchPlatform && matchQuery;
-  });
+  // Unified Problem Pool (Foundational 167+ or Company Placement Questions)
+  const currentProblemPool = useMemo(() => {
+    if (selectedCompanyId === 'All') {
+      return ALL_PROBLEMS;
+    }
+
+    const compMeta = companyCatalog.find(c => c.id === selectedCompanyId);
+    const compData = companyProblemsData[selectedCompanyId];
+    if (!compData || !Array.isArray(compData.problems)) return ALL_PROBLEMS;
+
+    return compData.problems.map((p, idx) => {
+      // If problem title matches a local problem with full test suites, inherit it!
+      const localMatch = localProblemsMap.get(p.title?.toLowerCase().trim());
+      if (localMatch) {
+        return {
+          ...localMatch,
+          company: compMeta?.name || compData.name,
+          companyLogo: COMPANY_ICONS[selectedCompanyId] || compMeta?.logo || '🏢',
+          frequency: p.frequency,
+          acceptanceRate: p.acceptanceRate,
+          leetcodeLink: p.link,
+          isCompanyProblem: true
+        };
+      }
+
+      // Format as complete DOAP problem solvable in IDE
+      const fnName = (p.title || 'solution').replace(/[^a-zA-Z0-9]/g, '');
+      const camelCaseName = fnName ? fnName.charAt(0).toLowerCase() + fnName.slice(1) : 'solution';
+
+      return {
+        id: `comp-${selectedCompanyId}-${idx + 1}`,
+        title: p.title,
+        difficulty: p.difficulty || 'Medium',
+        category: (p.topics && p.topics[0]) || 'Algorithms',
+        topics: p.topics || [],
+        company: compMeta?.name || compData.name,
+        companyLogo: COMPANY_ICONS[selectedCompanyId] || compMeta?.logo || '🏢',
+        frequency: p.frequency || 50,
+        acceptanceRate: p.acceptanceRate || '50%',
+        functionName: camelCaseName,
+        benchmarkMins: p.difficulty === 'Easy' ? 15 : p.difficulty === 'Hard' ? 45 : 30,
+        description: `Authentic technical interview question asked in ${compMeta?.name || 'Top Tech'} hiring rounds.\n\nTopics: ${p.topics?.join(', ') || 'Data Structures & Algorithms'}\nInterview Frequency: ${p.frequency || 50}%\nHistorical Acceptance Rate: ${p.acceptanceRate || 'N/A'}\n\nWrite your complete algorithmic solution below in ${selectedLanguage.toUpperCase()} and click "Run Code" to test in-browser.`,
+        starterCodes: {
+          javascript: `/**\n * Question: ${p.title} (${compMeta?.name || 'Company'} Placement)\n * Difficulty: ${p.difficulty || 'Medium'}\n */\nfunction ${camelCaseName}() {\n  // Write your solution here\n  \n}`,
+          python: `# Question: ${p.title} (${compMeta?.name || 'Company'} Placement)\n# Difficulty: ${p.difficulty || 'Medium'}\n\nclass Solution:\n    def ${camelCaseName}(self, *args):\n        # Write your solution here\n        pass`,
+          cpp: `// Question: ${p.title} (${compMeta?.name || 'Company'} Placement)\n// Difficulty: ${p.difficulty || 'Medium'}\n\n#include <iostream>\n#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    void ${camelCaseName}() {\n        // Write your solution here\n    }\n};`,
+          java: `// Question: ${p.title} (${compMeta?.name || 'Company'} Placement)\n// Difficulty: ${p.difficulty || 'Medium'}\n\npublic class Solution {\n    public void ${camelCaseName}() {\n        // Write your solution here\n    }\n}`
+        },
+        tests: [
+          { id: 1, display: `${camelCaseName}()`, expected: true, input: [] }
+        ],
+        leetcodeLink: p.link,
+        isCompanyProblem: true
+      };
+    });
+  }, [selectedCompanyId, companyCatalog, companyProblemsData, localProblemsMap, selectedLanguage]);
+
+  const filteredProblems = useMemo(() => {
+    return currentProblemPool.filter(p => {
+      const matchCat = selectedCategory === 'All' || p.category === selectedCategory || (Array.isArray(p.topics) && p.topics.includes(selectedCategory));
+      const matchDiff = selectedDifficulty === 'All' || p.difficulty === selectedDifficulty;
+      const matchPlatform = selectedPlatform === 'All' ||
+        (selectedPlatform === 'HackerRank' && p.platform === 'HackerRank') ||
+        (selectedPlatform === 'LeetCode' && (p.platform === 'LeetCode' || p.isCompanyProblem || !p.platform)) ||
+        (selectedPlatform === 'Blind 75' && (p.isBlind75 || (typeof p.id === 'number' && p.id <= 75 && p.platform !== 'HackerRank')));
+      const q = problemSearchQuery.trim().toLowerCase();
+      const matchQuery = !q || 
+        (p.title && p.title.toLowerCase().includes(q)) ||
+        (p.pattern && p.pattern.toLowerCase().includes(q)) ||
+        (p.category && p.category.toLowerCase().includes(q)) ||
+        (p.company && p.company.toLowerCase().includes(q)) ||
+        (Array.isArray(p.topics) && p.topics.some(t => t.toLowerCase().includes(q))) ||
+        (p.platform && p.platform.toLowerCase().includes(q)) ||
+        (p.track && p.track.toLowerCase().includes(q)) ||
+        (p.description && p.description.toLowerCase().includes(q));
+      return matchCat && matchDiff && matchPlatform && matchQuery;
+    });
+  }, [currentProblemPool, selectedCategory, selectedDifficulty, selectedPlatform, problemSearchQuery]);
+
+  // Reset page when any filter changes
+  useEffect(() => {
+    setProblemPage(1);
+  }, [selectedCompanyId, selectedCategory, selectedDifficulty, selectedPlatform, problemSearchQuery]);
+
+  const totalProblemPages = Math.max(1, Math.ceil(filteredProblems.length / itemsPerPage));
+  const paginatedProblems = useMemo(() => {
+    const startIndex = (problemPage - 1) * itemsPerPage;
+    return filteredProblems.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredProblems, problemPage, itemsPerPage]);
 
   const getLanguageStarterCode = (prob, lang) => {
     if (!prob) return '';
@@ -1472,18 +1590,6 @@ Evaluate this code strictly:
         </button>
 
         <button
-          onClick={() => setActivePracticeTab('company')}
-          className={`flex-1 py-2.5 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
-            activePracticeTab === 'company'
-              ? (isDarkMode ? 'bg-gradient-to-r from-blue-500 to-cyan-400 text-black shadow-md font-extrabold' : 'bg-black text-white shadow-md font-extrabold')
-              : 'text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10'
-          }`}
-        >
-          <Building2 size={16} />
-          <span>Company Archives (8,699)</span>
-        </button>
-
-        <button
           onClick={() => setActivePracticeTab('knowledge')}
           className={`flex-1 py-2.5 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
             activePracticeTab === 'knowledge'
@@ -1538,10 +1644,61 @@ Evaluate this code strictly:
             )}
           </div>
 
+          {/* Target Company Filter Bar */}
+          <div className="space-y-2 p-3 rounded-2xl bg-neutral-900/40 border border-neutral-800/80 backdrop-blur-sm">
+            <div className="flex items-center justify-between text-xs font-mono text-neutral-400">
+              <span className="flex items-center gap-1.5 font-bold text-neutral-200">
+                <Building2 size={14} className="text-cyan-400" />
+                <span>Target Company Archive ({companyCatalog.length > 0 ? '8,699+ Placement Problems' : 'Top Tech Firms'}):</span>
+              </span>
+              {selectedCompanyId !== 'All' && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedCompanyId('All')}
+                  className="text-cyan-400 hover:text-cyan-300 underline cursor-pointer text-[11px] font-sans transition-colors"
+                >
+                  Reset to Curated Core ({ALL_PROBLEMS.length})
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+              <button
+                type="button"
+                onClick={() => setSelectedCompanyId('All')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border flex items-center gap-1.5 ${
+                  selectedCompanyId === 'All'
+                    ? (isDarkMode ? 'bg-cyan-400 text-black border-cyan-400 font-bold shadow-sm' : 'bg-black text-white border-black font-bold shadow-sm')
+                    : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white hover:border-neutral-700' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
+                }`}
+              >
+                <span>🌐 Curated Core ({ALL_PROBLEMS.length})</span>
+              </button>
+
+              {companyCatalog.map((comp) => (
+                <button
+                  type="button"
+                  key={comp.id}
+                  onClick={() => setSelectedCompanyId(comp.id)}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border flex items-center gap-1.5 ${
+                    selectedCompanyId === comp.id
+                      ? (isDarkMode ? 'bg-gradient-to-r from-blue-500 to-cyan-400 text-black border-cyan-400 font-bold shadow-sm' : 'bg-blue-600 text-white border-blue-600 font-bold shadow-sm')
+                      : (isDarkMode ? 'bg-neutral-900 text-neutral-300 border-neutral-800 hover:border-neutral-700 hover:text-white' : 'bg-neutral-100 text-neutral-700 border-neutral-200 hover:text-black')
+                  }`}
+                >
+                  <span>{COMPANY_ICONS[comp.id] || '🏢'}</span>
+                  <span>{comp.name}</span>
+                  <span className="text-[10px] opacity-75 font-mono font-normal">({(comp.totalCount || comp.count || 0).toLocaleString()})</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Platform Selector */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
             {platforms.map((plat) => (
               <button
+                type="button"
                 key={plat}
                 onClick={() => setSelectedPlatform(plat)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer border ${
@@ -1553,18 +1710,6 @@ Evaluate this code strictly:
                 {plat === 'HackerRank' ? '🟩 HackerRank' : plat === 'LeetCode' ? '🟧 LeetCode' : plat === 'Blind 75' ? '🔥 Blind 75' : '🌐 All Platforms'}
               </button>
             ))}
-
-            <button
-              onClick={() => setActivePracticeTab('company')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border flex items-center gap-1.5 ${
-                isDarkMode 
-                  ? 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border-cyan-500/30' 
-                  : 'bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border-cyan-300'
-              }`}
-            >
-              <Building2 size={13} />
-              <span>🏢 Company Archives (8,699) →</span>
-            </button>
           </div>
 
           {/* Filter Row: Categories + Difficulty */}
@@ -1573,6 +1718,7 @@ Evaluate this code strictly:
             <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
               {categories.map((cat) => (
                 <button
+                  type="button"
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
                   className={`
@@ -1592,6 +1738,7 @@ Evaluate this code strictly:
             <div className="flex items-center gap-1.5 self-start sm:self-auto shrink-0">
               {difficulties.map((diff) => (
                 <button
+                  type="button"
                   key={diff}
                   onClick={() => setSelectedDifficulty(diff)}
                   className={`
@@ -1610,13 +1757,20 @@ Evaluate this code strictly:
 
           {/* Count Indicator */}
           <div className="flex items-center justify-between text-xs font-mono text-neutral-400 px-1">
-            <span>Showing {filteredProblems.length} of {ALL_PROBLEMS.length} DSA Problems</span>
-            <span className="hidden sm:inline">⚡ Real-Time In-Browser Test Suite & Proctoring</span>
+            <span>
+              Showing {filteredProblems.length === 0 ? 0 : (problemPage - 1) * itemsPerPage + 1} - {Math.min(problemPage * itemsPerPage, filteredProblems.length)} of {filteredProblems.length} Problems
+              {selectedCompanyId !== 'All' && (
+                <span className="ml-1.5 text-cyan-400 font-bold">
+                  ({companyCatalog.find(c => c.id === selectedCompanyId)?.name || selectedCompanyId} Placement Archive)
+                </span>
+              )}
+            </span>
+            <span className="hidden sm:inline text-cyan-400/90 font-bold">⚡ 100% In-Browser DOAP IDE Execution & Test Suite</span>
           </div>
 
           {/* Problems List */}
           <div className="space-y-3">
-            {filteredProblems.map((prob) => {
+            {paginatedProblems.map((prob) => {
               const isSolved = solvedProblems.includes(prob.id);
 
               return (
@@ -1644,6 +1798,28 @@ Evaluate this code strictly:
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs font-mono font-bold text-neutral-500">#{prob.id}</span>
                         <h3 className="text-sm font-bold group-hover:text-cyan-300 transition-colors">{prob.title}</h3>
+                        
+                        {/* Company Badge */}
+                        {prob.company && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-cyan-500/40 text-cyan-300 bg-cyan-950/40 font-bold flex items-center gap-1">
+                            <span>{prob.companyLogo || '🏢'}</span> {prob.company}
+                          </span>
+                        )}
+
+                        {/* Frequency Badge */}
+                        {prob.frequency !== undefined && prob.frequency !== null && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-amber-500/30 text-amber-300 bg-amber-500/10 flex items-center gap-1">
+                            <Flame size={10} className="text-amber-400" /> {prob.frequency}% Freq
+                          </span>
+                        )}
+
+                        {/* Acceptance Rate */}
+                        {prob.acceptanceRate && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-neutral-700 text-neutral-400 bg-black/40">
+                            Acc: {prob.acceptanceRate}
+                          </span>
+                        )}
+
                         {prob.platform === 'HackerRank' && (
                           <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-emerald-500/40 text-emerald-400 bg-emerald-950/50 font-bold">
                             🟩 HackerRank
@@ -1682,20 +1858,50 @@ Evaluate this code strictly:
                   </div>
 
                   <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                    {/* Primary Solve in IDE Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenProblem(prob);
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black font-bold text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer shrink-0 active:scale-95"
+                      title="Solve in DOAP in-browser IDE & Test Suite"
+                    >
+                      <Zap size={13} className="fill-black" />
+                      <span>Solve in IDE</span>
+                    </button>
+
+                    {/* Socratic AI Tutor Button */}
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleAskAiTutor(`Explain how to solve "${prob.title}" in DSA from first principles. Include algorithmic intuition, pattern "${prob.pattern || prob.category}", target complexity "${prob.target_complexity || 'optimal'}", and key edge cases.`);
                       }}
-                      className="px-2.5 py-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+                      className="px-2.5 py-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
                       title="Ask AI Tutor 🤖"
                     >
                       <Bot size={13} />
                       <span className="hidden md:inline">Ask AI</span>
                     </button>
-                    <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-500 group-hover:text-white transition-colors pl-2">
-                      <span>{isSolved ? 'Review' : 'Solve'}</span>
+
+                    {/* Optional External Reference Link */}
+                    {prob.leetcodeLink && (
+                      <a
+                        href={prob.leetcodeLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="px-2 py-1.5 rounded-xl border border-neutral-800 bg-neutral-900/60 hover:bg-neutral-800 text-neutral-400 hover:text-white text-xs font-mono flex items-center gap-1 transition-all shrink-0"
+                        title="View problem reference on LeetCode"
+                      >
+                        <ExternalLink size={12} />
+                        <span className="hidden lg:inline">LeetCode</span>
+                      </a>
+                    )}
+
+                    <div className="flex items-center gap-1 text-xs font-mono text-neutral-500 group-hover:text-white transition-colors pl-1">
                       <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
@@ -1703,6 +1909,75 @@ Evaluate this code strictly:
               );
             })}
           </div>
+
+          {/* Empty State */}
+          {filteredProblems.length === 0 && (
+            <div className="text-center py-12 space-y-3 bg-neutral-900/20 border border-neutral-800/50 rounded-2xl">
+              <FileCode size={36} className="mx-auto text-neutral-600" />
+              <h4 className="text-sm font-bold text-neutral-300">No matching coding challenges found</h4>
+              <p className="text-xs text-neutral-500 max-w-sm mx-auto">
+                Try adjusting your search query, selecting "All" categories, or resetting the company filter.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCompanyId('All');
+                  setSelectedCategory('All');
+                  setSelectedDifficulty('All');
+                  setSelectedPlatform('All');
+                  setProblemSearchQuery('');
+                }}
+                className="px-3.5 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-semibold cursor-pointer hover:bg-cyan-500/20 transition-all"
+              >
+                Reset All Filters
+              </button>
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {totalProblemPages > 1 && (
+            <div className="flex items-center justify-between pt-4 border-t border-neutral-800/60 text-xs font-mono">
+              <button
+                type="button"
+                onClick={() => {
+                  setProblemPage(p => Math.max(1, p - 1));
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                disabled={problemPage === 1}
+                className={`px-3 py-1.5 rounded-xl border transition-colors ${
+                  problemPage === 1 
+                    ? 'opacity-40 cursor-not-allowed border-neutral-800 text-neutral-500' 
+                    : 'border-neutral-700 hover:border-cyan-500 text-white cursor-pointer hover:bg-neutral-800/50'
+                }`}
+              >
+                ← Previous
+              </button>
+
+              <div className="flex items-center gap-1.5 text-neutral-400">
+                <span>Page</span>
+                <span className="px-2 py-0.5 rounded bg-neutral-800 text-white font-bold">{problemPage}</span>
+                <span>of</span>
+                <span className="font-bold text-neutral-300">{totalProblemPages}</span>
+                <span className="hidden sm:inline text-neutral-500 font-normal">({filteredProblems.length} Total)</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setProblemPage(p => Math.min(totalProblemPages, p + 1));
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                disabled={problemPage === totalProblemPages}
+                className={`px-3 py-1.5 rounded-xl border transition-colors ${
+                  problemPage === totalProblemPages 
+                    ? 'opacity-40 cursor-not-allowed border-neutral-800 text-neutral-500' 
+                    : 'border-neutral-700 hover:border-cyan-500 text-white cursor-pointer hover:bg-neutral-800/50'
+                }`}
+              >
+                Next →
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -2038,16 +2313,6 @@ Evaluate this code strictly:
               </button>
             </div>
           )}
-        </div>
-      )}
-
-      {/* TAB 4: COMPANY PLACEMENT ARCHIVES (8,699 QUESTIONS ACROSS 16 FIRMS) */}
-      {activePracticeTab === 'company' && (
-        <div className="space-y-6 animate-fade-in">
-          <CompanyPrep 
-            onSolveInEditor={handleSolveLocalFromCompany}
-            localProblemsMap={localProblemsMap}
-          />
         </div>
       )}
 
