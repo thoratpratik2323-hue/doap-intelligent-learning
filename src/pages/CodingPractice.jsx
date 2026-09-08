@@ -555,6 +555,12 @@ export const CodingPractice = ({ initialTab = 'problems' }) => {
     return map;
   }, []);
 
+  // Total problems count combining foundational 167 + 8,699 company placement questions
+  const totalCombinedProblemsCount = useMemo(() => {
+    const companyTotal = companyCatalog.reduce((acc, c) => acc + (c.totalCount || c.count || 0), 0);
+    return ALL_PROBLEMS.length + (companyTotal || 8699);
+  }, [companyCatalog]);
+
   const [problemSearchQuery, setProblemSearchQuery] = useState('');
   const [knowledgeSearchQuery, setKnowledgeSearchQuery] = useState('');
   const [selectedKnowledgeCat, setSelectedKnowledgeCat] = useState('All');
@@ -1586,7 +1592,7 @@ Evaluate this code strictly:
           }`}
         >
           <Code size={16} />
-          <span>DSA Problems ({ALL_PROBLEMS.length})</span>
+          <span>DSA Problems ({totalCombinedProblemsCount.toLocaleString()})</span>
         </button>
 
         <button
@@ -1614,7 +1620,7 @@ Evaluate this code strictly:
         </button>
       </div>
 
-      {/* TAB 1: DSA PROBLEM BANK (147 PROBLEMS) */}
+      {/* TAB 1: DSA PROBLEM BANK */}
       {activePracticeTab === 'problems' && (
         <div className="space-y-6 animate-fade-in">
           {/* Search Bar */}
@@ -1627,7 +1633,7 @@ Evaluate this code strictly:
               aria-label="Search DSA challenges"
               value={problemSearchQuery}
               onChange={(e) => setProblemSearchQuery(e.target.value)}
-              placeholder={`Search ${ALL_PROBLEMS.length}+ DSA challenges across LeetCode & HackerRank by title, pattern, or track...`}
+              placeholder={`Search ${totalCombinedProblemsCount.toLocaleString()}+ DSA & Company placement challenges (LeetCode, HackerRank, Google, Amazon, TCS)...`}
               className={`w-full pl-10 pr-10 py-2.5 rounded-2xl border text-xs sm:text-sm transition-all focus:outline-none ${
                 isDarkMode 
                   ? 'bg-[#111111] border-neutral-800 text-white placeholder-neutral-500 focus:border-cyan-500/50' 
