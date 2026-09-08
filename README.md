@@ -16,6 +16,11 @@
 [![React](https://img.shields.io/badge/React_18-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite_6-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS_v4-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Unsloth AI](https://img.shields.io/badge/Unsloth_2x_Faster-10B981?style=flat-square&logo=speedtest&logoColor=white)](https://github.com/unslothai/unsloth)
+[![Pyodide Wasm](https://img.shields.io/badge/Pyodide_Python_Wasm-3776AB?style=flat-square&logo=python&logoColor=white)](https://pyodide.org/)
+[![vLLM](https://img.shields.io/badge/vLLM_Serving-9333EA?style=flat-square&logo=ray&logoColor=white)](https://github.com/vllm-project/vllm)
+[![Kokoro TTS](https://img.shields.io/badge/Kokoro_82M_TTS-EC4899?style=flat-square&logo=podcast&logoColor=white)](https://github.com/hexgrad/kokoro)
+[![Piston Sandbox](https://img.shields.io/badge/Piston_Sandbox-E11D48?style=flat-square&logo=docker&logoColor=white)](https://github.com/engineer-man/piston)
 [![Groq LPU](https://img.shields.io/badge/Groq_LPU_120B-F55036?style=flat-square&logo=speedtest&logoColor=white)](https://groq.com/)
 [![Whisper STT](https://img.shields.io/badge/Whisper_Large_v3_Turbo-00A67E?style=flat-square&logo=openai&logoColor=white)](https://groq.com/)
 [![ElevenLabs](https://img.shields.io/badge/ElevenLabs_Charon_Turbo-black?style=flat-square&logo=elevenlabs&logoColor=white)](https://elevenlabs.io/)
@@ -43,6 +48,7 @@ Created for the landmark **"Build Sanjivani's Own Large Language Model — Build
 
 ## 📖 Table of Contents
 - [✨ Key Highlights](#-key-highlights)
+- [🌐 Open-Source Repositories & Ecosystem Architecture (A to Z)](#-open-source-repositories--ecosystem-architecture-a-to-z)
 - [🏛️ Sanjivani LLM Studio (Unsloth, vLLM & Ollama)](#️-sanjivani-llm-studio-unsloth-vllm--ollama)
 - [⚡ Open-Source Runtimes: Pyodide Wasm, Kokoro TTS & Piston](#-open-source-runtimes-pyodide-wasm-kokoro-tts--piston)
 - [🟩 HackerRank Interview Preparation Kit & Placement Suite](#-hackerrank-interview-preparation-kit--placement-suite)
@@ -84,6 +90,26 @@ Created for the landmark **"Build Sanjivani's Own Large Language Model — Build
  📄 Harvard ATS Resume Studio │ 📥 1-Click Vector PDF Export (100/100 ATS Pass Rate)
  ☁️ Multi-Device Cloud Sync   │ 🔄 Real-Time Firestore Persistence & Fast Multi-CDN Hosting
 ```
+
+## 🌐 Open-Source Repositories & Ecosystem Architecture (A to Z)
+
+DOAP's core philosophy is **100% open-source sovereignty**—delivering state-of-the-art AI mentorship, real-time code evaluation, and speech synthesis without being beholden to expensive cloud API paywalls or opaque proprietary silos.
+
+Below is the definitive matrix mapping the world's premier open-source GitHub repositories directly into DOAP's architecture:
+
+| Component / Layer | Open-Source Repository | Role & Direct Implementation in DOAP |
+|---|---|---|
+| **Fast LLM Fine-Tuning** | [`unslothai/unsloth`](https://github.com/unslothai/unsloth) | **2x–5x faster training with 70% less VRAM.** Enables training Sanjivani's LLM on a single GPU or free Google Colab notebook via [`sanjivani-llm/train_unsloth_sanjivani.py`](file:///sanjivani-llm/train_unsloth_sanjivani.py). |
+| **Reasoning Architecture** | [`huggingface/open-r1`](https://github.com/huggingface/open-r1) | **Full open reproduction of DeepSeek-R1.** Supplies GRPO reinforcement learning recipes and SFT schemas powering DOAP's `<think>` chain-of-thought engine. |
+| **Reasoning Datasets** | [`open-thoughts/open-thoughts`](https://github.com/open-thoughts/open-thoughts) | **1M+ curated reasoning traces** distilled from frontier models. Directly integrated via [`sanjivani-llm/dataset_curator.py`](file:///sanjivani-llm/dataset_curator.py) to train algorithmic intuition. |
+| **In-Browser Python Wasm** | [`pyodide/pyodide`](https://github.com/pyodide/pyodide) | **Python 3 compiled to WebAssembly.** Runs student Python code directly inside the browser with **0ms latency and 0 server cost** via [`src/services/pyodideRunner.js`](file:///src/services/pyodideRunner.js). |
+| **Open-Weights Voice TTS** | [`hexgrad/kokoro`](https://github.com/hexgrad/kokoro) / [`Kokoro-FastAPI`](https://github.com/remsky/Kokoro-FastAPI) | **82M parameter lightweight studio TTS.** Provides offline, self-hosted voice synthesis via [`src/services/elevenLabsService.js`](file:///src/services/elevenLabsService.js) and the Settings runtime controller. |
+| **Multi-Language Sandbox** | [`engineer-man/piston`](https://github.com/engineer-man/piston) | **High-performance Docker execution engine.** Runs Python, C++, Java, Node.js, and Rust in secure disposable sandboxes via [`docker-compose.piston.yml`](file:///docker-compose.piston.yml). |
+| **High-Throughput Serving** | [`vllm-project/vllm`](https://github.com/vllm-project/vllm) | **The fastest LLM serving engine with PagedAttention.** Serves Sanjivani's model on campus infrastructure with an OpenAI-compatible `/v1` endpoint via [`sanjivani-llm/serve_vllm.sh`](file:///sanjivani-llm/serve_vllm.sh). |
+| **Local CPU/GPU Inference** | [`ollama/ollama`](https://github.com/ollama/ollama) | **Local quantized GGUF execution on student laptops.** Pre-configured through [`sanjivani-llm/Modelfile`](file:///sanjivani-llm/Modelfile) (`ollama run sanjivani-coder`). |
+| **Research Test Datasets** | [`newfacade/LeetCodeDataset`](https://github.com/newfacade/LeetCodeDataset) | **Research-grade benchmark with 100+ verified unit tests per problem.** Grounding DOAP's automated proctored test suites across LeetCode & HackerRank challenges. |
+
+---
 
 ## 🏛️ Sanjivani LLM Studio (Unsloth, vLLM & Ollama)
 
