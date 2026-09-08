@@ -68,12 +68,31 @@ export const AppearancePage = () => {
 
   const [activeTab, setActiveTab] = useState('theme');
 
+  // Open-Source Engine States
+  const [ttsProvider, setTtsProvider] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_tts_provider') || 'elevenlabs' : 'elevenlabs'));
+  const [kokoroUrl, setKokoroUrl] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_kokoro_url') || 'http://localhost:8880/v1/audio/speech' : 'http://localhost:8880/v1/audio/speech'));
+  const [pistonUrl, setPistonUrl] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_piston_url') || 'http://localhost:2000' : 'http://localhost:2000'));
+  const [campusLlmUrl, setCampusLlmUrl] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_campus_llm_url') || 'http://localhost:8000/v1' : 'http://localhost:8000/v1'));
+  const [savedSuccess, setSavedSuccess] = useState(false);
+
+  const handleSaveEngines = () => {
+    try {
+      localStorage.setItem('doap_tts_provider', ttsProvider);
+      localStorage.setItem('doap_kokoro_url', kokoroUrl);
+      localStorage.setItem('doap_piston_url', pistonUrl);
+      localStorage.setItem('doap_campus_llm_url', campusLlmUrl);
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 2500);
+    } catch (e) {}
+  };
+
   const TABS = [
     { id: 'theme', label: 'Theme' },
     { id: 'gradients', label: 'Gradients' },
     { id: 'depth', label: 'Depth & Glass' },
     { id: 'animation', label: 'Animation' },
     { id: 'advanced', label: 'Advanced' },
+    { id: 'engines', label: '⚡ Open-Source AI & Runtimes' },
   ];
 
   // ── Showcase cards (bottom row) ─────────────────────────────
@@ -125,6 +144,107 @@ export const AppearancePage = () => {
             className="p-5 rounded-2xl border space-y-6 doap-glass"
             style={{ backgroundColor: 'var(--doap-surface)', borderColor: 'var(--doap-border)' }}
           >
+            {activeTab === 'engines' ? (
+              <div className="space-y-6 animate-fade-in">
+                <div>
+                  <h3 className="text-sm font-bold text-cyan-400 font-mono flex items-center gap-2">
+                    <span>⚡ OPEN-SOURCE AI & RUNTIME CONTROLLER</span>
+                  </h3>
+                  <p className="text-[11px] mt-1" style={{ color: 'var(--doap-text-sec)' }}>
+                    Switch seamlessly between cloud APIs and 100% self-hosted local engines (Kokoro TTS, Pyodide Wasm, Piston sandbox & vLLM/Ollama).
+                  </p>
+                </div>
+
+                {/* 1. Voice Synthesis Engine */}
+                <Section title="Voice Synthesis Engine (TTS)" subtitle="Select cloud or self-hosted open-weights voice.">
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setTtsProvider('elevenlabs')}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                        ttsProvider === 'elevenlabs' ? 'border-cyan-400 bg-cyan-500/10' : 'border-neutral-800 bg-neutral-900/40'
+                      }`}
+                    >
+                      <p className="text-xs font-bold text-white">🎙️ ElevenLabs Cloud</p>
+                      <p className="text-[10px] text-neutral-400 mt-0.5">Charon Studio voice (Cloud API)</p>
+                    </button>
+                    <button
+                      onClick={() => setTtsProvider('kokoro')}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                        ttsProvider === 'kokoro' ? 'border-emerald-400 bg-emerald-500/10' : 'border-neutral-800 bg-neutral-900/40'
+                      }`}
+                    >
+                      <p className="text-xs font-bold text-white">⚡ Kokoro TTS (Local)</p>
+                      <p className="text-[10px] text-neutral-400 mt-0.5">82M lightweight open-weights</p>
+                    </button>
+                  </div>
+
+                  {ttsProvider === 'kokoro' && (
+                    <div className="pt-2">
+                      <label className="text-[11px] text-neutral-400 block mb-1">Kokoro OpenAI-Compatible Endpoint:</label>
+                      <input
+                        type="text"
+                        value={kokoroUrl}
+                        onChange={(e) => setKokoroUrl(e.target.value)}
+                        placeholder="http://localhost:8880/v1/audio/speech"
+                        className="w-full px-3 py-2 rounded-xl text-xs bg-black/40 border border-neutral-800 text-white font-mono focus:border-emerald-500 focus:outline-none"
+                      />
+                    </div>
+                  )}
+                </Section>
+
+                {/* 2. Code Execution Sandboxing */}
+                <Section title="Code Execution Engine" subtitle="In-browser Wasm or self-hosted Dockerized Piston.">
+                  <div className="space-y-2">
+                    <div className="p-3 rounded-xl border border-neutral-800 bg-black/30 flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-bold text-white">🐍 Pyodide Python 3 Wasm</p>
+                        <p className="text-[10px] text-neutral-400">Executes directly inside the browser with 0ms server latency</p>
+                      </div>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-emerald-500/40 text-emerald-400 bg-emerald-950/40">
+                        ACTIVE
+                      </span>
+                    </div>
+
+                    <div className="space-y-1 pt-1">
+                      <label className="text-[11px] text-neutral-400 block">Self-Hosted Piston API Engine (Optional):</label>
+                      <input
+                        type="text"
+                        value={pistonUrl}
+                        onChange={(e) => setPistonUrl(e.target.value)}
+                        placeholder="http://localhost:2000"
+                        className="w-full px-3 py-2 rounded-xl text-xs bg-black/40 border border-neutral-800 text-white font-mono focus:border-cyan-500 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                </Section>
+
+                {/* 3. Sanjivani LLM Local Endpoint */}
+                <Section title="Sanjivani LLM Inference Endpoint" subtitle="vLLM or Ollama local campus server.">
+                  <input
+                    type="text"
+                    value={campusLlmUrl}
+                    onChange={(e) => setCampusLlmUrl(e.target.value)}
+                    placeholder="http://localhost:8000/v1"
+                    className="w-full px-3 py-2 rounded-xl text-xs bg-black/40 border border-neutral-800 text-white font-mono focus:border-cyan-500 focus:outline-none"
+                  />
+                  <p className="text-[10px] text-neutral-500 mt-1 font-mono">Run `serve_vllm.sh` to launch Sanjivani-Coder-7B locally.</p>
+                </Section>
+
+                <div className="pt-2 flex items-center justify-between">
+                  <span className="text-xs font-mono text-emerald-400">
+                    {savedSuccess ? '✓ Engine settings saved successfully!' : ''}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleSaveEngines}
+                    className="px-4 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black font-bold text-xs shadow-md transition-all cursor-pointer"
+                  >
+                    Save Engine Settings
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
             {/* ── Theme Mode ────── */}
             <Section title="Theme Mode" subtitle="Choose your preferred theme mode.">
               <div className="grid grid-cols-3 gap-2.5">
@@ -295,6 +415,8 @@ export const AppearancePage = () => {
                 <span>Reset to defaults</span>
               </button>
             </div>
+            </>
+            )}
           </div>
         </div>
 

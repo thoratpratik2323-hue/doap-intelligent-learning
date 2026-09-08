@@ -43,6 +43,8 @@ Created for the landmark **"Build Sanjivani's Own Large Language Model — Build
 
 ## 📖 Table of Contents
 - [✨ Key Highlights](#-key-highlights)
+- [🏛️ Sanjivani LLM Studio (Unsloth, vLLM & Ollama)](#️-sanjivani-llm-studio-unsloth-vllm--ollama)
+- [⚡ Open-Source Runtimes: Pyodide Wasm, Kokoro TTS & Piston](#-open-source-runtimes-pyodide-wasm-kokoro-tts--piston)
 - [🟩 HackerRank Interview Preparation Kit & Placement Suite](#-hackerrank-interview-preparation-kit--placement-suite)
 - [🧠 Brain Vault (Visual 8-Layer Memory Inspector)](#-brain-vault-visual-8-layer-memory-inspector)
 - [🎙️ Real-Time Voice AI Tutor with Live I/O Console (`IO`)](#️-real-time-voice-ai-tutor-with-live-io-console-io)
@@ -82,6 +84,41 @@ Created for the landmark **"Build Sanjivani's Own Large Language Model — Build
  📄 Harvard ATS Resume Studio │ 📥 1-Click Vector PDF Export (100/100 ATS Pass Rate)
  ☁️ Multi-Device Cloud Sync   │ 🔄 Real-Time Firestore Persistence & Fast Multi-CDN Hosting
 ```
+
+## 🏛️ Sanjivani LLM Studio (Unsloth, vLLM & Ollama)
+
+The dedicated [`sanjivani-llm/`](file:///sanjivani-llm/) directory provides a turnkey, university-grade training, fine-tuning, and inference suite designed for **Sanjivani College of Engineering / Sanjivani University**:
+
+* **\`dataset_curator.py\`**:
+  * Extracts algorithmic challenges and reasoning chains from DOAP's curated repository.
+  * Formats instruction-tuning datasets with DeepSeek-R1 / Open-Thoughts style `<think> ... </think>` CoT reasoning traces.
+* **\`train_unsloth_sanjivani.py\`**:
+  * Powered by **Unsloth** for **2x–5x faster training with 70% less VRAM**.
+  * Pre-configured with 4-bit QLoRA, gradient checkpointing, and ChatML templating targeting `Qwen2.5-Coder-7B-Instruct` or `Llama-3.1-8B-Instruct`.
+  * Fully executable on a single free Google Colab GPU (T4 / V100 / A100) or campus workstation.
+  * Exports 16-bit merged weights and 4-bit quantized GGUF checkpoints automatically.
+* **1-Click Local & Campus Serving**:
+  * **vLLM (`serve_vllm.sh`)**: High-throughput OpenAI-compatible API serving on campus infrastructure (`http://0.0.0.0:8000/v1`).
+  * **Ollama (`Modelfile`)**: 1-click quantized local CPU/GPU serving on student laptops (`ollama create sanjivani-coder -f Modelfile`).
+
+---
+
+## ⚡ Open-Source Runtimes: Pyodide Wasm, Kokoro TTS & Piston
+
+DOAP eliminates third-party subscription limits and API bottlenecks through native open-source runtimes:
+
+* **🐍 In-Browser Python 3 WebAssembly Runtime ([`src/services/pyodideRunner.js`](file:///src/services/pyodideRunner.js))**:
+  * Powered by **Pyodide WebAssembly (Wasm)**.
+  * Executes student Python 3 code directly inside the browser with **0ms network latency and zero server API costs**.
+  * Isolates executions, captures stdout, formats test outputs, and automatically falls back to compiler APIs or AI neural simulation if offline.
+* **🎙️ Open-Weights Kokoro TTS Voice Engine**:
+  * Integrated directly into [`src/services/elevenLabsService.js`](file:///src/services/elevenLabsService.js) and the Settings Modal.
+  * Supports local OpenAI-compatible endpoints (`http://localhost:8880/v1/audio/speech`) running the 82M parameter **Kokoro TTS** model for lightning-fast, offline voice synthesis.
+* **🐳 Self-Hosted Multi-Language Sandbox ([`docker-compose.piston.yml`](file:///docker-compose.piston.yml))**:
+  * Pre-configured Docker Compose specification for **Engineer-man Piston**.
+  * Executes Python, C++, Java, Node.js, Rust, and Go in secure, disposable containers.
+
+---
 
 ## 🟩 HackerRank Interview Preparation Kit & Placement Suite
 
@@ -332,7 +369,8 @@ doap-intelligent-learning/
 │   │   └── StudyPlan.jsx          # Live calendar & AI scheduler
 │   ├── 📁 services/               # Core service layer
 │   │   ├── aiTutorEngine.js       # Groq 120B Super-Brain & language mirroring
-│   │   ├── elevenLabsService.js   # ElevenLabs Charon studio voice engine
+│   │   ├── pyodideRunner.js       # Client-side Python 3 WebAssembly test execution engine
+│   │   ├── elevenLabsService.js   # ElevenLabs Charon voice engine + Kokoro local TTS
 │   │   ├── whisperService.js      # Groq Whisper Large v3 STT
 │   │   ├── ipArmyAgents.js        # LinkedIn, Resume, JD Matcher & Codemaker agents
 │   │   ├── memoryBrain.js         # 8-Layer Unified Cognitive Memory
@@ -341,6 +379,13 @@ doap-intelligent-learning/
 │   ├── App.jsx                    # Root router with ErrorBoundary & Global Modals
 │   ├── index.css                  # Design system tokens & print styles
 │   └── main.jsx                   # React DOM entry point
+├── 📁 sanjivani-llm/              # Sanjivani LLM Studio (Fine-Tuning, Datasets & Serving)
+│   ├── dataset_curator.py         # Formats 167+ problems into SFT/GRPO reasoning dataset (<think>)
+│   ├── train_unsloth_sanjivani.py # Unsloth 2x faster, 70% less VRAM fine-tuning pipeline
+│   ├── serve_vllm.sh              # Production-grade OpenAI-compatible vLLM serving script
+│   ├── Modelfile                  # 1-click Ollama local CPU/GPU serving configuration
+│   └── README.md                  # Complete training and campus deployment guide
+├── docker-compose.piston.yml      # Self-hosted Dockerized multi-language code execution engine
 ├── firestore.rules                # Granular Firestore security policies
 ├── firebase.json                  # Firebase Hosting routing & hardened CSP configuration
 ├── package.json                   # Project dependencies & scripts

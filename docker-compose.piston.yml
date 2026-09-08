@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  piston_api:
+    image: ghcr.io/engineer-man/piston:latest
+    container_name: doap_piston_api
+    restart: unless-stopped
+    ports:
+      - "2000:2000"
+    volumes:
+      - piston_packages:/piston/packages
+    environment:
+      - PISTON_BIND_ADDRESS=0.0.0.0:2000
+      - PISTON_DISABLE_NETWORKING=true
+      - PISTON_COMPILE_TIMEOUT=10000
+      - PISTON_RUN_TIMEOUT=5000
+    tmpfs:
+      - /tmp:exec
+
+volumes:
+  piston_packages:

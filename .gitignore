@@ -41,3 +41,9 @@ yarn-error.log*
 
 # ─── Database schema (backend-only, not needed by the frontend)
 supabase_schema.sql
+
+# ─── LLM Training Checkpoints & Datasets ─────────────────────
+*.jsonl
+sanjivani-llm/*checkpoints*/
+sanjivani-llm/*gguf*/
+sanjivani-llm/*_merged*/

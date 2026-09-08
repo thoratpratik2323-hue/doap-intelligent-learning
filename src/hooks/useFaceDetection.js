@@ -4,10 +4,12 @@ export const useFaceDetection = ({ videoRef, isStreamActive = false, onViolation
   const [faceStatus, setFaceStatus] = useState('DETECTED'); // 'DETECTED' | 'NO_FACE' | 'MULTIPLE_FACES' | 'LOOKING_AWAY'
   const [faceCount, setFaceCount] = useState(1);
   const [headPose, setHeadPose] = useState('FORWARD'); // 'FORWARD' | 'LEFT' | 'RIGHT' | 'DOWN'
+  const [eyeContactPercentage, setEyeContactPercentage] = useState(100);
 
   const noFaceTimerRef = useRef(null);
   const lookAwayTimerRef = useRef(null);
   const canvasRef = useRef(document.createElement('canvas'));
+  const telemetryHistoryRef = useRef([]);
 
   // Analyzes video frames continuously when stream is active
   useEffect(() => {
@@ -114,6 +116,14 @@ export const useFaceDetection = ({ videoRef, isStreamActive = false, onViolation
               lookAwayTimerRef.current = null;
             }
           }
+
+          // Compute rolling eye contact percentage (last 30 samples)
+          const isAttentive = skinRatio >= 0.04 && skinRatio <= 0.45 && skinRatioDifference <= 0.45;
+          telemetryHistoryRef.current.push(isAttentive ? 1 : 0);
+          if (telemetryHistoryRef.current.length > 30) telemetryHistoryRef.current.shift();
+          const validFrames = telemetryHistoryRef.current.filter(Boolean).length;
+          const currentRatio = Math.round((validFrames / (telemetryHistoryRef.current.length || 1)) * 100);
+          setEyeContactPercentage(currentRatio);
         }
       } catch (e) {
         // frame processing fallback
@@ -130,6 +140,7 @@ export const useFaceDetection = ({ videoRef, isStreamActive = false, onViolation
   return {
     faceStatus,
     faceCount,
-    headPose
+    headPose,
+    eyeContactPercentage
   };
 };

@@ -51,6 +51,7 @@ import {
   DSA_KNOWLEDGE_BASE 
 } from '../data/dsa/dsaKnowledgeData';
 import { HACKERRANK_PROBLEMS } from '../data/dsa/hackerRankProblems';
+import { runPythonTestsInBrowser } from '../services/pyodideRunner';
 
 const PROBLEM_DEFINITIONS = [
   {
@@ -1005,7 +1006,42 @@ Act as my Socratic AI Tutor. Do NOT write the entire solved code. Instead, analy
       } catch (e) {}
     }
 
-    // 2. If Python, C++, or Java: run via Judge0 or DOAP AI Neural Simulation Engine
+    // 2. Client-Side Python 3 Wasm Execution via Pyodide (0ms latency, zero server cost)
+    if (selectedLanguage === 'python') {
+      try {
+        const activeTests = (activeProblem.tests && activeProblem.tests.length > 0)
+          ? activeProblem.tests
+          : (activeProblem.examples && activeProblem.examples.length > 0)
+            ? activeProblem.examples.map((ex, idx) => ({
+                id: idx + 1,
+                display: `${activeProblem.functionName || 'solution'}(${ex.input})`,
+                expected: ex.output,
+                input: [ex.input]
+              }))
+            : [{ id: 1, display: `${activeProblem.functionName || 'solution'}()`, expected: true, input: [] }];
+
+        const pyResult = await runPythonTestsInBrowser(code, activeProblem.functionName || 'solution', activeTests);
+        if (pyResult && pyResult.success) {
+          setRunResult(pyResult);
+          if (pyResult.allPassed) {
+            if (!solvedProblems.includes(activeProblem.id)) {
+              const updated = [...solvedProblems, activeProblem.id];
+              updateUserProgress({ solvedProblems: updated });
+              memoryBrain.updateKnowledge(activeProblem.title, 'mastered');
+              memoryBrain.recordEpisodic(`Solved Problem: ${activeProblem.title}`, `Mastered ${activeProblem.category} algorithm in Python 3 via Pyodide Wasm.`);
+            }
+          } else {
+            memoryBrain.recordWeakness(`${activeProblem.title} (${activeProblem.category})`);
+          }
+          setIsRunning(false);
+          return;
+        }
+      } catch (pyErr) {
+        console.warn("Pyodide Wasm client runner error, falling back to compiler API:", pyErr);
+      }
+    }
+
+    // 3. If C++, Java, or fallback: run via Judge0 or DOAP AI Neural Simulation Engine
     if (selectedLanguage !== 'javascript') {
       const languageIds = {
         python: 71,

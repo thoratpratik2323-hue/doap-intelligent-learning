@@ -433,6 +433,49 @@ export async function speakDOAPVoice(text, onComplete, onError) {
   const cleanText = humanizeTextForSpeech(text);
   const voiceId = 'pNInz6obpgDQGcFmaJgB'; // Charon Voice Core (Adam)
 
+  // 1. Support Open-Source Local TTS Engine (Kokoro TTS / Kokoro-FastAPI)
+  const ttsProvider = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_tts_provider') : 'elevenlabs');
+  const kokoroUrl = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_kokoro_url') : '') || 'http://localhost:8880/v1/audio/speech';
+
+  if (ttsProvider === 'kokoro') {
+    try {
+      const kokoroVoice = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_kokoro_voice') : '') || 'af_bella';
+      const kokoroRes = await fetch(kokoroUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'kokoro',
+          input: cleanText,
+          voice: kokoroVoice,
+          response_format: 'mp3'
+        })
+      });
+
+      if (kokoroRes.ok) {
+        const audioBlob = await kokoroRes.blob();
+        const audioBlobUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioBlobUrl);
+        currentAudioElement = audio;
+
+        audio.onended = () => {
+          URL.revokeObjectURL(audioBlobUrl);
+          currentAudioElement = null;
+          if (onComplete) onComplete();
+        };
+
+        audio.onerror = () => {
+          URL.revokeObjectURL(audioBlobUrl);
+          fallbackBrowserSpeech(cleanText, onComplete);
+        };
+
+        await audio.play();
+        return;
+      }
+    } catch (kokoroErr) {
+      console.warn("Kokoro Local TTS endpoint unreachable, falling back to ElevenLabs/Browser:", kokoroErr);
+    }
+  }
+
   const apiKeys = [
     (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_elevenlabs_key') : ''),
     'sk_49242a8b562bd43cd0c8ff30db444b69216a64c89ef7d3d2',

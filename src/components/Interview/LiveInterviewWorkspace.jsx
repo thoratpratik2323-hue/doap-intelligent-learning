@@ -84,7 +84,8 @@ export const LiveInterviewWorkspace = ({ setupData, onInterviewComplete, onInter
 
   const {
     faceStatus,
-    headPose
+    headPose,
+    eyeContactPercentage
   } = useFaceDetection({ videoRef, isStreamActive: isCameraOn });
 
   useEffect(() => {
@@ -301,11 +302,16 @@ export const LiveInterviewWorkspace = ({ setupData, onInterviewComplete, onInter
               <span className="uppercase tracking-wider text-[11px] font-mono font-bold" style={{ color: 'var(--doap-text-sec)' }}>
                 CANDIDATE PROCTORED FEED
               </span>
-              <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                faceStatus === 'DETECTED' ? 'bg-emerald-950/50 text-emerald-400 border border-emerald-800' : 'bg-rose-950/50 text-rose-400 border border-rose-800 animate-pulse'
-              }`}>
-                {faceStatus === 'DETECTED' ? '✓ Face Tracked' : `⚠️ ${faceStatus}`}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-neutral-900 border border-neutral-700 text-cyan-300">
+                  👁️ {eyeContactPercentage ?? 100}% Gaze
+                </span>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                  faceStatus === 'DETECTED' ? 'bg-emerald-950/50 text-emerald-400 border border-emerald-800' : 'bg-rose-950/50 text-rose-400 border border-rose-800 animate-pulse'
+                }`}>
+                  {faceStatus === 'DETECTED' ? '✓ In Frame' : `⚠️ ${faceStatus}`}
+                </span>
+              </div>
             </div>
 
             {/* Live Camera Feed */}
