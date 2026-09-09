@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { 
-  FileCheck2, ArrowRight, X, CheckCircle2, Clock, Award, Play, Sparkles, BookOpen,
+import {
+  Search, FileCheck2, ArrowRight, X, CheckCircle2, Clock, Award, Play, Sparkles, BookOpen,
   Code, GitBranch, Github, ExternalLink, Copy, Check, Terminal, Layers, FolderGit2,
   ShieldCheck, AlertCircle, Zap, Cpu, Server, Database, Cloud, Send
 } from 'lucide-react';
@@ -10,548 +10,9 @@ import { generateSmartTutorResponse } from '../services/aiTutorEngine';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { DSA_QUIZZES } from '../data/dsa/dsaKnowledgeData.js';
+import { INTERACTIVE_EXAMS_CATALOG, INTERACTIVE_EXAMS_DATA } from '../data/interactiveExamsData';
 
-const ASSESSMENT_QUIZZES = {
-  'ai-readiness': {
-    title: 'Full AI Readiness Assessment',
-    questions: [
-      {
-        q: 'Which algorithm is commonly used for gradient-based optimization in deep neural networks?',
-        options: ['Adam Optimizer', 'Dijkstra Algorithm', 'Binary Search', 'Bubble Sort'],
-        correct: 0
-      },
-      {
-        q: 'What is the purpose of the Transformer self-attention mechanism?',
-        options: [
-          'To sort tokens by length',
-          'To dynamically weigh the contextual relationship between any two tokens in a sequence',
-          'To compress the model weights into 8-bit integers',
-          'To prevent memory leaks in the GPU'
-        ],
-        correct: 1
-      },
-      {
-        q: 'In Machine Learning, what problem does L2 regularization (Ridge) primarily address?',
-        options: ['Underfitting', 'Overfitting by penalizing large model weights', 'Data missingness', 'GPU memory exhaustion'],
-        correct: 1
-      },
-      {
-        q: 'Which metric is most suitable for evaluating highly imbalanced classification datasets?',
-        options: ['Accuracy', 'F1-Score / Area Under Precision-Recall Curve', 'Mean Absolute Error', 'R-Squared'],
-        correct: 1
-      },
-      {
-        q: 'What is the key advantage of Retrieval-Augmented Generation (RAG)?',
-        options: [
-          'It replaces the LLM with a SQL database',
-          'It grounds LLM responses with external verified facts without retraining the model',
-          'It increases network latency',
-          'It removes the need for vector embeddings'
-        ],
-        correct: 1
-      }
-    ]
-  },
-  'dsa-practice': {
-    title: 'DSA Practice Test — Trees & Graphs',
-    questions: [
-      {
-        q: 'What is the worst-case time complexity of searching in an unbalanced Binary Search Tree (BST)?',
-        options: ['O(1)', 'O(log N)', 'O(N)', 'O(N log N)'],
-        correct: 2
-      },
-      {
-        q: 'Which traversal of a Binary Search Tree produces values in strictly sorted ascending order?',
-        options: ['Pre-order', 'In-order', 'Post-order', 'Level-order'],
-        correct: 1
-      },
-      {
-        q: 'What data structure is standardly used to implement Breadth-First Search (BFS) in a graph?',
-        options: ['Stack', 'Queue', 'Priority Queue', 'Trie'],
-        correct: 1
-      },
-      {
-        q: 'In an AVL tree, what is the maximum permissible difference in height between left and right subtrees?',
-        options: ['0', '1', '2', 'log N'],
-        correct: 1
-      },
-      {
-        q: 'Dijkstra’s single-source shortest path algorithm cannot handle:',
-        options: ['Dense graphs', 'Negative edge weights', 'Directed acyclic graphs', 'Trees'],
-        correct: 1
-      }
-    ]
-  },
-  'job-readiness': {
-    title: 'Job Readiness Assessment',
-    questions: [
-      {
-        q: 'In system design, what is the primary role of a Reverse Proxy (e.g. Nginx)?',
-        options: ['To compile JavaScript code', 'Load balancing, SSL termination, and caching', 'To store user passwords', 'To act as a database index'],
-        correct: 1
-      },
-      {
-        q: 'Which HTTP status code signifies that the client is not authenticated?',
-        options: ['200 OK', '401 Unauthorized', '403 Forbidden', '404 Not Found'],
-        correct: 1
-      },
-      {
-        q: 'What does the ACID acronym stand for in relational databases?',
-        options: [
-          'Atomicity, Consistency, Isolation, Durability',
-          'Access, Control, Integrity, Data',
-          'Asynchronous, Concurrent, Indexed, Distributed',
-          'Authorization, Cipher, Identity, Defense'
-        ],
-        correct: 0
-      },
-      {
-        q: 'What is the key benefit of database indexing on frequently queried columns?',
-        options: ['Speeds up SELECT queries at the cost of slight INSERT/UPDATE overhead', 'Decreases storage size', 'Guarantees 100% uptime', 'Encrypts user data'],
-        correct: 0
-      },
-      {
-        q: 'In modern frontend architecture, what is hydration?',
-        options: [
-          'Cooling down the server CPU',
-          'Attaching event listeners to server-rendered HTML markup in the client browser',
-          'Minifying CSS files',
-          'Removing unused npm packages'
-        ],
-        correct: 1
-      }
-    ]
-  },
-  'c-systems': {
-    title: 'C Language & Systems Internals Exam',
-    questions: [
-      {
-        q: "What is the output of sizeof('A') in C, and why?",
-        options: [
-          "4 (Character literals have type int in C)",
-          "1 (Char size)",
-          "8 (Double size)",
-          "Undefined Behavior"
-        ],
-        correct: 0
-      },
-      {
-        q: "What does calling free(NULL) do according to the C standard?",
-        options: [
-          "Performs no operation and is guaranteed safe",
-          "Causes a Segmentation Fault",
-          "Causes a Memory Leak",
-          "Throws a NullPointerException"
-        ],
-        correct: 0
-      },
-      {
-        q: "If int *p = &x;, what does the expression *p++ do?",
-        options: [
-          "Dereferences current address, then advances the pointer to the next element",
-          "Increments the value stored at *p by 1",
-          "Increments both the address and the value",
-          "Compilation Error"
-        ],
-        correct: 0
-      },
-      {
-        q: "Why does the expression (n & (n - 1)) == 0 evaluate to true for positive n?",
-        options: [
-          "When n is a power of 2 (only one set bit)",
-          "When n is an odd number",
-          "When n is divisible by 3",
-          "When n is zero"
-        ],
-        correct: 0
-      },
-      {
-        q: "Why might sizeof(struct) be larger than the sum of its member sizes?",
-        options: [
-          "Due to compiler structure padding for CPU alignment requirements",
-          "Because of memory fragmentation",
-          "Because of garbage collection headers",
-          "Because C pointers always require 16 bytes"
-        ],
-        correct: 0
-      }
-    ]
-  },
-  'python-internals': {
-    title: 'Python Architecture & CPython Master Exam',
-    questions: [
-      {
-        q: "If a = [1, 2, 3] and b = a; b.append(4). What is the value of a?",
-        options: [
-          "[1, 2, 3, 4] (both share the same list reference)",
-          "[1, 2, 3]",
-          "TypeError: mutated alias",
-          "[4]"
-        ],
-        correct: 0
-      },
-      {
-        q: "Why does Python multithreading fail to speed up CPU-bound tasks in CPython?",
-        options: [
-          "Due to the Global Interpreter Lock (GIL) serializing bytecode execution",
-          "Because Python does not support multi-core CPUs",
-          "Due to recursion limit exhaustion",
-          "Because Python cannot allocate heap memory across threads"
-        ],
-        correct: 0
-      },
-      {
-        q: "What is the key difference between __new__ and __init__ in Python?",
-        options: [
-          "__new__ is the static constructor creating the instance; __init__ initializes fields",
-          "__new__ is for classes, __init__ is for functions",
-          "They are identical and interchangeable",
-          "__init__ runs before __new__"
-        ],
-        correct: 0
-      },
-      {
-        q: "What does the @property decorator do in Python?",
-        options: [
-          "Allows a method to be accessed like an attribute without ()",
-          "Converts a function to C bytecode",
-          "Makes the variable immutable forever",
-          "Registers a class in the global metaclass registry"
-        ],
-        correct: 0
-      },
-      {
-        q: "Why is `def add(item, bucket=[])` dangerous in Python?",
-        options: [
-          "The default list is created once at def-time and shared across all calls",
-          "Python raises a SyntaxError for mutable default arguments",
-          "It causes an immediate memory leak",
-          "It crashes during garbage collection"
-        ],
-        correct: 0
-      }
-    ]
-  },
-  'java-mastery': {
-    title: 'Java 21 & JVM Concurrency Master Assessment',
-    questions: [
-      {
-        q: "What are Virtual Threads (Project Loom) finalized in Java 21?",
-        options: [
-          "Lightweight JVM-managed threads scheduled onto carrier OS threads",
-          "GPU-based parallel compute units",
-          "A single-threaded event loop like Node.js",
-          "Thread pools with a fixed size of 1"
-        ],
-        correct: 0
-      },
-      {
-        q: "In Java Generics, what does PECS stand for?",
-        options: [
-          "Producer Extends, Consumer Super",
-          "Private Extends, Concrete Super",
-          "Polymorphic Extension, Class Super",
-          "Parameterized Encapsulation, Custom Scope"
-        ],
-        correct: 0
-      },
-      {
-        q: "Why does volatile not make i++ thread-safe?",
-        options: [
-          "Because increment is a 3-step read-modify-write compound operation",
-          "Because volatile is only for boolean variables",
-          "Because volatile is ignored by the JIT compiler",
-          "Because i++ runs exclusively in the CPU cache"
-        ],
-        correct: 0
-      },
-      {
-        q: "What optimization does JIT Escape Analysis perform when an object does not escape a method?",
-        options: [
-          "Scalar replacement — allocates fields on the stack/registers, avoiding heap allocation",
-          "Encrypts the object in RAM",
-          "Transfers the object to disk cache",
-          "Converts Java code to C++ at runtime"
-        ],
-        correct: 0
-      },
-      {
-        q: "Why is ArrayDeque preferred over legacy Stack in modern Java?",
-        options: [
-          "ArrayDeque is faster and avoids unnecessary Vector synchronized lock contention",
-          "Stack cannot store generic objects",
-          "ArrayDeque uses zero memory",
-          "Stack throws checked exceptions on pop"
-        ],
-        correct: 0
-      }
-    ]
-  },
-  'dsa-numericals': {
-    title: 'DSA Complexity & Numerical Benchmark',
-    questions: [
-      {
-        q: "A loop starts at n = 128 and divides n by 2 in every iteration until n = 1. How many iterations occur?",
-        options: ["7 iterations (log2(128) = 7)", "8 iterations", "6 iterations", "14 iterations"],
-        correct: 0
-      },
-      {
-        q: "An array contains 20 elements. How many total non-empty contiguous subarrays does it have?",
-        options: ["210 (Formula: n*(n+1)/2 = 20*21/2)", "400", "190", "1024"],
-        correct: 0
-      },
-      {
-        q: "A balanced BST contains 1,023 nodes. What is its height if the root is at level 0?",
-        options: ["9 (log2(1024) - 1)", "10", "11", "8"],
-        correct: 0
-      },
-      {
-        q: "A hash table has 100 slots and contains 75 elements. How many additional elements can be inserted before reaching a load factor of 0.9?",
-        options: ["15 (90 - 75 = 15)", "25", "10", "90"],
-        correct: 0
-      },
-      {
-        q: "For a recurrence relation T(n) = 2T(n/2) + n, what is its asymptotic time complexity (Master Theorem)?",
-        options: ["O(n log n)", "O(n)", "O(n²)", "O(log n)"],
-        correct: 0
-      }
-    ]
-  },
-  'hackerrank-cert': {
-    title: 'HackerRank Problem Solving Certification Mock',
-    category: 'Skill',
-    questions: [
-      {
-        q: "In HackerRank's 'Sales by Match' problem, given n socks with color numbers, what data structure yields the optimal O(n) solution?",
-        options: [
-          "Hash Map / Frequency Counter or Set to track pairs",
-          "Nested loops with O(n²) comparisons",
-          "Binary Search Tree with O(n log n) lookups",
-          "Matrix Transposition"
-        ],
-        correct: 0
-      },
-      {
-        q: "In 'Counting Valleys', a hiker steps U (up) and D (down). When exactly is a completed valley recorded?",
-        options: [
-          "When taking a 'U' step that brings current sea level back to 0 from -1",
-          "When taking a 'D' step from 0 to -1",
-          "Whenever the altitude is negative",
-          "At the highest peak"
-        ],
-        correct: 0
-      },
-      {
-        q: "For HackerRank's 'Sherlock and Anagrams', what is the fundamental technique to detect if two substrings are anagrams in linear time?",
-        options: [
-          "Sort each substring's characters or count character frequencies as a canonical hash key",
-          "Compare their lengths only",
-          "Check first and last characters",
-          "Calculate ASCII product"
-        ],
-        correct: 0
-      },
-      {
-        q: "In 'Balanced Brackets' ({[]}), which data structure is required to ensure brackets close in correct reverse chronological order?",
-        options: [
-          "LIFO Stack",
-          "FIFO Queue",
-          "Max Heap",
-          "Disjoint Set Union (DSU)"
-        ],
-        correct: 0
-      },
-      {
-        q: "In HackerRank's 'Max Array Sum' (non-adjacent subset sum), what is the dynamic programming state transition for dp[i]?",
-        options: [
-          "dp[i] = max(arr[i], dp[i-1], dp[i-2] + arr[i])",
-          "dp[i] = dp[i-1] + arr[i]",
-          "dp[i] = max(arr[i], arr[i-1])",
-          "dp[i] = dp[i-1] * arr[i]"
-        ],
-        correct: 0
-      },
-      {
-        q: "In 'Common Child' (longest string that can be formed from two strings without rearranging), which classical algorithmic pattern is this equivalent to?",
-        options: [
-          "Longest Common Subsequence (LCS) using 2D DP",
-          "Longest Increasing Subsequence (LIS)",
-          "Edit Distance (Levenshtein)",
-          "Knapsack 0/1"
-        ],
-        correct: 0
-      }
-    ]
-  },
-  'system-design': {
-    title: 'System Design & Distributed Scalability Exam',
-    category: 'Skill',
-    questions: [
-      {
-        q: "In the CAP Theorem, why can a distributed system partitioned across a network (P) not be both fully Consistent (C) and fully Available (A)?",
-        options: [
-          "Because nodes unable to communicate must choose between returning stale data (Available) or refusing reads (Consistent)",
-          "Because network latency cannot be measured in distributed systems",
-          "Because distributed systems require quantum computers for consensus",
-          "Because disk I/O is slower than CPU memory caches"
-        ],
-        correct: 0
-      },
-      {
-        q: "How does Consistent Hashing with virtual nodes prevent the 'hot-spotting' problem when a cache server crashes?",
-        options: [
-          "By distributing keys evenly across multiple virtual token ranges on a ring, remapping only ~K/N keys",
-          "By duplicating all keys across every single server in the fleet",
-          "By switching from SHA-256 to MD5 hashing",
-          "By converting key lookups into SQL binary joins"
-        ],
-        correct: 0
-      },
-      {
-        q: "What is the primary architectural difference between Kafka and RabbitMQ?",
-        options: [
-          "Kafka is an append-only distributed commit log with consumer-managed offsets; RabbitMQ is an AMQP broker tracking message acknowledgments",
-          "RabbitMQ is written in C++ while Kafka is written in Python",
-          "Kafka cannot handle more than 10 messages per second",
-          "RabbitMQ persists all messages forever on disk"
-        ],
-        correct: 0
-      },
-      {
-        q: "What is the primary role of a Circuit Breaker pattern (e.g. Netflix Hystrix) in microservices?",
-        options: [
-          "To stop dispatching requests to a failing dependency once a failure threshold is crossed, preventing cascading outages",
-          "To encrypt HTTP request payloads with AES-256",
-          "To compress video files in the browser",
-          "To auto-restart Docker containers on the host"
-        ],
-        correct: 0
-      },
-      {
-        q: "In high-throughput distributed payment processing, what mechanism guarantees that a duplicate network retry does not charge a customer twice?",
-        options: [
-          "Idempotency Keys stored with unique mutation constraints in an atomic database transaction",
-          "Increasing the client HTTP request timeout to 60 seconds",
-          "Using UDP instead of TCP for payments",
-          "Disabling browser cookies"
-        ],
-        correct: 0
-      }
-    ]
-  },
-  'cloud-devops': {
-    title: 'Cloud Native, Docker & Kubernetes Master Exam',
-    category: 'Skill',
-    questions: [
-      {
-        q: "In Docker containerization, what Linux kernel features provide process isolation and resource limits respectively?",
-        options: [
-          "Namespaces (isolation) and Cgroups (resource limits like CPU/Memory)",
-          "Syscalls and Inodes",
-          "IPTables and Swap memory",
-          "Chroot and Crontab"
-        ],
-        correct: 0
-      },
-      {
-        q: "What is the fundamental difference between a Kubernetes Deployment and a StatefulSet?",
-        options: [
-          "StatefulSets provide stable, unique network identifiers and ordered persistent storage for stateful databases",
-          "Deployments run only on Windows nodes",
-          "StatefulSets cannot be scaled horizontally",
-          "Deployments require dedicated bare-metal servers"
-        ],
-        correct: 0
-      },
-      {
-        q: "In Kubernetes networking, how does an Ingress Controller differ from a NodePort Service?",
-        options: [
-          "Ingress operates at Layer 7 (HTTP/HTTPS) providing host/path routing and SSL termination; NodePort opens a static port on each node",
-          "NodePort supports SSL certificates while Ingress does not",
-          "Ingress runs only inside Pod network namespaces",
-          "They are identical concepts with different names"
-        ],
-        correct: 0
-      },
-      {
-        q: "In Terraform Infrastructure as Code, why is remote state locking with DynamoDB/S3 critical?",
-        options: [
-          "To prevent concurrent Terraform apply executions from corrupting the shared infrastructure state file",
-          "To speed up AWS internet bandwidth",
-          "To compile HCL into machine code",
-          "To encrypt Docker images on Docker Hub"
-        ],
-        correct: 0
-      },
-      {
-        q: "What is the core principle of GitOps (e.g. ArgoCD)?",
-        options: [
-          "Git is the single source of truth; automated agents continuously reconcile actual cluster state with git declarations",
-          "Developers must run kubectl apply manually in production terminals",
-          "All Kubernetes clusters must be hosted on GitHub servers",
-          "Dockerfiles are replaced with Git commit hashes"
-        ],
-        correct: 0
-      }
-    ]
-  },
-  'database-internals': {
-    title: 'Database Storage Engines & Query Optimization Exam',
-    category: 'Skill',
-    questions: [
-      {
-        q: "Why do OLTP write-heavy databases like Cassandra and RocksDB use Log-Structured Merge (LSM) Trees instead of B+ Trees?",
-        options: [
-          "LSM Trees convert random disk writes into sequential append-only writes in memory and WAL, maximizing SSD write throughput",
-          "B+ Trees cannot store string data types",
-          "LSM Trees require zero disk space",
-          "B+ Trees only work on single-core CPUs"
-        ],
-        correct: 0
-      },
-      {
-        q: "In PostgreSQL, how does Multi-Version Concurrency Control (MVCC) ensure non-blocking reads during concurrent writes?",
-        options: [
-          "Readers inspect row tuple versions (xmin/xmax) matching their transaction snapshot, avoiding shared read locks",
-          "Postgres locks the entire table during every update",
-          "Postgres converts all updates into in-memory Redis caches",
-          "By executing all transactions sequentially on one core"
-        ],
-        correct: 0
-      },
-      {
-        q: "What is Write-Ahead Logging (WAL) and why must WAL records be flushed to disk before committing a transaction?",
-        options: [
-          "To guarantee Durability (ACID) so crash recovery can replay the log even if dirty buffer pool pages were not yet written",
-          "To reduce CPU clock temperatures",
-          "To allow web browsers to read the database directly",
-          "To prevent SQL injection attacks"
-        ],
-        correct: 0
-      },
-      {
-        q: "When running EXPLAIN ANALYZE on a SQL query, what indicates that an index is NOT being effectively utilized?",
-        options: [
-          "Seq Scan (Sequential Scan) on a large table with high cost and filtering rows after table scan",
-          "Index Only Scan",
-          "Bitmap Index Scan",
-          "Hash Aggregate"
-        ],
-        correct: 0
-      },
-      {
-        q: "What is the purpose of Bloom Filters in LSM-tree storage engines?",
-        options: [
-          "To quickly determine if a key definitely does NOT exist in an SSTable file without performing expensive disk I/O",
-          "To compress text columns using gzip",
-          "To auto-generate primary key UUIDs",
-          "To encrypt rows before writing to disk"
-        ],
-        correct: 0
-      }
-    ]
-  }
-};
+const ALL_ASSESSMENT_QUIZZES = INTERACTIVE_EXAMS_DATA;
 
 export const Assessments = () => {
   const { isDarkMode, activeAccentHex } = useTheme();
@@ -559,7 +20,9 @@ export const Assessments = () => {
   const accentHex = activeAccentHex || 'var(--doap-accent, #ffffff)';
 
   const [activeCategory, setActiveCategory] = useState('All');
-  const [activeTab, setActiveTab] = useState('tests'); // 'tests' | 'assignments'
+  const [activeTab, setActiveTab] = useState('tests');
+  const [examCategory, setExamCategory] = useState('All');
+  const [examSearch, setExamSearch] = useState(''); // 'tests' | 'assignments'
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [selectedAssignmentCat, setSelectedAssignmentCat] = useState('All');
   const [copiedSnippet, setCopiedSnippet] = useState(false);
@@ -671,7 +134,7 @@ Please evaluate this solution against industry standards. Provide a structured r
     setQuizScore(0);
   };
 
-  const activeQuiz = activeQuizOverride || (activeQuizKey ? ASSESSMENT_QUIZZES[activeQuizKey] : null);
+  const activeQuiz = activeQuizOverride || (activeQuizKey ? ALL_ASSESSMENT_QUIZZES[activeQuizKey] : null);
 
   React.useEffect(() => {
     if (!activeQuiz) return;
@@ -742,7 +205,7 @@ Please evaluate this solution against industry standards. Provide a structured r
           }`}
         >
           <FileCheck2 size={15} />
-          <span>Interactive Tests & Exams (10)</span>
+          <span>Interactive Tests & Exams ({INTERACTIVE_EXAMS_CATALOG.length})</span>
         </button>
 
         <button
@@ -759,513 +222,320 @@ Please evaluate this solution against industry standards. Provide a structured r
         </button>
       </div>
 
-      {activeTab === 'tests' && (
-        <>
-      {/* Top Grid: Start New Cards (8 cols) + Score Cards (4 cols) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Start New Section */}
-        <div className="lg:col-span-8 space-y-3">
-          <span className={`text-[11px] font-mono uppercase tracking-widest block ${
-            isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
-          }`}>
-            START LIVE ASSESSMENT
-          </span>
+      {activeTab === 'tests' && (() => {
+        const examCategories = ["All", "Core DSA", "Programming Languages", "Systems & OS", "Cloud & DevOps", "Security & Networking", "AI & Data"];
+        
+        const filteredExams = INTERACTIVE_EXAMS_CATALOG.filter(e => {
+          const matchCat = examCategory === 'All' || e.category === examCategory;
+          const matchSearch = !examSearch.trim() || 
+            e.title.toLowerCase().includes(examSearch.toLowerCase()) || 
+            (e.description && e.description.toLowerCase().includes(examSearch.toLowerCase())) ||
+            (e.tag && e.tag.toLowerCase().includes(examSearch.toLowerCase()));
+          return matchCat && matchSearch;
+        });
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {/* Card 0: DSA Master Certification Exam */}
-            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card sm:col-span-3 bg-gradient-to-r from-cyan-950/40 via-blue-950/30 to-purple-950/30 border-cyan-500/40 shadow-lg shadow-cyan-950/20`}>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono border bg-cyan-500/20 border-cyan-500/40 text-cyan-300 font-bold">
-                      ⭐ DSA MASTER BENCHMARK
-                    </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                      315 CURATED QUESTIONS BANK
-                    </span>
-                  </div>
-                  <h4 className="text-sm sm:text-base font-bold text-white">
-                    DSA Master Certification Exam (Trees, Graphs, DP, Arrays, Heaps & Systems)
-                  </h4>
-                  <p className="text-xs text-neutral-400">
-                    Comprehensive 15-question adaptive assessment dynamically sampled across all 15 authoritative DSA domains.
-                  </p>
-                </div>
-                <button 
-                  onClick={() => handleStartQuiz('dsa-master')}
-                  className="px-5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer bg-cyan-400 hover:bg-cyan-300 text-black shadow-md shrink-0 self-start sm:self-center transition-all hover:scale-105"
-                >
-                  <Play size={14} />
-                  <span>Start DSA Master Exam</span>
-                </button>
-              </div>
-            </div>
+        const featuredExams = filteredExams.filter(e => e.featured);
+        const regularExams = filteredExams.filter(e => !e.featured);
 
-            {/* Featured HackerRank Certification Mock */}
-            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
-              isDarkMode ? 'bg-[#111111] border-emerald-500/40 text-white' : 'bg-emerald-50/50 border-emerald-300 text-black'
-            }`}>
-              <div className="space-y-1.5">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
-                  isDarkMode ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-400' : 'bg-emerald-100 border-emerald-300 text-emerald-800'
-                }`}>
-                  🟩 HACKERRANK CERTIFICATION
-                </span>
-                <h4 className="text-xs font-bold leading-snug">
-                  HackerRank Problem Solving Mock (Basic & Intermediate)
-                </h4>
-              </div>
-
-              <div className={`space-y-2 pt-2 border-t ${
-                isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
-              }`}>
-                <div className={`text-[11px] font-mono space-y-0.5 ${
-                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
-                }`}>
-                  <p>⏱ 6 Assessment Questions</p>
-                  <p>📊 Problem Solving Track</p>
-                </div>
-                <button 
-                  onClick={() => handleStartQuiz('hackerrank-cert')}
-                  className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer bg-emerald-500 hover:bg-emerald-400 text-black shadow-sm transition-all"
-                >
-                  <Play size={13} />
-                  <span>Start Mock Exam</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Card 1: AI Readiness */}
-            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
+        return (
+        <div className="space-y-6">
+          {/* Top Overview & Stats Bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className={`p-4 rounded-2xl border doap-card space-y-1 ${
               isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
             }`}>
-              <div className="space-y-1.5">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
-                  isDarkMode ? 'bg-neutral-900 border-neutral-800 text-neutral-300' : 'bg-neutral-100 border-neutral-200 text-neutral-700'
-                }`}>
-                  AI READINESS
-                </span>
-                <h4 className="text-xs font-bold leading-snug">
-                  Full AI Readiness Assessment
-                </h4>
+              <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 block">Available Exams</span>
+              <div className="text-2xl font-black font-mono" style={{ color: accentHex }}>
+                {INTERACTIVE_EXAMS_CATALOG.length} Tracks
               </div>
-
-              <div className={`space-y-2 pt-2 border-t ${
-                isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
-              }`}>
-                <div className={`text-[11px] font-mono space-y-0.5 ${
-                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
-                }`}>
-                  <p>⏱ 5 Questions</p>
-                  <p>📊 Instant Score</p>
-                </div>
-                <button 
-                  onClick={() => handleStartQuiz('ai-readiness')}
-                  className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover-glide shadow-sm"
-                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
-                >
-                  <Play size={13} />
-                  <span>Start Quiz</span>
-                </button>
-              </div>
+              <p className="text-[11px] text-neutral-400">100% Comprehensive</p>
             </div>
 
-            {/* Card 2: DSA Trees & Graphs */}
-            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
+            <div className={`p-4 rounded-2xl border doap-card space-y-1 ${
               isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
             }`}>
-              <div className="space-y-1.5">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
-                  isDarkMode ? 'bg-neutral-900 border-neutral-800 text-neutral-300' : 'bg-neutral-100 border-neutral-200 text-neutral-700'
-                }`}>
-                  PRACTICE TEST
-                </span>
-                <h4 className="text-xs font-bold leading-snug">
-                  DSA: Trees & Graphs
-                </h4>
+              <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 block">Questions Bank</span>
+              <div className="text-2xl font-black font-mono text-cyan-400">
+                482+ Items
               </div>
-
-              <div className={`space-y-2 pt-2 border-t ${
-                isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
-              }`}>
-                <div className={`text-[11px] font-mono space-y-0.5 ${
-                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
-                }`}>
-                  <p>⏱ 5 Questions</p>
-                  <p>📊 Instant Score</p>
-                </div>
-                <button 
-                  onClick={() => handleStartQuiz('dsa-practice')}
-                  className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover-glide shadow-sm"
-                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
-                >
-                  <Play size={13} />
-                  <span>Start Quiz</span>
-                </button>
-              </div>
+              <p className="text-[11px] text-neutral-400">First-principles questions</p>
             </div>
 
-            {/* Card 3: Job Readiness */}
-            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
+            <div className={`p-4 rounded-2xl border doap-card space-y-1 ${
               isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
             }`}>
-              <div className="space-y-1.5">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
-                  isDarkMode ? 'bg-neutral-900 border-neutral-800 text-neutral-300' : 'bg-neutral-100 border-neutral-200 text-neutral-700'
-                }`}>
-                  JOB READINESS
-                </span>
-                <h4 className="text-xs font-bold leading-snug">
-                  Job Readiness Assessment
-                </h4>
+              <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 block">Completed Tests</span>
+              <div className="text-2xl font-black font-mono text-emerald-400">
+                {assessments.length}
               </div>
-
-              <div className={`space-y-2 pt-2 border-t ${
-                isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
-              }`}>
-                <div className={`text-[11px] font-mono space-y-0.5 ${
-                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
-                }`}>
-                  <p>⏱ 5 Questions</p>
-                  <p>📊 Instant Score</p>
-                </div>
-                <button 
-                  onClick={() => handleStartQuiz('job-readiness')}
-                  className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover-glide shadow-sm"
-                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
-                >
-                  <Play size={13} />
-                  <span>Start Quiz</span>
-                </button>
-              </div>
+              <p className="text-[11px] text-neutral-400">Cloud synchronized</p>
             </div>
 
-            {/* Card 4: C Systems */}
-            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
+            <div className={`p-4 rounded-2xl border doap-card space-y-1 ${
               isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
             }`}>
-              <div className="space-y-1.5">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
-                  isDarkMode ? 'bg-neutral-900 border-neutral-800 text-cyan-400' : 'bg-cyan-50 border-cyan-200 text-cyan-700'
-                }`}>
-                  C SYSTEMS EXAM
-                </span>
-                <h4 className="text-xs font-bold leading-snug">
-                  C Language & Memory Internals
-                </h4>
+              <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 block">Readiness Score</span>
+              <div className="text-2xl font-black font-mono text-purple-400">
+                {userProgress?.stats?.aiReadiness || 85}%
               </div>
-
-              <div className={`space-y-2 pt-2 border-t ${
-                isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
-              }`}>
-                <div className={`text-[11px] font-mono space-y-0.5 ${
-                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
-                }`}>
-                  <p>⏱ 5 Questions</p>
-                  <p>📊 Systems & Pointers</p>
-                </div>
-                <button 
-                  onClick={() => handleStartQuiz('c-systems')}
-                  className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover-glide shadow-sm"
-                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
-                >
-                  <Play size={13} />
-                  <span>Start Quiz</span>
-                </button>
-              </div>
+              <p className="text-[11px] text-neutral-400">Evaluated percentile</p>
             </div>
+          </div>
 
-            {/* Card 5: Python Internals */}
-            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
-              isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
-            }`}>
-              <div className="space-y-1.5">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
-                  isDarkMode ? 'bg-neutral-900 border-neutral-800 text-amber-400' : 'bg-amber-50 border-amber-200 text-amber-700'
-                }`}>
-                  PYTHON ARCHITECTURE
-                </span>
-                <h4 className="text-xs font-bold leading-snug">
-                  Python GIL, OOP & Metaclasses
-                </h4>
+          {/* Filter Pills & Search Bar */}
+          <div className="space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              {/* Category Pills */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar flex-wrap">
+                {examCategories.map((cat) => {
+                  const count = cat === 'All' 
+                    ? INTERACTIVE_EXAMS_CATALOG.length 
+                    : INTERACTIVE_EXAMS_CATALOG.filter(e => e.category === cat).length;
+                  const isActive = examCategory === cat;
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setExamCategory(cat)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all shrink-0 flex items-center gap-1.5 ${
+                        isActive
+                          ? (isDarkMode ? 'bg-cyan-400 text-black shadow-md font-bold' : 'bg-black text-white shadow-md font-bold')
+                          : (isDarkMode ? 'bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-700' : 'bg-neutral-100 border border-neutral-200 text-neutral-600 hover:text-black')
+                      }`}
+                    >
+                      <span>{cat}</span>
+                      <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
+                        isActive 
+                          ? (isDarkMode ? 'bg-black/20 text-black' : 'bg-white/20 text-white')
+                          : 'bg-neutral-800/40 text-neutral-400'
+                      }`}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
 
-              <div className={`space-y-2 pt-2 border-t ${
-                isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
-              }`}>
-                <div className={`text-[11px] font-mono space-y-0.5 ${
-                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
-                }`}>
-                  <p>⏱ 5 Questions</p>
-                  <p>📊 CPython Mastery</p>
-                </div>
-                <button 
-                  onClick={() => handleStartQuiz('python-internals')}
-                  className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover-glide shadow-sm"
-                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
-                >
-                  <Play size={13} />
-                  <span>Start Quiz</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Card 6: Java 21 & Concurrency */}
-            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
-              isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
-            }`}>
-              <div className="space-y-1.5">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
-                  isDarkMode ? 'bg-neutral-900 border-neutral-800 text-red-400' : 'bg-red-50 border-red-200 text-red-700'
-                }`}>
-                  JAVA 21 & JVM
-                </span>
-                <h4 className="text-xs font-bold leading-snug">
-                  Java 21, Loom & JVM Internals
-                </h4>
-              </div>
-
-              <div className={`space-y-2 pt-2 border-t ${
-                isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
-              }`}>
-                <div className={`text-[11px] font-mono space-y-0.5 ${
-                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
-                }`}>
-                  <p>⏱ 5 Questions</p>
-                  <p>📊 JVM & Concurrency</p>
-                </div>
-                <button 
-                  onClick={() => handleStartQuiz('java-mastery')}
-                  className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover-glide shadow-sm"
-                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
-                >
-                  <Play size={13} />
-                  <span>Start Quiz</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Card 7: System Design Exam */}
-            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
-              isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
-            }`}>
-              <div className="space-y-1.5">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
-                  isDarkMode ? 'bg-neutral-900 border-neutral-800 text-purple-400' : 'bg-purple-50 border-purple-200 text-purple-700'
-                }`}>
-                  DISTRIBUTED SYSTEMS
-                </span>
-                <h4 className="text-xs font-bold leading-snug">
-                  System Design & Scalability Exam
-                </h4>
-              </div>
-
-              <div className={`space-y-2 pt-2 border-t ${
-                isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
-              }`}>
-                <div className={`text-[11px] font-mono space-y-0.5 ${
-                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
-                }`}>
-                  <p>⏱ 5 Questions</p>
-                  <p>📊 CAP, Caching & Queues</p>
-                </div>
-                <button 
-                  onClick={() => handleStartQuiz('system-design')}
-                  className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover-glide shadow-sm"
-                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
-                >
-                  <Play size={13} />
-                  <span>Start Quiz</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Card 8: Cloud Native & Kubernetes Exam */}
-            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
-              isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
-            }`}>
-              <div className="space-y-1.5">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
-                  isDarkMode ? 'bg-neutral-900 border-neutral-800 text-blue-400' : 'bg-blue-50 border-blue-200 text-blue-700'
-                }`}>
-                  CLOUD NATIVE DEVOPS
-                </span>
-                <h4 className="text-xs font-bold leading-snug">
-                  Kubernetes, Docker & GitOps Exam
-                </h4>
-              </div>
-
-              <div className={`space-y-2 pt-2 border-t ${
-                isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
-              }`}>
-                <div className={`text-[11px] font-mono space-y-0.5 ${
-                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
-                }`}>
-                  <p>⏱ 5 Questions</p>
-                  <p>📊 Infra & Containers</p>
-                </div>
-                <button 
-                  onClick={() => handleStartQuiz('cloud-devops')}
-                  className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover-glide shadow-sm"
-                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
-                >
-                  <Play size={13} />
-                  <span>Start Quiz</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Card 9: Database Internals Exam */}
-            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
-              isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
-            }`}>
-              <div className="space-y-1.5">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
-                  isDarkMode ? 'bg-neutral-900 border-neutral-800 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                }`}>
-                  DATABASE ENGINES
-                </span>
-                <h4 className="text-xs font-bold leading-snug">
-                  LSM-Trees, B+ Trees & MVCC
-                </h4>
-              </div>
-
-              <div className={`space-y-2 pt-2 border-t ${
-                isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
-              }`}>
-                <div className={`text-[11px] font-mono space-y-0.5 ${
-                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
-                }`}>
-                  <p>⏱ 5 Questions</p>
-                  <p>📊 Storage & Query Plans</p>
-                </div>
-                <button 
-                  onClick={() => handleStartQuiz('database-internals')}
-                  className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover-glide shadow-sm"
-                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
-                >
-                  <Play size={13} />
-                  <span>Start Quiz</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Card 7: DSA Numericals */}
-            <div className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card ${
-              isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
-            }`}>
-              <div className="space-y-1.5">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
-                  isDarkMode ? 'bg-neutral-900 border-neutral-800 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                }`}>
-                  NUMERICAL BENCHMARK
-                </span>
-                <h4 className="text-xs font-bold leading-snug">
-                  DSA Complexity & Math Calculations
-                </h4>
-              </div>
-
-              <div className={`space-y-2 pt-2 border-t ${
-                isDarkMode ? 'border-neutral-800' : 'border-neutral-200'
-              }`}>
-                <div className={`text-[11px] font-mono space-y-0.5 ${
-                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
-                }`}>
-                  <p>⏱ 5 Questions</p>
-                  <p>📊 Big-O & Calculations</p>
-                </div>
-                <button 
-                  onClick={() => handleStartQuiz('dsa-numericals')}
-                  className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover-glide shadow-sm"
-                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
-                >
-                  <Play size={13} />
-                  <span>Start Quiz</span>
-                </button>
+              {/* Search Box */}
+              <div className="relative min-w-[220px]">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={examSearch}
+                  onChange={(e) => setExamSearch(e.target.value)}
+                  placeholder="Search 28 technical exams..."
+                  className={`w-full pl-8 pr-8 py-2 rounded-xl text-xs border transition-all outline-none ${
+                    isDarkMode 
+                      ? 'bg-[#111111] border-neutral-800 text-white placeholder-neutral-500 focus:border-cyan-400' 
+                      : 'bg-white border-neutral-200 text-black placeholder-neutral-400 focus:border-black'
+                  }`}
+                />
+                {examSearch && (
+                  <button 
+                    onClick={() => setExamSearch('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white text-xs"
+                  >
+                    ×
+                  </button>
+                )}
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Right Score Metrics */}
-        <div className="lg:col-span-4 space-y-3">
-          <div className={`p-5 rounded-3xl space-y-2 border doap-card ${
-            isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-neutral-50 border-neutral-200 text-black'
-          }`}>
-            <span className={`text-[11px] font-mono uppercase tracking-wider block ${
-              isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
-            }`}>
-              COMPLETED TESTS
-            </span>
-            <div className="text-4xl font-extrabold font-mono" style={{ color: accentHex }}>
-              {assessments.length}
-            </div>
-            <p className={`text-xs font-mono ${isDarkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>Recorded assessment sessions</p>
-          </div>
-        </div>
-      </div>
-
-
-
-      {/* Assessment History List */}
-      <div className="space-y-3">
-        {filteredAssessments.map((item) => (
-          <div
-            key={item.id}
-            className={`p-4 rounded-2xl flex items-center justify-between transition-all border doap-card ${
-              isDarkMode 
-                ? 'bg-[#111111] border-neutral-800 text-white hover:border-neutral-700' 
-                : 'bg-white border-neutral-200 text-black hover:border-neutral-300'
-            }`}
-          >
-            <div className="flex items-center gap-4">
-              <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border ${
-                isDarkMode ? 'bg-neutral-900 border-neutral-800 text-white' : 'bg-neutral-100 border-neutral-200 text-black'
-              }`}>
-                <FileCheck2 size={18} />
-              </div>
-              <div className="space-y-1">
-                <h4 className="text-sm font-bold">{item.title}</h4>
-                <div className={`flex flex-wrap items-center gap-2 text-xs font-mono ${
-                  isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
-                }`}>
-                  <span>{item.date}</span>
-                  {item.duration && (
-                    <>
-                      <span>•</span>
-                      <span>{item.duration}</span>
-                    </>
-                  )}
-                  {item.tags && item.tags.length > 0 && (
-                    <>
-                      <span>•</span>
-                      <div className="flex gap-1">
-                        {item.tags.map((t, idx) => (
-                          <span key={idx} className={`px-2 py-0.5 rounded text-[10px] border ${
-                            isDarkMode ? 'bg-neutral-900 border-neutral-800 text-neutral-300' : 'bg-neutral-100 border-neutral-200 text-neutral-700'
-                          }`}>
-                            {t}
-                          </span>
-                        ))}
+          {/* Featured Hero Exams (e.g. DSA Master Benchmark) */}
+          {featuredExams.length > 0 && (
+            <div className="space-y-3">
+              {featuredExams.map((exam) => (
+                <div 
+                  key={exam.id}
+                  className="p-5 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card bg-gradient-to-r from-cyan-950/40 via-blue-950/30 to-purple-950/30 border-cyan-500/40 shadow-lg shadow-cyan-950/20"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="px-2.5 py-0.5 rounded text-[10px] font-mono border bg-cyan-500/20 border-cyan-500/40 text-cyan-300 font-bold">
+                          {exam.badge}
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                          {exam.tag || 'CURATED BANK'}
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-neutral-800/80 text-neutral-400 border border-neutral-700">
+                          {exam.category}
+                        </span>
                       </div>
-                    </>
-                  )}
+                      <h4 className="text-sm sm:text-base font-bold text-white">
+                        {exam.title}
+                      </h4>
+                      <p className="text-xs text-neutral-300 max-w-3xl leading-relaxed">
+                        {exam.description}
+                      </p>
+                    </div>
+                    <button 
+                      onClick={() => handleStartQuiz(exam.id)}
+                      className="px-5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer bg-cyan-400 hover:bg-cyan-300 text-black shadow-md shrink-0 self-start sm:self-center transition-all hover:scale-105"
+                    >
+                      <Play size={14} />
+                      <span>Start Benchmark Exam</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
+          )}
 
-            <div className="flex items-center gap-3">
-              <span className="text-xl font-black font-mono" style={{ color: accentHex }}>
-                {item.score}
+          {/* Regular Exams Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {regularExams.map((exam) => {
+              const badgeClass = exam.badgeColor === 'emerald'
+                ? (isDarkMode ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-400' : 'bg-emerald-100 border-emerald-300 text-emerald-800')
+                : exam.badgeColor === 'purple'
+                ? (isDarkMode ? 'bg-purple-950/60 border-purple-500/40 text-purple-400' : 'bg-purple-100 border-purple-300 text-purple-800')
+                : exam.badgeColor === 'amber'
+                ? (isDarkMode ? 'bg-amber-950/60 border-amber-500/40 text-amber-400' : 'bg-amber-100 border-amber-300 text-amber-800')
+                : exam.badgeColor === 'red'
+                ? (isDarkMode ? 'bg-red-950/60 border-red-500/40 text-red-400' : 'bg-red-100 border-red-300 text-red-800')
+                : exam.badgeColor === 'blue'
+                ? (isDarkMode ? 'bg-blue-950/60 border-blue-500/40 text-blue-400' : 'bg-blue-100 border-blue-300 text-blue-800')
+                : (isDarkMode ? 'bg-cyan-950/60 border-cyan-500/40 text-cyan-400' : 'bg-cyan-100 border-cyan-300 text-cyan-800');
+
+              return (
+                <div 
+                  key={exam.id}
+                  className={`p-4 rounded-2xl space-y-3 flex flex-col justify-between border transition-all doap-card hover:border-cyan-500/40 ${
+                    isDarkMode ? 'bg-[#111111] border-neutral-800 text-white' : 'bg-white border-neutral-200 text-black'
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-1 flex-wrap">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${badgeClass}`}>
+                        {exam.badge}
+                      </span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-neutral-800/60 text-neutral-400 border border-neutral-700/50">
+                        {exam.category}
+                      </span>
+                    </div>
+                    <h4 className="text-xs font-bold leading-snug line-clamp-2">
+                      {exam.title}
+                    </h4>
+                    <p className="text-[11px] text-neutral-400 line-clamp-2 leading-relaxed">
+                      {exam.description}
+                    </p>
+                  </div>
+
+                  <div className={`space-y-2 pt-2.5 border-t ${
+                    isDarkMode ? 'border-neutral-800/80' : 'border-neutral-200'
+                  }`}>
+                    <div className={`text-[11px] font-mono flex items-center justify-between ${
+                      isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
+                    }`}>
+                      <span>{exam.duration}</span>
+                      <span className="truncate max-w-[130px] text-right">{exam.tag}</span>
+                    </div>
+                    <button 
+                      onClick={() => handleStartQuiz(exam.id)}
+                      className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover-glide shadow-sm transition-all"
+                      style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
+                    >
+                      <Play size={13} />
+                      <span>Start Exam</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {filteredExams.length === 0 && (
+            <div className="text-center py-12 border border-dashed border-neutral-800 rounded-3xl space-y-2">
+              <p className="text-sm font-semibold text-neutral-400">No exams matched your filter.</p>
+              <button
+                onClick={() => { setExamCategory('All'); setExamSearch(''); }}
+                className="text-xs font-mono text-cyan-400 underline cursor-pointer"
+              >
+                Reset filters
+              </button>
+            </div>
+          )}
+
+          {/* Assessment History List */}
+          <div className="space-y-3 pt-6">
+            <div className="flex items-center justify-between">
+              <span className={`text-[11px] font-mono uppercase tracking-widest block ${
+                isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
+              }`}>
+                ASSESSMENT HISTORY & VERIFIED SCORECARDS ({assessments.length})
               </span>
             </div>
-          </div>
-        ))}
-      </div>
-        </>
-      )}
 
-      {/* GitHub Take-Home Projects View */}
+            {assessments.length === 0 ? (
+              <div className={`p-6 rounded-2xl border text-center font-mono text-xs ${
+                isDarkMode ? 'bg-[#111111] border-neutral-800 text-neutral-500' : 'bg-neutral-50 border-neutral-200 text-neutral-400'
+              }`}>
+                No assessment sessions recorded yet. Complete an exam above to generate verified scorecards!
+              </div>
+            ) : (
+              filteredAssessments.map((item) => (
+                <div
+                  key={item.id}
+                  className={`p-4 rounded-2xl flex items-center justify-between transition-all border doap-card ${
+                    isDarkMode 
+                      ? 'bg-[#111111] border-neutral-800 text-white hover:border-neutral-700' 
+                      : 'bg-white border-neutral-200 text-black hover:border-neutral-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border ${
+                      isDarkMode ? 'bg-neutral-900 border-neutral-800 text-white' : 'bg-neutral-100 border-neutral-200 text-black'
+                    }`}>
+                      <FileCheck2 size={18} />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-bold">{item.title}</h4>
+                      <div className={`flex flex-wrap items-center gap-2 text-xs font-mono ${
+                        isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
+                      }`}>
+                        <span>{item.date}</span>
+                        {item.duration && (
+                          <>
+                            <span>•</span>
+                            <span>{item.duration}</span>
+                          </>
+                        )}
+                        {item.tags && item.tags.length > 0 && (
+                          <>
+                            <span>•</span>
+                            <div className="flex gap-1">
+                              {item.tags.map((t, idx) => (
+                                <span key={idx} className={`px-2 py-0.5 rounded text-[10px] border ${
+                                  isDarkMode ? 'bg-neutral-900 border-neutral-800 text-neutral-300' : 'bg-neutral-100 border-neutral-200 text-neutral-700'
+                                }`}>
+                                  {t}
+                                </span>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-base font-black font-mono" style={{ color: accentHex }}>
+                      {item.score}
+                    </span>
+                    <span className={`block text-[10px] font-mono uppercase tracking-wider ${
+                      isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
+                    }`}>
+                      {item.category || 'Skill'}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+        );
+      })()}
+
       {activeTab === 'assignments' && (
         <div className="space-y-6 animate-fade-in">
           {/* Header Banner */}
