@@ -7,6 +7,7 @@ import {
   Sparkles, 
   ChevronLeft, 
   ChevronRight, 
+  ChevronDown, 
   Mic, 
   AlertCircle, 
   X, 
