@@ -49,6 +49,11 @@ Created for the landmark **"Build Sanjivani's Own Large Language Model — Build
 
 ## 📖 Table of Contents
 - [✨ Key Highlights](#-key-highlights)
+- [🏆 Interactive Certification Exams & Assessments (28 Tracks)](#-interactive-certification-exams--assessments-28-tracks)
+- [💼 GitHub Production Take-Home Project Assignments (36 Projects)](#-github-production-take-home-project-assignments-36-projects)
+- [📚 Expanded Curriculum, Knowledge Base & Topic Quizzes (135 Topics & 346 Quizzes)](#-expanded-curriculum-knowledge-base--topic-quizzes-135-topics--346-quizzes)
+- [🎥 Proctored AI Video Mock Interviewer (Instant Gesture Fullscreen)](#-proctored-ai-video-mock-interviewer-instant-gesture-fullscreen)
+- [🏢 Clean Multi-Company Carousel & Placement Track Archive](#-clean-multi-company-carousel--placement-track-archive)
 - [🌐 Open-Source Repositories & Ecosystem Architecture (A to Z)](#-open-source-repositories--ecosystem-architecture-a-to-z)
 - [🏛️ Sanjivani LLM Studio (Unsloth, vLLM & Ollama)](#️-sanjivani-llm-studio-unsloth-vllm--ollama)
 - [⚡ Open-Source Runtimes: Pyodide Wasm, Kokoro TTS & Piston](#-open-source-runtimes-pyodide-wasm-kokoro-tts--piston)
@@ -62,12 +67,10 @@ Created for the landmark **"Build Sanjivani's Own Large Language Model — Build
 - [🧠 Cognitive Self-Thinking Super-Brain (`/ai-tutor`)](#-cognitive-self-thinking-super-brain-ai-tutor)
 - [🎯 Job Description (JD) ATS Matcher & Resume Optimizer](#-job-description-jd-ats-matcher--resume-optimizer)
 - [🔥 Daily DOAP Streak & Challenge Drill Engine](#-daily-doap-streak--challenge-drill-engine)
-- [📱 Dual-Mode "Ask DOAP" Quick Launcher](#-dual-mode-ask-doap-quick-launcher)
-- [🎥 AI Video Mock Interviewer & Telemetry](#-ai-video-mock-interviewer--telemetry)
-- [📄 1-Click Harvard ATS PDF Resume Studio](#-1-click-harvard-ats-pdf-resume-studio)
 - [🏛️ System Architecture](#️-system-architecture)
 - [📂 Project Structure](#-project-structure)
 - [🚀 Quickstart & Installation](#-quickstart--installation)
+- [📦 Production Deployment](#-production-deployment)
 - [🛠️ Tech Stack](#️-tech-stack)
 - [📄 License](#-license)
 
@@ -76,26 +79,164 @@ Created for the landmark **"Build Sanjivani's Own Large Language Model — Build
 ## ✨ Key Highlights
 
 ```
+ 🏆 28 Certification Tracks   │ 📜 482+ First-Principles Questions across Systems, DSA, Cloud, Security & AI
+ 💼 36 GitHub Take-Home Tasks │ 🏗️ Real-World Production Assignments (Uber, Stripe, Netflix, Datadog) + AI Review
+ 📚 135 Topic Guides & Quizzes│ 💡 346 Technical Quizzes across Core DSA, High-Level Architecture & Algorithms
+ 🎥 AI Interview Fullscreen   │ 👔 Instant 1-Click Native Fullscreen, Live Webcam, Waveform & Telemetry HUD
+ 🏢 Sleek Company Carousel    │ 🖱️ Zero Ugly Scrollbars + Next/Prev Navigation Buttons & Mouse-Wheel Scrolling
  🧠 DOAP Thinking 120B Brain  │ ⚡ Deep Cognitive Self-Thinking & Sub-150ms Groq LPU Inference
  🎙️ Neural Studio Voice Core  │ 🔊 Zero-Key High-Fidelity Audio (Andrew, Neerja Expressive, Jenny, Prabhat)
  🏢 Company Placement Archive │ 🏛️ 8,699+ Curated Questions across 16 Tech Giants (TCS, Google, Amazon)
  🟩 HackerRank Placement Track│ 🎯 20 Iconic Interview Prep Kit & Problem Solving Cert Challenges
  🌐 Multi-Platform Filtering  │ 🔍 1-Click Switch: All (167+), HackerRank, LeetCode & Blind 75
- 📜 HackerRank Cert Mock Exam │ ⏱️ Timed Problem Solving Assessment in /assessments
- 🎙️ Studio Voice AI + Live IO │ 🔊 Neural Voice + Groq Whisper + Mobile STT Fallback
  🧠 Visual Brain Vault (8L)   │ 🔍 Interactive Knowledge Graph, Friction Points & Context Engine
  🛡️ Proctored Fullscreen Exam │ 🔒 Strict Native Fullscreen, Anti-Cheat Tab Lock & Violation Blocker
  📊 Student Proficiency Score │ 🎓 0-100 Verified Metric (Correctness, Speed, Autonomy & Integrity)
- 📌 Top-Mounted Problem Card  │ 📋 Prominent Statements, Benchmarks, Constraints & Examples on Top
- ❌ Strict Automated Tests    │ 🚫 Manual "Mark as Solved" Removed (Pass Tests to Solve)
  ⚙️ Header Quick-Access (⋮)   │ ⚡ Clean 3-Dots Menu beside Profile for Settings & Instant Auth
  🎯 JD ATS Matcher & Tailor   │ 💼 Real Company Match Score (Google, Amazon, TCS) + XYZ Bullet Writer
  🔥 Daily DOAP Streak Engine  │ 📅 Interactive Daily Problem Drills, Week Badges & Local Persistence
  💻 Multi-Language Sandbox    │ ⚡ In-Browser Execution for JavaScript, Python 3, C++ (GCC) & Java
- 🎥 AI Video Mock Interviewer │ 👔 Principal AI Lead Avatar + Real-Time Telemetry HUD & Report Card
  📄 Harvard ATS Resume Studio │ 📥 1-Click Vector PDF Export (100/100 ATS Pass Rate)
- ☁️ Multi-Device Cloud Sync   │ 🔄 Real-Time Firestore Persistence & Fast Multi-CDN Hosting
+ ☁️ Multi-Device Cloud Sync   │ 🔄 Real-Time Firestore Persistence & Fast Multi-CDN Hosting (doap-1908.web.app)
 ```
+
+---
+
+## 🏆 Interactive Certification Exams & Assessments (28 Tracks)
+
+The **Assessments** module (`/assessments`) features a comprehensive technical certification suite containing **28 industry-grade tracks** and over **482 first-principles questions**, equipped with category filter pills, instant search, working timers, grading rubrics, and automated cloud scorecards:
+
+### 1. 📌 Curriculum Taxonomy & Categorization
+* **⭐ Core DSA & Benchmarks (4 Tracks)**:
+  * **DSA Master Certification Benchmark**: 15 adaptive questions dynamically sampled from the 346 curated question bank.
+  * **HackerRank Problem Solving Certification Mock**: 6 authentic certification challenges (frequency hashing, two-pointer arrays, DP invariants).
+  * **DSA: Trees & Graphs Practice Test**: 10 questions on BST, AVL balance factors, Dijkstra, topological sort, and cycle detection.
+  * **DSA Complexity & Math Calculations Benchmark**: 5 rigorous numerical questions on Master Theorem calculations, tree height invariants, and recurrence trees.
+* **⚡ Programming Languages & Memory Internals (6 Tracks)**:
+  * **C Language & Memory Internals**: Struct padding, memory alignment, pointer arithmetic, stack/heap boundaries, and undefined behavior.
+  * **Python GIL, OOP & Metaclasses**: CPython memory model, reference counting, GIL bytecode serialization, `__new__` vs `__init__`, and mutable default traps.
+  * **Java 21, Loom & JVM Internals**: Project Loom Virtual Threads, carrier threads, JIT escape analysis, ZGC/G1 collectors, and PECS generics.
+  * **Go Systems & Concurrency Master Exam**: M:N goroutine scheduler, CSP channels, runtime work-stealing, and sync primitives.
+  * **Rust Systems & Memory Safety Exam**: Affine type system, borrow checker, explicit lifetimes, `Send`/`Sync` concurrency traits, and zero-cost abstractions.
+  * **Advanced TypeScript Type System & Metaprogramming**: Conditional types, distributive unions, `infer` pattern matching, and template literal types.
+* **🌐 Distributed Systems & OS Internals (4 Tracks)**:
+  * **System Design & Distributed Scalability Exam**: CAP Theorem, PACELC, consistent hashing rings, write-through caching, and circuit breakers.
+  * **Linux Kernel Internals, POSIX & Syscalls Exam**: VFS inode abstraction, `fork` vs `clone` vs `vfork`, process memory maps, and `io_uring` vs `epoll`.
+  * **Computer Networking & Transport Protocols Exam**: TCP 3-way handshake, TCP Cubic vs BBR congestion control, QUIC/HTTP3 multiplexing, and BGP Anycast routing.
+  * **Microservices Architecture & Resilience Patterns Exam**: Saga choreography vs orchestration, Transactional Outbox pattern, CQRS, and API gateways.
+* **🐳 Cloud, DevOps & Streaming Systems (4 Tracks)**:
+  * **Kubernetes, Docker & GitOps Master Exam**: Control plane controllers, cgroups v2, network namespaces, StatefulSets, and ArgoCD reconciliation.
+  * **Docker Container Security & Runtime Hardening**: Rootless container daemons, multi-stage distroless builds, seccomp/AppArmor profiles, and Linux capabilities (`CAP_DROP`).
+  * **Apache Kafka & Event Streaming Exam**: Partitions, consumer group rebalance protocols, log compaction mechanics, and transactional Exactly-Once Semantics (EOS).
+  * **Production MLOps, Model Serving & Drift Monitoring**: Feature stores, concept/data drift detection, shadow/canary deployments, and GPU serving engines (Triton/TorchServe).
+* **🛡️ Security, Cryptography & PKI (2 Tracks)**:
+  * **Application Security & OWASP Top 10 Engineering**: Parameterized SQL queries, CSP nonce validation, SSRF metadata protections, and constant-time string comparisons.
+  * **Applied Cryptography, PKI & Zero Trust**: Diffie-Hellman key exchange, ECDSA vs Ed25519, mutual TLS (mTLS), and Perfect Forward Secrecy (PFS).
+* **🧠 AI, Databases & Architecture (8 Tracks)**:
+  * **Full AI Readiness Assessment**: Multi-head self-attention mechanisms, AdamW optimizer, RAG grounding, and cross-entropy calibration.
+  * **Database Storage Engines & Query Optimization**: LSM-trees vs B+ trees, PostgreSQL MVCC snapshot visibility, WAL durability, and EXPLAIN ANALYZE execution trees.
+  * **Redis Data Structures, Memory & Sentinel Internals**: In-memory event loop, SkipList sorted sets, hash slots in Redis Cluster, and memory eviction policies.
+  * **NoSQL & Distributed Key-Value Databases**: Dynamo-style quorum configuration ($R + W > N$), vector clocks, hinted handoff, and anti-entropy Merkle trees.
+  * **Vector Databases & Dense Semantic Search**: HNSW graph indexing, Inverted File with Product Quantization (IVFPQ), Cosine similarity, and semantic re-ranking.
+  * **Distributed Caching, Eviction & Stampede Mitigation**: O(1) LRU/LFU cache policies, Adaptive Replacement Cache (ARC), cache penetration Bloom filters, and probabilistic XFetch.
+  * **React Fiber Architecture & Modern Performance**: Double-buffering reconciliation tree, lane-based priority scheduling, concurrent transitions, and hydration recovery.
+  * **Job Readiness Assessment**: Engineering fundamentals, reverse proxies, ACID transaction guarantees, and client hydration.
+
+---
+
+## 💼 GitHub Production Take-Home Project Assignments (36 Projects)
+
+In the **GitHub Take-Home Assignments** tab (`/assessments`), students can tackle **36 authentic, production-grade engineering assignments** sourced from elite engineering interview loops:
+
+### 🌟 Project Categories & Company Patterns
+* **High-Throughput Distributed Backends (9 Projects)**:
+  * *Distributed Rate Limiter Service (Redis Token Bucket / Leaky Bucket)* — Stripe / Cloudflare style.
+  * *Distributed Task Queue & Background Job Worker* — Celery / BullMQ architecture.
+  * *Real-Time Collaborative Document Engine (CRDT / Operational Transformation)* — Figma / Google Docs style.
+  * *High-Throughput Log Aggregator & Search Indexer* — Datadog / Elasticsearch style.
+  * *Event-Driven Notification Engine (WebSockets, Push, Email)* — Slack / Discord style.
+  * *Distributed Key-Value Store with Quorum Replication (Raft / Paxos)* — Amazon DynamoDB style.
+  * *High-Performance API Gateway with Circuit Breaking* — Netflix Zuul / Kong style.
+  * *Distributed File Storage Service with Chunking & Deduplication* — Dropbox / Google Drive style.
+  * *Real-Time Metric Aggregation Pipeline (Time-Series & Rollups)* — Prometheus / Datadog style.
+* **Full-Stack & Interactive Frontend Applications (9 Projects)**:
+  * *Production Full-Stack E-Commerce Checkout with Idempotent Payments* — Stripe / Shopify style.
+  * *Interactive Canvas Graph Editor & Visual Flow Builder* — Miro / Retool style.
+  * *Real-Time Video Streaming & Chat Platform* — Twitch / YouTube Live style.
+  * *Extensible Plugin Architecture for Web Dashboards* — Grafana / VS Code style.
+  * *Headless CMS with Dynamic Schema Builder* — Strapi / Contentful style.
+  * *Interactive Audio Workstation & Synthesizer in WebAudio* — Ableton / Soundtrap style.
+  * *Real-Time Crypto & Stock Exchange Order Book UI* — Binance / Coinbase style.
+  * *Spreadsheet Engine with Dependency Graph & Formula Evaluation* — Google Sheets / Excel style.
+  * *Zero-Config Drag-and-Drop Form Builder with Validation DSL* — Typeform / Jotform style.
+* **Microservices & Event-Driven Systems (6 Projects)**:
+  * *Real-Time Ride Dispatch & Geofencing Engine* — Uber / Lyft style.
+  * *Video Transcoding & HLS Adaptive Bitrate Streaming Pipeline* — Netflix / YouTube style.
+  * *Transactional Banking Ledger with Double-Entry Bookkeeping* — Brex / Revolut style.
+  * *Distributed Idempotent Webhook Delivery System with Exponential Backoff* — GitHub / Stripe style.
+  * *Real-Time Multiplayer Game Matchmaking Service* — Riot Games / Epic Games style.
+  * *Search Autocomplete & Query Suggestion Engine with Tries* — Google / Amazon style.
+* **Systems, Networking & Performance Engineering (6 Projects)**:
+  * *HTTP/1.1 & WebSocket Server Built from Scratch on Raw Sockets* — Nginx / Node.js style.
+  * *Memory-Efficient In-Memory Cache with O(1) LRU/LFU Eviction* — Redis / Memcached style.
+  * *Virtual File System (VFS) with Inode & Block Allocation* — Linux Kernel / ext4 style.
+  * *Zero-Copy Network Proxy with TLS Termination & SNI Routing* — HAProxy / Envoy style.
+  * *High-Performance B+ Tree Database Storage Engine* — SQLite / RocksDB style.
+  * *Custom Memory Allocator (malloc/free) with Segregated Free Lists* — jemalloc / tcmalloc style.
+* **AI, Machine Learning & Modern Data Engineering (6 Projects)**:
+  * *Retrieval-Augmented Generation (RAG) Engine with Vector Indexing & Hybrid Search* — OpenAI / Anthropic style.
+  * *Real-Time Fraud & Anomaly Detection Pipeline with Streaming Features* — Stripe / Adyen style.
+  * *Distributed Vector Similarity Search Engine from Scratch (HNSW)* — Pinecone / Milvus style.
+  * *Automated LLM Evaluation, Guardrails & Jailbreak Defense Gateway* — Scale AI / LangChain style.
+  * *Semantic Code Search & AST Symbol Indexer* — GitHub Code Search / Sourcegraph style.
+  * *Autonomous Multi-Agent Task Orchestrator with Tool Calling & Memory* — AutoGPT / LangGraph style.
+
+### 🛠️ Interactive Take-Home Workspace & Automated Review
+* **Instant Clone Command**: One-tap `git clone https://...` helper to clone starter repositories.
+* **Production Spec & Starter Boilerplate**: Complete architectural layout, folder structure, and runnable test suites.
+* **100-Point Evaluation Rubric**: Granular scoring criteria covering Architecture, Modularity, Concurrency, Test Coverage, and CI/CD.
+* **Automated AI Senior Engineering Review**: Candidates can submit their repository URL or code snippets to receive instant structured feedback from an AI Principal Engineering Lead.
+
+---
+
+## 📚 Expanded Curriculum, Knowledge Base & Topic Quizzes (135 Topics & 346 Quizzes)
+
+Located in **My Learning** (`/my-learning`) and the **Study Plan** modules:
+
+* **Curriculum Expansion**:
+  * Expanded from 105 to **135 exhaustive topic guides** spanning all fundamental and frontier software engineering disciplines.
+  * Includes deep technical deep-dives into Advanced Dynamic Programming (Digit DP, SOS DP, DP over Trees), Graph Theory (Heavy-Light Decomposition, Tarjan's SCC), Segment Trees with Lazy Propagation, Distributed Consensus (Raft, Paxos), Database Internals, and Kernel POSIX subsystems.
+* **346 Interactive Concept Quizzes**:
+  * Expanded question bank from 315 to **346 rigorous, multi-choice concept quizzes**.
+  * Every quiz includes detailed technical explanations, Big-O complexity analyses, and real-world software engineering rationales.
+
+---
+
+## 🎥 Proctored AI Video Mock Interviewer (Instant Gesture Fullscreen)
+
+Located in `/interview`:
+
+* **Direct Click-to-Fullscreen Launch**:
+  * Fixed browser permission blocks by executing native `document.documentElement.requestFullscreen()` directly inside the student's initial user click handler.
+  * Guarantees smooth, instant transition into distraction-free fullscreen mode across all major browsers.
+* **Multi-Tier Media Stream Handling**:
+  * Resilient webcam and microphone initialization with graceful visual fallbacks when devices are disconnected or permissions are granted incrementally.
+* **Real-Time Telemetry HUD & AI Evaluation**:
+  * Continuous speech-to-text transcription, filler word counter, words-per-minute (WPM) gauge, and post-interview executive report card evaluating technical depth and communication clarity.
+
+---
+
+## 🏢 Clean Multi-Company Carousel & Placement Track Archive
+
+Located in `/coding`:
+
+* **16 Enterprise Placement Archives**: Curated placement preparation sets for **Google, Amazon, Microsoft, TCS Digital, Infosys, Meta, Apple, Netflix, Uber, Stripe, Atlassian, Adobe, Oracle, Bloomberg, ByteDance, and Goldman Sachs**.
+* **Zero Ugly Scrollbars**: Custom `no-scrollbar` CSS engine completely eliminates clunky browser scrollbars while retaining full accessibility.
+* **Mouse-Wheel & Button Navigation**:
+  * Sleek **Next (›)** and **Previous (‹)** navigation buttons with hover micro-animations.
+  * Direct mouse wheel horizontal scrolling support enables effortless, fluid browsing through tech giants.
+
+---
 
 ## 🌐 Open-Source Repositories & Ecosystem Architecture (A to Z)
 
@@ -121,10 +262,10 @@ Below is the definitive matrix mapping the world's premier open-source GitHub re
 
 The dedicated [`sanjivani-llm/`](file:///sanjivani-llm/) directory provides a turnkey, university-grade training, fine-tuning, and inference suite designed for **Sanjivani College of Engineering / Sanjivani University**:
 
-* **\`dataset_curator.py\`**:
+* **`dataset_curator.py`**:
   * Extracts algorithmic challenges and reasoning chains from DOAP's curated repository.
   * Formats instruction-tuning datasets with DeepSeek-R1 / Open-Thoughts style `<think> ... </think>` CoT reasoning traces.
-* **\`train_unsloth_sanjivani.py\`**:
+* **`train_unsloth_sanjivani.py`**:
   * Powered by **Unsloth** for **2x–5x faster training with 70% less VRAM**.
   * Pre-configured with 4-bit QLoRA, gradient checkpointing, and ChatML templating targeting `Qwen2.5-Coder-7B-Instruct` or `Llama-3.1-8B-Instruct`.
   * Fully executable on a single free Google Colab GPU (T4 / V100 / A100) or campus workstation.
@@ -186,17 +327,11 @@ DOAP features an enterprise-grade, zero-API-key **Neural Studio Voice Engine** (
 | **Jenny** | `en-US-JennyNeural` | Energetic, crisp, contemporary Silicon Valley lead | Dynamic Speed Coding & Daily Drills |
 | **Brian** | `en-US-BrianNeural` | Grounded, professional UK/US technical lead | Behavioral & System Design Interviews |
 
-### 🚀 Technical Features & Zero-Key Architecture
-* **Zero API Exhaustion**: Does not rely on paid third-party token quotas (e.g. ElevenLabs free tier limits). Provides unlimited speech generation for students and faculty.
-* **Full Express Streaming**: Directly pipes binary MP3 chunks (`audio/mpeg`) with native HTTP chunked transfer encoding, resulting in sub-300ms time-to-first-byte (TTFB).
-* **Appearance Studio Integration**: Students can select their favorite voice persona, adjust pitch and speaking rate, and test their voice with the **"🎧 Preview Human Voice"** button in **Settings $\rightarrow$ Appearance & Sound**.
-* **Resilient Multi-Tier Fallback**: Automatically cascades from DOAP Neural Voice $\rightarrow$ ElevenLabs Charon Turbo $\rightarrow$ Local Kokoro TTS $\rightarrow$ Tuned Browser Web Speech SpeechSynthesis.
-
 ---
 
 ## 🟩 HackerRank Interview Preparation Kit & Placement Suite
 
-DOAP now natively integrates **20 of the most iconic, high-yield challenges** from HackerRank's acclaimed **Interview Preparation Kit** and **Problem Solving Certification** curricula ([`src/data/dsa/hackerRankProblems.js`](file:///src/data/dsa/hackerRankProblems.js)):
+DOAP natively integrates **20 of the most iconic, high-yield challenges** from HackerRank's acclaimed **Interview Preparation Kit** and **Problem Solving Certification** curricula ([`src/data/dsa/hackerRankProblems.js`](file:///src/data/dsa/hackerRankProblems.js)):
 
 * **Platform Filter Pill Selector**:
   * 🌐 **All Platforms**: Comprehensive access to all 167+ interactive challenges.
@@ -213,23 +348,6 @@ DOAP now natively integrates **20 of the most iconic, high-yield challenges** fr
   * *Balanced Brackets* — LIFO stack evaluation.
   * *Max Array Sum* & *Common Child* — Non-adjacent DP & Longest Common Subsequence (LCS).
   * *Binary Tree Height* & *BST Lowest Common Ancestor (LCA)* — Tree traversals.
-* **Automated Multi-Language In-Browser Testing**:
-  * Instant starter templates in **JavaScript (ES6)**, **Python 3**, **C++ (GCC)**, and **Java**.
-  * Isolated Web Worker test execution with hard 3.0s timeout and self-healing DOAP AI Neural Code Simulation Engine.
-* **HackerRank Problem Solving Certification Mock (`/assessments`)**:
-  * Dedicated 6-question timed mock assessment testing core algorithmic principles, DP state transitions, and complexity invariants required to pass HackerRank's official skill certification tests.
-
----
-
-## 📱 Mobile Speech STT & Floating Widgets Stability
-
-* **Cross-Browser Mobile Speech Fallback**:
-  * [`src/hooks/useSpeechRecognition.js`](file:///src/hooks/useSpeechRecognition.js) automatically pairs the Web Speech API with a resilient Web Audio API `MediaRecorder` pipeline.
-  * Seamlessly falls back to Groq Whisper Large v3 Turbo transcription when mobile browsers (such as Android Chrome or iOS Safari) restrict native speech recognition.
-* **Dismissible Assessment Gateway**:
-  * Fixed backdrop click and `ESC` key handlers on coding assessment modals so users can freely cancel or exit dialogs without being locked in.
-* **Responsive Fixed Floating Widgets**:
-  * Standardized z-index layers (`z-40` to `z-50`) across Pomodoro Break Timers, Floating Audio HUDs, and Bottom Drawers, preventing overlap and clipping on mobile viewports.
 
 ---
 
@@ -248,7 +366,6 @@ Mounted globally via [`src/components/Modals/BrainVaultModal.jsx`](file:///src/c
   * Target roles, companies, communication preferences, and registered IP-Verse projects.
 * **Layer 8 (Real-Time LLM Prompt Context Engine)**:
   * Live preview of the synthesized system prompt payload injected into Groq/Gemini context windows with a 1-click **"Copy Context"** button.
-* **Management Actions**: Export the entire brain graph to JSON or reset memory to factory defaults.
 
 ---
 
@@ -262,7 +379,6 @@ Powered by ElevenLabs Charon Studio Voice and Groq Whisper Large v3 Turbo, the V
    * Automatically parses code blocks (` ```lang ... ``` `) out of spoken responses using regular expressions.
    * Renders syntax-highlighted code with language badges (`JAVASCRIPT`, `PYTHON`, `CPP`, `JAVA`), line counts, 1-click **Copy Code**, and an **"Open in Sandbox"** button that bridges directly into the coding editor.
 4. **Vocal Acknowledgement**: Voice AI verbally announces: *"I have projected the code snippet to your live IO console on screen."*
-5. **Instant Quick-Test Prompts**: One-tap sample buttons populate Input, Output, and Code simultaneously for instant testing.
 
 ---
 
@@ -270,108 +386,31 @@ Powered by ElevenLabs Charon Studio Voice and Groq Whisper Large v3 Turbo, the V
 
 A state-of-the-art proctored assessment system designed to evaluate genuine technical coding proficiency under simulated interview conditions:
 
-### 1. 📌 Top-Mounted Question Statements
-* The full problem statement, difficulty badge, benchmark time, constraints, and formatted examples ($1 \le N \le 10^5$, input/output tables) are mounted **prominently right on top of the code editor** across mobile and desktop.
-* Sub-tabs for **Examples**, **Constraints**, and **💡 Socratic Hints** allow quick review without losing the editor context.
-
-### 2. 🛡️ Assessment Gateway & Permission Workflow
-* Clicking **"Solve Challenge"** opens the **DOAP Proctored Assessment Gateway**.
-* Clearly outlines duration, benchmark goals, and integrity rules.
-* User explicitly accepts rules by clicking **"Start Assessment & Enter Fullscreen"**, satisfying browser security permission requirements and transitioning directly into native fullscreen mode.
-
-### 3. 🔒 Strict Anti-Cheat & Fullscreen Lock
-* **Direct Fullscreen**: Automatically requests native fullscreen on launch.
-* **Fullscreen Exit Blocker**: Exiting fullscreen triggers an inescapable blocking overlay with an audio chime and violation increment. The student must click `"Return to Fullscreen Assessment"` to resume.
-* **Tab Switch & Minimize Detection**: Listens to `visibilitychange` events. Switching tabs or minimizing the browser sounds an alert chime and tracks violations (`Tab Switches: {violations}/3`). Exceeding 3 violations flags the submission.
-* **Mobile Keyboard Awareness**: Does not falsely trigger fullscreen violations when the virtual soft keyboard opens on mobile devices (`activeTag === 'TEXTAREA'`).
-* **Unload Prevention**: Warns students if they attempt to close or reload the browser during an active test.
-
-### 4. 📊 Verified Student Coding Proficiency Evaluation (0 - 100 Score)
-Upon submitting the assessment, DOAP AI evaluates performance across 4 critical dimensions:
-1. **Test Correctness (50%)**: Proportion of automated test cases passed.
-2. **Speed Efficiency (20%)**: Elapsed solving time compared to the benchmark target.
-3. **Hint Autonomy (15%)**: Deductions for consulting Socratic hints.
-4. **Proctor Integrity (15%)**: Deductions for tab switches or exiting fullscreen.
-
-### 5. 🎓 Student Proficiency Report Card
-* Circular animated visual dial displaying the final **0 - 100 Coding Proficiency Score**.
-* **SDE Ranking Tier**: `Elite SDE Candidate (Top 5%)`, `Proficient SDE`, `Junior SDE Candidate`, or `Needs Foundational Practice`.
-* Breakdown progress bars for each dimension + AI strategic coaching feedback.
-* Scores $\ge 60\%$ automatically update `solvedProblems` and mark the skill as mastered in `memoryBrain`.
-
-### 6. ❌ Strict Automated Verification (Manual "Mark as Solved" Removed)
-* The manual `Mark as Solved` toggle button has been **completely eliminated**.
-* A problem is strictly marked as solved **only** when all automated test cases pass or when the assessment is submitted with a passing grade.
-* Replaced with a real-time status indicator: `✓ Verified Solved` or `⚪ Unsolved (Pass all tests to mark solved)`.
+1. 📌 **Top-Mounted Question Statements**: Full problem statement, difficulty badge, benchmark time, constraints, and formatted examples mounted prominently right on top of the code editor.
+2. 🛡️ **Assessment Gateway**: Explicit rule acceptance, direct fullscreen transition, and anti-cheat enforcement.
+3. 🔒 **Strict Anti-Cheat**: Tab switch and minimize detection with sound alert chimes and violation counters (`Tab Switches: {violations}/3`).
+4. 📊 **Verified Coding Proficiency Evaluation (0 - 100 Score)**: Evaluates Test Correctness (50%), Speed Efficiency (20%), Hint Autonomy (15%), and Proctor Integrity (15%).
+5. ❌ **Automated Verification**: Problems are strictly verified and marked solved only when automated test cases pass or assessments are passed.
 
 ---
 
 ## ⚙️ Header Quick-Access Menu (3-Dots Action Dropdown)
 
-To maximize code editing and learning canvas real estate, navigation and profile controls have been thoughtfully streamlined:
+Positioned directly to the left of the student profile avatar in the main top header ([`src/components/Shell/Header.jsx`](file:///src/components/Shell/Header.jsx)):
 
-* **3-Dots (`⋮`) Menu**: Positioned directly to the left of the student profile avatar in the main top header ([`src/components/Shell/Header.jsx`](file:///src/components/Shell/Header.jsx)).
-* **Quick Access Options**:
-  * ⚙️ **Settings**: 1-click modal for Theme, Neural Voice selection, API Keys, and Campus Runtime configuration.
-  * 🚪 **Sign Out / 🔑 Sign In**: Seamless account session management.
-* **Distraction-Free Sidebar**:
-  * Unnecessary footer controls and redundant sidebar buttons (such as bottom "Hide Sidebar" and footer sign-out actions) have been removed from [`src/components/Shell/Sidebar.jsx`](file:///src/components/Shell/Sidebar.jsx), giving students an unobstructed, full-height curriculum navigation panel.
-
----
-
-## 🧬 Unified 8-Layer Living Memory Brain (`memoryBrain.js`)
-
-Unlike standard chatbots where conversation history is lost upon page refresh, DOAP features an **autonomous 8-layer cognitive memory graph**:
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                   DOAP 8-LAYER UNIFIED MEMORY GRAPH                   │
-├────────────────────────────────────────────────────────────────────────┤
-│ Layer 1: Identity & Persona     │ Developer goals, targets (Google, OpenAI)
-│ Layer 2: Episodic Memory        │ Chronological history of past topics & turns
-│ Layer 3: Semantic Knowledge     │ Mastered skills vs. in-progress topics
-│ Layer 4: Weakness Tracker       │ Stumbling points queued for review
-│ Layer 5: Procedural Preferences │ Preferred coding language, theme, cadence
-│ Layer 6: Project Registry       │ Known projects (IP-Verse-Mafia, DOAP)
-│ Layer 7: Career Milestones      │ Solved problem count, ATS readiness score
-│ Layer 8: Synthesized Working Mem│ Active context injected into every prompt
-└────────────────────────────────────────────────────────────────────────┘
-```
-
-### Continuous Autonomous Self-Learning (`learnFromInteraction`)
-* **Mastery Signal Detection**: Keywords like *"understood"*, *"solved it"*, *"samajh gaya"*, *"ban gaya"* automatically move concepts to `semantic.mastered`, increment problem counts, and boost readiness scores.
-* **Friction & Weakness Detection**: Keywords like *"stuck"*, *"bug"*, *"confused"*, *"error"* automatically flag concepts in `weaknesses.reviewTopics` for proactive coaching.
-* **Cross-AI Synchronization**: What you discuss in Voice AI is **immediately remembered by Text AI**, and what you solve in Text AI is **instantly known to Voice AI**!
-
----
-
-## 📱 Dual-Mode "Ask DOAP" Quick Launcher
-
-Clicking **"Ask DOAP"** on the Home dashboard opens an interactive glassmorphic modal allowing users to choose their optimal learning path:
-1. 💬 **Text AI Tutor**: Deep Cognitive Self-Thinking, interactive chat, code generation, quizzes, and Flux AI generation.
-2. 🎙️ **Voice AI Tutor**: Hands-free conversational audio call with ElevenLabs Charon studio voice and live Arc-Reactor HUD.
-
-### 3. Local Hardware Runtime Connector (`src/services/localSystemConnector.js`)
-* Real-time bidirectional WebSocket bridge to `ws://127.0.0.1:8765` (IP Prime OS `room_server.py`).
-* Enables 0ms native Python, C++, and Java execution directly on local Windows hardware with automatic fallback to cloud Judge0.
+* ⚙️ **Settings**: 1-click modal for Theme, Neural Voice selection, API Keys, and Campus Runtime configuration.
+* 🚪 **Sign Out / 🔑 Sign In**: Seamless account session management.
+* **Distraction-Free Sidebar**: Full-height unobstructed curriculum navigation panel.
 
 ---
 
 ## 🎯 Job Description (JD) ATS Matcher & Resume Optimizer
 
-Located in [`src/components/JobReadiness/IPArmySuite.jsx`](file:///src/components/JobReadiness/IPArmySuite.jsx) alongside the LinkedIn Agent and Resume Builder:
+Located in [`src/components/JobReadiness/IPArmySuite.jsx`](file:///src/components/JobReadiness/IPArmySuite.jsx):
 
-* **Enterprise Role Presets**:
-  * Google SWE III (Cloud & Distributed Systems)
-  * Amazon SDE II (Full-Stack & AWS)
-  * TCS Digital / Prime Cadre (Full-Stack Engineer)
-  * Silicon Valley AI Labs (Generative AI & Autonomous Agents)
-  * Custom JD: Paste any external job description.
-* **Real-Time Match Engine**:
-  * Calculates real-time ATS match percentage against the candidate's resume and `memoryBrain` knowledge graph.
-  * Highlights **Matched Keywords** (emerald) and **Missing Critical Keywords** (rose with a 1-click **"+"** to inject into memory).
-* **1-Click "Tailor Resume with DOAP AI"**:
-  * Automatically drafts 3 high-impact Google XYZ-format resume bullet points incorporating the missing skills with technical rigor.
+* **Enterprise Role Presets**: Google SWE III, Amazon SDE II, TCS Digital / Prime, Silicon Valley AI Labs, or Custom JD.
+* **Real-Time Match Engine**: Calculates real-time ATS match percentage against resume and `memoryBrain` knowledge graph.
+* **1-Click "Tailor Resume with DOAP AI"**: Automatically drafts 3 high-impact Google XYZ-format resume bullet points incorporating missing skills with technical rigor.
 
 ---
 
@@ -381,8 +420,7 @@ Located on the main Home dashboard ([`src/pages/Home.jsx`](file:///src/pages/Hom
 
 * **Rotating Daily Drills**: Daily technical questions covering Algorithms, Heap Data Structures, HTTP/1.1 Protocols, React Internals, and Graph Theory.
 * **Instant Evaluation & Explanations**: Selecting an answer immediately reveals correctness with deep technical reasoning.
-* **Streak Counter**: Persists `🔥 X Days Streak` in `localStorage` (`doap_streak_count`), updates milestones, and records episodic memories in `memoryBrain`.
-* **Weekly Badges**: Visual completion dots `[M, T, W, T, F, S, S]` tracking weekly consistency.
+* **Streak Counter**: Persists `🔥 X Days Streak` in `localStorage` (`doap_streak_count`) and updates milestones in `memoryBrain`.
 
 ---
 
@@ -405,7 +443,9 @@ graph TD
         ReactApp -->|WebSocket ws://127.0.0.1:8765| IPPrimeOS[IP Prime OS Desktop Hardware Runtime]
     end
     
-    subgraph "Proctored Coding & Cloud Layer"
+    subgraph "Assessments & Proctored Layer"
+        ReactApp -->|28 Live Certification Exams| CertExams[Interactive Exams Engine & Scorecards]
+        ReactApp -->|36 Production Take-Home Tasks| TakeHome[GitHub Project Suite & Automated Review]
         ReactApp -->|Proctored Fullscreen & Scoring| ProctorEngine[Proctor & Anti-Cheat Engine]
         ReactApp -->|Multi-Language Sandbox| Judge0[Judge0 Cloud Compiler]
         ReactApp -->|Push Solutions| GitHub[GitHub REST API]
@@ -438,9 +478,11 @@ doap-intelligent-learning/
 │   │   ├── 📁 Shell/              # Header, Sidebar (with Brain Vault link), AmbientBackground
 │   │   └── MarkdownRenderer.jsx   # Deep-thinking reasoning accordion & code formatter
 │   ├── 📁 context/                # AuthContext (Firestore sync) & ThemeContext (Brain Vault state)
-│   ├── 📁 data/                   # 167+ DSA challenges & Knowledge Base
+│   ├── 📁 data/                   # 167+ Challenges, 28 Certification Exams & 36 Assignments
+│   │   ├── interactiveExamsData.js# 28 Comprehensive Technical Certification Tracks (482+ Questions)
+│   │   ├── assignmentsData.js     # 36 Production Take-Home Project Assignments (Specs & Rubrics)
 │   │   ├── hackerRankProblems.js  # 20 HackerRank Interview Preparation Kit challenges & test suites
-│   │   └── dsaKnowledgeData.js    # 147 LeetCode problems, 105 Topic Guides & 315 Concept Quizzes
+│   │   └── dsaKnowledgeData.js    # 147 LeetCode problems, 135 Topic Guides & 346 Concept Quizzes
 │   ├── 📁 hooks/                  # Camera, FaceDetection, Proctoring, SpeechRecognition
 │   ├── 📁 lib/                    # Firebase client initialization
 │   ├── 📁 pages/                  # Main application views
@@ -450,9 +492,9 @@ doap-intelligent-learning/
 │   │   ├── AIInterview.jsx        # Interactive video mock interview simulator
 │   │   ├── CodingPractice.jsx     # Proctored Fullscreen Assessment, Anti-cheat & Proficiency scoring
 │   │   ├── JobReadiness.jsx       # Career suite & ATS resume generator
-│   │   ├── Assessments.jsx        # Benchmark quizzes & technical exams
+│   │   ├── Assessments.jsx        # 28 Certification Exams & 36 GitHub Take-Home Tasks
 │   │   ├── Dashboard.jsx          # Real-time telemetry, readiness radar, streak
-│   │   ├── MyLearning.jsx         # Curriculum tracking
+│   │   ├── MyLearning.jsx         # Curriculum tracking & 135 Topic Guides
 │   │   └── StudyPlan.jsx          # Live calendar & AI scheduler
 │   ├── 📁 services/               # Core service layer
 │   │   ├── aiTutorEngine.js       # Groq 120B Super-Brain & language mirroring
@@ -521,9 +563,10 @@ VITE_FIREBASE_APP_ID=1:619777181269:web:a54bcb279a3bfe17bb36dc
 
 ### 4️⃣ Launch Development Server
 ```bash
-npm run dev
+# Run both Express proxy and Vite frontend
+npm run dev:all
 ```
-Open **[http://localhost:5173](http://localhost:5173)** in your browser.
+Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 
 ---
 
@@ -535,8 +578,8 @@ To build and deploy to Firebase Hosting:
 # Build optimized production bundle
 npm run build
 
-# Deploy to Firebase Hosting CDN
-npx firebase deploy --only hosting
+# Deploy to Firebase Hosting CDN & Firestore
+npx -y firebase-tools@latest deploy
 ```
 
 ---
@@ -558,6 +601,7 @@ npx firebase deploy --only hosting
 | **Large Language Models** | Groq LPU (GPT-OSS 120B Flagship, Qwen 27B) + Deep Cognitive Self-Thinking |
 | **Speech & Audio** | DOAP Neural Studio Voice Engine (`msedge-tts` / `/api/ai/tts`), Groq Whisper Large v3 Turbo, ElevenLabs Charon Studio (`eleven_turbo_v2_5`), Kokoro TTS |
 | **Backend & Proxy** | Node.js Express (`server/index.js`) + Vite Dynamic Proxy Engine |
+| **Assessments & Certs** | 28 Interactive Certification Tracks, 36 GitHub Take-Home Projects, 482+ Questions |
 | **Cognitive Memory** | Unified 8-Layer Living Memory Brain (`memoryBrain.js`) + Interactive Brain Vault Modal |
 | **Proctored Assessment** | Fullscreen API, Anti-Cheat Tab Monitor (`visibilitychange`), Automated Test Runner, 0-100 Proficiency Evaluation |
 | **Career & ATS Engine** | Harvard Vector PDF Generator, JD ATS Keyword Matcher, Google XYZ Bullet Generator |
