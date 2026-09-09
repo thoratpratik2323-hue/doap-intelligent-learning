@@ -597,6 +597,95 @@ Feel free to ask if you need details about office hours or syllabus for any subj
     return facultyReply;
   }
 
+  // G. Curated DSA Complete Resources, Roadmap, Playlists & Courses Handler
+  const isDsaResourceQuery = (
+    /\b(dsa roadmap|dsa resources|dsa notes|dsa sheet|dsa material|dsa course|dsa courses|dsa playlist|dsa certificate|dsa questions|top dsa|best dsa)\b/i.test(cleanText) ||
+    (/\b(abdul bari|love babbar|aditya verma|striver|a2z dsa|scholarhat|simplilearn dsa|great learning dsa|upgrad dsa)\b/i.test(cleanText) && !cleanText.toLowerCase().includes('who is')) ||
+    (/\b(dsa|data structures|algorithms)\b/i.test(cleanText) && /\b(roadmap|guide|notes|playlist|youtube|free course|certificate|interview questions|materials|resources|link|links|drive|pdf)\b/i.test(cleanText))
+  );
+
+  if (isDsaResourceQuery) {
+    if (options.voiceMode) {
+      const voiceReply = `Here are the official DOAP curated DSA learning resources. We have a complete step-by-step roadmap from beginner to advanced, a handpicked collection of top repeated interview questions, and comprehensive handwritten notes, all accessible via Google Drive. For video learning, we recommend Abdul Bari for algorithms fundamentals, Love Babbar for step-by-step DSA, Aditya Verma for Dynamic Programming, and Striver's A2Z DSA sheet for placement mastery. You can also get free verified certificates from Simplilearn, ScholarHat, Great Learning, and upGrad. All links are shared directly on your screen!`;
+      try {
+        memoryBrain.learnFromInteraction(cleanText, voiceReply, 'voice');
+      } catch (e) {}
+      return voiceReply;
+    }
+
+    const dsaReply = `### 🚀 Complete DSA Master Resource Vault
+Here is the curated, all-in-one resource collection to master **Data Structures & Algorithms** — from zero to top-tier technical placement offers!
+
+---
+
+### 📌 1. Essential PDF Roadmaps, Notes & Interview Questions
+Structured materials with direct Google Drive access:
+
+| Resource | Description | Format & Link |
+| :--- | :--- | :--- |
+| 🗺️ **DSA Complete Roadmap** | Step-by-step breakdown from beginner to advanced. What to study, when to study, and time allocation per topic. | [📥 Access Roadmap PDF](https://drive.google.com/file/d/15lvZK_l7XWcqdWFR9m4L4iU2FMqzckHj/view) |
+| 🎯 **Top DSA Interview Questions** | High-frequency questions repeatedly asked in company placement screening & technical rounds. | [📥 Access Interview Questions PDF](https://drive.google.com/file/d/12J43KUDz-uYOgY10TmSR_Nt5vOox7rUC/view?usp=sharing) |
+| 📒 **DSA Complete Notes** | Comprehensive handwritten conceptual notes covering basic to advanced data structures and algorithms. | [📥 Access Complete Notes PDF](https://drive.google.com/file/d/1Kaz5iarfJIaSGOWRtxe6qLu-SJT0q6gy/view?usp=sharing) |
+
+---
+
+### 🎬 2. Top 4 YouTube Playlists to Master DSA
+Handpicked channels providing conceptual clarity and problem-solving patterns:
+
+1. **Algorithms by Abdul Bari**
+   - *Best for:* Core algorithm fundamentals, time/space complexity analysis, Divide & Conquer, Greedy, and Dynamic Programming foundations.
+   - 🔗 [Watch Abdul Bari Playlist](https://www.youtube.com/playlist?list=PLDN4rrl48XKpZkf03iYFl-O29szjTrs_O)
+
+2. **Basic DSA by Love Babbar**
+   - *Best for:* Beginner-friendly step-by-step learning in C++ with extensive practice problems.
+   - 🔗 [Watch Love Babbar Playlist](https://www.youtube.com/playlist?list=PLDzeHZWIZsTryvtXdMr6rPh4IDexB5NIA)
+
+3. **Dynamic Programming Masterclass by Aditya Verma**
+   - *Best for:* Cracking DP patterns (0/1 Knapsack, Unbounded Knapsack, LCS, MCM, and DP on Trees).
+   - 🔗 [Watch Aditya Verma DP Playlist](https://www.youtube.com/playlist?list=PL_z_8CaSLPWekqhdCPmFohncHwz8TY2Go)
+
+4. **Advanced DSA (A2Z Sheet) by Striver**
+   - *Best for:* Placement-ready preparation, complex patterns, sliding window, graphs, and hard LeetCode problems.
+   - 🔗 [Watch Striver A2Z Playlist](https://www.youtube.com/playlist?list=PLgUwDviBIf0oF6QL8m22w1hIDC1vJ_BHz)
+
+---
+
+### 🎓 3. Free DSA Courses with Verified Certificates (LinkedIn Ready)
+Add these accredited credentials directly to your resume and LinkedIn profile:
+
+- 🏅 **Simplilearn — Free DSA Course**
+  - Beginner-friendly introduction with a verified completion certificate.
+  - 🔗 [Enroll on Simplilearn](https://www.simplilearn.com/free-data-structures-algorithms-course-skillup)
+
+- 🏅 **ScholarHat — 21 Days Structured DSA Course**
+  - Structured 21-day schedule building core problem-solving fundamentals.
+  - 🔗 [Enroll on ScholarHat](https://www.scholarhat.com/free-course/data-structures-algorithms-course)
+
+- 🏅 **Great Learning — DSA in C**
+  - Hands-on pointer implementation and memory data structures in C.
+  - 🔗 [Enroll on Great Learning](https://www.mygreatlearning.com/academy/learn-for-free/courses/data-structures-in-c)
+
+- 🏅 **upGrad — 50-Hour In-Depth DSA Course**
+  - 50 hours of in-depth algorithmic complexity and non-linear data structures.
+  - 🔗 [Enroll on upGrad](https://www.upgrad.com/free-courses/it-technology/data-structures-and-algorithm-course-free/)
+
+---
+
+💡 **Recommended Learning Strategy:**
+1. Start with the **DSA Complete Roadmap** to plan your timeline.
+2. Build core foundations with **Love Babbar** or **Abdul Bari**.
+3. Master Dynamic Programming through **Aditya Verma**.
+4. Solve top placement questions from **Top DSA Interview Questions** and **Striver A2Z**.
+5. Earn free certificates from **Simplilearn / upGrad** for your LinkedIn profile!
+
+Let me know if you want to practice any specific topic like Trees, Graphs, or DP right now! 😊`;
+
+    try {
+      memoryBrain.learnFromInteraction(cleanText, dsaReply, 'text');
+    } catch (e) {}
+    return dsaReply;
+  }
+
   const effectivePrompt = cleanText.replace(/^(\/code|\/explain|\/interview)\s+/i, '');
 
   // ==========================================

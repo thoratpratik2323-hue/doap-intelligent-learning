@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Search, FileText, Video, BookOpen, ChevronRight, Download, Copy, Check, X, Clock, Sparkles } from 'lucide-react';
+import { Search, FileText, Video, BookOpen, ChevronRight, Download, Copy, Check, X, Clock, Sparkles, ExternalLink } from 'lucide-react';
 import { RESOURCES_DATA } from '../data/mockData';
 import { useTheme } from '../context/ThemeContext';
 
@@ -312,14 +312,28 @@ export const Resources = () => {
                 <span>{isCopied ? 'Copied Summary!' : 'Copy Summary'}</span>
               </button>
 
-              <button
-                type="button"
-                onClick={() => handleDownload(activeResourceModal)}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-500 text-black font-bold text-xs flex items-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/25 transition-all hover:scale-105 active:scale-95"
-              >
-                {isDownloaded ? <Check size={14} /> : <Download size={14} />}
-                <span>{isDownloaded ? 'Downloaded Document!' : 'Download Resource (.md)'}</span>
-              </button>
+              <div className="flex items-center gap-2">
+                {activeResourceModal.url && (
+                  <a
+                    href={activeResourceModal.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-lg shadow-blue-500/25 transition-all hover:scale-105 active:scale-95"
+                  >
+                    <ExternalLink size={14} />
+                    <span>Open Resource</span>
+                  </a>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => handleDownload(activeResourceModal)}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-500 text-black font-bold text-xs flex items-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/25 transition-all hover:scale-105 active:scale-95"
+                >
+                  {isDownloaded ? <Check size={14} /> : <Download size={14} />}
+                  <span>{isDownloaded ? 'Downloaded!' : 'Download (.md)'}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>,
