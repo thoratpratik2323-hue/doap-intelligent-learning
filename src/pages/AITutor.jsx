@@ -5,8 +5,6 @@ import {
   Search, 
   Send, 
   Sparkles, 
-  ChevronLeft, 
-  ChevronRight, 
   ChevronDown, 
   Mic, 
   AlertCircle, 
