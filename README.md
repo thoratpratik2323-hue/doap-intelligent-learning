@@ -25,6 +25,7 @@
 [![Groq LPU](https://img.shields.io/badge/Groq_LPU_120B-F55036?style=flat-square&logo=speedtest&logoColor=white)](https://groq.com/)
 [![Whisper STT](https://img.shields.io/badge/Whisper_Large_v3_Turbo-00A67E?style=flat-square&logo=openai&logoColor=white)](https://groq.com/)
 [![ElevenLabs](https://img.shields.io/badge/ElevenLabs_Charon_Turbo-black?style=flat-square&logo=elevenlabs&logoColor=white)](https://elevenlabs.io/)
+[![Prime Agent RLM](https://img.shields.io/badge/Prime_Agent_RLM-Recursive_Subagents_%26_Refine-8B5CF6?style=flat-square&logo=openai&logoColor=white)](https://github.com/PrimeIntellect-ai/prime-agent)
 [![Firebase Firestore](https://img.shields.io/badge/Google_Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com/)
 
 <br />
@@ -49,6 +50,7 @@ Created for the landmark **"Build Sanjivani's Own Large Language Model — Build
 
 ## 📖 Table of Contents
 - [✨ Key Highlights](#-key-highlights)
+- [🧬 Prime Agent: RLM Multi-Agent & Self-Improving Harness](#-prime-agent-rlm-multi-agent--self-improving-harness)
 - [🏆 Interactive Certification Exams & Assessments (28 Tracks)](#-interactive-certification-exams--assessments-28-tracks)
 - [💼 GitHub Production Take-Home Project Assignments (36 Projects)](#-github-production-take-home-project-assignments-36-projects)
 - [📚 Expanded Curriculum, Knowledge Base & Topic Quizzes (135 Topics & 346 Quizzes)](#-expanded-curriculum-knowledge-base--topic-quizzes-135-topics--346-quizzes)

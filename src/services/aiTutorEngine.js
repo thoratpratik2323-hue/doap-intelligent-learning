@@ -22,6 +22,16 @@ import { getSkillPromptInjection, getActiveSkillNames } from './skillsRegistry.j
 import { orchestrate, getMatchingAgentName } from './agentOrchestrator.js';
 import { sessionManager } from './sessionManager.js';
 import { DEPARTMENT_DATA, DEPARTMENT_KNOWLEDGE_PROMPT } from '../data/departmentData.js';
+import { 
+  getHarnessState, 
+  getHarnessSupplementalPrompt, 
+  refineHarness, 
+  rollbackHarness, 
+  buildRlmTrace, 
+  isRlmCandidate, 
+  isRlmEnabled, 
+  toggleRlmMode 
+} from './primeAgentHarness.js';
 
 const defaultGk = [
   'gsk',
@@ -167,6 +177,9 @@ ${JSON.stringify(quizData, null, 2)}
 | \`/resume\` | 📂 **Session Resume** | Shows recent sessions to continue from where you left off |
 | \`/resume [N]\` | 🔄 **Resume #N** | Directly resumes session number N |
 | \`/agents\` | 🤖 **Agent List** | Shows all active specialized AI agents |
+| \`/refine [notes]\` | 🧬 **Self-Improve** | Prime Agent continual harness refinement with evidence & rollback |
+| \`/harness\` | 🛠️ **Agent Harness** | Inspects active learned skills, student profile, and snapshots |
+| \`/rlm <task>\` | ⚡ **RLM Multi-Agent** | Forces recursive subagent decomposition (Architect, Dev, Verifier) |
 | \`/joke\` | 😄 **Dev Humor** | Generates a witty programmer/tech joke |
 
 *Tip: Agents activate **automatically** — just ask about Amazon/Google interviews, DSA, code review, or study plans!*`;
@@ -182,6 +195,57 @@ ${JSON.stringify(quizData, null, 2)}
       "Programming is 10% writing code and 90% explaining why it's not a bug, it's an undocumented feature. 😎"
     ];
     return `### 😄 Tech Humor\n\n${jokes[Math.floor(Math.random() * jokes.length)]}`;
+  }
+
+  // Prime Agent Continual Harness Commands (/refine, /harness, /rollback)
+  if (cleanText.startsWith('/refine')) {
+    const feedback = cleanText.replace(/^\/refine\s*/i, '').trim();
+    const result = await refineHarness(feedback);
+    const skillsList = (getHarnessState().learnedSkills || []).map(s => `• **${s.name}** [${s.level}]: *${s.description}*`).join('\n');
+    return `### 🧬 Prime Agent Continual Harness Refined (v${result.version})
+
+**Status:** ✅ Snapshot \`${result.snapshotId}\` captured for rollback.
+**Evidence-Backed Refinement:**
+> ${result.refinementNote}
+
+${result.newSkillAdded ? `**✨ New Reusable Skill Synthesized:** \`${result.newSkillAdded}\`\n\n` : ''}
+#### 🛠️ Active Learned Skills (${result.activeSkillsCount}):
+${skillsList}
+
+#### 📝 Adaptive Supplemental Persona:
+\`\`\`text
+${result.supplementalPrompt}
+\`\`\`
+
+*Tip: Type \`/harness\` to view full harness state, \`/rollback\` to revert, or inspect under Settings > Prime Agent Harness.*`;
+  }
+
+  if (cleanText === '/harness' || cleanText === '/prime') {
+    const state = getHarnessState();
+    const skillsList = state.learnedSkills.map(s => `• **${s.name}** [${s.level}]: ${s.description} *(Used ${s.usageCount}x)*`).join('\n');
+    const history = (state.studentProfile?.refinementHistory || []).slice(0, 3).map(h => `• *${new Date(h.timestamp).toLocaleDateString()}*: ${h.notes}`).join('\n');
+    return `### 🧬 Prime Agent Continual Harness (v${state.version})
+
+**RLM Recursive Execution:** ${state.enabled ? '🟢 Active' : '⚪ Disabled'}
+**Target Language:** \`${state.studentProfile?.primaryLanguage || 'Python'}\`
+**Review Focus:** ${state.studentProfile?.strugglingTopics?.join(', ') || 'General Algorithms'}
+
+#### 🛠️ Active Learned Skills (${state.learnedSkills.length}):
+${skillsList}
+
+#### 📜 Recent Refinement Trajectory:
+${history || 'No previous refinements.'}
+
+#### 💾 Snapshots Available for Rollback: ${state.snapshots?.length || 0}
+
+*Commands: \`/refine [feedback]\` to self-improve, \`/rollback\` to revert to previous snapshot.*`;
+  }
+
+  if (cleanText === '/rollback') {
+    const res = rollbackHarness();
+    return res.success 
+      ? `### ⏪ Prime Agent Harness Rollback Successful\n\n${res.message}`
+      : `### ⚠️ Rollback Failed\n\n${res.message}`;
   }
 
   // E. Master Platform Description & Introduction (DOAP: Discover Opportunities and Progress Platform)
@@ -635,7 +699,7 @@ Core Persona & Vibe:
 - Talk like a real, supportive, razor-sharp friend ("bhai", "yaar", "bro", "dost").
 - Zero corporate fluff or canned introductions.
 - Deliver thorough, production-ready work immediately (code, math, essays, debugging).
-- Always have ${userName}'s back!`;
+- Always have ${userName}'s back!\n\n${getHarnessSupplementalPrompt()}`;
 
   // Sanitize message history
   const sanitizedHistory = [];
@@ -684,6 +748,12 @@ Core Persona & Vibe:
     }
 
     if (reply) {
+      // Prime Agent RLM Multi-Agent Trace Attachment
+      if (isRlmEnabled() && isRlmCandidate(cleanText) && !options.voiceMode && !options.agentMode && !reply.includes('<rlm_trace>')) {
+        const trace = buildRlmTrace(cleanText);
+        reply = `<rlm_trace>\n${JSON.stringify(trace)}\n</rlm_trace>\n\n${reply}`;
+      }
+
       try {
         memoryBrain.learnFromInteraction(cleanText, reply, options.voiceMode ? 'voice' : 'text');
       } catch (e) {

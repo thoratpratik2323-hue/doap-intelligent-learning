@@ -32,6 +32,7 @@ import { useAITutor } from '../context/AITutorContext';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { MarkdownRenderer } from '../components/MarkdownRenderer';
 import { VoiceAICallModal } from '../components/Interview/VoiceAICallModal';
+import { RlmExecutionTree } from '../components/AITutor/RlmExecutionTree';
 import { 
   speakElevenLabs, 
   stopElevenLabsAudio, 
@@ -43,16 +44,33 @@ import {
 const STORAGE_KEY = 'doap_ai_chat_sessions';
 
 const QUICK_PROMPTS = [
+  "⚡ /rlm Optimal LRU Cache implementation with tests",
+  "🧬 /refine Focus on graph cycles and recursion depth",
+  "🛠️ /harness",
   "🎨 /image a futuristic neon cybernetic workstation 8k",
   "📝 /quiz Python",
-  "☕ /quiz Java",
-  "⚙️ /quiz C Systems",
   "🧮 /quiz DSA",
   "💻 /code Two Sum with optimal HashMap in Python",
   "💡 /explain Kadane's Algorithm for max subarray sum",
   "🎯 /interview Mock FAANG question on graph cycle detection",
   "😄 /joke"
 ];
+
+
+const parseMessageWithRlm = (rawText) => {
+  if (!rawText || typeof rawText !== 'string') return { rlmTrace: null, text: rawText || '' };
+  const match = rawText.match(/<rlm_trace>([\s\S]*?)<\/rlm_trace>/i);
+  if (match) {
+    try {
+      const trace = JSON.parse(match[1].trim());
+      const cleanText = rawText.replace(/<rlm_trace>[\s\S]*?<\/rlm_trace>/gi, '').trim();
+      return { rlmTrace: trace, text: cleanText };
+    } catch (e) {
+      console.warn('Failed to parse rlm_trace:', e);
+    }
+  }
+  return { rlmTrace: null, text: rawText };
+};
 
 const generateTitleFromPrompt = (prompt) => {
   let clean = prompt.replace(/^(\/image|\/code|\/explain|\/interview|\/quiz)\s+/i, '').trim();
@@ -452,7 +470,7 @@ export const AITutor = () => {
               </span>
               <span className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-medium">
                 <Brain size={11} className="text-indigo-400" />
-                <span>Cognitive Self-Thinking & Memory Active</span>
+                <span>Prime RLM & Continual Harness Active</span>
               </span>
             </div>
           </div>
@@ -508,17 +526,21 @@ export const AITutor = () => {
                     <Sparkles size={16} />
                   </div>
 
-                  <div className="flex-1 max-w-full min-w-0 space-y-2 group">
-                    <div 
-                      className="p-4 sm:p-6 rounded-3xl rounded-tl-xs text-sm sm:text-[15px] leading-relaxed border doap-card shadow-sm"
-                      style={{
-                        backgroundColor: isDarkMode ? '#111111' : '#ffffff',
-                        borderColor: 'var(--doap-border, #262626)',
-                        color: 'var(--doap-text-prim)'
-                      }}
-                    >
-                      <div className="relative">
-                        <MarkdownRenderer content={msg.text} isDarkMode={isDarkMode} />
+                  {(() => {
+                    const { rlmTrace, text: cleanMsgText } = parseMessageWithRlm(msg.text);
+                    return (
+                      <div className="flex-1 max-w-full min-w-0 space-y-2 group">
+                        <div 
+                          className="p-4 sm:p-6 rounded-3xl rounded-tl-xs text-sm sm:text-[15px] leading-relaxed border doap-card shadow-sm"
+                          style={{
+                            backgroundColor: isDarkMode ? '#111111' : '#ffffff',
+                            borderColor: 'var(--doap-border, #262626)',
+                            color: 'var(--doap-text-prim)'
+                          }}
+                        >
+                          {rlmTrace && <RlmExecutionTree trace={rlmTrace} isDarkMode={isDarkMode} />}
+                          <div className="relative">
+                            <MarkdownRenderer content={cleanMsgText} isDarkMode={isDarkMode} />
                         {msg.isStreaming && (
                           <span className="inline-block w-2 h-4 ml-1 bg-emerald-400 animate-pulse rounded-xs align-middle" />
                         )}
@@ -576,6 +598,8 @@ export const AITutor = () => {
                       </div>
                     )}
                   </div>
+                    );
+                  })()}
                 </>
               )}
             </div>

@@ -81,6 +81,38 @@ export const AppearancePage = () => {
   const [customLlmModel, setCustomLlmModel] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_custom_llm_model') || 'deepseek/deepseek-chat:free' : 'deepseek/deepseek-chat:free'));
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
+  const [harnessState, setHarnessState] = useState(() => getHarnessState());
+  const [isRefining, setIsRefining] = useState(false);
+  const [harnessNotice, setHarnessNotice] = useState('');
+
+  const handleToggleRlm = () => {
+    const newEnabled = toggleRlmMode();
+    setHarnessState(getHarnessState());
+    setHarnessNotice(newEnabled ? 'RLM Multi-Agent mode enabled!' : 'RLM Multi-Agent mode disabled.');
+    setTimeout(() => setHarnessNotice(''), 3000);
+  };
+
+  const handleTriggerRefine = async () => {
+    setIsRefining(true);
+    try {
+      const res = await refineHarness('Triggered via Prime Agent Settings');
+      setHarnessState(getHarnessState());
+      setHarnessNotice(`Harness refined to v${res.version}! ${res.newSkillAdded ? `Added: ${res.newSkillAdded}` : 'Reinforced adaptive reasoning.'}`);
+    } catch (e) {
+      setHarnessNotice('Error refining harness.');
+    } finally {
+      setIsRefining(false);
+      setTimeout(() => setHarnessNotice(''), 4000);
+    }
+  };
+
+  const handleRollbackSnapshot = () => {
+    const res = rollbackHarness();
+    setHarnessState(getHarnessState());
+    setHarnessNotice(res.message);
+    setTimeout(() => setHarnessNotice(''), 3500);
+  };
+
 
   const handleSaveEngines = () => {
     try {
@@ -451,6 +483,132 @@ export const AppearancePage = () => {
                           className="w-full px-3 py-2 rounded-xl text-xs bg-black/40 border border-neutral-800 text-white font-mono focus:border-cyan-500 focus:outline-none"
                         />
                       </div>
+                    </div>
+                  </div>
+                </Section>
+
+                {/* ── Section 5: Prime Agent Harness & Continual Memory ── */}
+                <Section 
+                  title="🧬 Prime Agent Harness & Continual Memory (Self-Improving RLM)" 
+                  subtitle="Inspired by PrimeIntellect-ai/prime-agent. Treats context as variables, subagents as recursive functions (rlm(...)), and refines student memory via /refine."
+                >
+                  <div className="space-y-4">
+                    {/* Notice bar if any */}
+                    {harnessNotice && (
+                      <div className="p-2.5 rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-xs font-mono text-indigo-300 flex items-center justify-between animate-fade-in">
+                        <span>{harnessNotice}</span>
+                      </div>
+                    )}
+
+                    {/* RLM Toggle & Harness Version */}
+                    <div className="p-3.5 rounded-xl border border-neutral-800 bg-neutral-900/40 flex items-center justify-between flex-wrap gap-2">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs font-bold text-white">⚡ Recursive Multi-Agent Execution (RLM)</p>
+                          <span className={`text-[9px] font-mono px-2 py-0.5 rounded-full border ${
+                            harnessState.enabled 
+                              ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' 
+                              : 'bg-neutral-800 text-neutral-400 border-neutral-700'
+                          }`}>
+                            {harnessState.enabled ? 'ACTIVE' : 'DISABLED'}
+                          </span>
+                          <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                            Harness v{harnessState.version}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-neutral-400">
+                          Decomposes complex problems into Architect, Developer, Verifier, and Socratic subagents in parallel.
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleToggleRlm}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                          harnessState.enabled
+                            ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30'
+                            : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:text-white'
+                        }`}
+                      >
+                        {harnessState.enabled ? 'Turn OFF' : 'Turn ON'}
+                      </button>
+                    </div>
+
+                    {/* Active Learned Skills Matrix */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-mono text-neutral-400 uppercase tracking-wider block">
+                          🛠️ Active Reusable Learned Skills ({harnessState.learnedSkills?.length || 0}):
+                        </span>
+                        <span className="text-[10px] font-mono text-neutral-500">
+                          Target Lang: {harnessState.studentProfile?.primaryLanguage || 'Python'}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {(harnessState.learnedSkills || []).map((skill, idx) => (
+                          <div 
+                            key={skill.id || idx}
+                            className="p-2.5 rounded-xl border border-neutral-800 bg-black/40 space-y-1"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-semibold text-xs text-neutral-200">{skill.name}</span>
+                              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">
+                                {skill.level}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-neutral-400 leading-snug">
+                              {skill.description}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Supplemental Persona Prompt Preview */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] text-neutral-400">Adaptive Supplemental System Prompt (Harness Overlay):</label>
+                        <span className="text-[10px] font-mono text-cyan-400">Immutable Base Protected</span>
+                      </div>
+                      <div className="p-2.5 rounded-xl bg-black/60 border border-neutral-800 text-[11px] font-mono text-neutral-300 leading-relaxed max-h-24 overflow-y-auto">
+                        {harnessState.supplementalPrompt}
+                      </div>
+                    </div>
+
+                    {/* Harness Action Toolbar */}
+                    <div className="pt-1 flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleTriggerRefine}
+                          disabled={isRefining}
+                          className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                        >
+                          {isRefining ? (
+                            <>
+                              <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+                              Refining...
+                            </>
+                          ) : (
+                            <>🧬 Run /refine Now</>
+                          )}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleRollbackSnapshot}
+                          disabled={!harnessState.snapshots || harnessState.snapshots.length === 0}
+                          className="px-3 py-1.5 rounded-xl border border-neutral-700 bg-neutral-900/60 hover:bg-neutral-800 text-neutral-300 font-medium text-xs transition-all cursor-pointer disabled:opacity-40"
+                          title="Rollback to previous snapshot"
+                        >
+                          ⏪ Rollback Snapshot ({harnessState.snapshots?.length || 0})
+                        </button>
+                      </div>
+
+                      <span className="text-[10px] font-mono text-neutral-500">
+                        Zero user friction • Trajectory driven
+                      </span>
                     </div>
                   </div>
                 </Section>
