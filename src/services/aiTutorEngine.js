@@ -661,13 +661,64 @@ Core Persona & Vibe:
   ];
 
   // ==========================================
-  // 3. Primary Engine: Groq LPU (Sub-150ms High-Fidelity Intelligence)
+  // 3. Multi-Provider Fallback Cascade (Groq -> OpenRouter -> Custom LLM -> Free Neural)
+  // Inspired by open-free-llm-api/awesome-freellm-apis (479+ free models from 31 providers)
   // ==========================================
+
+  const finalizeReply = (rawReply, rawReasoning) => {
+    let reply = rawReply || '';
+    const reasoning = rawReasoning;
+
+    if (!reply.trim() && reasoning) {
+      reply = options.voiceMode ? reasoning : `<think>\n${reasoning.trim()}\n</think>`;
+    } else if (reasoning && !options.voiceMode && !reply.includes('<think>')) {
+      reply = `<think>\n${reasoning.trim()}\n</think>\n\n${reply}`;
+    }
+
+    if (options.voiceMode || options.stripThink) {
+      reply = reply
+        .replace(/<think>[\s\S]*?<\/think>/gi, '')
+        .replace(/<details[\s\S]*?<\/details>/gi, '')
+        .replace(/\*\*Reasoning\*\*[\s\S]*?\*\*Final Answer\*\*/i, '')
+        .trim();
+    }
+
+    if (reply) {
+      try {
+        memoryBrain.learnFromInteraction(cleanText, reply, options.voiceMode ? 'voice' : 'text');
+      } catch (e) {
+        console.warn('[aiTutorEngine] learnFromInteraction error:', e);
+      }
+
+      if (!options.voiceMode && !options.agentMode) {
+        try {
+          const { finalResponse } = runPostHooks(cleanText, reply);
+          reply = finalResponse;
+        } catch (e) { /* silent */ }
+
+        try {
+          sessionManager.appendMessage({ sender: 'ai', text: reply });
+          const activeSkills = getActiveSkillNames(cleanText);
+          if (activeSkills.length > 0) {
+            sessionManager.tagSession(null, activeSkills);
+            activeSkills.forEach((skillName) => {
+              const skillId = skillName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+              memoryBrain.updateSkillProgress(skillId, 3);
+            });
+          }
+        } catch (e) { /* silent */ }
+      }
+      return reply;
+    }
+    return null;
+  };
+
+  // ── Tier 1: Groq LPU (Sub-150ms High-Fidelity Intelligence) ──
   const candidateModels = [
-    'qwen/qwen3.8-27b',       // Fast, instruction-aligned, flawless multilingual (Hindi + English)
-    'groq/compound-mini',     // Ultra-low latency, clean direct answers
-    'openai/gpt-oss-120b',    // 120B Flagship Super-Brain
-    'groq/compound',          // Deep reasoning compound model
+    'qwen/qwen3.8-27b',
+    'groq/compound-mini',
+    'openai/gpt-oss-120b',
+    'groq/compound',
     'qwen/qwen3.6-27b',
     'openai/gpt-oss-20b'
   ];
@@ -676,7 +727,7 @@ Core Persona & Vibe:
     for (const model of candidateModels) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 20000);
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
 
         const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
@@ -697,61 +748,108 @@ Core Persona & Vibe:
 
         if (res.ok) {
           const data = await res.json();
-          let reply = data?.choices?.[0]?.message?.content || '';
-          const reasoning = data?.choices?.[0]?.message?.reasoning;
-
-          // If model returned explicit reasoning field, incorporate it
-          if (!reply.trim() && reasoning) {
-            reply = options.voiceMode ? reasoning : `<think>\n${reasoning.trim()}\n</think>`;
-          } else if (reasoning && !options.voiceMode && !reply.includes('<think>')) {
-            reply = `<think>\n${reasoning.trim()}\n</think>\n\n${reply}`;
-          }
-
-          if (options.voiceMode || options.stripThink) {
-            // Strictly strip <think> blocks, hidden details, and scratchpads for clean delivery
-            reply = reply
-              .replace(/<think>[\s\S]*?<\/think>/gi, '')
-              .replace(/<details[\s\S]*?<\/details>/gi, '')
-              .replace(/\*\*Reasoning\*\*[\s\S]*?\*\*Final Answer\*\*/i, '')
-              .trim();
-          }
-
-          if (reply) {
-            // Autonomous Continuous Self-Learning: absorb new skills, weaknesses, and concepts into memory
-            try {
-              memoryBrain.learnFromInteraction(cleanText, reply, options.voiceMode ? 'voice' : 'text');
-            } catch (e) {
-              console.warn('[aiTutorEngine] learnFromInteraction error:', e);
-            }
-
-            // Post-Hooks — educational guardrails (complexity check, weakness tracking, progress)
-            if (!options.voiceMode && !options.agentMode) {
-              try {
-                const { finalResponse } = runPostHooks(cleanText, reply);
-                reply = finalResponse;
-              } catch (e) { /* silent */ }
-
-              // Save to session
-              try {
-                sessionManager.appendMessage({ sender: 'ai', text: reply });
-                const activeSkills = getActiveSkillNames(cleanText);
-                if (activeSkills.length > 0) {
-                  sessionManager.tagSession(null, activeSkills);
-                  activeSkills.forEach((skillName) => {
-                    const skillId = skillName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
-                    memoryBrain.updateSkillProgress(skillId, 3);
-                  });
-                }
-              } catch (e) { /* silent */ }
-            }
-
-            return reply;
-          }
+          const finalResult = finalizeReply(data?.choices?.[0]?.message?.content, data?.choices?.[0]?.message?.reasoning);
+          if (finalResult) return finalResult;
         }
       } catch (err) {
         console.warn(`[DOAP AI Groq LPU (${model})] fallback:`, err.message || err);
       }
     }
+  }
+
+  // ── Tier 2: Custom Free LLM Provider (NVIDIA NIM, Cloudflare, Mistral, Ollama) ──
+  const customUrl = typeof localStorage !== 'undefined' ? (localStorage.getItem('doap_custom_llm_url') || localStorage.getItem('doap_campus_llm_url')) : null;
+  const customKey = typeof localStorage !== 'undefined' ? localStorage.getItem('doap_custom_llm_key') : null;
+  const customModel = typeof localStorage !== 'undefined' ? (localStorage.getItem('doap_custom_llm_model') || 'qwen2.5-coder-7b-instruct') : 'qwen2.5-coder-7b-instruct';
+
+  if (customUrl) {
+    try {
+      const endpoint = customUrl.endsWith('/chat/completions') ? customUrl : `${customUrl.replace(/\/+$/, '')}/chat/completions`;
+      const headers = { 'Content-Type': 'application/json' };
+      if (customKey) headers['Authorization'] = `Bearer ${customKey}`;
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers,
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: customModel,
+          messages,
+          temperature: options.voiceMode ? 0.6 : 0.7,
+          max_tokens: options.voiceMode ? 380 : 2048
+        })
+      });
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const data = await res.json();
+        const finalResult = finalizeReply(data?.choices?.[0]?.message?.content, data?.choices?.[0]?.message?.reasoning);
+        if (finalResult) return finalResult;
+      }
+    } catch (e) {
+      console.warn('[DOAP AI Custom Free Provider error]:', e.message || e);
+    }
+  }
+
+  // ── Tier 3: OpenRouter Free Models Tier (Zero Credit Card) ──
+  const openRouterKey = typeof localStorage !== 'undefined' ? (localStorage.getItem('doap_openrouter_key') || (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_OPENROUTER_API_KEY)) : null;
+  if (openRouterKey) {
+    const freeModels = ['deepseek/deepseek-chat:free', 'meta-llama/llama-3.3-70b-instruct:free', 'qwen/qwen-2.5-coder-32b-instruct:free'];
+    for (const orModel of freeModels) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${openRouterKey}`,
+            'HTTP-Referer': 'https://doap-1908.web.app',
+            'X-Title': 'DOAP Engineering Platform'
+          },
+          signal: controller.signal,
+          body: JSON.stringify({
+            model: orModel,
+            messages,
+            temperature: options.voiceMode ? 0.6 : 0.7,
+            max_tokens: options.voiceMode ? 380 : 2048
+          })
+        });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json();
+          const finalResult = finalizeReply(data?.choices?.[0]?.message?.content, data?.choices?.[0]?.message?.reasoning);
+          if (finalResult) return finalResult;
+        }
+      } catch (e) {
+        console.warn(`[DOAP AI OpenRouter Free (${orModel})] error:`, e.message || e);
+      }
+    }
+  }
+
+  // ── Tier 4: Anonymous Free Neural Engine (text.pollinations.ai) ──
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(cleanText)}`, {
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      const textReply = await res.text();
+      if (textReply && textReply.trim() && !textReply.includes('"error"')) {
+        const finalResult = finalizeReply(textReply.trim());
+        if (finalResult) return finalResult;
+      }
+    }
+  } catch (e) {
+    console.warn('[DOAP AI Free Neural Fallback error]:', e.message || e);
   }
 
   // ==========================================

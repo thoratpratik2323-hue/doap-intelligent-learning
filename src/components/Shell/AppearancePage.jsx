@@ -75,6 +75,10 @@ export const AppearancePage = () => {
   const [kokoroUrl, setKokoroUrl] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_kokoro_url') || 'http://localhost:8880/v1/audio/speech' : 'http://localhost:8880/v1/audio/speech'));
   const [pistonUrl, setPistonUrl] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_piston_url') || 'http://localhost:2000' : 'http://localhost:2000'));
   const [campusLlmUrl, setCampusLlmUrl] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_campus_llm_url') || 'http://localhost:8000/v1' : 'http://localhost:8000/v1'));
+  const [openRouterKey, setOpenRouterKey] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_openrouter_key') || '' : ''));
+  const [customLlmUrl, setCustomLlmUrl] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_custom_llm_url') || '' : ''));
+  const [customLlmKey, setCustomLlmKey] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_custom_llm_key') || '' : ''));
+  const [customLlmModel, setCustomLlmModel] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_custom_llm_model') || 'deepseek/deepseek-chat:free' : 'deepseek/deepseek-chat:free'));
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
 
@@ -87,6 +91,14 @@ export const AppearancePage = () => {
       localStorage.setItem('doap_kokoro_url', kokoroUrl);
       localStorage.setItem('doap_piston_url', pistonUrl);
       localStorage.setItem('doap_campus_llm_url', campusLlmUrl);
+      if (openRouterKey) localStorage.setItem('doap_openrouter_key', openRouterKey);
+      else localStorage.removeItem('doap_openrouter_key');
+      if (customLlmUrl) localStorage.setItem('doap_custom_llm_url', customLlmUrl);
+      else localStorage.removeItem('doap_custom_llm_url');
+      if (customLlmKey) localStorage.setItem('doap_custom_llm_key', customLlmKey);
+      else localStorage.removeItem('doap_custom_llm_key');
+      if (customLlmModel) localStorage.setItem('doap_custom_llm_model', customLlmModel);
+      else localStorage.removeItem('doap_custom_llm_model');
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 2500);
     } catch (e) {}
@@ -325,6 +337,122 @@ export const AppearancePage = () => {
                     className="w-full px-3 py-2 rounded-xl text-xs bg-black/40 border border-neutral-800 text-white font-mono focus:border-cyan-500 focus:outline-none"
                   />
                   <p className="text-[10px] text-neutral-500 mt-1 font-mono">Run `serve_vllm.sh` to launch Sanjivani-Coder-7B locally.</p>
+                </Section>
+
+                {/* 4. Multi-Provider Free LLM Fallback (Awesome FreeLLM Integration) */}
+                <Section 
+                  title="Multi-Provider Free LLM Fallback (Awesome FreeLLM Integration)" 
+                  subtitle="Cascades automatically across Groq, OpenRouter, and zero-key endpoints so DOAP never fails."
+                >
+                  <div className="space-y-3">
+                    {/* Active status cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div className="p-2.5 rounded-xl border border-cyan-500/30 bg-cyan-950/20 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-cyan-300 font-mono">⚡ TIER 1: GROQ LPU</span>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-mono">PRIMARY</span>
+                        </div>
+                        <p className="text-[11px] font-semibold text-white">Qwen 27B / GPT-OSS 120B</p>
+                        <p className="text-[9px] text-neutral-400">Sub-150ms instant response</p>
+                      </div>
+
+                      <div className="p-2.5 rounded-xl border border-purple-500/30 bg-purple-950/20 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-purple-300 font-mono">🟢 TIER 2: OPENROUTER</span>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 font-mono">FREE MODELS</span>
+                        </div>
+                        <p className="text-[11px] font-semibold text-white">DeepSeek & Llama Free</p>
+                        <p className="text-[9px] text-neutral-400">Zero card, 40+ free models</p>
+                      </div>
+
+                      <div className="p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-950/20 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-emerald-300 font-mono">🛡️ TIER 3: ZERO-KEY</span>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-mono">ALWAYS ON</span>
+                        </div>
+                        <p className="text-[11px] font-semibold text-white">Universal Neural Mesh</p>
+                        <p className="text-[9px] text-neutral-400">100% uptime fallback</p>
+                      </div>
+                    </div>
+
+                    {/* Quick Links to Free API Keys (Zero Card) */}
+                    <div className="p-3 rounded-xl border border-neutral-800 bg-black/40 space-y-1.5">
+                      <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-wider block">
+                        🔑 Get Free API Keys (Zero Credit Card Required):
+                      </span>
+                      <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                        <a 
+                          href="https://console.groq.com/keys" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-[10px] font-mono px-2 py-1 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-cyan-400 hover:text-cyan-300 transition-colors"
+                        >
+                          Groq LPU (30 RPM) ↗
+                        </a>
+                        <a 
+                          href="https://openrouter.ai/keys" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-[10px] font-mono px-2 py-1 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-purple-400 hover:text-purple-300 transition-colors"
+                        >
+                          OpenRouter Free Keys ↗
+                        </a>
+                        <a 
+                          href="https://build.nvidia.com" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-[10px] font-mono px-2 py-1 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-emerald-400 hover:text-emerald-300 transition-colors"
+                        >
+                          NVIDIA NIM (128 Models) ↗
+                        </a>
+                        <a 
+                          href="https://dash.cloudflare.com" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-[10px] font-mono px-2 py-1 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 text-amber-400 hover:text-amber-300 transition-colors"
+                        >
+                          Cloudflare Workers AI (40 Models) ↗
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Custom Provider Configuration Form */}
+                    <div className="space-y-2 pt-1">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[11px] text-neutral-400 block mb-1">OpenRouter Free API Key (Optional):</label>
+                          <input
+                            type="password"
+                            value={openRouterKey}
+                            onChange={(e) => setOpenRouterKey(e.target.value)}
+                            placeholder="sk-or-v1-..."
+                            className="w-full px-3 py-2 rounded-xl text-xs bg-black/40 border border-neutral-800 text-white font-mono focus:border-purple-500 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[11px] text-neutral-400 block mb-1">Custom Fallback Model ID:</label>
+                          <input
+                            type="text"
+                            value={customLlmModel}
+                            onChange={(e) => setCustomLlmModel(e.target.value)}
+                            placeholder="deepseek/deepseek-chat:free"
+                            className="w-full px-3 py-2 rounded-xl text-xs bg-black/40 border border-neutral-800 text-white font-mono focus:border-cyan-500 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-[11px] text-neutral-400 block mb-1">Custom OpenAI-Compatible Base URL (Optional):</label>
+                        <input
+                          type="text"
+                          value={customLlmUrl}
+                          onChange={(e) => setCustomLlmUrl(e.target.value)}
+                          placeholder="https://integrate.api.nvidia.com/v1 or https://openrouter.ai/api/v1"
+                          className="w-full px-3 py-2 rounded-xl text-xs bg-black/40 border border-neutral-800 text-white font-mono focus:border-cyan-500 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </Section>
 
                 <div className="pt-2 flex items-center justify-between">
