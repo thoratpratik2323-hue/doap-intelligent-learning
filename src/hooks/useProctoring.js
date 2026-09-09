@@ -2,10 +2,26 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { PROCTORING_VIOLATION_TYPES } from '../data/interviewSchema';
 
 export const useProctoring = ({ isInterviewActive = false, onStrikeLimitExceeded } = {}) => {
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  // Cross-browser fullscreen state checker
+  const isCurrentlyFullscreen = () => Boolean(
+    document.fullscreenElement ||
+    document.webkitFullscreenElement ||
+    document.mozFullScreenElement ||
+    document.msFullscreenElement
+  );
+
+  const [isFullscreen, setIsFullscreen] = useState(isCurrentlyFullscreen);
   const [strikeCount, setStrikeCount] = useState(0);
   const [violations, setViolations] = useState([]);
   const [activeWarning, setActiveWarning] = useState(null);
+  const hasMountedRef = useRef(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      hasMountedRef.current = true;
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const maxStrikes = 3;
 
@@ -61,38 +77,51 @@ export const useProctoring = ({ isInterviewActive = false, onStrikeLimitExceeded
     }
   }, [isInterviewActive, onStrikeLimitExceeded]);
 
-  // Fullscreen toggle request
+  // Cross-browser fullscreen toggle request
   const requestFullscreen = useCallback(async () => {
     try {
-      if (document.documentElement.requestFullscreen) {
-        await document.documentElement.requestFullscreen();
-        setIsFullscreen(true);
-        return true;
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        await elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) {
+        await elem.webkitRequestFullscreen();
+      } else if (elem.mozRequestFullScreen) {
+        await elem.mozRequestFullScreen();
+      } else if (elem.msRequestFullscreen) {
+        await elem.msRequestFullscreen();
       }
+      setIsFullscreen(true);
+      return true;
     } catch (err) {
-      // Fullscreen request failed or user denied
+      console.warn('requestFullscreen failed:', err);
     }
     return false;
   }, []);
 
   const exitFullscreen = useCallback(async () => {
     try {
-      if (document.fullscreenElement && document.exitFullscreen) {
+      if (document.exitFullscreen) {
         await document.exitFullscreen();
-        setIsFullscreen(false);
+      } else if (document.webkitExitFullscreen) {
+        await document.webkitExitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        await document.mozCancelFullScreen();
+      } else if (document.msExitFullscreen) {
+        await document.msExitFullscreen();
       }
+      setIsFullscreen(false);
     } catch (err) {
       // ignore
     }
   }, []);
 
-  // Fullscreen change listener
+  // Multi-vendor fullscreen change listener
   useEffect(() => {
     const handleFullscreenChange = () => {
-      const activeFS = Boolean(document.fullscreenElement);
+      const activeFS = isCurrentlyFullscreen();
       setIsFullscreen(activeFS);
 
-      if (isInterviewActive && !activeFS) {
+      if (hasMountedRef.current && isInterviewActive && !activeFS) {
         addViolation(
           PROCTORING_VIOLATION_TYPES.FULLSCREEN_EXIT,
           "Fullscreen mode was exited. Fullscreen is required during the interview.",
@@ -103,8 +132,15 @@ export const useProctoring = ({ isInterviewActive = false, onStrikeLimitExceeded
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
     };
   }, [isInterviewActive, addViolation]);
 

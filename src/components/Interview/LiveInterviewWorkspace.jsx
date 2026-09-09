@@ -104,7 +104,9 @@ export const LiveInterviewWorkspace = ({ setupData, onInterviewComplete, onInter
     );
     setQuestions(qList);
     startMedia({ video: true, audio: true });
-    requestFullscreen();
+    if (typeof requestFullscreen === 'function') {
+      requestFullscreen().catch(() => {});
+    }
 
     const overallTimer = setInterval(() => {
       setTotalInterviewSeconds(prev => prev + 1);

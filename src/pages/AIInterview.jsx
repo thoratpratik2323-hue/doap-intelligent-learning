@@ -30,16 +30,56 @@ export const AIInterview = () => {
     setStep('system_check');
   };
 
-  const handleStartLiveInterview = () => {
+  const handleStartLiveInterview = async () => {
+    try {
+      const elem = document.documentElement;
+      const isFS = Boolean(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+      if (!isFS) {
+        if (elem.requestFullscreen) {
+          await elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) {
+          await elem.webkitRequestFullscreen();
+        } else if (elem.mozRequestFullScreen) {
+          await elem.mozRequestFullScreen();
+        } else if (elem.msRequestFullscreen) {
+          await elem.msRequestFullscreen();
+        }
+      }
+    } catch (err) {
+      console.warn("Fullscreen request error in handleStartLiveInterview:", err);
+    }
     setStep('live');
   };
 
-  const handleInterviewComplete = (results) => {
+  const exitFullscreenIfActive = async () => {
+    try {
+      if (document.fullscreenElement && document.exitFullscreen) {
+        await document.exitFullscreen();
+      } else if (document.webkitFullscreenElement && document.webkitExitFullscreen) {
+        await document.webkitExitFullscreen();
+      } else if (document.mozFullScreenElement && document.mozCancelFullScreen) {
+        await document.mozCancelFullScreen();
+      } else if (document.msFullscreenElement && document.msExitFullscreen) {
+        await document.msExitFullscreen();
+      }
+    } catch (err) {
+      // ignore
+    }
+  };
+
+  const handleInterviewComplete = async (results) => {
+    await exitFullscreenIfActive();
     setInterviewResults({ ...results, status: 'COMPLETED' });
     setStep('report');
   };
 
-  const handleInterviewTerminated = (termData) => {
+  const handleInterviewTerminated = async (termData) => {
+    await exitFullscreenIfActive();
     const violationList = Array.isArray(termData) ? termData : (termData?.violations || []);
     setInterviewResults({
       answers: termData?.answers || [],

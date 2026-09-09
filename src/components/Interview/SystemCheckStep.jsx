@@ -57,7 +57,21 @@ export const SystemCheckStep = ({ setupData, onStartInterview, onBack }) => {
     };
   }, []);
 
-  const handleStart = () => {
+  const handleStart = async () => {
+    try {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        await elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) {
+        await elem.webkitRequestFullscreen();
+      } else if (elem.mozRequestFullScreen) {
+        await elem.mozRequestFullScreen();
+      } else if (elem.msRequestFullscreen) {
+        await elem.msRequestFullscreen();
+      }
+    } catch (err) {
+      console.warn("Fullscreen request error on start:", err);
+    }
     stopMedia();
     onStartInterview();
   };
