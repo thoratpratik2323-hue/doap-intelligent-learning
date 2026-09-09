@@ -152,13 +152,19 @@ const AppContent = () => {
     }
   };
 
+  const isFullHeightWorkspace = currentPath === '/ai-tutor' || currentPath === '/voice-tutor';
+
   return (
     <AmbientBackground>
       {/* Outer framing container */}
-      <div className="min-h-screen p-0 md:p-4 lg:p-6 flex items-center justify-center">
+      <div className={`${isFullHeightWorkspace ? 'h-[100dvh] max-h-[100dvh] overflow-hidden' : 'min-h-screen'} p-0 md:p-3 lg:p-4 flex items-center justify-center`}>
         {/* Main Central App Container */}
         <div 
-          className="w-full max-w-[1600px] min-h-[calc(100vh-2rem)] md:min-h-[calc(100vh-3rem)] rounded-none md:rounded-[32px] overflow-hidden shadow-2xl border flex flex-col md:flex-row relative transition-colors duration-300"
+          className={`w-full max-w-[1600px] ${
+            isFullHeightWorkspace 
+              ? 'h-[100dvh] md:h-[calc(100vh-1.5rem)] lg:h-[calc(100vh-2rem)] max-h-screen' 
+              : 'min-h-[calc(100vh-2rem)] md:min-h-[calc(100vh-3rem)]'
+          } rounded-none md:rounded-[32px] overflow-hidden shadow-2xl border flex flex-col md:flex-row relative transition-colors duration-300`}
           style={{
             backgroundColor: 'var(--background, var(--doap-bg))',
             borderColor: 'var(--border, var(--doap-border))'
