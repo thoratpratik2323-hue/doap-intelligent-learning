@@ -345,16 +345,32 @@ Developed by **Pratik Thorat** for **Sanjivani College of Engineering (SCOE) / S
 
   // F. Department Faculty, Subject & Cabin Information Query Handler
   const isFacultyQuery = (
-    /\b(faculty|faculties|teacher|teachers|prof|professor|professors|staff|hod|head of department|coordinator)\b/i.test(cleanText) ||
+    /\b(faculty|faculties|teacher|teachers|prof|professor|professors|staff|hod|head of department|coordinator|department clerk|clerk)\b/i.test(cleanText) ||
+    // AI & DS faculty names
     /\b(vishwesh|nagamalla|prashant kamkar|kamkar|ganesh phopase|phopase|sarvjeet|tanay ghosh|sarika maske|hirak chatterjee|tanvi chatse|shreeparna|kishor jhadav|jhadav)\b/i.test(cleanText) ||
-    /\b(who teaches|kaun padhata|koun padhata|padhate|padhati|kiska cabin|cabin address|cabin number|cabin kahan|cabin batao)\b/i.test(cleanText) ||
-    ((lowerText.includes('python') || lowerText.includes('math') || lowerText.includes('physics') || lowerText.includes('chemistry') || lowerText.includes('german') || lowerText.includes('communication') || lowerText.includes('data structure') || lowerText.includes('programming')) &&
-     (lowerText.includes('faculty') || lowerText.includes('teacher') || lowerText.includes('prof') || lowerText.includes('sir') || lowerText.includes('madam') || lowerText.includes('maam') || lowerText.includes('kaun') || lowerText.includes('who') || lowerText.includes('cabin') || lowerText.includes('kahan')))
+    // Mechanical faculty names
+    /\b(kailash bhosale|bhosale|pankaj patil|kiran wakchure|wakchure|jaydeep ashtekar|ashtekar|pratibha sinha|vasudev sengar|sengar|tanay renu ghosh|prajwal aher|sadhna ganjir|ganjir|omkar dadi|dadi|harshda kolpe|kolpe)\b/i.test(cleanText) ||
+    // IMTECH faculty names
+    /\b(anwar shaikh|anwar a shaikh|piyush sahu|sahu|latika bawankar|bawankar|vikas kumar|bandana thakur|thakur|roushan|riya khandelwal|khandelwal|hari prasath|hariprasath)\b/i.test(cleanText) ||
+    /\b(who teaches|kaun padhata|koun padhata|padhate|padhati|kiska cabin|cabin address|cabin number|cabin kahan|cabin batao|7th floor|seventh floor|mech department|mechanical department|imtech|integrated mtech|integrated m.tech)\b/i.test(cleanText) ||
+    ((lowerText.includes('python') || lowerText.includes('math') || lowerText.includes('physics') || lowerText.includes('chemistry') || lowerText.includes('german') || lowerText.includes('communication') || lowerText.includes('data structure') || lowerText.includes('programming') || lowerText.includes('cad') || lowerText.includes('makerspace') || lowerText.includes('graphics') || lowerText.includes('cyber security') || lowerText.includes('data analytics') || lowerText.includes('japanese') || lowerText.includes('design thinking')) &&
+     (lowerText.includes('faculty') || lowerText.includes('teacher') || lowerText.includes('prof') || lowerText.includes('sir') || lowerText.includes('madam') || lowerText.includes('maam') || lowerText.includes('kaun') || lowerText.includes('who') || lowerText.includes('cabin') || lowerText.includes('kahan') || lowerText.includes('mech') || lowerText.includes('mechanical') || lowerText.includes('imtech')))
   );
 
   if (isFacultyQuery) {
+    // Detect which department the user is asking about
+    const isMechQuery = /\b(mech|mechanical|bhosale|pankaj patil|kiran wakchure|wakchure|jaydeep ashtekar|pratibha sinha|vasudev sengar|sengar|tanay renu|prajwal aher|sadhna ganjir|ganjir|omkar dadi|dadi|harshda kolpe|kolpe|engineering graphics|cad|makerspace|7th floor)\b/i.test(cleanText);
+    const isImtechQuery = /\b(imtech|integrated mtech|integrated m\.tech|anwar shaikh|piyush sahu|latika bawankar|vikas kumar|bandana thakur|roushan|riya khandelwal|hari prasath|design thinking|computing systems|cyber security|data analytics|japanese|financial management)\b/i.test(cleanText);
+
     if (options.voiceMode) {
-      const voiceReply = `Here is the Artificial Intelligence and Data Science department directory. The Head of Department is Dr. Kishor Jhadav, contact 9890423309. Dr. Shreeparna Das is the First Year Class Coordinator on the 9th floor. Dr. Vishwesh Nagamalla teaches Programming and Data Structures on the 9th floor. Prashant Kamkar from IBM teaches Python. Sarvjeet Singh teaches Engineering Mathematics on the 2nd floor. Dr. Tanay Ghosh teaches Physics theory on the 2nd floor, and Mrs. Sarika Maske takes Physics practicals in the Extension Building. Dr. Hirak Chatterjee teaches Applied Chemistry on the 10th floor, Ganesh Phopase teaches Technical Communication, and Ms. Tanvi Chatse teaches German. Let me know if you need to connect with any specific professor!`;
+      let voiceReply;
+      if (isMechQuery) {
+        voiceReply = `Here is the Mechanical Engineering department directory. All faculty are located on the 7th Floor Staff Room. The Head of Department is Kailash Bhosale on the 7th floor. Pankaj Patil teaches Engineering Graphics and CAD. Kiran Wakchure manages the Makerspace. Jaydeep Ashtekar and Pratibha Sinha both teach Python. Tanay Renu Ghosh teaches Engineering Physics. Hirak Chatterjee teaches Chemistry. Prajwal Aher teaches Mathematics for Mechanical Engineering. Sadhna Ganjir teaches English. Omkar Dadi is the Class Coordinator and Harshda Kolpe is the Department Clerk. Let me know if you need anything specific!`;
+      } else if (isImtechQuery) {
+        voiceReply = `Here is the Integrated M.Tech department directory. The Head of Department is Dr. Anwar A Shaikh, contact 9044013605, email anwarshaikhset at sanjivani.edu.in. In 1st year: Prof. Prajwal Aher teaches Mathematics, Prof. Piyush Sahu teaches Design Thinking and Indian Knowledge System, Dr. Anwar Shaikh teaches Computing Systems and Emerging Technologies, Prof. Sadhna Gunjir teaches English Communication, and Prof. Hari Prasath K teaches C Programming. In 2nd year: Dr. Latika Bawankar teaches Linear Algebra, Prof. Prajwal Aher teaches Python and Data Science, Prof. Piyush Sahu teaches Cyber Security, Prof. Vikas Kumar teaches Data Analytics, Dr. Anwar Shaikh teaches Data Structures, Dr. Bandana Thakur teaches Financial Management, Prof. Roushan teaches Japanese, and Prof. Riya Khandelwal teaches German. Let me know if you need more details!`;
+      } else {
+        voiceReply = `Here is the Artificial Intelligence and Data Science department directory. The Head of Department is Dr. Kishor Jhadav, contact 9890423309. Dr. Shreeparna Das is the First Year Class Coordinator on the 9th floor. Dr. Vishwesh Nagamalla teaches Programming and Data Structures on the 9th floor. Prashant Kamkar from IBM teaches Python. Sarvjeet Singh teaches Engineering Mathematics on the 2nd floor. Dr. Tanay Ghosh teaches Physics theory on the 2nd floor, and Mrs. Sarika Maske takes Physics practicals in the Extension Building. Dr. Hirak Chatterjee teaches Applied Chemistry on the 10th floor, Ganesh Phopase teaches Technical Communication, and Ms. Tanvi Chatse teaches German. Let me know if you need to connect with any specific professor!`;
+      }
       try {
         memoryBrain.learnFromInteraction(cleanText, voiceReply, 'voice');
       } catch (e) {}
@@ -363,7 +379,141 @@ Developed by **Pratik Thorat** for **Sanjivani College of Engineering (SCOE) / S
 
     const isHindiOrHinglish = /[\u0900-\u097F]|\b(bhai|yaar|kaise|kya|karo|batao|karna|mera|meri|mujhe|tum|aap|chal|theek|suno|bol|ye|kaun|kiska|kaha|kahan|hai|hain)\b/i.test(rawText);
 
-    const facultyReply = isHindiOrHinglish ? `### 🏛️ Department of Artificial Intelligence & Data Science (AI & DS)
+    let facultyReply;
+
+    if (isMechQuery) {
+      facultyReply = isHindiOrHinglish ? `### 🔧 Department of Mechanical Engineering (Mech)
+#### 👨‍🏫 Faculty, Subject & Cabin Directory
+
+Yahan Mechanical Engineering department ke saare faculty ki details hain:
+
+**👑 Department Leadership:**
+- 🎖️ **Head of Department (HOD):** **Kailash Bhosale**
+  - 🏢 **Cabin Location:** **7th Floor Staff Room**
+- 🎓 **Class Coordinator:** **Omkar Dadi**
+  - 🏢 **Cabin Location:** **7th Floor Staff Room**
+- 📋 **Department Clerk:** **Harshda Kolpe**
+  - 🏢 **Cabin Location:** **7th Floor Staff Room**
+
+---
+
+### 📋 Subject Teachers & Cabin Addresses:
+
+| # | Faculty Name | Subject / Course | Cabin Address | Role |
+| :---: | :--- | :--- | :--- | :--- |
+| 1 | **Pankaj Patil** | Engineering Graphics & CAD | 🏢 **7th Floor Staff Room** | Faculty |
+| 2 | **Kiran Wakchure** | Makerspace / Workshop Practice | 🏢 **7th Floor Staff Room** | Faculty |
+| 3 | **Jaydeep Ashtekar** | Python Programming | 🏢 **7th Floor Staff Room** | Faculty |
+| 4 | **Pratibha Sinha** | Python Programming | 🏢 **7th Floor Staff Room** | Faculty |
+| 5 | **Vasudev Sengar** | — | 🏢 **7th Floor Staff Room** | Assistant Professor |
+| 6 | **Tanay Renu Ghosh** | Engineering Physics | 🏢 **7th Floor Staff Room** | Faculty |
+| 7 | **Hirak Chatterjee** | Chemistry | 🏢 **7th Floor Staff Room** | Faculty |
+| 8 | **Prajwal Aher** | Mathematics for Mechanical Engineering | 🏢 **7th Floor Staff Room** | Faculty |
+| 9 | **Sadhna Ganjir** | English / Communication Skills | 🏢 **7th Floor Staff Room** | Faculty |
+
+---
+
+💡 **Quick Notes:**
+- Saare teachers **7th Floor Staff Room** par milenge.
+- **Engineering Graphics & CAD** ke liye **Pankaj Patil** sir se milo.
+- **Makerspace** ke liye **Kiran Wakchure** sir se milo.
+- **Python** ke liye **Jaydeep Ashtekar** ya **Pratibha Sinha** se milo.
+
+Batao ${userName}, kisi specific teacher ke baare me aur kuch jaanna hai? 😊` :
+`### 🔧 Department of Mechanical Engineering (Mech)
+#### 👨‍🏫 Faculty, Subject & Cabin Directory
+
+Here is the official faculty directory for the **Mechanical Engineering** department:
+
+**👑 Department Leadership:**
+- 🎖️ **Head of Department (HOD):** **Kailash Bhosale**
+  - 🏢 **Cabin Location:** **7th Floor Staff Room**
+- 🎓 **Class Coordinator:** **Omkar Dadi**
+  - 🏢 **Cabin Location:** **7th Floor Staff Room**
+- 📋 **Department Clerk:** **Harshda Kolpe**
+  - 🏢 **Cabin Location:** **7th Floor Staff Room**
+
+---
+
+### 📋 Faculty, Course & Cabin Directory:
+
+| # | Faculty Name | Subject / Course | Cabin Address | Role |
+| :---: | :--- | :--- | :--- | :--- |
+| 1 | **Pankaj Patil** | Engineering Graphics & CAD | 🏢 **7th Floor Staff Room** | Faculty |
+| 2 | **Kiran Wakchure** | Makerspace / Workshop Practice | 🏢 **7th Floor Staff Room** | Faculty |
+| 3 | **Jaydeep Ashtekar** | Python Programming | 🏢 **7th Floor Staff Room** | Faculty |
+| 4 | **Pratibha Sinha** | Python Programming | 🏢 **7th Floor Staff Room** | Faculty |
+| 5 | **Vasudev Sengar** | — | 🏢 **7th Floor Staff Room** | Assistant Professor |
+| 6 | **Tanay Renu Ghosh** | Engineering Physics | 🏢 **7th Floor Staff Room** | Faculty |
+| 7 | **Hirak Chatterjee** | Chemistry | 🏢 **7th Floor Staff Room** | Faculty |
+| 8 | **Prajwal Aher** | Mathematics for Mechanical Engineering | 🏢 **7th Floor Staff Room** | Faculty |
+| 9 | **Sadhna Ganjir** | English / Communication Skills | 🏢 **7th Floor Staff Room** | Faculty |
+
+---
+
+💡 **Quick Reference:**
+- All Mechanical faculty are located at the **7th Floor Staff Room**.
+- **HOD:** Kailash Bhosale — 7th Floor Staff Room.
+- **Engineering Graphics & CAD:** Pankaj Patil — 7th Floor Staff Room.
+- **Makerspace:** Kiran Wakchure — 7th Floor Staff Room.
+- **Python:** Jaydeep Ashtekar / Pratibha Sinha — 7th Floor Staff Room.
+
+Feel free to ask if you need more details!`;
+
+    } else if (isImtechQuery) {
+      facultyReply = `### 🎓 Department of Integrated M.Tech (IMTECH)
+#### 👨‍🏫 Faculty & Subject Directory
+
+Here is the official faculty directory for the **Integrated M.Tech** department:
+
+**👑 Department Leadership:**
+- 🎖️ **Head of Department (HOD):** **Dr. Anwar A Shaikh**
+  - 📞 **Contact:** \`9044013605\`
+  - ✉️ **Email:** \`anwarshaikhset@sanjivani.edu.in\`
+
+---
+
+### 📋 1st Year — Faculty & Subjects:
+
+| # | Faculty Name | Subject / Course | Role |
+| :---: | :--- | :--- | :--- |
+| 1 | **Prof. Prajwal Aher** | Mathematics-1 | Faculty |
+| 2 | **Prof. Piyush Sahu** | Design Thinking and Idea Lab | Faculty |
+| 3 | **Dr. Anwar A Shaikh** | Fundamentals of Computing Systems & Emerging Technologies | HOD & Faculty |
+| 4 | **Prof. Sadhna Gunjir** | English - Oral and Written Communication Skills | Faculty |
+| 5 | **Prof. Hari Prasath K** | Programming in Problem Solving using C | Faculty |
+| 6 | **Prof. Prajwal Aher** | NSS / Yoga / Sports / Liberal Arts | Faculty |
+| 7 | **Prof. Piyush Sahu** | Indian Knowledge System | Faculty |
+
+---
+
+### 📋 2nd Year — Faculty & Subjects:
+
+| # | Faculty Name | Subject / Course | Role |
+| :---: | :--- | :--- | :--- |
+| 1 | **Dr. Latika Bawankar** | Linear Algebra and Transformation Techniques | Faculty |
+| 2 | **Prof. Prajwal Aher** | Programming for Data Science (Python) | Faculty |
+| 3 | **Prof. Piyush Sahu** | Essentials of Cyber Security | Faculty |
+| 4 | **Prof. Vikas Kumar** | Exploratory Data Analytics | Faculty |
+| 5 | **Dr. Anwar A Shaikh** | Data Structures and Algorithms | HOD & Faculty |
+| 6 | **Dr. Bandana Thakur** | Financial Management | Faculty |
+| 7 | **Prof. D. Roushan** | Foreign Language - 1 (Japanese) | Language Faculty |
+| 8 | **Prof. Riya Khandelwal** | Foreign Language - 1 (German) | Language Faculty |
+
+---
+
+💡 **Quick Reference:**
+- **HOD Contact:** Dr. Anwar A Shaikh — \`9044013605\` | \`anwarshaikhset@sanjivani.edu.in\`
+- **Maths:** Prof. Prajwal Aher
+- **Design Thinking & Cyber Security:** Prof. Piyush Sahu
+- **Python / Data Science:** Prof. Prajwal Aher (2nd Year)
+- **DSA:** Dr. Anwar A Shaikh
+- **Japanese:** Prof. D. Roushan | **German:** Prof. Riya Khandelwal
+
+Feel free to ask if you need more details!`;
+
+    } else {
+      facultyReply = isHindiOrHinglish ? `### 🏛️ Department of Artificial Intelligence & Data Science (AI & DS)
 #### 👨‍🏫 Faculty, Subject & Cabin Directory
 
 Here are the complete details for all faculty members and leadership in **AI & DS Department**:
@@ -439,6 +589,7 @@ Here is the official faculty and subject directory for the **Artificial Intellig
 - **Applied Chemistry:** Dr. Hirak Chatterjee — 10th Floor.
 
 Feel free to ask if you need details about office hours or syllabus for any subject!`;
+    }
 
     try {
       memoryBrain.learnFromInteraction(cleanText, facultyReply, 'text');

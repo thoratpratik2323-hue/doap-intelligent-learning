@@ -44,19 +44,6 @@ import {
 
 const STORAGE_KEY = 'doap_ai_chat_sessions';
 
-const QUICK_PROMPTS = [
-  "⚡ /rlm Optimal LRU Cache implementation with tests",
-  "🧬 /refine Focus on graph cycles and recursion depth",
-  "🛠️ /harness",
-  "🎨 /image a futuristic neon cybernetic workstation 8k",
-  "📝 /quiz Python",
-  "🧮 /quiz DSA",
-  "💻 /code Two Sum with optimal HashMap in Python",
-  "💡 /explain Kadane's Algorithm for max subarray sum",
-  "🎯 /interview Mock FAANG question on graph cycle detection",
-  "😄 /joke"
-];
-
 
 const parseMessageWithRlm = (rawText) => {
   if (!rawText || typeof rawText !== 'string') return { rlmTrace: null, text: rawText || '' };
@@ -118,7 +105,6 @@ export const AITutor = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const chatScrollRef = useRef(null);
 
-  const chipsScrollRef = useRef(null);
   const messagesEndRef = useRef(null);
 
   // Settings / API Key Modal State
@@ -802,62 +788,6 @@ export const AITutor = () => {
             borderColor: 'var(--doap-border)' 
           }}
         >
-          {/* Quick Prompts Chips Scroll */}
-          <div className="relative flex items-center gap-1 max-w-4xl mx-auto">
-            <button
-              type="button"
-              onClick={() => {
-                if (chipsScrollRef.current) {
-                  chipsScrollRef.current.scrollBy({ left: -200, behavior: 'smooth' });
-                }
-              }}
-              className="w-6 h-6 rounded-full border flex items-center justify-center shrink-0 transition-all hover:scale-110 cursor-pointer shadow-xs z-10"
-              style={{ backgroundColor: 'var(--doap-surface-sec)', borderColor: 'var(--doap-border)', color: 'var(--doap-text-prim)' }}
-              title="Scroll left"
-            >
-              <ChevronLeft size={13} />
-            </button>
-
-            <div 
-              ref={chipsScrollRef}
-              className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1 px-1 scroll-smooth"
-            >
-              {QUICK_PROMPTS.map((item, idx) => {
-                const prompt = typeof item === 'string' ? item : item.prompt;
-                const label = typeof item === 'string' ? item : item.label;
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => executeSend(prompt)}
-                    className="px-3 py-1.5 rounded-full text-xs font-medium shrink-0 border transition-all hover:scale-105 cursor-pointer shadow-xs"
-                    style={{
-                      backgroundColor: 'var(--doap-surface-sec)',
-                      borderColor: 'var(--doap-border)',
-                      color: 'var(--doap-text-prim)'
-                    }}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                if (chipsScrollRef.current) {
-                  chipsScrollRef.current.scrollBy({ left: 200, behavior: 'smooth' });
-                }
-              }}
-              className="w-6 h-6 rounded-full border flex items-center justify-center shrink-0 transition-all hover:scale-110 cursor-pointer shadow-xs z-10"
-              style={{ backgroundColor: 'var(--doap-surface-sec)', borderColor: 'var(--doap-border)', color: 'var(--doap-text-prim)' }}
-              title="Scroll right"
-            >
-              <ChevronRight size={13} />
-            </button>
-          </div>
-
           {/* Chat Form */}
           <form onSubmit={handleSendMessage} className="relative max-w-4xl mx-auto flex items-center gap-2">
             <div className="relative flex-1">

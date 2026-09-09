@@ -4,20 +4,22 @@ import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
 
 const router = Router();
 
-// Voice dictionary mapping DOAP personas to neural voices
+// Voice dictionary mapping DOAP personas to neural voices (Male-Only Enforcement)
 const VOICE_MAP = {
   charon: 'en-US-AndrewMultilingualNeural',
   doap: 'en-US-AndrewMultilingualNeural',
   andrew: 'en-US-AndrewMultilingualNeural',
   brian: 'en-US-BrianNeural',
-  neerja: 'en-IN-NeerjaExpressiveNeural',
-  indian_female: 'en-IN-NeerjaExpressiveNeural',
   prabhat: 'en-IN-PrabhatNeural',
   indian_male: 'en-IN-PrabhatNeural',
-  jenny: 'en-US-JennyNeural',
-  conversational: 'en-US-JennyNeural',
   guy: 'en-US-GuyNeural',
-  aria: 'en-US-AriaNeural'
+  conversational: 'en-US-GuyNeural',
+  // Female voice keys remapped to male equivalents
+  neerja: 'en-IN-PrabhatNeural',
+  indian_female: 'en-IN-PrabhatNeural',
+  jenny: 'en-US-GuyNeural',
+  aria: 'en-US-AndrewMultilingualNeural',
+  kore: 'en-US-AndrewMultilingualNeural'
 };
 
 /**

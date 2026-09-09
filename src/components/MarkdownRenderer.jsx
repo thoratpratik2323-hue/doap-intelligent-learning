@@ -234,20 +234,8 @@ export const MarkdownRenderer = ({ content, isDarkMode }) => {
       {parts.map((part, pIdx) => {
         if (!part) return null;
 
-        // Metacognitive Deep Thinking Block: <think> ... </think> or active stream <think> ...
+        // Metacognitive Deep Thinking Block: suppressed completely per user request
         if (/^<think>/i.test(part.trim())) {
-          const isUnclosed = !/<\/think>$/i.test(part.trim());
-          const thinkingText = part.trim().replace(/^<think>/i, '').replace(/<\/think>$/i, '').trim();
-          if (thinkingText) {
-            return (
-              <CognitiveThinkingBlock 
-                key={pIdx} 
-                content={thinkingText} 
-                isDarkMode={isDarkMode} 
-                isStreaming={isUnclosed} 
-              />
-            );
-          }
           return null;
         }
 

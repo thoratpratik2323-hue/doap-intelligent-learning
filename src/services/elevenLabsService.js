@@ -7,16 +7,17 @@ const ELEVEN_API_KEY = (typeof localStorage !== 'undefined' ? localStorage.getIt
                        (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_ELEVENLABS_KEY) ||
                        'sk_5f91a262d00d2924db057bf3fd48a71b8857415c268c9452';
 
-/// Official ElevenLabs Studio Voices configured for DOAP AI Voice Engine
+/// Official ElevenLabs Studio Voices configured for DOAP AI Voice Engine (Male-Only)
 export const ELEVEN_VOICES = {
-  charon: { id: 'pNInz6obpgDQGcFmaJgB', name: 'Charon (Deep, Calm & Resonant Studio Voice)' },
-  doap: { id: 'pNInz6obpgDQGcFmaJgB', name: 'DOAP AI Charon (Warm, Articulate & Resonant)' },
-  studio: { id: 'pNInz6obpgDQGcFmaJgB', name: 'Charon Studio HD' },
-  conversational: { id: 'ErXwobaYiN019PkySvjV', name: 'DOAP AI Natural Tutor (Warm & Empathetic)' },
-  antoni: { id: 'ErXwobaYiN019PkySvjV', name: 'DOAP AI Conversational' },
-  fenrir: { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'DOAP AI Technical' },
-  kore: { id: 'Xb7hH8MSUJpSbSDYk0k2', name: 'DOAP AI Empathetic' },
-  brian: { id: 'nPczCjzI2devNBz1zQrb', name: 'DOAP AI Academic Mentor' }
+  charon: { id: 'pNInz6obpgDQGcFmaJgB', name: 'Charon (Deep, Calm & Resonant Studio Voice - Male)' },
+  doap: { id: 'pNInz6obpgDQGcFmaJgB', name: 'DOAP AI Charon (Warm, Articulate & Resonant Male)' },
+  studio: { id: 'pNInz6obpgDQGcFmaJgB', name: 'Charon Studio HD (Male)' },
+  conversational: { id: 'ErXwobaYiN019PkySvjV', name: 'DOAP AI Natural Tutor (Guy Male)' },
+  guy: { id: 'ErXwobaYiN019PkySvjV', name: 'DOAP AI Guy Neural (Male)' },
+  prabhat: { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'DOAP AI Prabhat Neural (Indian Male)' },
+  antoni: { id: 'ErXwobaYiN019PkySvjV', name: 'DOAP AI Conversational (Male)' },
+  fenrir: { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'DOAP AI Technical (Male)' },
+  brian: { id: 'nPczCjzI2devNBz1zQrb', name: 'DOAP AI Brian Academic (Male)' }
 };
 
 let sharedAudioCtx = null;
@@ -76,72 +77,95 @@ export function stopElevenLabsAudio() {
   if (typeof window !== 'undefined') window._doapActiveUtterance = null;
 }
 
+// Strictly exclude all female voice identifiers across Windows, Edge, Google, Apple, and Android
+const FEMALE_VOICE_KEYWORDS = [
+  'neerja', 'jenny', 'aria', 'swara', 'lekha', 'zira', 'samantha',
+  'victoria', 'karen', 'catherine', 'heera', 'priya', 'kalpana',
+  'sangeeta', 'female', 'woman', 'girl', 'hazel', 'susan', 'linda',
+  'eva', 'mary', 'ana', 'mia', 'emma', 'stephanie', 'clara', 'natalie',
+  'sarah', 'ava', 'alva', 'kendra', 'joanna', 'salli', 'ivy', 'ayanda'
+];
+
 /**
  * Intelligent Neural Voice Selector for Browser SpeechSynthesis
- * Prioritizes Authentic Neural & Natural Voices (Edge Online Natural, Google Chrome Neural, Neerja/Prabhat).
- * Intelligently softens and tunes pitch/rate to prevent monotone robotic output.
+ * Exclusively selects masculine / male neural voices across the entire platform.
+ * Prioritizes Microsoft Edge Neural Male (Andrew, Prabhat, Guy, Brian), Google Male, or Microsoft David.
  */
 export function getBestNaturalVoice(synth, mode = 'indian') {
   if (!synth) return null;
   const voices = synth.getVoices ? synth.getVoices() : [];
   if (!voices || voices.length === 0) return null;
 
-  // 1. Highest Priority: Authentic Microsoft Edge Online Natural / Neural Voices
-  const edgeNatural = voices.find(v => {
+  const isFemale = (voice) => {
+    const name = (voice?.name || '').toLowerCase();
+    return FEMALE_VOICE_KEYWORDS.some(kw => name.includes(kw));
+  };
+
+  // Strictly eliminate all female voices
+  const maleVoices = voices.filter(v => !isFemale(v));
+  const candidatePool = maleVoices.length > 0 ? maleVoices : voices;
+
+  // 1. Highest Priority: Authentic Microsoft Edge Online Natural / Neural Male Voices
+  const edgeNaturalMale = candidatePool.find(v => {
     const n = (v.name || '').toLowerCase();
     return (n.includes('online (natural)') || n.includes('natural') || n.includes('neural')) &&
-           (n.includes('neerja') || n.includes('prabhat') || n.includes('guy') || n.includes('aria') || n.includes('jenny') || n.includes('andrew'));
+           (n.includes('prabhat') || n.includes('andrew') || n.includes('guy') || n.includes('brian') || n.includes('charon'));
   });
-  if (edgeNatural) return edgeNatural;
+  if (edgeNaturalMale) return edgeNaturalMale;
 
-  // 2. High-Quality Indian English / Hindi Voices
-  const indianVoice = voices.find(v => {
+  // 2. High-Quality Indian English / Hindi Male Voices
+  const indianMaleVoice = candidatePool.find(v => {
     const name = (v.name || '').toLowerCase();
     const lang = (v.lang || '').toLowerCase().replace('_', '-');
-    return (lang === 'en-in' || lang === 'hi-in' || 
-            name.includes('india') || name.includes('neerja') || 
-            name.includes('prabhat') || name.includes('swara') || 
-            name.includes('madhur') || name.includes('rishi') ||
-            name.includes('lekha') || name.includes('hindi')) &&
-           !name.includes('desktop');
+    return (lang === 'en-in' || lang === 'hi-in' || name.includes('india') || name.includes('hindi')) &&
+           (name.includes('prabhat') || name.includes('madhur') || name.includes('rishi') || name.includes('male'));
   });
-  if (indianVoice) return indianVoice;
+  if (indianMaleVoice) return indianMaleVoice;
 
-  // 3. Google Chrome Natural Neural Voices
-  const googleVoice = voices.find(v => {
+  // 3. Google Chrome Natural Neural Male Voices
+  const googleMaleVoice = candidatePool.find(v => {
     const name = (v.name || '').toLowerCase();
-    return name.includes('google') && (v.lang || '').startsWith('en');
+    return name.includes('google') && (v.lang || '').startsWith('en') && !isFemale(v);
   });
-  if (googleVoice) return googleVoice;
+  if (googleMaleVoice) return googleMaleVoice;
 
-  // 4. Any Edge / Safari / Mobile Natural Online Voice
-  const anyNatural = voices.find(v => 
-    v.name.includes('Natural') || v.name.includes('Online') || v.name.includes('Siri')
-  );
-  if (anyNatural) return anyNatural;
+  // 4. Windows Desktop Fallback: Microsoft David (Clear Male Voice)
+  const davidVoice = candidatePool.find(v => {
+    const name = (v.name || '').toLowerCase();
+    return name.includes('david') || name.includes('george') || name.includes('mark') || name.includes('james');
+  });
+  if (davidVoice) return davidVoice;
 
-  // 5. Windows Desktop Fallback: Prefer Zira (much softer/warmer than David)
-  const ziraVoice = voices.find(v => (v.name || '').toLowerCase().includes('zira'));
-  if (ziraVoice) return ziraVoice;
+  // 5. Any English Male voice from candidate pool
+  const fallbackMaleEnglish = candidatePool.find(v => (v.lang || '').toLowerCase().startsWith('en') && !isFemale(v));
+  if (fallbackMaleEnglish) return fallbackMaleEnglish;
 
-  // 6. Any English voice as final safety fallback
-  const fallbackEnglish = voices.find(v => (v.lang || '').toLowerCase().startsWith('en'));
-  return fallbackEnglish || voices[0] || null;
+  return candidatePool[0] || voices[0] || null;
 }
 
 /**
+ * Universal Emoji & Symbol Stripping Regex
+ * Strips all Unicode emojis, emoticons, pictographs, variation selectors, and dingbats
+ * so TTS engines never speak emoji descriptions aloud.
+ */
+const EMOJI_AND_SYMBOLS_REGEX = /[\u{1F300}-\u{1F9FF}\u{1FA00}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F000}-\u{1F02F}\u{1F0A0}-\u{1F0FF}\u{1F100}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\p{Extended_Pictographic}\p{Emoji}\p{Emoji_Presentation}\p{Emoji_Modifier}\p{Emoji_Component}]/gu;
+
+/**
  * Advanced Humanoid Phonetic Normalizer for AI Voice Engines
- * Transforms acronyms, Big-O notations, CamelCase identifiers, code syntax,
- * and Indian regional proper nouns into warm, lifelike spoken English.
+ * Strips all emojis, formats code/math, and normalizes into crystal-clear spoken English.
  */
 export function humanizeTextForSpeech(rawText) {
   if (!rawText) return '';
 
   let text = String(rawText);
 
-  // 1. Strip <think> reasoning blocks, <details>, markdown code blocks, links, and formatting symbols
+  // 1. NEVER read emojis aloud: Completely strip all emojis, pictographs, and dingbats
+  text = text.replace(EMOJI_AND_SYMBOLS_REGEX, ' ');
+
+  // 2. Strip <think> reasoning blocks, <details>, markdown code blocks, links, and formatting symbols
   text = text
     .replace(/<think>[\s\S]*?<\/think>/gi, '')
+    .replace(/<think>[\s\S]*$/gi, '')
     .replace(/<details[\s\S]*?<\/details>/gi, '')
     .replace(/\*\*Reasoning\*\*[\s\S]*?\*\*Final Answer\*\*/i, '')
     .replace(/```[\s\S]*?```/g, ' I have shared the code on your screen. ')
@@ -520,7 +544,12 @@ export async function speakDOAPVoice(text, onComplete, onError, voiceKey = 'char
   // 3. DOAP High-Fidelity Studio Neural Voice Engine (via /api/ai/tts)
   // Powered by Azure / Microsoft Edge Neural Voices: 100% human-grade, zero API keys, unlimited characters!
   try {
-    const activePersona = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_voice_persona') : '') || voiceKey || 'charon';
+    let activePersona = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_voice_persona') : '') || voiceKey || 'charon';
+    if (activePersona === 'neerja') activePersona = 'prabhat';
+    if (activePersona === 'jenny' || activePersona === 'aria' || activePersona === 'kore') activePersona = 'guy';
+    if (FEMALE_VOICE_KEYWORDS.some(kw => activePersona.toLowerCase().includes(kw))) {
+      activePersona = 'charon';
+    }
     const ttsRes = await fetch('/api/ai/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

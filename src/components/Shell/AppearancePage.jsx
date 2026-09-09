@@ -70,7 +70,11 @@ export const AppearancePage = () => {
 
   // Open-Source Engine States
   const [ttsProvider, setTtsProvider] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_tts_provider') || 'neural' : 'neural'));
-  const [voicePersona, setVoicePersona] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_voice_persona') || 'charon' : 'charon'));
+  const [voicePersona, setVoicePersona] = useState(() => {
+    const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('doap_voice_persona') : null;
+    if (saved === 'neerja' || saved === 'jenny' || saved === 'aria') return 'charon';
+    return saved || 'charon';
+  });
   const [elevenKey, setElevenKey] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_elevenlabs_key') || '' : ''));
   const [kokoroUrl, setKokoroUrl] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_kokoro_url') || 'http://localhost:8880/v1/audio/speech' : 'http://localhost:8880/v1/audio/speech'));
   const [pistonUrl, setPistonUrl] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_piston_url') || 'http://localhost:2000' : 'http://localhost:2000'));
@@ -143,9 +147,8 @@ export const AppearancePage = () => {
       const { speakDOAPVoice } = await import('../../services/elevenLabsService');
       const samplePhrases = {
         charon: "Hello! I am Andrew, your DOAP AI technical mentor. My voice is powered by high-definition neural speech synthesis. How are your data structures studies going?",
-        neerja: "Namaste! Main Neerja hoon, aapki DOAP AI mentor. We will make complex algorithmic problems feel intuitive and simple. Chalo, shuru karte hain!",
-        prabhat: "Hello student! I am Prabhat from Sanjeevani DOAP learning studio. Together, we are going to crack your upcoming technical placements.",
-        jenny: "Hey there! I am Jenny, your conversational study partner. Whenever you hit a bug or get stuck, I am right here to help you debug.",
+        prabhat: "Namaste! Main Prabhat hoon, aapka DOAP AI mentor. Sanjeevani learning studio me milkar algorithmic problems aur placements crack karenge.",
+        guy: "Hey there! I am Guy, your conversational tech lead. Whenever you hit a bug or want to brainstorm system design, let's solve it together.",
         brian: "Greetings. I am Brian, your academic research tutor. We will analyze time complexity, amortized bounds, and optimal memory layouts."
       };
       const text = samplePhrases[voicePersona] || samplePhrases.charon;
@@ -280,12 +283,11 @@ export const AppearancePage = () => {
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 pt-1">
                       {[
                         { id: 'charon', label: 'Andrew / Charon', desc: 'Resonant Studio Voice (Male)' },
-                        { id: 'neerja', label: 'Neerja Expressive', desc: 'Warm Indian Mentor (Female)' },
                         { id: 'prabhat', label: 'Prabhat Neural', desc: 'Articulate Indian Mentor (Male)' },
-                        { id: 'jenny', label: 'Jenny Natural', desc: 'Friendly Conversational (Female)' },
+                        { id: 'guy', label: 'Guy Neural', desc: 'Conversational Tech Lead (Male)' },
                         { id: 'brian', label: 'Brian Academic', desc: 'Deep Technical Mentor (Male)' }
                       ].map(v => (
                         <button
