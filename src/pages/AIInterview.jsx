@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SetupStep } from '../components/Interview/SetupStep';
 import { RulesConsentStep } from '../components/Interview/RulesConsentStep';
 import { SystemCheckStep } from '../components/Interview/SystemCheckStep';
@@ -7,9 +7,30 @@ import { InterviewReport } from '../components/Interview/InterviewReport';
 import { useTheme } from '../context/ThemeContext';
 
 export const AIInterview = () => {
-  const { profile, isDarkMode } = useTheme();
+  const { profile, isDarkMode, isSidebarHidden, setIsSidebarHidden } = useTheme();
+  const prevSidebarHiddenRef = useRef(isSidebarHidden);
 
   const [step, setStep] = useState('setup'); // 'setup' | 'rules' | 'system_check' | 'live' | 'report'
+
+  // Automatically hide the left navigation sidebar during live interview until finished
+  useEffect(() => {
+    if (step === 'live') {
+      prevSidebarHiddenRef.current = isSidebarHidden;
+      setIsSidebarHidden(true);
+      return () => {
+        setIsSidebarHidden(prevSidebarHiddenRef.current);
+      };
+    } else {
+      setIsSidebarHidden(prevSidebarHiddenRef.current);
+    }
+  }, [step]);
+
+  // Ensure sidebar is restored if user navigates away or component unmounts mid-session
+  useEffect(() => {
+    return () => {
+      setIsSidebarHidden(prevSidebarHiddenRef.current);
+    };
+  }, []);
   const [setupData, setSetupData] = useState({
     positionId: 'software-engineer',
     positionTitle: 'Software Engineer',
@@ -97,7 +118,7 @@ export const AIInterview = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 md:py-8 space-y-6 animate-fade-in select-none">
+    <div className={`${step === 'live' ? 'w-full max-w-[1550px] px-2 sm:px-4 py-3 sm:py-5' : 'max-w-6xl mx-auto px-4 py-6 md:py-8'} space-y-6 animate-fade-in select-none`}>
       {/* Header */}
       {step !== 'live' && (
         <div className="space-y-1">

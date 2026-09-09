@@ -57,16 +57,18 @@ export const Header = ({ onOpenMobileSidebar }) => {
       }}
     >
       <div className="flex items-center gap-3">
-        <button 
-          onClick={onOpenMobileSidebar}
-          className="md:hidden p-2 rounded-lg transition-colors cursor-pointer hover:opacity-80"
-          style={{ color: 'var(--text-secondary, var(--doap-text-sec))' }}
-          aria-label="Open navigation menu"
-        >
-          <Menu size={20} />
-        </button>
+        {currentPath !== '/interview' && (
+          <button 
+            onClick={onOpenMobileSidebar}
+            className="md:hidden p-2 rounded-lg transition-colors cursor-pointer hover:opacity-80"
+            style={{ color: 'var(--text-secondary, var(--doap-text-sec))' }}
+            aria-label="Open navigation menu"
+          >
+            <Menu size={20} />
+          </button>
+        )}
 
-        {isSidebarHidden && (
+        {isSidebarHidden && currentPath !== '/interview' && (
           <button 
             onClick={() => setIsSidebarHidden(false)}
             className="hidden md:flex p-1.5 px-2.5 rounded-xl border items-center gap-1.5 transition-all cursor-pointer hover:scale-105 shadow-sm"
