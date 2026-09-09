@@ -769,6 +769,12 @@ Act as my Socratic AI Tutor. Do NOT write the entire solved code. Instead, analy
     }
   };
 
+  const handleCompanyWheel = (e) => {
+    if (companyScrollRef.current && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      companyScrollRef.current.scrollLeft += e.deltaY;
+    }
+  };
+
   const categories = [
     "All", "Arrays", "Strings", "Hash Table", "Linked Lists", "Stacks", "Queues", "Trees", "Graphs", 
     "Dynamic Programming", "Binary Search", "Two Pointers", "Sliding Window", "Sorting", "Searching", 
@@ -1730,23 +1736,28 @@ Evaluate this code strictly:
               )}
             </div>
 
-            <div className="relative flex items-center gap-1.5">
+            <div className="relative flex items-center gap-2">
               {/* Scroll Left Button */}
               <button
                 type="button"
                 onClick={() => scrollCompanyList('left')}
-                className="shrink-0 w-8 h-8 rounded-xl bg-neutral-900/90 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-neutral-700 shadow-md flex items-center justify-center cursor-pointer transition-all active:scale-90 z-10"
+                className={`shrink-0 w-8 h-8 rounded-xl border shadow-sm flex items-center justify-center cursor-pointer transition-all active:scale-90 z-10 ${
+                  isDarkMode
+                    ? 'bg-neutral-900/90 hover:bg-neutral-800 text-neutral-300 hover:text-white border-neutral-700'
+                    : 'bg-white hover:bg-neutral-100 text-neutral-700 hover:text-black border-neutral-300'
+                }`}
                 title="Scroll Left"
                 aria-label="Scroll companies left"
               >
                 <ChevronLeft size={16} />
               </button>
 
-              {/* Scrollable Companies Container */}
+              {/* Scrollable Companies Container (Native scrollbar completely hidden) */}
               <div 
                 ref={companyScrollRef}
-                className="flex-1 flex items-center gap-2 overflow-x-auto py-1 scroll-smooth scrollbar-thin"
-                style={{ scrollbarWidth: 'thin' }}
+                onWheel={handleCompanyWheel}
+                className="flex-1 flex items-center gap-2 overflow-x-auto py-1.5 scroll-smooth scrollbar-none no-scrollbar"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {/* All Companies Combined */}
                 <button
@@ -1796,7 +1807,11 @@ Evaluate this code strictly:
               <button
                 type="button"
                 onClick={() => scrollCompanyList('right')}
-                className="shrink-0 w-8 h-8 rounded-xl bg-neutral-900/90 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-neutral-700 shadow-md flex items-center justify-center cursor-pointer transition-all active:scale-90 z-10"
+                className={`shrink-0 w-8 h-8 rounded-xl border shadow-sm flex items-center justify-center cursor-pointer transition-all active:scale-90 z-10 ${
+                  isDarkMode
+                    ? 'bg-neutral-900/90 hover:bg-neutral-800 text-neutral-300 hover:text-white border-neutral-700'
+                    : 'bg-white hover:bg-neutral-100 text-neutral-700 hover:text-black border-neutral-300'
+                }`}
                 title="Scroll Right"
                 aria-label="Scroll companies right"
               >

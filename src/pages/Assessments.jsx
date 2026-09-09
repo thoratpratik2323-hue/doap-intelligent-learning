@@ -1288,7 +1288,7 @@ Please evaluate this solution against industry standards. Provide a structured r
             <div className="flex items-center gap-2 self-end md:self-center font-mono text-xs">
               <div className="px-3 py-2 rounded-xl bg-black/60 border border-neutral-800 text-purple-300 font-bold flex items-center gap-2">
                 <GitBranch size={15} />
-                <span>8 Active Repositories</span>
+                <span>{GITHUB_ASSIGNMENTS.length} Active Repositories</span>
               </div>
             </div>
           </div>
