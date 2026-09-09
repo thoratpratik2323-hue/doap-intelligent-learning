@@ -1,3 +1,5 @@
+import { ADDITIONAL_COURSES } from './learningCoursesData';
+
 // DOAP Application Clean Production Initial Models & Schemas
 
 export const INITIAL_PROFILE = {
@@ -84,7 +86,7 @@ export const SKILL_PROGRESS_DATA = [
   { name: "Web Engineering", progress: 0 }
 ];
 
-export const COURSES_DATA = [
+const BASE_COURSES_DATA = [
   {
     id: "ai-fundamentals",
     title: "AI Fundamentals",
@@ -991,6 +993,8 @@ export const COURSES_DATA = [
     ]
   }
 ];
+
+export const COURSES_DATA = [...BASE_COURSES_DATA, ...ADDITIONAL_COURSES];
 
 export const INITIAL_STUDY_TASKS = [];
 
