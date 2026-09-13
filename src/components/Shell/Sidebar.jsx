@@ -74,13 +74,13 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
           : (isSidebarHidden ? '-translate-x-full md:-translate-x-full pointer-events-none opacity-0' : '-translate-x-full md:translate-x-0 opacity-100')}
       `}
       style={{
-        backgroundColor: isDarkMode ? '#060911' : '#ffffff',
-        borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
-        color: 'var(--doap-text-prim)'
+        backgroundColor: isDarkMode ? '#050c1e' : '#ffffff',
+        borderColor: isDarkMode ? 'rgba(56, 189, 248, 0.18)' : 'rgba(14, 165, 233, 0.15)',
+        color: 'var(--doap-text-prim, #ffffff)'
       }}
     >
       {/* Sidebar Header / Logo */}
-      <div className="p-4 sm:p-5 flex items-center justify-between border-b" style={{ borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)' }}>
+      <div className="p-4 sm:p-5 flex items-center justify-between border-b" style={{ borderColor: isDarkMode ? 'rgba(56, 189, 248, 0.18)' : 'rgba(14, 165, 233, 0.15)' }}>
         <div 
           onClick={() => handleNavClick('/')} 
           className="flex items-center gap-3 cursor-pointer group"

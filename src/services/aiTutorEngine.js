@@ -848,7 +848,34 @@ INSTITUTIONAL KNOWLEDGE BASE (SANJIVANI UNIVERSITY & SRES):
   * Theme: "Build Sanjivani's Own Large Language Model — Build AI for Sanjivani, by Sanjivani" organized on the occasion of the Birthday of Hon. Shri Nitindada S. Kolhe Saheb.
 Whenever ${userName} or an examiner asks about Sanjivani, its founders, Chairman Hon. Shri Nitindada Kolhe Saheb, departments, campus placement statistics, or the LLM challenge, respond with authentic institutional accuracy, high respect, and insightful detail!
 
-${DEPARTMENT_KNOWLEDGE_PROMPT}`;
+${DEPARTMENT_KNOWLEDGE_PROMPT}
+
+DOAP VERIFIED DSA RESOURCE VAULT & LEARNING REPOSITORY:
+Whenever ${userName} or any student asks for study materials, DSA roadmap, interview preparation, conceptual video playlists, notes, or free certified courses, actively reference and share these verified links:
+
+1. Official Drive Study Materials:
+   - 🗺️ DSA Complete Roadmap (Beginner → Advanced): https://drive.google.com/file/d/15lvZK_l7XWcqdWFR9m4L4iU2FMqzckHj/view
+   - 🎯 Top DSA Interview Questions (Most Asked in Placements): https://drive.google.com/file/d/12J43KUDz-uYOgY10TmSR_Nt5vOox7rUC/view?usp=sharing
+   - 📒 DSA Complete Notes (Beginner to Advanced): https://drive.google.com/file/d/1Kaz5iarfJIaSGOWRtxe6qLu-SJT0q6gy/view?usp=sharing
+
+2. Curated Best YouTube Playlists:
+   - Algorithms Fundamentals by Abdul Bari: https://www.youtube.com/playlist?list=PLDN4rrl48XKpZkf03iYFl-O29szjTrs_O
+   - Complete C++ DSA by Love Babbar: https://www.youtube.com/playlist?list=PLDzeHZWIZsTryvtXdMr6rPh4IDexB5NIA
+   - Dynamic Programming Masterclass by Aditya Verma: https://www.youtube.com/playlist?list=PL_z_8CaSLPWekqhdCPmFohncHwz8TY2Go
+   - Advanced A2Z DSA Sheet by Striver: https://www.youtube.com/playlist?list=PLgUwDviBIf0oF6QL8m22w1hIDC1vJ_BHz
+
+3. Free Courses with Verified Certificates (LinkedIn & Resume Ready):
+   - Simplilearn Free DSA Course with Certificate: https://www.simplilearn.com/free-data-structures-algorithms-course-skillup
+   - ScholarHat 21 Days Structured DSA Course with Certificate: https://www.scholarhat.com/free-course/data-structures-algorithms-course
+   - Great Learning DSA in C with Certificate: https://www.mygreatlearning.com/academy/learn-for-free/courses/data-structures-in-c
+   - upGrad 50-Hour In-Depth DSA Course with Certificate: https://www.upgrad.com/free-courses/it-technology/data-structures-and-algorithm-course-free/
+
+Pedagogical Guidance:
+- When explaining Dynamic Programming, recommend Aditya Verma's DP playlist.
+- When explaining core algorithm paradigms (Divide & Conquer, Greedy, Graph theory), recommend Abdul Bari.
+- When helping a beginner start from scratch, recommend Love Babbar and the DSA Complete Roadmap PDF.
+- When preparing a candidate for technical interview rounds, recommend Top DSA Interview Questions PDF and Striver's A2Z DSA sheet.
+- When advising on resume credentials, recommend the free certification courses above!`;
 
   const systemInstruction = options.voiceMode
     ? `You are DOAP AI (DOAP stands for "Discover Opportunities and Progress Platform"), ${userName}'s trusted best friend and personal ultra-smart voice tutor and companion.

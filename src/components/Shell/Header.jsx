@@ -49,9 +49,9 @@ export const Header = ({ onOpenMobileSidebar }) => {
     <header 
       className="sticky top-0 z-30 border-b px-4 py-3 flex items-center justify-between transition-colors shadow-xs"
       style={{
-        backgroundColor: isDarkMode ? 'rgba(7, 10, 18, 0.96)' : 'rgba(255, 255, 255, 0.96)',
-        borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
-        color: 'var(--text-primary, var(--doap-text-prim))',
+        backgroundColor: isDarkMode ? 'rgba(5, 12, 30, 0.96)' : 'rgba(240, 247, 255, 0.96)',
+        borderColor: isDarkMode ? 'rgba(56, 189, 248, 0.18)' : 'rgba(14, 165, 233, 0.18)',
+        color: 'var(--text-primary, var(--doap-text-prim, #ffffff))',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)'
       }}

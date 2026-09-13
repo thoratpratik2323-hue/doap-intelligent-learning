@@ -13,11 +13,16 @@
 
   body {
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background-color: var(--doap-bg, #0b0c10);
-    color: var(--doap-text-prim, #f5f5f5);
+    background-color: var(--doap-bg, #050c1e);
+    color: var(--doap-text-prim, #ffffff);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition: background-color 400ms cubic-bezier(.25,.8,.25,1), color 300ms;
+  }
+
+  ::selection {
+    background-color: #38bdf8;
+    color: #050c1e;
   }
 
   *, *::before, *::after {
@@ -34,14 +39,14 @@
   }
 
   select option {
-    background-color: #121214 !important;
-    color: #f4f4f5 !important;
+    background-color: #07122b !important;
+    color: #ffffff !important;
   }
 
   html[data-theme="light"] select option,
   .light select option {
-    background-color: #ffffff !important;
-    color: #18181b !important;
+    background-color: #f0f7ff !important;
+    color: #0a1931 !important;
   }
 }
 
@@ -49,8 +54,11 @@
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.12);
+  background: rgba(56, 189, 248, 0.25);
   border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.45);
 }
 .scrollbar-none, .no-scrollbar {
   scrollbar-width: none !important;
@@ -64,15 +72,15 @@
 
 /* ── Global canvas utility ──────────────────────────────── */
 .doap-canvas {
-  background-color: var(--doap-bg, #0b0c10);
-  color: var(--doap-text-prim, #f5f5f5);
+  background-color: var(--doap-bg, #050c1e);
+  color: var(--doap-text-prim, #ffffff);
 }
 
 /* ── Card surface ───────────────────────────────────────── */
 .doap-card {
-  background-color: var(--doap-surface, rgba(255,255,255,0.035));
-  border: 1px solid var(--doap-border, rgba(255,255,255,0.09));
-  color: var(--doap-text-prim, #f5f5f5);
+  background-color: var(--doap-surface, rgba(14, 28, 64, 0.65));
+  border: 1px solid var(--doap-border, rgba(56, 189, 248, 0.18));
+  color: var(--doap-text-prim, #ffffff);
   border-radius: 16px;
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -84,8 +92,8 @@
 }
 
 .doap-card-sec {
-  background-color: var(--doap-surface-sec, rgba(255,255,255,0.06));
-  border: 1px solid var(--doap-border, rgba(255,255,255,0.09));
+  background-color: var(--doap-surface-sec, rgba(23, 44, 96, 0.7));
+  border: 1px solid var(--doap-border, rgba(56, 189, 248, 0.18));
   border-radius: 12px;
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -96,8 +104,8 @@
 .doap-glass {
   backdrop-filter: blur(var(--doap-glass-blur, 16px));
   -webkit-backdrop-filter: blur(var(--doap-glass-blur, 16px));
-  background-color: var(--doap-surface, rgba(255,255,255,0.035));
-  border: 1px solid var(--doap-border, rgba(255,255,255,0.09));
+  background-color: var(--doap-surface, rgba(14, 28, 64, 0.65));
+  border: 1px solid var(--doap-border, rgba(56, 189, 248, 0.18));
 }
 
 /* Override glass when disabled */
@@ -245,4 +253,62 @@ input[type="range"]::-webkit-slider-thumb:hover {
     size: letter portrait;
     margin: 0.25in;
   }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DARK BLUE, WHITE, AND LIGHT BLUE DESIGN HARMONIZATION
+   Enforces deep dark blue canvas, crisp white typography,
+   and vibrant light blue accents & glowing borders.
+   ══════════════════════════════════════════════════════════════ */
+.dark body {
+  background-color: #050c1e;
+  color: #ffffff;
+}
+
+.dark .doap-card,
+.dark .bg-\[\#111111\],
+.dark .bg-\[\#09090b\],
+.dark .bg-\[\#0c0c0c\],
+.dark .bg-\[\#0a0a0a\],
+.dark .bg-\[\#121214\],
+.dark .bg-\[\#13151b\],
+.dark .bg-neutral-900,
+.dark .bg-neutral-900\/60,
+.dark .bg-neutral-900\/80,
+.dark .bg-neutral-900\/40,
+.dark .bg-neutral-950 {
+  background-color: var(--doap-surface, rgba(14, 28, 64, 0.65)) !important;
+  border-color: var(--doap-border, rgba(56, 189, 248, 0.18)) !important;
+  color: #ffffff;
+}
+
+.dark .border-neutral-800,
+.dark .border-neutral-800\/80,
+.dark .border-neutral-700 {
+  border-color: var(--doap-border, rgba(56, 189, 248, 0.18)) !important;
+}
+
+.dark .text-neutral-400,
+.dark .text-neutral-500 {
+  color: #93c5fd !important;
+}
+
+.dark .text-neutral-300 {
+  color: #dbeafe !important;
+}
+
+.dark .text-white {
+  color: #ffffff !important;
+}
+
+.dark .hover\:border-white:hover {
+  border-color: #38bdf8 !important;
+}
+
+.dark .hover\:bg-white\/10:hover {
+  background-color: rgba(56, 189, 248, 0.15) !important;
+}
+
+.dark .accent-glow {
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
 }
