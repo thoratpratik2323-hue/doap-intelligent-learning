@@ -105,11 +105,18 @@ export function getBestNaturalVoice(synth, mode = 'indian') {
   const maleVoices = voices.filter(v => !isFemale(v));
   const candidatePool = maleVoices.length > 0 ? maleVoices : voices;
 
-  // 1. Highest Priority: Authentic Microsoft Edge Online Natural / Neural Male Voices
+  // 1. Absolute Highest Priority: Charon / Andrew Studio Resonant Male Voice
+  const charonVoice = candidatePool.find(v => {
+    const n = (v.name || '').toLowerCase();
+    return (n.includes('charon') || n.includes('andrew')) && !isFemale(v);
+  });
+  if (charonVoice) return charonVoice;
+
+  // 2. Microsoft Edge Online Natural / Neural Male Voices
   const edgeNaturalMale = candidatePool.find(v => {
     const n = (v.name || '').toLowerCase();
     return (n.includes('online (natural)') || n.includes('natural') || n.includes('neural')) &&
-           (n.includes('prabhat') || n.includes('andrew') || n.includes('guy') || n.includes('brian') || n.includes('charon'));
+           (n.includes('charon') || n.includes('andrew') || n.includes('guy') || n.includes('brian') || n.includes('prabhat'));
   });
   if (edgeNaturalMale) return edgeNaturalMale;
 
@@ -393,12 +400,12 @@ export function fallbackBrowserSpeech(text, onComplete) {
     const utterance = new SpeechSynthesisUtterance(spokenHumanText);
     utterance.rate = 0.98;
     utterance.pitch = 1.0;
-    utterance.lang = 'en-IN';
+    utterance.lang = 'en-US';
 
-    const naturalVoice = getBestNaturalVoice(window.speechSynthesis, 'indian');
+    const naturalVoice = getBestNaturalVoice(window.speechSynthesis, 'charon');
     if (naturalVoice) {
       utterance.voice = naturalVoice;
-      utterance.lang = naturalVoice.lang || 'en-IN';
+      utterance.lang = naturalVoice.lang || 'en-US';
     }
 
     currentUtterance = utterance;
