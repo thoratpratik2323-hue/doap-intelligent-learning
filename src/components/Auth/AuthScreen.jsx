@@ -13,16 +13,24 @@ const FeaturePill = ({ icon: Icon, text }) => (
 /* ── Input field ── */
 const InputField = ({ id, name, label, type, placeholder, value, onChange, icon: Icon, rightSlot, disabled, autoComplete, required }) => (
   <div className="space-y-1.5">
-    <label htmlFor={id} className="block text-[10px] font-mono uppercase tracking-[0.15em] text-[#0ea5e9]/80">
+    <label htmlFor={id} className="block text-[10px] font-mono uppercase tracking-[0.15em]" style={{ color: 'rgba(147,51,234,0.8)' }}>
       {label}
     </label>
     <div className="relative">
-      <Icon size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+      <Icon size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: '#94A3B8' }} />
       <input
         id={id} name={name} autoComplete={autoComplete} type={type}
         required={required} disabled={disabled} placeholder={placeholder}
         value={value} onChange={onChange}
-        className="w-full pl-10 pr-10 py-2.5 rounded border border-slate-200 bg-slate-50 text-[#0a1628] text-sm placeholder-slate-300 focus:outline-none focus:border-[#0ea5e9]/60 focus:bg-white transition-colors duration-200 disabled:opacity-50 font-medium"
+        className="w-full pl-10 pr-10 py-2.5 rounded border text-sm focus:outline-none transition-colors duration-200 disabled:opacity-50 font-medium"
+        style={{
+          backgroundColor: 'rgba(15,20,35,0.8)',
+          borderColor: 'rgba(147,51,234,0.18)',
+          color: '#F8FAFC',
+          '--tw-placeholder-color': '#64748B',
+        }}
+        onFocus={e => e.target.style.borderColor = 'rgba(147,51,234,0.55)'}
+        onBlur={e => e.target.style.borderColor = 'rgba(147,51,234,0.18)'}
       />
       {rightSlot}
     </div>
@@ -77,20 +85,20 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center font-sans select-none relative overflow-hidden">
+    <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center font-sans select-none relative overflow-hidden">
 
-      {/* Subtle background grid */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.04]"
-        style={{ backgroundImage: 'linear-gradient(rgba(14,165,233,1) 1px,transparent 1px),linear-gradient(90deg,rgba(14,165,233,1) 1px,transparent 1px)', backgroundSize: '48px 48px' }} />
+      {/* Subtle grid */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.035]"
+        style={{ backgroundImage: 'linear-gradient(rgba(147,51,234,1) 1px,transparent 1px),linear-gradient(90deg,rgba(147,51,234,1) 1px,transparent 1px)', backgroundSize: '48px 48px' }} />
 
-      {/* Single soft glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-[#0ea5e9]/[0.04] blur-[100px] pointer-events-none" />
+      {/* Glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-[#9333EA]/[0.06] blur-[100px] pointer-events-none" />
 
-      {/* ── Two-column card ── */}
-      <div className="relative z-10 w-full max-w-4xl mx-4 flex border border-[#0ea5e9]/15 rounded-lg overflow-hidden shadow-xl shadow-slate-200">
+      {/* Card */}
+      <div className="relative z-10 w-full max-w-4xl mx-4 flex border border-[#9333EA]/15 rounded-lg overflow-hidden shadow-2xl shadow-black/70">
 
-        {/* ════ LEFT — Branding ════ */}
-        <div className="hidden lg:flex flex-col justify-between w-[44%] bg-[#f0f8ff] p-10 border-r border-[#0ea5e9]/12">
+        {/* ════ LEFT ════ */}
+        <div className="hidden lg:flex flex-col justify-between w-[44%] bg-[#0F1428] p-10 border-r border-[#9333EA]/12">
 
           {/* Logo + back */}
           <div>
@@ -141,34 +149,35 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
           </div>
         </div>
 
-        {/* ════ RIGHT — Form ════ */}
-        <div className="flex-1 bg-white p-8 md:p-10 flex flex-col justify-center">
+        {/* ════ RIGHT ════ */}
+        <div className="flex-1 p-8 md:p-10 flex flex-col justify-center" style={{ backgroundColor: '#0D1122' }}>
 
           {/* Mobile header */}
           <div className="flex items-center justify-between mb-6 lg:hidden">
             <div className="flex items-center gap-2">
-              <img src="/doap-logo.jpg" alt="DOAP" className="h-7 rounded object-contain" />
-              <span className="text-[#0a1628] font-bold">Ziv</span>
+              <img src="/doap-logo.jpg" alt="Ziv" className="h-7 rounded object-contain" />
+              <span className="font-bold" style={{ color: '#F8FAFC' }}>Ziv</span>
             </div>
             {onBackToLanding && (
               <button type="button" onClick={onBackToLanding}
-                className="text-slate-400 hover:text-slate-700 text-xs flex items-center gap-1 transition-colors cursor-pointer">
+                className="text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                style={{ color: '#94A3B8' }}>
                 <ArrowLeft size={11} /> Back
               </button>
             )}
           </div>
 
-          {/* Mode tab switcher */}
+          {/* Tab switcher */}
           {mode !== 'reset' && (
-            <div className="flex border border-slate-200 rounded overflow-hidden mb-6">
+            <div className="flex border rounded overflow-hidden mb-6" style={{ borderColor: 'rgba(147,51,234,0.18)' }}>
               {['login', 'signup'].map(m => (
                 <button key={m} type="button"
                   onClick={() => handleModeSwitch(m)}
                   disabled={isSubmitting}
                   className="flex-1 py-2.5 text-xs font-semibold transition-colors duration-150 cursor-pointer border-0 outline-none"
                   style={{
-                    backgroundColor: mode === m ? '#0ea5e9' : 'transparent',
-                    color: mode === m ? '#ffffff' : '#6b7280',
+                    backgroundColor: mode === m ? '#9333EA' : 'transparent',
+                    color: mode === m ? '#ffffff' : '#94A3B8',
                   }}>
                   {m === 'login' ? 'Sign In' : 'Create Account'}
                 </button>
@@ -178,12 +187,12 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
 
           {/* Title */}
           <div className="mb-6">
-            <h1 className="text-xl font-bold text-[#0a1628] mb-1">
+            <h1 className="text-xl font-bold mb-1" style={{ color: '#F8FAFC' }}>
               {mode === 'login'  && 'Welcome back'}
               {mode === 'signup' && 'Create your account'}
               {mode === 'reset'  && 'Reset your password'}
             </h1>
-            <p className="text-slate-400 text-xs">
+            <p className="text-xs" style={{ color: '#94A3B8' }}>
               {mode === 'login'  && 'Sign in to continue your learning journey.'}
               {mode === 'signup' && "Join Ziv — it's free."}
               {mode === 'reset'  && "We'll send a reset link to your email."}

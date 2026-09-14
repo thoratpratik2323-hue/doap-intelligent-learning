@@ -47,15 +47,15 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         }
       `}
       style={{
-        backgroundColor: isDarkMode ? '#060e22' : '#ffffff',
-        borderColor: isDarkMode ? 'rgba(56,189,248,0.10)' : 'rgba(14,165,233,0.15)',
-        color: isDarkMode ? '#ffffff' : '#0a1628',
+        backgroundColor: isDarkMode ? '#0B0F19' : '#ffffff',
+        borderColor: isDarkMode ? 'rgba(147, 51, 234, 0.15)' : 'rgba(14,165,233,0.15)',
+        color: isDarkMode ? '#F8FAFC' : '#0a1628',
       }}
     >
       {/* ── Logo / Header ── */}
       <div
         className="h-14 flex items-center justify-between px-4 border-b shrink-0"
-        style={{ borderColor: isDarkMode ? 'rgba(56,189,248,0.10)' : 'rgba(14,165,233,0.12)' }}
+        style={{ borderColor: isDarkMode ? 'rgba(147, 51, 234, 0.15)' : 'rgba(14,165,233,0.12)' }}
       >
         <div
           onClick={() => handleNavClick('/')}
@@ -110,20 +110,20 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
               `}
               style={{
                 backgroundColor: isActive
-                  ? 'rgba(56,189,248,0.12)'
+                  ? 'rgba(147, 51, 234, 0.12)'
                   : 'transparent',
-                color: isActive ? '#38bdf8' : 'var(--doap-text-sec)',
-                borderLeft: isActive ? '2px solid #38bdf8' : '2px solid transparent',
+                color: isActive ? '#9333EA' : 'var(--doap-text-sec)',
+                borderLeft: isActive ? '2px solid #9333EA' : '2px solid transparent',
               }}
             >
               {/* Icon + status dot */}
               <div className="relative shrink-0">
                 <IconComponent size={16} />
                 {isAITutorItem && isAIThinking && (
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#38bdf8] rounded-full animate-ping" />
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#FF9E7D] rounded-full animate-ping" />
                 )}
                 {isAITutorItem && !isAIThinking && hasAIUnread && (
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full" />
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#FF9E7D] rounded-full" />
                 )}
               </div>
 
@@ -132,10 +132,10 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                 <span className="flex-1 flex items-center justify-between truncate">
                   <span>{item.label}</span>
                   {isAITutorItem && isAIThinking && (
-                    <span className="text-[9px] font-mono text-[#38bdf8] opacity-70 animate-pulse">Working</span>
+                    <span className="text-[9px] font-mono text-[#FF9E7D] opacity-80 animate-pulse">Working</span>
                   )}
                   {isAITutorItem && !isAIThinking && hasAIUnread && (
-                    <span className="text-[9px] font-mono text-emerald-400 opacity-80">New</span>
+                    <span className="text-[9px] font-mono text-[#FF9E7D] opacity-80">New</span>
                   )}
                 </span>
               )}

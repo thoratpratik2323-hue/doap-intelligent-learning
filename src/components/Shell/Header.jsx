@@ -49,8 +49,8 @@ export const Header = ({ onOpenMobileSidebar }) => {
     <header
       className="sticky top-0 z-30 border-b flex items-center justify-between px-5 h-14 transition-colors"
       style={{
-        backgroundColor: isDarkMode ? '#060e22' : '#ffffff',
-        borderColor: isDarkMode ? 'rgba(56,189,248,0.12)' : 'rgba(14,165,233,0.15)',
+        backgroundColor: isDarkMode ? 'rgba(11, 15, 25, 0.97)' : '#ffffff',
+        borderColor: isDarkMode ? 'rgba(147, 51, 234, 0.20)' : 'rgba(14,165,233,0.15)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
       }}
@@ -105,8 +105,8 @@ export const Header = ({ onOpenMobileSidebar }) => {
                 title={`${label} Mode`}
                 className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-semibold transition-colors cursor-pointer border-0 outline-none"
                 style={{
-                  backgroundColor: isActive ? '#38bdf8' : 'transparent',
-                  color: isActive ? '#050c1e' : 'var(--doap-text-sec)',
+                  backgroundColor: isActive ? '#9333EA' : 'transparent',
+                  color: isActive ? '#ffffff' : 'var(--doap-text-sec)',
                 }}
               >
                 <Icon size={11} />
@@ -179,9 +179,9 @@ export const Header = ({ onOpenMobileSidebar }) => {
             onClick={() => navigateTo('/profile')}
             className="w-8 h-8 rounded flex items-center justify-center font-bold text-xs cursor-pointer transition-opacity hover:opacity-80 border shrink-0"
             style={{
-              backgroundColor: '#38bdf8',
-              color: '#050c1e',
-              borderColor: 'rgba(56,189,248,0.4)',
+              backgroundColor: '#9333EA',
+              color: '#ffffff',
+              borderColor: 'rgba(147,51,234,0.4)',
             }}
             title={user.email || 'Profile'}
           >
@@ -190,8 +190,8 @@ export const Header = ({ onOpenMobileSidebar }) => {
         ) : (
           <button
             onClick={() => openAuthModal('login')}
-            className="px-3 py-1.5 text-xs font-semibold border rounded transition-colors hover:bg-[#38bdf8]/10 cursor-pointer"
-            style={{ borderColor: '#38bdf8', color: '#38bdf8' }}
+            className="px-3 py-1.5 text-xs font-semibold border rounded transition-colors hover:bg-purple-500/10 cursor-pointer"
+            style={{ borderColor: '#9333EA', color: '#9333EA' }}
           >
             Sign In
           </button>
