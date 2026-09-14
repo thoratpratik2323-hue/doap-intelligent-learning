@@ -1,7 +1,7 @@
 {
-  "short_name": "DOAP",
-  "name": "DOAP — Intelligent Learning & Career Platform",
-  "description": "AI-Powered Intelligent Learning, DSA Coding Practice & Technical Interview Prep Platform",
+  "short_name": "Ziv",
+  "name": "Ziv — The modern playground for future developers",
+  "description": "The modern playground for future developers. AI-powered voice tutoring, coding practice & career prep.",
   "icons": [
     {
       "src": "/doap-logo.png",

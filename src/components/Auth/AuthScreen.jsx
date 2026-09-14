@@ -13,16 +13,16 @@ const FeaturePill = ({ icon: Icon, text }) => (
 /* ── Input field ── */
 const InputField = ({ id, name, label, type, placeholder, value, onChange, icon: Icon, rightSlot, disabled, autoComplete, required }) => (
   <div className="space-y-1.5">
-    <label htmlFor={id} className="block text-[10px] font-mono uppercase tracking-[0.15em] text-[#38bdf8]/70">
+    <label htmlFor={id} className="block text-[10px] font-mono uppercase tracking-[0.15em] text-[#0ea5e9]/80">
       {label}
     </label>
     <div className="relative">
-      <Icon size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/25 pointer-events-none" />
+      <Icon size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
       <input
         id={id} name={name} autoComplete={autoComplete} type={type}
         required={required} disabled={disabled} placeholder={placeholder}
         value={value} onChange={onChange}
-        className="w-full pl-10 pr-10 py-2.5 rounded border border-white/10 bg-white/[0.04] text-white text-sm placeholder-white/20 focus:outline-none focus:border-[#38bdf8]/50 transition-colors duration-200 disabled:opacity-50 font-medium"
+        className="w-full pl-10 pr-10 py-2.5 rounded border border-slate-200 bg-slate-50 text-[#0a1628] text-sm placeholder-slate-300 focus:outline-none focus:border-[#0ea5e9]/60 focus:bg-white transition-colors duration-200 disabled:opacity-50 font-medium"
       />
       {rightSlot}
     </div>
@@ -66,7 +66,7 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
       if (mode === 'login') { await signIn(email, password); }
       else if (mode === 'signup') {
         const res = await signUp(email, password, fullName);
-        setSuccessMessage(res?.session ? 'Account created! Launching DOAP...' : 'Check your email to confirm your account.');
+        setSuccessMessage(res?.session ? 'Account created! Launching Ziv...' : 'Check your email to confirm your account.');
       } else if (mode === 'reset') {
         await resetPassword(email);
         setSuccessMessage('Reset link sent to your email.');
@@ -77,20 +77,20 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050c1e] flex items-center justify-center font-sans select-none relative overflow-hidden">
+    <div className="min-h-screen bg-white flex items-center justify-center font-sans select-none relative overflow-hidden">
 
       {/* Subtle background grid */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
-        style={{ backgroundImage: 'linear-gradient(rgba(56,189,248,1) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,1) 1px,transparent 1px)', backgroundSize: '48px 48px' }} />
+      <div className="absolute inset-0 pointer-events-none opacity-[0.04]"
+        style={{ backgroundImage: 'linear-gradient(rgba(14,165,233,1) 1px,transparent 1px),linear-gradient(90deg,rgba(14,165,233,1) 1px,transparent 1px)', backgroundSize: '48px 48px' }} />
 
       {/* Single soft glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-[#38bdf8]/[0.03] blur-[100px] pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-[#0ea5e9]/[0.04] blur-[100px] pointer-events-none" />
 
       {/* ── Two-column card ── */}
-      <div className="relative z-10 w-full max-w-4xl mx-4 flex border border-[#38bdf8]/10 rounded-lg overflow-hidden shadow-2xl shadow-black/50">
+      <div className="relative z-10 w-full max-w-4xl mx-4 flex border border-[#0ea5e9]/15 rounded-lg overflow-hidden shadow-xl shadow-slate-200">
 
         {/* ════ LEFT — Branding ════ */}
-        <div className="hidden lg:flex flex-col justify-between w-[44%] bg-[#070f25] p-10 border-r border-[#38bdf8]/10">
+        <div className="hidden lg:flex flex-col justify-between w-[44%] bg-[#f0f8ff] p-10 border-r border-[#0ea5e9]/12">
 
           {/* Logo + back */}
           <div>
@@ -103,8 +103,8 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
             <div className="flex items-center gap-3 mb-8">
               <img src="/doap-logo.jpg" alt="DOAP" className="h-9 rounded object-contain" />
               <div>
-                <p className="text-white font-bold text-lg tracking-tight">DOAP</p>
-                <p className="text-[#38bdf8]/50 text-[9px] font-mono uppercase tracking-widest">Intelligent Learning</p>
+                <p className="text-white font-bold text-lg tracking-tight">Ziv</p>
+                <p className="text-[#38bdf8]/50 text-[9px] font-mono uppercase tracking-widest">The modern playground for future developers</p>
               </div>
             </div>
 
@@ -142,17 +142,17 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
         </div>
 
         {/* ════ RIGHT — Form ════ */}
-        <div className="flex-1 bg-[#060d20] p-8 md:p-10 flex flex-col justify-center">
+        <div className="flex-1 bg-white p-8 md:p-10 flex flex-col justify-center">
 
           {/* Mobile header */}
           <div className="flex items-center justify-between mb-6 lg:hidden">
             <div className="flex items-center gap-2">
               <img src="/doap-logo.jpg" alt="DOAP" className="h-7 rounded object-contain" />
-              <span className="text-white font-bold">DOAP</span>
+              <span className="text-[#0a1628] font-bold">Ziv</span>
             </div>
             {onBackToLanding && (
               <button type="button" onClick={onBackToLanding}
-                className="text-white/30 hover:text-white text-xs flex items-center gap-1 transition-colors cursor-pointer">
+                className="text-slate-400 hover:text-slate-700 text-xs flex items-center gap-1 transition-colors cursor-pointer">
                 <ArrowLeft size={11} /> Back
               </button>
             )}
@@ -160,15 +160,15 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
 
           {/* Mode tab switcher */}
           {mode !== 'reset' && (
-            <div className="flex border border-[#38bdf8]/12 rounded overflow-hidden mb-6">
+            <div className="flex border border-slate-200 rounded overflow-hidden mb-6">
               {['login', 'signup'].map(m => (
                 <button key={m} type="button"
                   onClick={() => handleModeSwitch(m)}
                   disabled={isSubmitting}
                   className="flex-1 py-2.5 text-xs font-semibold transition-colors duration-150 cursor-pointer border-0 outline-none"
                   style={{
-                    backgroundColor: mode === m ? '#38bdf8' : 'transparent',
-                    color: mode === m ? '#050c1e' : 'rgba(255,255,255,0.4)',
+                    backgroundColor: mode === m ? '#0ea5e9' : 'transparent',
+                    color: mode === m ? '#ffffff' : '#6b7280',
                   }}>
                   {m === 'login' ? 'Sign In' : 'Create Account'}
                 </button>
@@ -178,15 +178,15 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
 
           {/* Title */}
           <div className="mb-6">
-            <h1 className="text-xl font-bold text-white mb-1">
+            <h1 className="text-xl font-bold text-[#0a1628] mb-1">
               {mode === 'login'  && 'Welcome back'}
               {mode === 'signup' && 'Create your account'}
               {mode === 'reset'  && 'Reset your password'}
             </h1>
-            <p className="text-white/35 text-xs">
+            <p className="text-slate-400 text-xs">
               {mode === 'login'  && 'Sign in to continue your learning journey.'}
-              {mode === 'signup' && 'Join DOAP — it\'s free.'}
-              {mode === 'reset'  && 'We\'ll send a reset link to your email.'}
+              {mode === 'signup' && "Join Ziv — it's free."}
+              {mode === 'reset'  && "We'll send a reset link to your email."}
             </p>
           </div>
 

@@ -31,7 +31,7 @@ export const DEFAULT_PERSONALIZATION = {
   depthShift: true,
   parallax: false,
   smoothTransitions: true,
-  themeMode: 'system',
+  themeMode: 'light',
   profileBackground: 'monochrome',
 };
 
@@ -110,7 +110,7 @@ export const ThemeProvider = ({ children }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isBrainVaultOpen, setIsBrainVaultOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   // Sync with browser Back/Forward buttons and URL changes
   useEffect(() => {

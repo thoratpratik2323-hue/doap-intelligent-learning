@@ -48,8 +48,8 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
       `}
       style={{
         backgroundColor: isDarkMode ? '#060e22' : '#ffffff',
-        borderColor: isDarkMode ? 'rgba(56,189,248,0.10)' : 'rgba(14,165,233,0.12)',
-        color: 'var(--doap-text-prim, #ffffff)',
+        borderColor: isDarkMode ? 'rgba(56,189,248,0.10)' : 'rgba(14,165,233,0.15)',
+        color: isDarkMode ? '#ffffff' : '#0a1628',
       }}
     >
       {/* ── Logo / Header ── */}
@@ -64,7 +64,7 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
           <img src="/doap-logo.jpg" alt="DOAP" className="h-7 w-7 object-contain rounded" />
           {!isSidebarCollapsed && (
             <div className="flex flex-col leading-tight">
-              <span className="text-sm font-bold tracking-tight text-white">DOAP</span>
+              <span className="text-sm font-bold tracking-tight" style={{ color: isDarkMode ? '#ffffff' : '#0a1628' }}>Ziv</span>
               {isDevBypass && (
                 <span className="text-[9px] font-mono text-[#38bdf8]/70 uppercase tracking-widest">Dev Mode</span>
               )}
@@ -151,7 +151,7 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
           style={{ borderColor: isDarkMode ? 'rgba(56,189,248,0.10)' : 'rgba(14,165,233,0.12)' }}
         >
           <p className="text-[10px] font-mono text-[#38bdf8]/40 uppercase tracking-widest">
-            DOAP Platform v1.0
+            Ziv Platform v1.0
           </p>
         </div>
       )}

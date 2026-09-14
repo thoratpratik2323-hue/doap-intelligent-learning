@@ -32,7 +32,7 @@ export const Header = ({ onOpenMobileSidebar }) => {
   }, [isMenuOpen]);
 
   const activeSettings = settings || appearance || {};
-  const currentItem = (NAVIGATION_ITEMS || []).find(i => i.path === currentPath) || { label: 'DOAP' };
+  const currentItem = (NAVIGATION_ITEMS || []).find(i => i.path === currentPath) || { label: 'Ziv' };
 
   const handleUpdateMode = (mode) => {
     const fn = updatePersonalization || updateAppearance;
@@ -49,8 +49,8 @@ export const Header = ({ onOpenMobileSidebar }) => {
     <header
       className="sticky top-0 z-30 border-b flex items-center justify-between px-5 h-14 transition-colors"
       style={{
-        backgroundColor: isDarkMode ? '#060e22' : '#f4f8ff',
-        borderColor: isDarkMode ? 'rgba(56,189,248,0.12)' : 'rgba(14,165,233,0.14)',
+        backgroundColor: isDarkMode ? '#060e22' : '#ffffff',
+        borderColor: isDarkMode ? 'rgba(56,189,248,0.12)' : 'rgba(14,165,233,0.15)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
       }}
