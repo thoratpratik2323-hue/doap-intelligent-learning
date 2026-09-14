@@ -1,20 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, Sun, Moon, Monitor, PanelLeftOpen, MoreVertical, Settings, LogOut, LogIn } from 'lucide-react';
+import { Menu, Sun, Moon, Monitor, PanelLeftOpen, Settings, LogOut, LogIn, ChevronDown } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { NAVIGATION_ITEMS } from '../../data/mockData';
 
 export const Header = ({ onOpenMobileSidebar }) => {
-  const { 
-    currentPath, 
-    navigateTo, 
-    profile, 
-    isDarkMode, 
-    settings, 
-    appearance, 
-    updatePersonalization, 
-    updateAppearance, 
-    isSidebarHidden, 
+  const {
+    currentPath,
+    navigateTo,
+    profile,
+    isDarkMode,
+    settings,
+    appearance,
+    updatePersonalization,
+    updateAppearance,
+    isSidebarHidden,
     setIsSidebarHidden,
     setIsSettingsOpen
   } = useTheme();
@@ -25,16 +25,10 @@ export const Header = ({ onOpenMobileSidebar }) => {
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setIsMenuOpen(false);
-      }
+      if (menuRef.current && !menuRef.current.contains(e.target)) setIsMenuOpen(false);
     };
-    if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    if (isMenuOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMenuOpen]);
 
   const activeSettings = settings || appearance || {};
@@ -45,181 +39,159 @@ export const Header = ({ onOpenMobileSidebar }) => {
     if (fn) fn({ themeMode: mode });
   };
 
+  const themeOptions = [
+    { mode: 'light', icon: Sun,     label: 'Light'  },
+    { mode: 'dark',  icon: Moon,    label: 'Dark'   },
+    { mode: 'system',icon: Monitor, label: 'System' },
+  ];
+
   return (
-    <header 
-      className="sticky top-0 z-30 border-b px-4 py-3 flex items-center justify-between transition-colors shadow-xs"
+    <header
+      className="sticky top-0 z-30 border-b flex items-center justify-between px-5 h-14 transition-colors"
       style={{
-        backgroundColor: isDarkMode ? 'rgba(5, 12, 30, 0.96)' : 'rgba(240, 247, 255, 0.96)',
-        borderColor: isDarkMode ? 'rgba(56, 189, 248, 0.18)' : 'rgba(14, 165, 233, 0.18)',
-        color: 'var(--text-primary, var(--doap-text-prim, #ffffff))',
+        backgroundColor: isDarkMode ? '#060e22' : '#f4f8ff',
+        borderColor: isDarkMode ? 'rgba(56,189,248,0.12)' : 'rgba(14,165,233,0.14)',
         backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)'
+        WebkitBackdropFilter: 'blur(20px)',
       }}
     >
+      {/* ── Left: Menu + Page Title ── */}
       <div className="flex items-center gap-3">
         {currentPath !== '/interview' && (
-          <button 
+          <button
             onClick={onOpenMobileSidebar}
-            className="md:hidden p-2 rounded-lg transition-colors cursor-pointer hover:opacity-80"
-            style={{ color: 'var(--text-secondary, var(--doap-text-sec))' }}
-            aria-label="Open navigation menu"
+            className="md:hidden p-1.5 rounded transition-colors hover:bg-white/10 cursor-pointer"
+            style={{ color: 'var(--doap-text-sec)' }}
+            aria-label="Open menu"
           >
-            <Menu size={20} />
+            <Menu size={19} />
           </button>
         )}
 
         {isSidebarHidden && currentPath !== '/interview' && (
-          <button 
+          <button
             onClick={() => setIsSidebarHidden(false)}
-            className="hidden md:flex p-1.5 px-2.5 rounded-xl border items-center gap-1.5 transition-all cursor-pointer hover:scale-105 shadow-sm"
-            style={{ 
-              borderColor: 'var(--border, var(--doap-border))', 
-              color: 'var(--text-primary, var(--doap-text-prim))', 
-              backgroundColor: 'var(--surface-elevated, var(--doap-surface-sec))' 
-            }}
-            title="Show Navigation Sidebar (Ctrl+B)"
+            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border rounded transition-colors hover:bg-white/5 cursor-pointer"
+            style={{ borderColor: 'var(--doap-border)', color: 'var(--doap-text-sec)' }}
+            title="Show Sidebar"
           >
-            <PanelLeftOpen size={16} className="text-cyan-400" />
-            <span className="text-xs font-mono font-semibold">Menu</span>
+            <PanelLeftOpen size={14} className="text-[#38bdf8]" />
+            Menu
           </button>
         )}
 
-        <span className="font-bold text-base tracking-tight" style={{ color: 'var(--text-primary, var(--doap-text-prim))' }}>
-          {currentItem.label}
-        </span>
+        <div className="flex items-center gap-2">
+          <div className="w-px h-4 opacity-20 hidden md:block" style={{ backgroundColor: 'var(--doap-text-sec)' }} />
+          <span className="font-semibold text-sm tracking-tight" style={{ color: 'var(--doap-text-prim, #ffffff)' }}>
+            {currentItem.label}
+          </span>
+        </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        {/* Theme Mode Switcher Pill (Light / Dark / System) */}
-        <div 
-          className="flex items-center gap-1 p-1 rounded-full border"
-          style={{ backgroundColor: 'var(--surface-elevated, var(--doap-surface-sec))', borderColor: 'var(--border, var(--doap-border))' }}
+      {/* ── Right: Theme + Menu + Avatar ── */}
+      <div className="flex items-center gap-2">
+
+        {/* Theme switcher — segmented control */}
+        <div
+          className="flex items-center border rounded overflow-hidden"
+          style={{ borderColor: 'var(--doap-border)', backgroundColor: 'var(--doap-surface-sec)' }}
         >
-          <button
-            onClick={() => handleUpdateMode('light')}
-            className={`p-1.5 rounded-full transition-all cursor-pointer ${
-              activeSettings.themeMode === 'light'
-                ? 'bg-white text-black font-bold shadow-xs'
-                : 'hover:opacity-80'
-            }`}
-            style={{ color: activeSettings.themeMode === 'light' ? '#000000' : 'var(--text-secondary, var(--doap-text-sec))' }}
-            title="Light Mode"
-          >
-            <Sun size={13} />
-          </button>
-          <button
-            onClick={() => handleUpdateMode('dark')}
-            className={`p-1.5 rounded-full transition-all cursor-pointer ${
-              activeSettings.themeMode === 'dark'
-                ? 'bg-white text-black font-bold shadow-xs'
-                : 'hover:opacity-80'
-            }`}
-            style={{ color: activeSettings.themeMode === 'dark' ? '#000000' : 'var(--text-secondary, var(--doap-text-sec))' }}
-            title="Dark Mode"
-          >
-            <Moon size={13} />
-          </button>
-          <button
-            onClick={() => handleUpdateMode('system')}
-            className={`px-2 py-0.5 rounded-full text-[10px] font-mono transition-all cursor-pointer ${
-              activeSettings.themeMode === 'system'
-                ? 'bg-white text-black font-bold shadow-xs'
-                : 'hover:opacity-80'
-            }`}
-            style={{ color: activeSettings.themeMode === 'system' ? '#000000' : 'var(--text-secondary, var(--doap-text-sec))' }}
-            title="System Preference Mode"
-          >
-            AUTO
-          </button>
+          {themeOptions.map(({ mode, icon: Icon, label }) => {
+            const isActive = activeSettings.themeMode === mode;
+            return (
+              <button
+                key={mode}
+                onClick={() => handleUpdateMode(mode)}
+                title={`${label} Mode`}
+                className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-semibold transition-colors cursor-pointer border-0 outline-none"
+                style={{
+                  backgroundColor: isActive ? '#38bdf8' : 'transparent',
+                  color: isActive ? '#050c1e' : 'var(--doap-text-sec)',
+                }}
+              >
+                <Icon size={11} />
+                <span className="hidden sm:inline">{label}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Three Dots Menu (Settings & Sign Out/In) */}
+        {/* Three-dot / user menu */}
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer border hover:opacity-90 active:scale-95"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 border rounded text-xs font-semibold transition-colors cursor-pointer hover:bg-white/5"
             style={{
-              backgroundColor: isMenuOpen
-                ? (isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)')
-                : 'var(--surface-elevated, var(--doap-surface-sec))',
-              borderColor: 'var(--border, var(--doap-border))',
-              color: 'var(--text-primary, var(--doap-text-prim))'
+              borderColor: 'var(--doap-border)',
+              color: 'var(--doap-text-sec)',
+              backgroundColor: isMenuOpen ? 'rgba(56,189,248,0.08)' : 'var(--doap-surface-sec)',
             }}
-            title="Options & Settings"
-            aria-label="Options"
-            aria-expanded={isMenuOpen}
           >
-            <MoreVertical size={16} />
+            <Settings size={13} />
+            <ChevronDown size={11} className={`transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {isMenuOpen && (
-            <div 
-              className="absolute right-0 mt-2 w-48 rounded-2xl border p-1.5 shadow-2xl z-50 animate-scale-in"
+            <div
+              className="absolute right-0 mt-1.5 w-44 border rounded shadow-2xl z-50 overflow-hidden"
               style={{
-                backgroundColor: isDarkMode ? 'rgba(13, 17, 27, 0.98)' : 'rgba(255, 255, 255, 0.98)',
-                borderColor: 'var(--border, var(--doap-border))',
-                backdropFilter: 'blur(24px)',
-                WebkitBackdropFilter: 'blur(24px)',
-                boxShadow: isDarkMode ? '0 16px 40px -10px rgba(0, 0, 0, 0.8)' : '0 16px 40px -10px rgba(0, 0, 0, 0.15)'
+                backgroundColor: isDarkMode ? '#0b1426' : '#ffffff',
+                borderColor: 'var(--doap-border)',
+                boxShadow: '0 12px 32px rgba(0,0,0,0.5)',
               }}
             >
-              {/* Settings Option */}
               <button
                 type="button"
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  setIsSettingsOpen(true);
-                }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer hover:bg-white/10 text-left border-0 outline-none"
-                style={{ color: 'var(--text-primary, var(--doap-text-prim))' }}
+                onClick={() => { setIsMenuOpen(false); setIsSettingsOpen(true); }}
+                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium transition-colors hover:bg-white/5 text-left cursor-pointer"
+                style={{ color: 'var(--doap-text-prim)' }}
               >
-                <Settings size={15} className="text-cyan-400 shrink-0" />
-                <span>Settings</span>
+                <Settings size={13} className="text-[#38bdf8] shrink-0" />
+                Settings
               </button>
-
-              {/* Sign Out / Sign In Option */}
+              <div className="border-t" style={{ borderColor: 'var(--doap-border)' }} />
               {user ? (
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    signOut();
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer hover:bg-rose-500/10 text-rose-400 text-left border-0 outline-none mt-0.5"
+                  onClick={() => { setIsMenuOpen(false); signOut(); }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium transition-colors hover:bg-rose-500/8 text-rose-400 text-left cursor-pointer"
                 >
-                  <LogOut size={15} className="shrink-0" />
-                  <span>Sign Out</span>
+                  <LogOut size={13} className="shrink-0" />
+                  Sign Out
                 </button>
               ) : (
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    openAuthModal('login');
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer hover:bg-cyan-500/10 text-cyan-400 text-left border-0 outline-none mt-0.5"
+                  onClick={() => { setIsMenuOpen(false); openAuthModal('login'); }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium transition-colors hover:bg-[#38bdf8]/8 text-[#38bdf8] text-left cursor-pointer"
                 >
-                  <LogIn size={15} className="shrink-0" />
-                  <span>Sign In</span>
+                  <LogIn size={13} className="shrink-0" />
+                  Sign In
                 </button>
               )}
             </div>
           )}
         </div>
 
+        {/* Avatar / Sign In button */}
         {user ? (
-          <div 
+          <button
             onClick={() => navigateTo('/profile')}
-            className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs cursor-pointer transition-transform hover:scale-105 shadow-md border"
-            style={{ backgroundColor: 'var(--accent, var(--doap-accent))', color: isDarkMode ? '#000000' : '#ffffff', borderColor: 'var(--border, var(--doap-border))' }}
+            className="w-8 h-8 rounded flex items-center justify-center font-bold text-xs cursor-pointer transition-opacity hover:opacity-80 border shrink-0"
+            style={{
+              backgroundColor: '#38bdf8',
+              color: '#050c1e',
+              borderColor: 'rgba(56,189,248,0.4)',
+            }}
+            title={user.email || 'Profile'}
           >
             {user.email ? user.email[0].toUpperCase() : (profile?.avatar || 'U')}
-          </div>
+          </button>
         ) : (
           <button
             onClick={() => openAuthModal('login')}
-            className="px-4 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer hover:opacity-80"
-            style={{ backgroundColor: 'var(--surface-elevated, var(--doap-surface-sec))', borderColor: 'var(--border, var(--doap-border))', color: 'var(--text-primary, var(--doap-text-prim))' }}
+            className="px-3 py-1.5 text-xs font-semibold border rounded transition-colors hover:bg-[#38bdf8]/10 cursor-pointer"
+            style={{ borderColor: '#38bdf8', color: '#38bdf8' }}
           >
             Sign In
           </button>
