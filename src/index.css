@@ -13,16 +13,16 @@
 
   body {
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background-color: var(--doap-bg, #090D16);
-    color: var(--doap-text-prim, #F8FAFC);
+    background-color: var(--doap-bg, #FFFFFF);
+    color: var(--doap-text-prim, #0F172A);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color 400ms cubic-bezier(.25,.8,.25,1), color 300ms;
+    transition: background-color 300ms cubic-bezier(.25,.8,.25,1), color 300ms;
   }
 
   ::selection {
-    background-color: rgba(139, 92, 246, 0.35);
-    color: #FFFFFF;
+    background-color: rgba(2, 132, 199, 0.25);
+    color: #0369A1;
   }
 
   *, *::before, *::after {
@@ -30,23 +30,12 @@
   }
 
   select {
-    color-scheme: light dark;
-  }
-
-  html.dark select,
-  html[data-theme="dark"] select {
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   select option {
-    background-color: var(--doap-surface, #FFFFFF) !important;
-    color: var(--doap-text-prim, #0F172A) !important;
-  }
-
-  html.dark select option,
-  html[data-theme="dark"] select option {
-    background-color: #090D16 !important;
-    color: #F8FAFC !important;
+    background-color: #FFFFFF !important;
+    color: #0F172A !important;
   }
 }
 
@@ -54,11 +43,11 @@
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.25);
+  background: rgba(2, 132, 199, 0.35);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 92, 246, 0.50);
+  background: rgba(2, 132, 199, 0.60);
 }
 .scrollbar-none, .no-scrollbar {
   scrollbar-width: none !important;
@@ -72,18 +61,19 @@
 
 /* ── Global canvas utility ──────────────────────────────── */
 .doap-canvas {
-  background-color: var(--doap-bg, #090D16);
-  color: var(--doap-text-prim, #F8FAFC);
+  background-color: var(--doap-bg, #FFFFFF);
+  color: var(--doap-text-prim, #0F172A);
 }
 
 /* ── Card surface ───────────────────────────────────────── */
 .doap-card {
-  background-color: var(--doap-surface, rgba(15, 23, 42, 0.70));
-  border: 1px solid var(--doap-border, rgba(255, 255, 255, 0.08));
-  color: var(--doap-text-prim, #F8FAFC);
+  background-color: var(--doap-surface, #FFFFFF);
+  border: 1px solid var(--doap-border, rgba(14, 165, 233, 0.18));
+  color: var(--doap-text-prim, #0F172A);
   border-radius: 16px;
   transform: translateZ(0);
   backface-visibility: hidden;
+  box-shadow: 0 4px 20px -2px rgba(2, 132, 199, 0.06);
   backdrop-filter: blur(var(--doap-glass-blur, 16px));
   -webkit-backdrop-filter: blur(var(--doap-glass-blur, 16px));
   transition:
@@ -94,12 +84,14 @@
 }
 
 .doap-card:hover {
-  border-color: var(--doap-border-active, rgba(139, 92, 246, 0.40));
+  border-color: var(--doap-border-active, #0284C7);
+  box-shadow: 0 8px 30px -4px rgba(2, 132, 199, 0.12);
 }
 
 .doap-card-sec {
-  background-color: var(--doap-surface-sec, rgba(22, 30, 49, 0.60));
-  border: 1px solid var(--doap-border, rgba(255, 255, 255, 0.06));
+  background-color: var(--doap-surface-sec, #F0F9FF);
+  border: 1px solid var(--doap-border, rgba(14, 165, 233, 0.15));
+  color: var(--doap-text-prim, #0F172A);
   border-radius: 12px;
   transform: translateZ(0);
   backface-visibility: hidden;

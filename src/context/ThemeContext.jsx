@@ -16,13 +16,13 @@ export { THEME_PRESETS, IPHONE_17_COLLECTION, ACCENT_SWATCHES, GRADIENT_THEMES, 
 const ThemeContext = createContext();
 
 export const DEFAULT_PERSONALIZATION = {
-  theme: 'monochrome',
-  accent: 'neutral',
-  background: 'animated',       // 'default' | 'gradient' | 'animated'
+  theme: 'azure',
+  accent: 'sky',
+  background: 'subtle',         // 'default' | 'gradient' | 'subtle'
   gradientStyle: 'subtle',     // 'subtle' | 'balanced' | 'dynamic'
-  backgroundIntensity: 35,     // 0–100
+  backgroundIntensity: 20,     // 0–100
   gradientDirection: 'diagonal',
-  glassIntensity: 'balanced',   // 'subtle' | 'balanced' | 'strong'
+  glassIntensity: 'subtle',     // 'subtle' | 'balanced' | 'strong'
   depth: 'subtle',
   borderStrength: 'subtle',
   shadowStrength: 'subtle',
@@ -31,8 +31,8 @@ export const DEFAULT_PERSONALIZATION = {
   depthShift: true,
   parallax: false,
   smoothTransitions: true,
-  themeMode: 'dark',
-  profileBackground: 'monochrome',
+  themeMode: 'light',
+  profileBackground: 'white',
 };
 
 const GLASS_BLUR = { subtle: '12px', balanced: '20px', strong: '28px' };
@@ -108,7 +108,7 @@ export const ThemeProvider = ({ children }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isBrainVaultOpen, setIsBrainVaultOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   // Sync with browser Back/Forward buttons and URL changes
   useEffect(() => {
@@ -123,26 +123,25 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     const root = document.documentElement;
 
-    // Resolve effective dark/light mode
-    const checkSystemDark = () =>
-      window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const mode = settings?.themeMode || 'system';
-    const effectiveDark =
-      mode === 'system' ? checkSystemDark() : mode === 'dark';
-    setIsDarkMode(effectiveDark);
+    // Unified Aesthetic: Crisp White Background + Sky Blue & Deep Dark Blue Accents
+    setIsDarkMode(false);
+    root.classList.remove('dark');
 
-    if (effectiveDark) root.classList.add('dark');
-    else root.classList.remove('dark');
-
-    // Resolve active theme
-    const themeKey = settings?.theme || 'monochrome';
-    const activeTheme = GRADIENT_THEMES[themeKey] || GRADIENT_THEMES.monochrome;
-    const colors = effectiveDark ? activeTheme.dark : activeTheme.light;
-
-    // Resolve accent
-    const accentId = settings?.accent || 'neutral';
-    const accentEntry = ACCENT_COLORS.find(a => a.id === accentId);
-    const accentHex = (accentEntry && accentEntry.hex) ? accentEntry.hex : colors.accent;
+    const colors = {
+      bg: '#FFFFFF',
+      surface: '#FFFFFF',
+      surfaceSec: '#F0F9FF',
+      border: 'rgba(14, 165, 233, 0.18)',
+      borderActive: '#0284C7',
+      textPrim: '#0F172A', // Deep Dark Blue / Navy
+      textSec: '#334155',
+      textMuted: '#64748B',
+      accent: '#0284C7',   // Sky Blue
+      accentSoft: 'rgba(2, 132, 199, 0.08)',
+      glow: 'rgba(56, 189, 248, 0.25)',
+      shadow: '0 4px 20px -2px rgba(2, 132, 199, 0.08)',
+    };
+    const accentHex = '#0284C7';
 
     // ── Primary design tokens ──
     root.style.setProperty('--doap-bg', colors.bg);
@@ -172,10 +171,10 @@ export const ThemeProvider = ({ children }) => {
     root.style.setProperty('--glass-border', colors.border);
 
     // ── Ambient background ──
-    root.style.setProperty('--doap-bg-gradient', activeTheme.bgGradient);
-    root.style.setProperty('--doap-orb1', activeTheme.orb1Color);
-    root.style.setProperty('--doap-orb2', activeTheme.orb2Color);
-    root.style.setProperty('--doap-bg-intensity', String((settings?.backgroundIntensity ?? 40) / 100));
+    root.style.setProperty('--doap-bg-gradient', 'linear-gradient(180deg, #FFFFFF 0%, #F0F9FF 100%)');
+    root.style.setProperty('--doap-orb1', '#38BDF8');
+    root.style.setProperty('--doap-orb2', '#0284C7');
+    root.style.setProperty('--doap-bg-intensity', '0.2');
 
     // ── Glass blur ──
     const blur = GLASS_BLUR[settings?.glassIntensity || 'subtle'];
@@ -194,17 +193,11 @@ export const ThemeProvider = ({ children }) => {
     } catch { /* ignore */ }
   }, [settings]);
 
-  // System dark mode listener
+  // System dark mode listener disabled (locked to signature light theme)
   useEffect(() => {
-    if ((settings?.themeMode || 'system') !== 'system') return;
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const handle = (e) => {
-      setIsDarkMode(e.matches);
-      document.documentElement.classList.toggle('dark', e.matches);
-    };
-    mq.addEventListener('change', handle);
-    return () => mq.removeEventListener('change', handle);
-  }, [settings?.themeMode]);
+    document.documentElement.classList.remove('dark');
+    setIsDarkMode(false);
+  }, []);
 
   // Persist profile
   useEffect(() => {
@@ -212,19 +205,13 @@ export const ThemeProvider = ({ children }) => {
   }, [profile]);
 
   const updatePersonalization = (newFields) =>
-    setSettings(prev => ({ ...(prev || DEFAULT_PERSONALIZATION), ...newFields }));
+    setSettings(prev => ({ ...(prev || DEFAULT_PERSONALIZATION), ...newFields, themeMode: 'light' }));
 
   const resetPersonalization = () => setSettings({ ...DEFAULT_PERSONALIZATION });
 
   const toggleThemeMode = () => {
-    setSettings(prev => {
-      const p = prev || DEFAULT_PERSONALIZATION;
-      const next =
-        p.themeMode === 'system' ? (isDarkMode ? 'light' : 'dark')
-        : p.themeMode === 'dark' ? 'light'
-        : 'dark';
-      return { ...p, themeMode: next };
-    });
+    // Locked to single unified theme
+    setSettings(prev => ({ ...(prev || DEFAULT_PERSONALIZATION), themeMode: 'light' }));
   };
 
   const updateProfile = (updatedFields) => {

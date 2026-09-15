@@ -47,26 +47,26 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         }
       `}
       style={{
-        backgroundColor: isDarkMode ? '#090D16' : '#ffffff',
-        borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.06)' : '#E2E8F0',
-        color: isDarkMode ? '#F8FAFC' : '#0F172A',
+        backgroundColor: '#FFFFFF',
+        borderColor: 'rgba(14, 165, 233, 0.15)',
+        color: '#0F172A',
       }}
     >
       {/* ── Logo / Header ── */}
       <div
         className="h-14 flex items-center justify-between px-4 border-b shrink-0"
-        style={{ borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.06)' : '#E2E8F0' }}
+        style={{ borderColor: 'rgba(14, 165, 233, 0.15)' }}
       >
         <div
           onClick={() => handleNavClick('/')}
-          className="flex items-center gap-2.5 cursor-pointer"
+          className="flex items-center gap-2.5 cursor-pointer group"
         >
-          <img src="/ziv-logo.png" alt="Ziv" className="h-7 w-7 object-contain rounded" />
+          <img src="/ziv-logo.png" alt="Ziv" className="h-8 w-8 object-contain rounded-lg shadow-sm" />
           {!isSidebarCollapsed && (
             <div className="flex flex-col leading-tight">
-              <span className="text-sm font-bold tracking-tight" style={{ color: isDarkMode ? '#F8FAFC' : '#0F172A' }}>Ziv</span>
+              <span className="text-base font-extrabold tracking-tight text-[#0F172A]">Ziv</span>
               {isDevBypass && (
-                <span className="text-[9px] font-mono text-[#8B5CF6] uppercase tracking-widest">Dev Mode</span>
+                <span className="text-[9px] font-mono text-sky-600 uppercase tracking-widest font-bold">Dev Mode</span>
               )}
             </div>
           )}
@@ -75,16 +75,14 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         <div className="hidden md:flex items-center gap-0.5">
           <button
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className="p-1.5 rounded transition-colors cursor-pointer hover:bg-white/8"
-            style={{ color: 'var(--doap-text-sec)' }}
+            className="p-1.5 rounded-lg transition-colors cursor-pointer hover:bg-sky-50 text-slate-500 hover:text-slate-800"
             title={isSidebarCollapsed ? 'Expand' : 'Collapse'}
           >
             {isSidebarCollapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
           </button>
           <button
             onClick={() => setIsSidebarHidden(true)}
-            className="p-1.5 rounded transition-colors cursor-pointer hover:bg-white/8 hover:text-rose-400"
-            style={{ color: 'var(--doap-text-sec)' }}
+            className="p-1.5 rounded-lg transition-colors cursor-pointer hover:bg-rose-50 text-slate-500 hover:text-rose-600"
             title="Hide sidebar"
           >
             <PanelLeftClose size={14} />
@@ -108,20 +106,14 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                 w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[13px] sm:text-sm font-bold
                 transition-all duration-150 cursor-pointer border-0 outline-none text-left
                 ${isActive 
-                  ? '' 
-                  : (isDarkMode ? 'hover:bg-white/10 hover:text-white' : 'hover:bg-slate-100 hover:text-slate-950')
+                  ? 'shadow-sm shadow-sky-100' 
+                  : 'hover:bg-sky-50/70 text-slate-700 hover:text-[#0F172A]'
                 }
               `}
               style={{
-                backgroundColor: isActive
-                  ? (isDarkMode ? 'rgba(139, 92, 246, 0.18)' : 'rgba(124, 58, 237, 0.12)')
-                  : 'transparent',
-                color: isActive 
-                  ? (isDarkMode ? '#C4B5FD' : '#6D28D9') 
-                  : (isDarkMode ? '#E2E8F0' : '#020617'),
-                borderLeft: isActive 
-                  ? (isDarkMode ? '3px solid #8B5CF6' : '3px solid #7C3AED') 
-                  : '3px solid transparent',
+                backgroundColor: isActive ? '#F0F9FF' : 'transparent',
+                color: isActive ? '#0284C7' : '#334155',
+                borderLeft: isActive ? '3px solid #0284C7' : '3px solid transparent',
               }}
             >
               {/* Icon + status dot */}

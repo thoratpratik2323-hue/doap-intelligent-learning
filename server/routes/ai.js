@@ -6,10 +6,11 @@ const router = Router();
 
 // Voice dictionary mapping personas to neural voices
 const VOICE_MAP = {
-  // Myraa Sweet Anime Heroine Neural Voice
-  myraa: 'en-US-AnaNeural',
+  // Myraa Young Female Professor Neural Voice
+  myraa: 'en-US-JennyNeural',
   sarah: 'en-US-JennyNeural',
-  aoede: 'en-US-AnaNeural',
+  aoede: 'en-US-JennyNeural',
+  leda: 'en-US-JennyNeural',
 
   // Core masculine studio voices
   charon: 'en-US-AndrewMultilingualNeural',
@@ -20,11 +21,11 @@ const VOICE_MAP = {
   indian_male: 'en-IN-PrabhatNeural',
   guy: 'en-US-GuyNeural',
   conversational: 'en-US-GuyNeural',
-  neerja: 'en-IN-PrabhatNeural',
-  indian_female: 'en-IN-PrabhatNeural',
-  jenny: 'en-US-GuyNeural',
-  aria: 'en-US-AndrewMultilingualNeural',
-  kore: 'en-US-AndrewMultilingualNeural'
+  neerja: 'en-IN-NeerjaNeural',
+  indian_female: 'en-IN-NeerjaNeural',
+  jenny: 'en-US-JennyNeural',
+  aria: 'en-US-AriaNeural',
+  kore: 'en-US-JennyNeural'
 };
 
 /**

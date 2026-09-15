@@ -281,7 +281,7 @@ export const MyraaCoreVisualizer = ({
           />
 
           {/* Cybernetic Edge Guard */}
-          <div className="absolute inset-0 rounded-[2.5rem] border border-white/5 pointer-events-none" />
+          <div className="absolute inset-0 rounded-[2.5rem] border border-sky-200/40 pointer-events-none" />
         </div>
       </div>
 
@@ -292,21 +292,21 @@ export const MyraaCoreVisualizer = ({
       />
 
       {/* 4. Floating HUD Emotion & Activity Status Pill */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 px-4 py-2 rounded-full border bg-black/70 backdrop-blur-md text-xs font-mono border-white/10 shadow-xl">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 px-4 py-2 rounded-full border bg-white/95 backdrop-blur-md text-xs font-mono border-sky-200/80 shadow-lg shadow-sky-950/10">
         <span className={`w-2.5 h-2.5 rounded-full ${
-          characterState === "talking" ? "bg-emerald-400 animate-ping" :
-          characterState === "thinking" ? "bg-amber-400 animate-pulse" :
-          characterState === "listening" ? "bg-cyan-400 animate-pulse" :
-          state === "connecting" ? "bg-violet-400 animate-pulse" : "bg-slate-500"
+          characterState === "talking" ? "bg-emerald-500 animate-ping" :
+          characterState === "thinking" ? "bg-amber-500 animate-pulse" :
+          characterState === "listening" ? "bg-sky-500 animate-pulse" :
+          state === "connecting" ? "bg-sky-400 animate-pulse" : "bg-slate-400"
         }`} />
-        <span className="font-bold text-slate-200 uppercase tracking-wider text-[11px]">
+        <span className="font-bold text-[#0F172A] uppercase tracking-wider text-[11px]">
           {characterState === "talking" ? "🎙️ Professor Myraa Explaining" :
            characterState === "thinking" ? "🧠 Formulating Intuitive Solution..." :
            characterState === "listening" ? "👂 Listening Intently (Ears Alert)" :
            state === "connecting" ? "⚡ Initializing Neural Core" : "Offline"}
         </span>
         {activeEmotion && activeEmotion !== "idle" && (
-          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-violet-500/20 text-violet-300 border border-violet-500/30">
+          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200">
             {activeEmotion}
           </span>
         )}

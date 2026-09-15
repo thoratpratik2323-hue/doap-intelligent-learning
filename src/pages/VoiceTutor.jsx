@@ -264,7 +264,7 @@ export const VoiceTutor = () => {
   };
 
   return (
-    <div className="relative w-full h-[calc(100vh-3.5rem)] flex flex-col justify-between overflow-hidden bg-[#090D16] text-[#F8FAFC] select-none">
+    <div className="relative w-full h-[calc(100vh-3.5rem)] flex flex-col justify-between overflow-hidden bg-gradient-to-b from-sky-50/30 via-white to-sky-50/20 text-[#0F172A] select-none">
       
       {/* ── Center Stage: Holographic Visualizer ─────────────── */}
       <main className="relative flex-1 flex flex-col items-center justify-center overflow-hidden">
@@ -272,7 +272,7 @@ export const VoiceTutor = () => {
         <div className="absolute inset-0">
           <MyraaCoreVisualizer
             state={state}
-            themeColor={settings.themeColor || "violet"}
+            themeColor={settings.themeColor || "celestial"}
             activeEmotion={activeEmotion}
             characterState={characterState}
             audioAnalyser={getMyraaAudioAnalyser() || sessionRef.current?.inputAnalyser || null}
@@ -281,7 +281,7 @@ export const VoiceTutor = () => {
       </main>
 
       {/* ── 3. Bottom Controls HUD ────────────────────────────────────────── */}
-      <footer className="relative z-30 flex items-center justify-center gap-3 px-4 py-4 border-t border-white/10 bg-slate-950/80 backdrop-blur-xl shrink-0">
+      <footer className="relative z-30 flex items-center justify-center gap-3 px-4 py-4 border-t border-sky-100 bg-white/90 backdrop-blur-xl shrink-0 shadow-lg shadow-sky-950/5">
         {/* Central Microphone / Power Toggle */}
         <div className="flex items-center gap-3">
           <button
@@ -289,7 +289,7 @@ export const VoiceTutor = () => {
             className={`p-4 px-6 rounded-3xl border font-bold transition-all shadow-xl cursor-pointer flex items-center justify-center gap-2.5 ${
               state !== "disconnected"
                 ? "bg-rose-600 border-rose-500 hover:bg-rose-500 text-white shadow-rose-600/30 scale-105"
-                : "bg-violet-600 border-violet-500 hover:bg-violet-500 text-white shadow-violet-600/30 hover:scale-105"
+                : "bg-[#0F172A] border-sky-900 hover:bg-[#1E293B] text-white shadow-sky-950/20 hover:scale-105"
             }`}
           >
             {state !== "disconnected" ? (
@@ -299,8 +299,8 @@ export const VoiceTutor = () => {
               </>
             ) : (
               <>
-                <Mic size={20} />
-                <span className="font-mono text-xs uppercase tracking-wider pr-1">Start Myraa Session</span>
+                <Mic size={20} className="text-sky-400" />
+                <span className="font-mono text-xs uppercase tracking-wider pr-1 text-white">Start Myraa Session</span>
               </>
             )}
           </button>
@@ -309,7 +309,7 @@ export const VoiceTutor = () => {
           {state === "speaking" && (
             <button
               onClick={() => sessionRef.current?.interrupt()}
-              className="px-4 py-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-mono text-xs font-bold transition-all cursor-pointer animate-fade-in"
+              className="px-4 py-3.5 rounded-2xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 font-mono text-xs font-bold transition-all cursor-pointer animate-fade-in shadow-sm"
               title="Interrupt Myraa"
             >
               Interrupt

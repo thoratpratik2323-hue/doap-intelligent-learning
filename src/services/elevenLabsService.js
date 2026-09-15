@@ -455,9 +455,9 @@ export function fallbackBrowserSpeech(text, onComplete, persona = 'charon') {
     const isMyraa = ['myraa', 'sarah', 'aoede', 'ana'].includes((persona || '').toLowerCase());
 
     if (isMyraa) {
-      // Myraa sweet, cute, high-pitched anime heroine cadence (25% higher pitch, gentle, adorable delivery)
-      utterance.pitch = 1.25;
-      utterance.rate = 0.94;
+      // Myraa youthful, articulate young female professor cadence (Natural pitch, clear delivery)
+      utterance.pitch = 1.0;
+      utterance.rate = 1.0;
       utterance.lang = 'en-US';
       const myraaVoice = getMyraaVoice(window.speechSynthesis);
       if (myraaVoice) {
@@ -592,7 +592,7 @@ export async function speakGeminiAoedeVoice(text, onComplete, onError) {
               speechConfig: {
                 voiceConfig: {
                   prebuiltVoiceConfig: {
-                    voiceName: "Aoede"
+                    voiceName: "Leda"
                   }
                 }
               }

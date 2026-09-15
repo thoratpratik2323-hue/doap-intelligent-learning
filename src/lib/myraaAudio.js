@@ -4,7 +4,14 @@
  * screen vision frame streaming, and speech synthesis on the web.
  */
 
-import { speakElevenLabs, stopElevenLabsAudio, unlockAudioContext, fallbackBrowserSpeech, speakGeminiAoedeVoice } from '../services/elevenLabsService';
+import { 
+  speakElevenLabs, 
+  stopElevenLabsAudio, 
+  unlockAudioContext, 
+  fallbackBrowserSpeech, 
+  speakGeminiAoedeVoice,
+  speakDOAPVoice 
+} from '../services/elevenLabsService';
 import { generateSmartTutorResponse } from '../services/aiTutorEngine';
 import { formatMemoriesForPrompt, addMemory } from './myraaMemory';
 
@@ -32,6 +39,7 @@ export class MyraaWebSession {
     this.outputAnalyser = null;
     this.micStream = null;
     this.speechRecognition = null;
+    this.silenceTimer = null;
     this.lastScreenFrame = null;
     this.isListening = false;
   }
@@ -74,10 +82,6 @@ export class MyraaWebSession {
         source.connect(this.inputAnalyser);
       }
 
-      // Initialize Speech Recognition
-      this.initSpeechRecognition();
-      this.setState("listening");
-
       // Initial instant AI Teacher greeting for Ziv students (Zero delay!)
       const greeting = "Hello! I am Myraa, your dedicated AI Teacher and Academic Mentor on Ziv. I am here to guide you step-by-step through your engineering studies—whether you want to clear tricky concepts, debug code, prepare for technical exams, or solve any academic doubt. What subject or doubt are we mastering together today?";
       this.onTranscription("model", greeting);
@@ -88,9 +92,10 @@ export class MyraaWebSession {
         await this.speak(greeting);
       }
 
+      // Transition to active listening only AFTER intro finishes
       if (this.state !== "disconnected") {
         this.setState("listening");
-        try { this.speechRecognition?.start(); } catch (e) {}
+        this.startListening();
       }
 
     } catch (err) {
@@ -123,63 +128,101 @@ export class MyraaWebSession {
     });
   }
 
-  initSpeechRecognition() {
+  startListening() {
+    if (this.state !== "listening") return;
+    this.stopListening();
+
     const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRec) {
       console.warn("[Myraa Audio] SpeechRecognition not supported in browser.");
       return;
     }
 
-    const rec = new SpeechRec();
-    rec.continuous = true;
-    rec.interimResults = true;
-    rec.lang = 'en-US';
-
-    let silenceTimer = null;
-    let accumulatedText = '';
-
-    rec.onresult = (event) => {
-      let interim = '';
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          accumulatedText = (accumulatedText + ' ' + transcript).trim();
-        } else {
-          interim += transcript;
-        }
-      }
-
-      const activeText = (accumulatedText + ' ' + interim).trim();
-      if (activeText && this.state === "listening") {
-        this.onTranscription("user", activeText);
-
-        // Ultra-fast 700ms silence detection: respond as soon as student pauses!
-        clearTimeout(silenceTimer);
-        silenceTimer = setTimeout(() => {
-          if (this.state === "listening" && activeText) {
-            accumulatedText = '';
-            this.handleUserQuery(activeText);
-          }
-        }, 700);
-      }
-    };
-
-    rec.onerror = (e) => {
-      if (e.error !== 'no-speech') {
-        console.warn("[Myraa Audio] Speech recognition error:", e);
-      }
-    };
-
-    rec.onend = () => {
-      if (this.state === "listening") {
-        try { rec.start(); } catch (e) {}
-      }
-    };
-
     try {
+      const rec = new SpeechRec();
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = 'en-IN'; // Indian English + Hindi phonetics friendly
+
+      let accumulatedText = '';
+
+      rec.onresult = (event) => {
+        if (this.state !== "listening") return;
+
+        let interim = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            accumulatedText = (accumulatedText + ' ' + transcript).trim();
+          } else {
+            interim += transcript;
+          }
+        }
+
+        const activeText = (accumulatedText + ' ' + interim).trim();
+        if (activeText && this.state === "listening") {
+          this.onTranscription("user", activeText);
+
+          // 800ms silence detection: respond promptly when student finishes speaking
+          clearTimeout(this.silenceTimer);
+          this.silenceTimer = setTimeout(() => {
+            if (this.state === "listening" && activeText) {
+              accumulatedText = '';
+              this.stopListening();
+              this.handleUserQuery(activeText);
+            }
+          }, 800);
+        }
+      };
+
+      rec.onerror = (e) => {
+        if (e.error === 'no-speech') {
+          return;
+        }
+        console.warn("[Myraa Audio] Speech recognition error:", e.error);
+        if (this.state === "listening" && (e.error === 'network' || e.error === 'aborted')) {
+          setTimeout(() => {
+            if (this.state === "listening") {
+              this.startListening();
+            }
+          }, 400);
+        }
+      };
+
+      rec.onend = () => {
+        // Auto-restart if session is still in listening state
+        if (this.state === "listening") {
+          setTimeout(() => {
+            if (this.state === "listening") {
+              this.startListening();
+            }
+          }, 150);
+        }
+      };
+
       rec.start();
       this.speechRecognition = rec;
-    } catch (e) {}
+      this.isListening = true;
+    } catch (e) {
+      console.warn("[Myraa Audio] Failed to start SpeechRecognition:", e);
+    }
+  }
+
+  stopListening() {
+    clearTimeout(this.silenceTimer);
+    this.silenceTimer = null;
+    this.isListening = false;
+
+    if (this.speechRecognition) {
+      try {
+        const rec = this.speechRecognition;
+        rec.onresult = null;
+        rec.onerror = null;
+        rec.onend = null;
+        rec.stop();
+      } catch (e) {}
+      this.speechRecognition = null;
+    }
   }
 
   async generateFastTeacherReply(queryText, memoryContext, visionContext) {
@@ -190,12 +233,13 @@ export class MyraaWebSession {
     if (apiKey) {
       try {
         const prompt = `${memoryContext}${visionContext}
-Student says: "${queryText}"
+Student asks: "${queryText}"
 
 AI TEACHER ROLE: You are Professor Myraa, the premier engineering professor and mentor on Ziv.
 Instructions:
 - Provide an intuitive, direct, and clear explanation in 2 spoken sentences.
-- Never use markdown symbols, asterisks, or bullet points so speech synthesis sounds natural.
+- Speak in a natural, polite, engaging young female professor voice.
+- Never use markdown symbols, asterisks, or bullet points so speech synthesis sounds completely natural.
 - End with an encouraging check question.`;
 
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
@@ -224,6 +268,7 @@ Instructions:
   }
 
   async handleUserQuery(queryText) {
+    this.stopListening();
     this.onTranscription("user", queryText);
     this.setState("thinking");
 
@@ -232,7 +277,7 @@ Instructions:
       const memoryContext = formatMemoriesForPrompt();
       let visionContext = "";
       if (this.lastScreenFrame) {
-        visionContext = "\n[LIVE USER DISPLAY SCREEN AVAILABLE: The student is sharing their active screen for code review or homework doubt.]\n";
+        visionContext = `\n[LIVE USER DISPLAY SCREEN AVAILABLE: The student is sharing their active screen for code review or homework doubt.]\n`;
       }
 
       // Fast direct AI Teacher reply (300ms - 500ms)
@@ -259,7 +304,7 @@ Instructions:
     } finally {
       if (this.state !== "disconnected") {
         this.setState("listening");
-        try { this.speechRecognition?.start(); } catch (e) {}
+        this.startListening();
       }
     }
   }
@@ -335,18 +380,16 @@ Instructions:
     }
     if (this.state === "speaking") {
       this.setState("listening");
+      this.startListening();
     }
   }
 
   disconnect() {
+    this.stopListening();
     this.interrupt();
     if (this.micStream) {
       this.micStream.getTracks().forEach(t => t.stop());
       this.micStream = null;
-    }
-    if (this.speechRecognition) {
-      try { this.speechRecognition.stop(); } catch (e) {}
-      this.speechRecognition = null;
     }
     if (this.audioCtx) {
       try { this.audioCtx.close(); } catch (e) {}
