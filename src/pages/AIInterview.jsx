@@ -122,11 +122,11 @@ export const AIInterview = () => {
       {/* Header */}
       {step !== 'live' && (
         <div className="space-y-1">
-          <h1 className={`text-3xl font-bold tracking-tight ${
-            isDarkMode ? 'text-white' : 'text-[#0a0a0a]'
+          <h1 className={`text-3xl font-black tracking-tight ${
+            isDarkMode ? 'text-white' : 'text-[#0F172A]'
           }`}>AI Proctored Interview</h1>
-          <p className={`text-xs font-mono uppercase tracking-wider ${
-            isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
+          <p className={`text-xs font-medium ${
+            isDarkMode ? 'text-neutral-400' : 'text-[#64748B]'
           }`}>
             Technical & HR interviews with vision proctoring
           </p>
