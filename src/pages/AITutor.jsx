@@ -697,7 +697,7 @@ export const AITutor = () => {
                             borderColor: speakingMsgId === msg.id ? undefined : 'var(--doap-border)', 
                             backgroundColor: speakingMsgId === msg.id ? undefined : 'var(--doap-surface-sec)' 
                           }}
-                          title={speakingMsgId === msg.id ? "Stop voice playback" : "Read aloud with DOAP Voice"}
+                          title={speakingMsgId === msg.id ? "Stop voice playback" : "Read aloud with Ziv Voice"}
                         >
                           {speakingMsgId === msg.id ? (
                             <>
@@ -748,7 +748,7 @@ export const AITutor = () => {
                 }}
               >
                 <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                <span className="font-mono">DOAP is thinking...</span>
+                <span className="font-mono">Ziv is thinking...</span>
               </div>
             </div>
           )}
@@ -793,8 +793,8 @@ export const AITutor = () => {
                 type="text" 
                 id="doap-chat-input"
                 name="chatPrompt"
-                aria-label="Message DOAP AI"
-                placeholder={isListening ? "Listening to your voice..." : "Message DOAP AI (Ask anything from A to Z, coding, math, ideas, or /image <prompt>)..."}
+                aria-label="Message Ziv AI"
+                placeholder={isListening ? "Listening to your voice..." : "Message Ziv AI (Ask anything from A to Z, coding, math, ideas, or /image <prompt>)..."}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 className="w-full pl-4 pr-10 py-2.5 sm:py-3 rounded-2xl border text-xs sm:text-sm focus:outline-none transition-all shadow-inner"
@@ -878,16 +878,16 @@ export const AITutor = () => {
               </div>
               <div>
                 <h3 className="font-bold text-sm" style={{ color: 'var(--doap-text-prim)' }}>
-                  DOAP Thinking Super-Brain Active
+                  Ziv Thinking Super-Brain Active
                 </h3>
                 <p className="text-xs" style={{ color: 'var(--doap-text-sec)' }}>
-                  Powered by DOAP High-Speed LPU & Flux Image AI
+                  Powered by Ziv High-Speed LPU & Flux Image AI
                 </p>
               </div>
             </div>
 
             <div className="p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 text-xs text-emerald-400">
-              ⚡ <strong>DOAP Thinking Active:</strong> Sub-150ms instant universal reasoning, coding mentor, and live visual generation.
+              ⚡ <strong>Ziv Thinking Active:</strong> Sub-150ms instant universal reasoning, coding mentor, and live visual generation.
             </div>
 
             <button

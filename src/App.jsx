@@ -50,11 +50,11 @@ const LoadingScreen = () => {
       <div className="rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center space-y-4 border doap-card" style={{ backgroundColor: 'var(--doap-surface, #111111)', borderColor: 'var(--doap-border, #262626)' }}>
         <img 
           src="/doap-logo.jpg" 
-          alt="DOAP Logo" 
+          alt="Ziv Logo" 
           className="h-10 mx-auto object-contain rounded-xl shadow-md animate-pulse" 
         />
         <div className="space-y-1">
-          <h3 className="font-bold text-base tracking-tight" style={{ color: 'var(--text-primary, var(--doap-text-prim))' }}>Resolving DOAP Session</h3>
+          <h3 className="font-bold text-base tracking-tight" style={{ color: 'var(--text-primary, var(--doap-text-prim))' }}>Resolving Ziv Session</h3>
           <p className="text-xs font-mono" style={{ color: 'var(--text-secondary, var(--doap-text-sec))' }}>Verifying session status...</p>
         </div>
       </div>
@@ -67,7 +67,7 @@ const PageLoader = () => {
     <div className="w-full h-full min-h-[360px] flex flex-col items-center justify-center p-8 select-none animate-fade-in">
       <div className="flex flex-col items-center gap-3">
         <div className="w-8 h-8 rounded-full border-2 border-neutral-700 border-t-white animate-spin" />
-        <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">Loading DOAP Workspace...</span>
+        <span className="text-xs font-mono text-neutral-500 uppercase tracking-wider">Loading Ziv Workspace...</span>
       </div>
     </div>
   );

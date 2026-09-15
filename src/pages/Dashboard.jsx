@@ -370,7 +370,7 @@ export const Dashboard = () => {
           style={{ backgroundColor: 'var(--doap-surface)', borderColor: 'var(--doap-border)' }}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono font-bold uppercase">DOAP AI Tutor</span>
+            <span className="text-xs font-mono font-bold uppercase">Ziv AI Tutor</span>
             <ArrowRight size={15} />
           </div>
           <p className="text-xs text-neutral-400">Ask conceptual CS & engineering questions in real-time.</p>

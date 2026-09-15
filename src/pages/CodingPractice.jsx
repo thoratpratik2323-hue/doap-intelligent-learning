@@ -1932,7 +1932,7 @@ Evaluate this code strictly:
                 </span>
               )}
             </span>
-            <span className="hidden sm:inline text-cyan-400/90 font-bold">⚡ 100% In-Browser DOAP IDE Execution & Test Suite</span>
+            <span className="hidden sm:inline text-purple-400 font-bold">⚡ 100% In-Browser Ziv IDE Execution & Test Suite</span>
           </div>
 
           {/* Problems List */}
@@ -2032,8 +2032,8 @@ Evaluate this code strictly:
                         e.stopPropagation();
                         handleOpenProblem(prob);
                       }}
-                      className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black font-bold text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer shrink-0 active:scale-95"
-                      title="Solve in DOAP in-browser IDE & Test Suite"
+                      className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer shrink-0 active:scale-95"
+                      title="Solve in Ziv in-browser IDE & Test Suite"
                     >
                       <Zap size={13} className="fill-black" />
                       <span>Solve in IDE</span>
@@ -2551,7 +2551,7 @@ Evaluate this code strictly:
                   <Shield size={20} className="animate-pulse" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest font-bold">DOAP Coding Engine</div>
+                  <div className="text-[10px] font-mono text-purple-400 uppercase tracking-widest font-bold">Ziv Coding Engine</div>
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
                     <span>{pendingProblem.title}</span>
                     <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
@@ -2678,7 +2678,7 @@ Evaluate this code strictly:
 
             {/* Footer */}
             <div className="px-5 py-3 border-t border-neutral-800 bg-[#07090e] flex items-center justify-between shrink-0">
-              <span className="text-[11px] font-mono text-neutral-500">DOAP Assess Engine v2.4</span>
+              <span className="text-[11px] font-mono text-neutral-500">Ziv Assess Engine v2.4</span>
               <button
                 type="button"
                 onClick={() => setPendingProblem(null)}
@@ -3001,7 +3001,7 @@ Evaluate this code strictly:
                             </div>
                           ) : (
                             <p className="text-[11px] text-neutral-400 leading-relaxed">
-                              Click <strong>&ldquo;Analyze Editor Code&rdquo;</strong> to have DOAP AI inspect your active code and provide guiding questions without spoiling the answer.
+                              Click <strong>&ldquo;Analyze Editor Code&rdquo;</strong> to have Ziv AI inspect your active code and provide guiding questions without spoiling the answer.
                             </p>
                           )}
                         </div>
@@ -3236,7 +3236,7 @@ Evaluate this code strictly:
               <div className="space-y-2 max-w-md">
                 <h2 className="text-xl font-bold text-white tracking-tight">Fullscreen Violation Detected!</h2>
                 <p className="text-xs text-neutral-300 leading-relaxed">
-                  You have exited fullscreen mode. The DOAP Proctored Assessment strictly requires fullscreen mode to guarantee assessment integrity and accurately evaluate your coding proficiency.
+                  You have exited fullscreen mode. The Ziv Proctored Assessment strictly requires fullscreen mode to guarantee assessment integrity and accurately evaluate your coding proficiency.
                 </p>
                 <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-300 font-mono text-xs">
                   ⚠️ Total Violations Recorded: {violations.length} / 3

@@ -21,8 +21,8 @@
   }
 
   ::selection {
-    background-color: #38bdf8;
-    color: #050c1e;
+    background-color: #9333EA;
+    color: #F8FAFC;
   }
 
   *, *::before, *::after {
@@ -35,18 +35,18 @@
 
   html[data-theme="light"] select,
   .light select {
-    color-scheme: light;
+    color-scheme: dark;
   }
 
   select option {
-    background-color: #07122b !important;
-    color: #ffffff !important;
+    background-color: #0B0F19 !important;
+    color: #F8FAFC !important;
   }
 
   html[data-theme="light"] select option,
   .light select option {
-    background-color: #f0f7ff !important;
-    color: #0a1931 !important;
+    background-color: #0B0F19 !important;
+    color: #F8FAFC !important;
   }
 }
 
@@ -54,11 +54,11 @@
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(56, 189, 248, 0.25);
+  background: rgba(147, 51, 234, 0.35);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(56, 189, 248, 0.45);
+  background: rgba(147, 51, 234, 0.60);
 }
 .scrollbar-none, .no-scrollbar {
   scrollbar-width: none !important;
@@ -72,15 +72,15 @@
 
 /* ── Global canvas utility ──────────────────────────────── */
 .doap-canvas {
-  background-color: var(--doap-bg, #050c1e);
-  color: var(--doap-text-prim, #ffffff);
+  background-color: var(--doap-bg, #0B0F19);
+  color: var(--doap-text-prim, #F8FAFC);
 }
 
 /* ── Card surface ───────────────────────────────────────── */
 .doap-card {
-  background-color: var(--doap-surface, rgba(14, 28, 64, 0.65));
-  border: 1px solid var(--doap-border, rgba(56, 189, 248, 0.18));
-  color: var(--doap-text-prim, #ffffff);
+  background-color: var(--doap-surface, rgba(15, 20, 35, 0.95));
+  border: 1px solid var(--doap-border, rgba(147, 51, 234, 0.20));
+  color: var(--doap-text-prim, #F8FAFC);
   border-radius: 16px;
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -92,8 +92,8 @@
 }
 
 .doap-card-sec {
-  background-color: var(--doap-surface-sec, rgba(23, 44, 96, 0.7));
-  border: 1px solid var(--doap-border, rgba(56, 189, 248, 0.18));
+  background-color: var(--doap-surface-sec, rgba(20, 26, 46, 0.95));
+  border: 1px solid var(--doap-border, rgba(147, 51, 234, 0.20));
   border-radius: 12px;
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -104,8 +104,8 @@
 .doap-glass {
   backdrop-filter: blur(var(--doap-glass-blur, 16px));
   -webkit-backdrop-filter: blur(var(--doap-glass-blur, 16px));
-  background-color: var(--doap-surface, rgba(14, 28, 64, 0.65));
-  border: 1px solid var(--doap-border, rgba(56, 189, 248, 0.18));
+  background-color: var(--doap-surface, rgba(15, 20, 35, 0.95));
+  border: 1px solid var(--doap-border, rgba(147, 51, 234, 0.20));
 }
 
 /* Override glass when disabled */

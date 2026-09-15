@@ -38,7 +38,7 @@ export const Resources = () => {
 
   const handleDownload = (res) => {
     if (!res) return;
-    const content = `# ${res.title}\nSubject: ${res.subject} | Semester: ${res.semester}\nEstimated Reading Time: ${res.readingTime || '30 min'}\nType: ${res.type}\n\n## Summary\n${res.summary || ''}\n\n## Key Concepts Covered\n${(res.keyTopics || []).map(t => `- ${t}`).join('\n')}\n\nDownloaded from DOAP — Discover Opportunities and Progress Platform.`;
+    const content = `# ${res.title}\nSubject: ${res.subject} | Semester: ${res.semester}\nEstimated Reading Time: ${res.readingTime || '30 min'}\nType: ${res.type}\n\n## Summary\n${res.summary || ''}\n\n## Key Concepts Covered\n${(res.keyTopics || []).map(t => `- ${t}`).join('\n')}\n\nDownloaded from Ziv — The modern playground for future developers.`;
     const blob = new Blob([content], { type: 'text/markdown;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

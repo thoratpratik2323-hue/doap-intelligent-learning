@@ -109,7 +109,7 @@ export const Achievements = () => {
     {
       id: 9,
       title: "Voice Intelligence Pioneer",
-      description: "Interact with the DOAP Voice Tutor real-time conversational agent",
+      description: "Interact with the Ziv Voice Tutor real-time conversational agent",
       rarity: "Common",
       earned: true,
       current: 1,
@@ -133,7 +133,7 @@ export const Achievements = () => {
           }`}>Achievements</h1>
           <p className={`text-xs font-mono uppercase tracking-wider ${
             isDarkMode ? 'text-neutral-400' : 'text-neutral-500'
-          }`}>Milestones and verified engineering badges earned on DOAP</p>
+          }`}>Milestones and verified engineering badges earned on Ziv</p>
         </div>
 
         <div className="text-right space-y-1">

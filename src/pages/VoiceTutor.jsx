@@ -773,7 +773,7 @@ export const VoiceTutor = () => {
     }
 
     updateCallState('speaking');
-    const welcome = `Hey ${userName}! I'm DOAP AI, online and listening. What are we working on today, buddy?`;
+    const welcome = `Hey ${userName}! I'm Ziv AI, online and listening. What are we working on today, buddy?`;
     setAiSpokenText(welcome);
 
     speakResponse(welcome, () => {
@@ -1058,9 +1058,9 @@ export const VoiceTutor = () => {
       {/* 1. Sleek Modern Header Bar */}
       <div className="flex items-center justify-between z-20 pb-3 border-b border-white/10 gap-2">
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs sm:text-sm font-bold tracking-wide shadow-sm">
-            <span className={`w-2.5 h-2.5 rounded-full bg-cyan-400 ${isCallActive ? "animate-ping" : ""}`} />
-            <span>DOAP AI</span>
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 text-xs sm:text-sm font-bold tracking-wide shadow-sm">
+            <span className={`w-2.5 h-2.5 rounded-full bg-purple-400 ${isCallActive ? "animate-ping" : ""}`} />
+            <span>Ziv AI</span>
           </div>
 
           {isCallActive && (
@@ -1150,9 +1150,9 @@ export const VoiceTutor = () => {
             }`} />
             <span>
               {!isCallActive 
-                ? 'DOAP AI READY — TAP OR PICK A TOPIC' 
+                ? 'ZIV AI READY — TAP OR PICK A TOPIC' 
                 : callState === 'speaking' 
-                ? 'DOAP AI SPEAKING...' 
+                ? 'ZIV AI SPEAKING...' 
                 : callState === 'listening' 
                 ? (isUserSpeaking ? 'HEARING YOUR VOICE... (SPEAK FREELY)' : 'LISTENING TO YOU (SPEAK FREELY)...') 
                 : 'THINKING & TRANSCRIBING...'}
@@ -1199,7 +1199,7 @@ export const VoiceTutor = () => {
                     : 'bg-gradient-to-tr from-amber-600 via-orange-600 to-yellow-600 text-white ring-8 ring-amber-500/30 shadow-amber-500/50')
                 : 'bg-gradient-to-b from-neutral-900 to-neutral-950 text-white hover:from-neutral-850 hover:to-neutral-900 ring-8 ring-white/5 border border-white/15 hover:border-cyan-500/40'
             }`}
-            title={isCallActive ? 'Tap to End Call' : 'Tap to Start Call with DOAP AI'}
+            title={isCallActive ? 'Tap to End Call' : 'Tap to Start Call with Ziv AI'}
           >
             {/* Sphere Highlight Sheen */}
             <div className="absolute top-0 left-1/4 w-1/2 h-1/3 bg-white/20 rounded-full blur-sm pointer-events-none" />
@@ -1212,7 +1212,7 @@ export const VoiceTutor = () => {
             ) : (
               <>
                 <div className="relative">
-                  <Phone size={38} className="text-cyan-400 group-hover:scale-110 transition-transform drop-shadow" />
+                  <Phone size={38} className="text-purple-400 group-hover:scale-110 transition-transform drop-shadow" />
                   <Sparkles size={16} className="text-amber-400 absolute -top-1 -right-2 animate-bounce" />
                 </div>
                 <span className="text-[11px] font-mono font-bold mt-2 uppercase tracking-wider text-cyan-300 group-hover:text-cyan-200">Start Call</span>
@@ -1258,7 +1258,7 @@ export const VoiceTutor = () => {
                 }`} />
                 <p className="text-xs font-mono tracking-wide" style={{ color: isUserSpeaking ? '#34d399' : '#94a3b8' }}>
                   {callState === 'speaking' 
-                    ? 'DOAP AI Speaking...' 
+                    ? 'Ziv AI Speaking...' 
                     : callState === 'thinking' 
                     ? 'Transcribing & Thinking...' 
                     : (isUserSpeaking ? 'Voice Detected • Speak freely...' : 'Listening... Speak naturally')}
@@ -1287,7 +1287,7 @@ export const VoiceTutor = () => {
                   }`}
                   title="Done speaking? Tap to send immediately"
                 >
-                  <Check size={12} className={isUserSpeaking ? 'text-emerald-400' : 'text-cyan-400'} />
+                  <Check size={12} className={isUserSpeaking ? 'text-emerald-400' : 'text-purple-400'} />
                   <span>{isUserSpeaking ? 'Done Speaking • Tap to Send' : 'Tap When Done Speaking'}</span>
                 </button>
               )}
@@ -1329,8 +1329,8 @@ export const VoiceTutor = () => {
                     finalizeAndTranscribeWithWhisper();
                   }
                 }}
-                className="px-4 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-lg shadow-cyan-600/30 hover:scale-105 active:scale-95"
-                title="Send recorded speech to DOAP AI immediately"
+                className="px-4 py-2.5 rounded-full bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-lg shadow-purple-600/30 hover:scale-105 active:scale-95"
+                title="Send recorded speech to Ziv AI immediately"
               >
                 <Check size={14} />
                 <span>Send Voice</span>
@@ -1352,21 +1352,21 @@ export const VoiceTutor = () => {
 
       {/* 4. Slide-Out Glassmorphic Live I/O Console (Input, Spoken Output & Code Extraction) */}
       {isCodeCanvasOpen && (
-        <div className="absolute top-14 bottom-4 sm:top-16 sm:bottom-6 right-0 sm:right-4 w-full sm:w-[540px] lg:w-[620px] z-40 rounded-t-3xl sm:rounded-3xl bg-[#080c14]/95 backdrop-blur-2xl border border-cyan-500/30 shadow-[0_25px_80px_rgba(0,0,0,0.85),0_0_50px_rgba(6,182,212,0.18)] flex flex-col overflow-hidden animate-fade-in transition-all">
+        <div className="absolute top-14 bottom-4 sm:top-16 sm:bottom-6 right-0 sm:right-4 w-full sm:w-[540px] lg:w-[620px] z-40 rounded-t-3xl sm:rounded-3xl bg-[#0B0F19]/95 backdrop-blur-2xl border border-purple-500/30 shadow-[0_25px_80px_rgba(0,0,0,0.85),0_0_50px_rgba(147,51,234,0.18)] flex flex-col overflow-hidden animate-fade-in transition-all">
           {/* Top Neon Accent Line */}
-          <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-cyan-400 via-emerald-400 to-transparent shrink-0 animate-pulse" />
+          <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-purple-500 via-peach-400 to-transparent shrink-0 animate-pulse" />
 
           {/* I/O Console Top Bar */}
           <div className="flex items-center justify-between px-5 py-3 border-b border-white/10 bg-neutral-900/60 shrink-0">
             <div className="flex items-center gap-3">
-              <div className="relative p-2 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 text-cyan-400 border border-cyan-500/40 shadow-inner">
+              <div className="relative p-2 rounded-xl bg-gradient-to-br from-purple-500/20 to-indigo-600/20 text-purple-400 border border-purple-500/40 shadow-inner">
                 <Terminal size={17} />
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-cyan-400" />
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-purple-400 animate-ping" />
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-purple-400" />
               </div>
               <div>
                 <div className="text-xs font-bold text-white flex items-center gap-2 tracking-wide">
-                  DOAP Live I/O Console
+                  Ziv Live I/O Console
                   <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
                     {liveCodeSnippet ? liveCodeSnippet.lang.toUpperCase() : (isCallActive ? 'LIVE HUD' : 'STANDBY')}
@@ -1479,7 +1479,7 @@ export const VoiceTutor = () => {
                   <div className="p-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">
                     <Sparkles size={13} className={callState === 'thinking' ? 'animate-spin text-amber-400' : ''} />
                   </div>
-                  <span className="tracking-wide font-mono text-[11px]">OUTPUT (DOAP AI RESPONSE)</span>
+                  <span className="tracking-wide font-mono text-[11px]">OUTPUT (ZIV AI RESPONSE)</span>
                   {callState === 'speaking' && (
                     <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-[10px] font-mono text-emerald-300">
                       <div className="flex items-center gap-0.5 h-2.5">
@@ -1522,7 +1522,7 @@ export const VoiceTutor = () => {
                     <div className="flex items-center gap-2 mt-2 text-[10px] font-mono text-neutral-500">
                       <span className="text-emerald-400 font-medium">ElevenLabs Studio Voice</span>
                       <span>•</span>
-                      <span>DOAP Thinking Engine</span>
+                      <span>Ziv Thinking Engine</span>
                     </div>
                   </div>
                 ) : (
@@ -1532,7 +1532,7 @@ export const VoiceTutor = () => {
                     </div>
                     <div>
                       <p className="text-neutral-200 text-xs font-medium">
-                        {callState === 'thinking' ? 'Synthesizing response...' : 'DOAP AI Standby'}
+                        {callState === 'thinking' ? 'Synthesizing response...' : 'Ziv AI Standby'}
                       </p>
                       <p className="text-neutral-500 text-[11px] mt-0.5">
                         {callState === 'thinking'
@@ -1652,7 +1652,7 @@ export const VoiceTutor = () => {
               <span>•</span>
               <span className="text-neutral-400">8-Layer Memory Connected</span>
             </div>
-            <span className="text-neutral-500">DOAP Studio Audio</span>
+            <span className="text-neutral-500">Ziv Studio Audio</span>
           </div>
         </div>
       )}

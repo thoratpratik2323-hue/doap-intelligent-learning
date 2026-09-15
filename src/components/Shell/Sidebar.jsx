@@ -61,12 +61,12 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
           onClick={() => handleNavClick('/')}
           className="flex items-center gap-2.5 cursor-pointer"
         >
-          <img src="/doap-logo.jpg" alt="DOAP" className="h-7 w-7 object-contain rounded" />
+          <img src="/doap-logo.jpg" alt="Ziv" className="h-7 w-7 object-contain rounded" />
           {!isSidebarCollapsed && (
             <div className="flex flex-col leading-tight">
-              <span className="text-sm font-bold tracking-tight" style={{ color: isDarkMode ? '#ffffff' : '#0a1628' }}>Ziv</span>
+              <span className="text-sm font-bold tracking-tight" style={{ color: '#F8FAFC' }}>Ziv</span>
               {isDevBypass && (
-                <span className="text-[9px] font-mono text-[#38bdf8]/70 uppercase tracking-widest">Dev Mode</span>
+                <span className="text-[9px] font-mono text-[#9333EA] uppercase tracking-widest">Dev Mode</span>
               )}
             </div>
           )}
@@ -148,9 +148,9 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
       {!isSidebarCollapsed && (
         <div
           className="border-t px-4 py-3"
-          style={{ borderColor: isDarkMode ? 'rgba(56,189,248,0.10)' : 'rgba(14,165,233,0.12)' }}
+          style={{ borderColor: 'rgba(147, 51, 234, 0.15)' }}
         >
-          <p className="text-[10px] font-mono text-[#38bdf8]/40 uppercase tracking-widest">
+          <p className="text-[10px] font-mono text-[#9333EA]/60 uppercase tracking-widest">
             Ziv Platform v1.0
           </p>
         </div>

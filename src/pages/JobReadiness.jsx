@@ -86,7 +86,7 @@ export const JobReadiness = () => {
         path: "/assessments"
       },
       {
-        title: "Ask DOAP AI Tutor to explain complex database normalization",
+        title: "Ask Ziv AI Tutor to explain complex database normalization",
         actionText: "Ask AI Tutor",
         icon: MessageSquare,
         path: "/ai-tutor"

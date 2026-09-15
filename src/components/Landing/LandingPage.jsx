@@ -158,17 +158,17 @@ export const LandingPage = ({ onGetStarted, onSignIn }) => {
       {/* Hero Section */}
       <section className="relative z-10 min-h-screen flex flex-col items-center justify-center pt-32 pb-20 px-4 max-w-5xl mx-auto text-center space-y-10">
         <div className="space-y-6 animate-fade-in max-w-3xl">
-          {/* Large Monochromatic DOAP Wordmark Logo */}
+          {/* Large Monochromatic Ziv Wordmark Logo */}
           <h1 className={`text-7xl sm:text-8xl md:text-9xl font-black tracking-tighter leading-none ${
             isDarkMode ? 'text-white' : 'text-[#0a0a0a]'
           }`}>
-            DOAP
+            Ziv
           </h1>
 
           <p className={`text-xs sm:text-sm font-mono tracking-widest uppercase font-semibold ${
-            isDarkMode ? 'text-cyan-400' : 'text-cyan-600'
+            isDarkMode ? 'text-purple-400' : 'text-purple-600'
           }`}>
-            Discover Opportunities and Progress Platform
+            The modern playground for future developers
           </p>
 
           {/* Headline */}
@@ -189,11 +189,8 @@ export const LandingPage = ({ onGetStarted, onSignIn }) => {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
           <button
             onClick={onGetStarted}
-            className={`w-full sm:w-auto px-8 py-4 font-semibold text-xs rounded-full transition-all cursor-pointer flex items-center justify-center gap-2 group ${
-              isDarkMode 
-                ? 'bg-white text-black hover:bg-neutral-200' 
-                : 'bg-[#0a0a0a] text-white hover:bg-neutral-800'
-            }`}
+            className="w-full sm:w-auto px-8 py-3.5 font-semibold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 group shadow-lg shadow-purple-900/40 hover:opacity-90"
+            style={{ backgroundColor: '#9333EA', color: '#F8FAFC' }}
           >
             <span>Get Started</span>
             <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
@@ -201,28 +198,29 @@ export const LandingPage = ({ onGetStarted, onSignIn }) => {
 
           <button
             onClick={onSignIn}
-            className={`w-full sm:w-auto px-8 py-4 border font-semibold text-xs rounded-full transition-all cursor-pointer ${
-              isDarkMode 
-                ? 'border-neutral-800 bg-transparent text-neutral-300 hover:text-white hover:border-neutral-500' 
-                : 'border-neutral-300 bg-transparent text-neutral-700 hover:text-black hover:border-neutral-600'
-            }`}
+            className="w-full sm:w-auto px-8 py-3.5 border font-semibold text-xs rounded-xl transition-all cursor-pointer hover:border-purple-500"
+            style={{
+              backgroundColor: 'rgba(15, 20, 35, 0.95)',
+              borderColor: 'rgba(147, 51, 234, 0.30)',
+              color: '#F8FAFC',
+            }}
           >
             <span>Sign In to Platform</span>
           </button>
         </div>
 
-        {/* Hero Monochromatic Product Reel Visual Frame */}
+        {/* Hero Product Reel Visual Frame */}
         <div className="pt-12 w-full">
           <div
             ref={heroVisualRef}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            style={tiltStyle}
-            className={`rounded-3xl border p-6 md:p-10 text-left transition-transform duration-300 ease-out space-y-6 shadow-2xl ${
-              isDarkMode 
-                ? 'border-neutral-800 bg-[#0a0a0a]' 
-                : 'border-neutral-200 bg-[#f7f7f7]'
-            }`}
+            style={{
+              ...tiltStyle,
+              backgroundColor: 'rgba(15, 20, 35, 0.95)',
+              borderColor: 'rgba(147, 51, 234, 0.20)',
+            }}
+            className="rounded-2xl border p-6 md:p-10 text-left transition-transform duration-300 ease-out space-y-6 shadow-2xl"
           >
             <div className={`flex items-center justify-between border-b pb-4 ${
               isDarkMode ? 'border-neutral-800' : 'border-neutral-300'
@@ -235,7 +233,7 @@ export const LandingPage = ({ onGetStarted, onSignIn }) => {
               <span className={`text-[10px] font-mono uppercase tracking-widest ${
                 isDarkMode ? 'text-neutral-500' : 'text-neutral-400'
               }`}>
-                DOAP INTELLIGENCE SUITE
+                ZIV INTELLIGENCE SUITE
               </span>
             </div>
 
@@ -297,7 +295,7 @@ export const LandingPage = ({ onGetStarted, onSignIn }) => {
             isDarkMode ? 'text-neutral-400' : 'text-neutral-600'
           }`}>
             <p>
-              DOAP breaks down complex computer science and engineering topics into structured, manageable steps. Your personal AI tutor explains algorithms, evaluates code syntax, and clarifies difficult concepts whenever you need assistance.
+              Ziv breaks down complex computer science and engineering topics into structured, manageable steps. Your personal AI tutor explains algorithms, evaluates code syntax, and clarifies difficult concepts whenever you need assistance.
             </p>
             <p className={`text-xs font-mono ${isDarkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>
               Data Structures · Algorithms · System Design · Computer Architecture
@@ -403,7 +401,7 @@ export const LandingPage = ({ onGetStarted, onSignIn }) => {
         <h2 className={`text-5xl sm:text-6xl md:text-7xl font-black tracking-tighter ${
           isDarkMode ? 'text-white' : 'text-black'
         }`}>
-          DOAP
+          Ziv
         </h2>
 
         <p className={`text-xl sm:text-2xl font-medium tracking-tight max-w-xl mx-auto ${
@@ -415,11 +413,8 @@ export const LandingPage = ({ onGetStarted, onSignIn }) => {
         <div className="pt-2">
           <button
             onClick={onGetStarted}
-            className={`px-10 py-4 font-semibold text-xs rounded-full transition-all inline-flex items-center gap-2 cursor-pointer group ${
-              isDarkMode 
-                ? 'bg-white text-black hover:bg-neutral-200' 
-                : 'bg-black text-white hover:bg-neutral-800'
-            }`}
+            className="px-10 py-3.5 font-semibold text-xs rounded-xl transition-all inline-flex items-center gap-2 cursor-pointer group shadow-lg shadow-purple-900/40 hover:opacity-90"
+            style={{ backgroundColor: '#9333EA', color: '#F8FAFC' }}
           >
             <span>Get Started</span>
             <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
@@ -432,8 +427,8 @@ export const LandingPage = ({ onGetStarted, onSignIn }) => {
         isDarkMode ? 'border-neutral-900 text-neutral-400' : 'border-neutral-200 text-neutral-500'
       }`}>
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className={`font-bold tracking-widest ${isDarkMode ? 'text-white' : 'text-black'}`}>DOAP</span>
-          <p>© {new Date().getFullYear()} DOAP PLATFORM. ALL RIGHTS RESERVED.</p>
+          <span className={`font-bold tracking-widest ${isDarkMode ? 'text-white' : 'text-black'}`}>Ziv</span>
+          <p>© {new Date().getFullYear()} ZIV PLATFORM. ALL RIGHTS RESERVED.</p>
           <div className="flex items-center gap-6">
             <button onClick={onSignIn} className={`transition-colors cursor-pointer ${isDarkMode ? 'hover:text-white' : 'hover:text-black'}`}>SIGN IN</button>
             <button onClick={onGetStarted} className={`transition-colors cursor-pointer ${isDarkMode ? 'hover:text-white' : 'hover:text-black'}`}>GET STARTED</button>

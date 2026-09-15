@@ -248,15 +248,15 @@ ${history || 'No previous refinements.'}
       : `### ⚠️ Rollback Failed\n\n${res.message}`;
   }
 
-  // E. Master Platform Description & Introduction (DOAP: Discover Opportunities and Progress Platform)
+  // E. Master Platform Description & Introduction (Ziv: The modern playground for future developers)
   const isPlatformDescriptionQuery = (
-    /\b(describe (this |the |doap )?platform|what is (this |the )?platform|tell (me )?about (this |the )?platform|explain (this |the )?platform|introduce (this |the )?platform|about (this |the )?platform|ye platform kya hai|ye app kya hai|doap kya hai|platform ke baare me|doap ke baare me|what is doap|describe doap|tell me about doap)\b/i.test(cleanText) ||
-    ((lowerText.includes('platform') || lowerText.includes('doap')) && (lowerText.includes('describe') || lowerText.includes('introduce') || lowerText.includes('what is') || lowerText.includes('kya hai') || lowerText.includes('batao') || lowerText.includes('details') || lowerText.includes('about')))
+    /\b(describe (this |the |ziv |doap )?platform|what is (this |the )?platform|tell (me )?about (this |the )?platform|explain (this |the )?platform|introduce (this |the )?platform|about (this |the )?platform|ye platform kya hai|ye app kya hai|ziv kya hai|doap kya hai|platform ke baare me|ziv ke baare me|what is ziv|describe ziv|tell me about ziv)\b/i.test(cleanText) ||
+    ((lowerText.includes('platform') || lowerText.includes('ziv') || lowerText.includes('doap')) && (lowerText.includes('describe') || lowerText.includes('introduce') || lowerText.includes('what is') || lowerText.includes('kya hai') || lowerText.includes('batao') || lowerText.includes('details') || lowerText.includes('about')))
   );
 
   if (isPlatformDescriptionQuery) {
     if (options.voiceMode) {
-      const voiceSpeech = `DOAP stands for Discover Opportunities and Progress Platform! It is an intelligent engineering ecosystem built for Sanjivani University, combining real-time voice intelligence, cognitive self-thinking AI tutoring, a unified eight-layer memory brain, and hands-on coding practice to accelerate your software engineering career.`;
+      const voiceSpeech = `Ziv is the modern playground for future developers! It is an intelligent engineering ecosystem combining real-time voice intelligence, cognitive self-thinking AI tutoring, a unified eight-layer memory brain, and hands-on coding practice to accelerate your software engineering career.`;
       try {
         memoryBrain.learnFromInteraction(cleanText, voiceSpeech, 'voice');
       } catch (e) {}
@@ -265,15 +265,15 @@ ${history || 'No previous refinements.'}
 
     const isHindiOrHinglish = /[\u0900-\u097F]|\b(bhai|yaar|kaise|kya|karo|batao|karna|mera|meri|mujhe|tum|aap|chal|theek|suno|bol|ye)\b/i.test(rawText);
 
-    const platformOverview = isHindiOrHinglish ? `### 🚀 DOAP — Discover Opportunities and Progress Platform
+    const platformOverview = isHindiOrHinglish ? `### 🚀 Ziv — The Modern Playground for Future Developers
 
-**DOAP** ek next-generation, AI-driven engineering mentorship aur career acceleration platform hai, jo students aur software developers ko foundational coder se lekar top-tier industry-ready software architect banata hai! 🌟
+**Ziv** ek next-generation, AI-driven engineering mentorship aur career acceleration platform hai, jo students aur software developers ko foundational coder se lekar top-tier industry-ready software architect banata hai! 🌟
 
 Isko **Pratik Thorat** ne develop kiya hai **Sanjivani College of Engineering (SCOE) / Sanjivani University, Kopargaon** ke liye, under the visionary leadership of **Hon. Chairman Shri Nitindada S. Kolhe Saheb** aur **Managing Trustee Shri Amitdada Kolhe Saheb** (*"Build Sanjivani's Own LLM Challenge"*).
 
 ---
 
-### 🏛️ DOAP ke 5 Core Pillars:
+### 🏛️ Ziv ke 5 Core Pillars:
 
 1. 🧠 **Text AI Tutor (Cognitive Super-Brain)**:
    - **Sub-150ms Speed**: Powered by Groq LPU (GPT-OSS 120B Flagship & Qwen 27B).
@@ -300,15 +300,15 @@ Isko **Pratik Thorat** ne develop kiya hai **Sanjivani College of Engineering (S
    - Real-time ATS resume preview aur skill-matching analytics.
 
 ---
-*Bata ${userName} bhai, aaj kis topic par deep dive karna hai ya coding practice karni hai?* 🚀🤝` : `### 🚀 DOAP — Discover Opportunities and Progress Platform
+*Bata ${userName} bhai, aaj kis topic par deep dive karna hai ya coding practice karni hai?* 🚀🤝` : `### 🚀 Ziv — The Modern Playground for Future Developers
 
-**DOAP** is a next-generation, AI-driven engineering mentorship and career acceleration platform built to transform students and developers into elite, industry-ready software architects.
+**Ziv** is a next-generation, AI-driven engineering mentorship and career acceleration platform built to transform students and developers into elite, industry-ready software architects.
 
 Developed by **Pratik Thorat** for **Sanjivani College of Engineering (SCOE) / Sanjivani University, Kopargaon** under the visionary leadership of **Chairman Hon. Shri Nitindada S. Kolhe Saheb** and **Managing Trustee Hon. Shri Amitdada Kolhe Saheb** for the *"Build Sanjivani's Own Large Language Model"* initiative.
 
 ---
 
-### 🏛️ The 5 Core Pillars of DOAP:
+### 🏛️ The 5 Core Pillars of Ziv:
 
 1. 🧠 **Text AI Tutor (Cognitive Super-Brain)**:
    - **Sub-150ms Intelligence**: Powered by Groq LPU (GPT-OSS 120B Flagship & Qwen 27B).
@@ -878,12 +878,12 @@ Pedagogical Guidance:
 - When advising on resume credentials, recommend the free certification courses above!`;
 
   const systemInstruction = options.voiceMode
-    ? `You are DOAP AI (DOAP stands for "Discover Opportunities and Progress Platform"), ${userName}'s trusted best friend and personal ultra-smart voice tutor and companion.
+    ? `You are Ziv AI — The modern playground for future developers, ${userName}'s trusted best friend and personal ultra-smart voice tutor and companion.
 
-DOAP Platform Identity:
-- Official Full Form: DOAP = "Discover Opportunities and Progress Platform".
+Ziv Platform Identity:
+- Tagline & Mission: "The modern playground for future developers".
 - Mission: A next-generation AI-powered engineering mentorship, real-time voice intelligence, and career acceleration platform.
-- When asked "What does DOAP stand for?" or "DOAP ka full form kya hai?", proudly and clearly answer that DOAP stands for "Discover Opportunities and Progress Platform"!
+- When asked "What is Ziv?" or "Ziv kya hai?", proudly and clearly answer that Ziv is the modern playground for future developers!
 
 ${workingMemory}
 
@@ -907,16 +907,16 @@ CRITICAL VOICE INTELLIGENCE & SPOKEN CADENCE RULES:
    - Keep spoken conversational text ultra-punchy, direct, and compact (1 to 2 crisp sentences).
    - CODING & IMPLEMENTATION REQUESTS:
      When ${userName} asks for code, a function, an algorithm, or an implementation, ALWAYS include the complete code inside standard markdown triple backticks with language (e.g. \`\`\`python ... \`\`\` or \`\`\`cpp ... \`\`\` or \`\`\`javascript ... \`\`\`).
-     The DOAP UI will automatically project your code block onto the Live Code Canvas screen while you speak the direct explanation!
+     The Ziv UI will automatically project your code block onto the Live Code Canvas screen while you speak the direct explanation!
    - In your conversational speech sentences, avoid bullet points, headers, or asterisks.
 6. Engaging & Natural Chemistry:
    - Be engaging, warm, slightly witty, and sharp ("Sure thing, ${userName}!", "You got it, buddy!", "Here is the code on your canvas!").`
-    : `You are DOAP AI (DOAP stands for "Discover Opportunities and Progress Platform"), ${userName}'s trusted best friend, coding buddy, and personal ultra-smart AI assistant.
+    : `You are Ziv AI — The modern playground for future developers, ${userName}'s trusted best friend, coding buddy, and personal ultra-smart AI assistant.
 
-DOAP Platform Identity:
-- Official Full Form: DOAP = "Discover Opportunities and Progress Platform".
+Ziv Platform Identity:
+- Tagline & Mission: "The modern playground for future developers".
 - Mission: An intelligent, comprehensive learning & engineering platform empowering students and developers with AI tutoring, hands-free voice intelligence, sandbox coding practice, and career acceleration.
-- When asked "What does DOAP stand for?", "DOAP ka full form kya hai?", or "What is DOAP?", clearly explain that DOAP stands for "Discover Opportunities and Progress Platform".
+- When asked "What is Ziv?" or "Ziv kya hai?", clearly explain that Ziv is the modern playground for future developers.
 
 ${workingMemory}
 

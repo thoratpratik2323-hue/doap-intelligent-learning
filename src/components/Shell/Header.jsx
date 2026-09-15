@@ -75,14 +75,14 @@ export const Header = ({ onOpenMobileSidebar }) => {
             style={{ borderColor: 'var(--doap-border)', color: 'var(--doap-text-sec)' }}
             title="Show Sidebar"
           >
-            <PanelLeftOpen size={14} className="text-[#38bdf8]" />
+            <PanelLeftOpen size={14} className="text-[#9333EA]" />
             Menu
           </button>
         )}
 
         <div className="flex items-center gap-2">
           <div className="w-px h-4 opacity-20 hidden md:block" style={{ backgroundColor: 'var(--doap-text-sec)' }} />
-          <span className="font-semibold text-sm tracking-tight" style={{ color: 'var(--doap-text-prim, #ffffff)' }}>
+          <span className="font-semibold text-sm tracking-tight" style={{ color: 'var(--doap-text-prim, #F8FAFC)' }}>
             {currentItem.label}
           </span>
         </div>
@@ -106,7 +106,7 @@ export const Header = ({ onOpenMobileSidebar }) => {
                 className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-semibold transition-colors cursor-pointer border-0 outline-none"
                 style={{
                   backgroundColor: isActive ? '#9333EA' : 'transparent',
-                  color: isActive ? '#ffffff' : 'var(--doap-text-sec)',
+                  color: isActive ? '#F8FAFC' : 'var(--doap-text-sec)',
                 }}
               >
                 <Icon size={11} />
@@ -124,7 +124,7 @@ export const Header = ({ onOpenMobileSidebar }) => {
             style={{
               borderColor: 'var(--doap-border)',
               color: 'var(--doap-text-sec)',
-              backgroundColor: isMenuOpen ? 'rgba(56,189,248,0.08)' : 'var(--doap-surface-sec)',
+              backgroundColor: isMenuOpen ? 'rgba(147,51,234,0.12)' : 'var(--doap-surface-sec)',
             }}
           >
             <Settings size={13} />
@@ -135,9 +135,9 @@ export const Header = ({ onOpenMobileSidebar }) => {
             <div
               className="absolute right-0 mt-1.5 w-44 border rounded shadow-2xl z-50 overflow-hidden"
               style={{
-                backgroundColor: isDarkMode ? '#0b1426' : '#ffffff',
+                backgroundColor: isDarkMode ? '#0F1423' : '#ffffff',
                 borderColor: 'var(--doap-border)',
-                boxShadow: '0 12px 32px rgba(0,0,0,0.5)',
+                boxShadow: '0 12px 32px rgba(0,0,0,0.7)',
               }}
             >
               <button
@@ -146,7 +146,7 @@ export const Header = ({ onOpenMobileSidebar }) => {
                 className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium transition-colors hover:bg-white/5 text-left cursor-pointer"
                 style={{ color: 'var(--doap-text-prim)' }}
               >
-                <Settings size={13} className="text-[#38bdf8] shrink-0" />
+                <Settings size={13} className="text-[#9333EA] shrink-0" />
                 Settings
               </button>
               <div className="border-t" style={{ borderColor: 'var(--doap-border)' }} />
@@ -163,7 +163,7 @@ export const Header = ({ onOpenMobileSidebar }) => {
                 <button
                   type="button"
                   onClick={() => { setIsMenuOpen(false); openAuthModal('login'); }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium transition-colors hover:bg-[#38bdf8]/8 text-[#38bdf8] text-left cursor-pointer"
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium transition-colors hover:bg-purple-500/10 text-[#9333EA] text-left cursor-pointer"
                 >
                   <LogIn size={13} className="shrink-0" />
                   Sign In

@@ -272,7 +272,7 @@ Please break down:
                 <div className="flex items-center gap-4 text-xs font-mono text-neutral-400 pt-1 flex-wrap">
                   <span>💡 Tip: Keep your LeetCode tab open in the background</span>
                   <span>•</span>
-                  <span>🤖 DOAP AI is ready to explain any question's optimal approach</span>
+                  <span>🤖 Ziv AI is ready to explain any question's optimal approach</span>
                 </div>
               </div>
             </div>
@@ -692,7 +692,7 @@ Please break down:
                       <button
                         onClick={() => onSolveInEditor(localMatch)}
                         className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 text-black font-extrabold text-xs flex items-center gap-1.5 shadow-md shadow-cyan-500/20 transition-all hover:scale-105 cursor-pointer"
-                        title="Solve with DOAP Automated Tests, Python Wasm & AI Tutor"
+                        title="Solve with Ziv Automated Tests, Python Wasm & AI Tutor"
                       >
                         <Code2 size={13} />
                         <span>Solve in IDE</span>
@@ -702,7 +702,7 @@ Please break down:
                     <button
                       onClick={() => handleAskDoapAI(prob)}
                       className="px-3 py-1.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
-                      title="Ask DOAP AI Tutor for intuition and code approach"
+                      title="Ask Ziv AI Tutor for intuition and code approach"
                     >
                       <Bot size={13} />
                       <span className="hidden sm:inline">Ask AI Tutor</span>
