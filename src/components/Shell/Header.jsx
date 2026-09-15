@@ -88,35 +88,10 @@ export const Header = ({ onOpenMobileSidebar }) => {
         </div>
       </div>
 
-      {/* ── Right: Theme + Menu + Avatar ── */}
+      {/* ── Right: Menu + Avatar ── */}
       <div className="flex items-center gap-2">
 
-        {/* Theme switcher — segmented control */}
-        <div
-          className="flex items-center border rounded overflow-hidden"
-          style={{ borderColor: 'var(--doap-border)', backgroundColor: 'var(--doap-surface-sec)' }}
-        >
-          {themeOptions.map(({ mode, icon: Icon, label }) => {
-            const isActive = activeSettings.themeMode === mode;
-            return (
-              <button
-                key={mode}
-                onClick={() => handleUpdateMode(mode)}
-                title={`${label} Mode`}
-                className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-semibold transition-colors cursor-pointer border-0 outline-none"
-                style={{
-                  backgroundColor: isActive ? '#9333EA' : 'transparent',
-                  color: isActive ? '#F8FAFC' : 'var(--doap-text-sec)',
-                }}
-              >
-                <Icon size={11} />
-                <span className="hidden sm:inline">{label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Three-dot / user menu */}
+        {/* User / Settings dropdown menu */}
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -126,6 +101,7 @@ export const Header = ({ onOpenMobileSidebar }) => {
               color: 'var(--doap-text-sec)',
               backgroundColor: isMenuOpen ? 'rgba(147,51,234,0.12)' : 'var(--doap-surface-sec)',
             }}
+            title="Settings & Menu"
           >
             <Settings size={13} />
             <ChevronDown size={11} className={`transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} />
@@ -133,13 +109,43 @@ export const Header = ({ onOpenMobileSidebar }) => {
 
           {isMenuOpen && (
             <div
-              className="absolute right-0 mt-1.5 w-44 border rounded shadow-2xl z-50 overflow-hidden"
+              className="absolute right-0 mt-1.5 w-48 border rounded shadow-2xl z-50 overflow-hidden"
               style={{
                 backgroundColor: isDarkMode ? '#0F1423' : '#ffffff',
                 borderColor: 'var(--doap-border)',
                 boxShadow: '0 12px 32px rgba(0,0,0,0.7)',
               }}
             >
+              {/* Dark Mode On / Off Toggle */}
+              <div
+                className="flex items-center justify-between px-3.5 py-2.5 border-b"
+                style={{ borderColor: 'var(--doap-border)' }}
+              >
+                <div className="flex items-center gap-2">
+                  {isDarkMode ? (
+                    <Moon size={13} className="text-[#9333EA] shrink-0" />
+                  ) : (
+                    <Sun size={13} className="text-[#FF9E7D] shrink-0" />
+                  )}
+                  <span className="text-xs font-medium" style={{ color: 'var(--doap-text-prim)' }}>
+                    Dark Mode
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleUpdateMode(isDarkMode ? 'light' : 'dark')}
+                  aria-label="Toggle dark mode"
+                  className="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                  style={{ backgroundColor: isDarkMode ? '#9333EA' : 'rgba(148,163,184,0.3)' }}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      isDarkMode ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+
               <button
                 type="button"
                 onClick={() => { setIsMenuOpen(false); setIsSettingsOpen(true); }}

@@ -100,46 +100,8 @@ export const LandingPage = ({ onGetStarted, onSignIn }) => {
             </button>
           </div>
 
-          {/* Right Action & Theme Toggle Pill */}
+          {/* Right Action */}
           <div className="flex items-center gap-3">
-            {/* Minimal Theme Switcher Pill (Light / Dark / System) */}
-            <div className={`flex items-center gap-1 p-1 rounded-full border ${
-              isDarkMode ? 'bg-neutral-900/60 border-neutral-800' : 'bg-neutral-100 border-neutral-300'
-            }`}>
-              <button
-                onClick={() => handleUpdateMode('light')}
-                className={`p-1.5 rounded-full transition-all cursor-pointer ${
-                  activeSettings.themeMode === 'light'
-                    ? (isDarkMode ? 'bg-white text-black font-bold' : 'bg-black text-white font-bold')
-                    : 'text-neutral-400 hover:text-white'
-                }`}
-                title="Light Mode"
-              >
-                <Sun size={13} />
-              </button>
-              <button
-                onClick={() => handleUpdateMode('dark')}
-                className={`p-1.5 rounded-full transition-all cursor-pointer ${
-                  activeSettings.themeMode === 'dark'
-                    ? (isDarkMode ? 'bg-white text-black font-bold' : 'bg-black text-white font-bold')
-                    : 'text-neutral-400 hover:text-white'
-                }`}
-                title="Dark Mode"
-              >
-                <Moon size={13} />
-              </button>
-              <button
-                onClick={() => handleUpdateMode('system')}
-                className={`px-2 py-1 rounded-full text-[10px] font-mono transition-all cursor-pointer ${
-                  activeSettings.themeMode === 'system'
-                    ? (isDarkMode ? 'bg-white text-black font-bold' : 'bg-black text-white font-bold')
-                    : 'text-neutral-400 hover:text-white'
-                }`}
-                title="System Mode"
-              >
-                AUTO
-              </button>
-            </div>
 
             <button
               onClick={onSignIn}
