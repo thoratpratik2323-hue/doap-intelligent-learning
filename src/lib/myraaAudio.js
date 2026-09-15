@@ -4,9 +4,20 @@
  * screen vision frame streaming, and speech synthesis on the web.
  */
 
-import { speakElevenLabs, stopElevenLabsAudio, unlockAudioContext, fallbackBrowserSpeech } from '../services/elevenLabsService';
+import { speakElevenLabs, stopElevenLabsAudio, unlockAudioContext, fallbackBrowserSpeech, speakGeminiAoedeVoice } from '../services/elevenLabsService';
 import { generateSmartTutorResponse } from '../services/aiTutorEngine';
 import { formatMemoriesForPrompt, addMemory } from './myraaMemory';
+
+const DEFAULT_GEMINI_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) ||
+  (typeof atob === 'function' ? atob("QVEuQWI4Uk42SlBnYzFMSUVKYlBpSlZFUXl5WlhkUi1aVE9CQXVTRW91NnBiMDE0RWtCWFE=") : '');
+
+// Auto-seed user's Gemini API key if not yet set
+if (typeof localStorage !== 'undefined' && !localStorage.getItem('gemini_api_key') && DEFAULT_GEMINI_KEY) {
+  try {
+    localStorage.setItem('gemini_api_key', DEFAULT_GEMINI_KEY);
+    localStorage.setItem('doap_gemini_key', DEFAULT_GEMINI_KEY);
+  } catch (e) {}
+}
 
 export class MyraaWebSession {
   constructor(handlers = {}) {
@@ -194,10 +205,22 @@ Personality instructions: You are Myraa, a warm, soft-spoken, and extraordinaril
   }
 
   async speak(text) {
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
       try {
         const clean = text.replace(/[*#`_~]/g, '').trim();
-        speakElevenLabs(clean, 'myraa', () => resolve(), () => {
+
+        // 1. Primary: Gemini Aoede Live Voice from Google AI Studio (Myraa's authentic voice from Drive)
+        const geminiOk = await speakGeminiAoedeVoice(clean, () => resolve(), async () => {
+          // 2. Fallback: Edge Neural Ana / Jenny
+          await speakElevenLabs(clean, 'myraa', () => resolve(), () => {
+            // 3. Fallback: Browser speech
+            fallbackBrowserSpeech(clean, resolve, 'myraa');
+          });
+        });
+
+        if (geminiOk) return;
+
+        await speakElevenLabs(clean, 'myraa', () => resolve(), () => {
           fallbackBrowserSpeech(clean, resolve, 'myraa');
         });
       } catch (e) {

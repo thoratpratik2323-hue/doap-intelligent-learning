@@ -263,77 +263,7 @@ export const VoiceTutor = () => {
   return (
     <div className="relative w-full h-[calc(100vh-3.5rem)] flex flex-col justify-between overflow-hidden bg-[#090D16] text-[#F8FAFC] select-none">
       
-      {/* ── 1. Top Cockpit HUD Bar ────────────────────────────────────────── */}
-      <header className="relative z-30 flex items-center justify-between px-4 sm:px-6 py-3 border-b border-white/10 bg-slate-950/60 backdrop-blur-xl shrink-0">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigateTo('/')}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-            title="Back to Home"
-          >
-            <ArrowLeft size={18} />
-          </button>
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-violet-500/20 border border-violet-500/40 text-violet-400 shadow-md shadow-violet-500/20">
-              <Sparkles size={16} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="font-extrabold text-sm sm:text-base tracking-tight text-white font-mono">
-                  MYRAA
-                </h1>
-                <span className="text-[9px] font-mono px-2 py-0.5 rounded-full font-bold bg-violet-500/20 text-violet-300 border border-violet-500/30 uppercase tracking-wider">
-                  Holographic AI Core
-                </span>
-              </div>
-              <p className="text-[10px] text-slate-400 font-mono hidden sm:block">
-                Multimodal Voice, Screen Vision & Persistent Memory
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Controls */}
-        <div className="flex items-center gap-2">
-          {/* Screen Sharing Toggle */}
-          <button
-            onClick={isScreenSharing ? stopScreenSharing : startScreenSharing}
-            className={`px-3 py-1.5 rounded-xl border text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-              isScreenSharing
-                ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-300 shadow-md shadow-emerald-500/20"
-                : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white"
-            }`}
-            title={isScreenSharing ? "Screen Sharing Active (Streaming Frames)" : "Share Screen with Myraa"}
-          >
-            <Monitor size={14} className={isScreenSharing ? "animate-pulse" : ""} />
-            <span className="hidden md:inline">{isScreenSharing ? "Vision Active" : "Share Screen"}</span>
-          </button>
-
-          {/* Memory Vault Button */}
-          <button
-            onClick={() => setShowMemoryDashboard(true)}
-            className="px-3 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer"
-            title="Open Memory Vault"
-          >
-            <Brain size={14} className="text-violet-400" />
-            <span className="hidden md:inline">Memory</span>
-            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-violet-500/30 text-violet-200">
-              {memories.length}
-            </span>
-          </button>
-
-          {/* Settings Button */}
-          <button
-            onClick={() => setShowSettings(true)}
-            className="p-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer"
-            title="Cockpit Settings"
-          >
-            <SettingsIcon size={16} />
-          </button>
-        </div>
-      </header>
-
-      {/* ── 2. Center Stage: Holographic Visualizer & Captions ─────────────── */}
+      {/* ── Center Stage: Holographic Visualizer ─────────────── */}
       <main className="relative flex-1 flex flex-col items-center justify-center overflow-hidden">
         {/* Living Core Visualizer */}
         <div className="absolute inset-0">
@@ -345,118 +275,43 @@ export const VoiceTutor = () => {
             audioAnalyser={sessionRef.current?.inputAnalyser || null}
           />
         </div>
-
-        {/* Live Captions Overlay */}
-        <div className="relative z-20 max-w-xl mx-auto px-4 text-center space-y-3 pointer-events-none mb-24">
-          {/* User Speech Caption */}
-          {userCaption && (
-            <div className="inline-block px-4 py-2 rounded-2xl border border-white/10 bg-slate-950/70 backdrop-blur-xl text-xs sm:text-sm font-medium text-slate-300 shadow-xl animate-fade-in">
-              <span className="text-violet-400 font-mono font-bold mr-1.5">You:</span>
-              <span>"{userCaption}"</span>
-            </div>
-          )}
-
-          {/* Model AI Response Caption */}
-          {modelCaption && (
-            <div className="p-4 rounded-3xl border border-violet-500/30 bg-slate-950/80 backdrop-blur-2xl text-xs sm:text-sm font-medium text-white shadow-2xl animate-fade-in text-left leading-relaxed">
-              <div className="flex items-center gap-2 mb-1.5">
-                <span className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
-                <span className="font-mono font-bold text-violet-300 text-xs">MYRAA:</span>
-              </div>
-              <p>{modelCaption}</p>
-            </div>
-          )}
-        </div>
       </main>
 
       {/* ── 3. Bottom Controls HUD ────────────────────────────────────────── */}
-      <footer className="relative z-30 flex flex-col items-center gap-3 px-4 py-4 border-t border-white/10 bg-slate-950/80 backdrop-blur-xl shrink-0">
-        
-        {/* Quick Question Chips */}
-        <div className="flex items-center gap-2 overflow-x-auto max-w-2xl w-full justify-center scrollbar-none py-1">
-          {[
-            "Explain React Reconciliation",
-            "Review my active screen code",
-            "How does Binary Search Tree work?",
-            "Mock interview question for L4"
-          ].map((prompt, i) => (
-            <button
-              key={i}
-              onClick={() => handleQuickPrompt(prompt)}
-              className="px-3 py-1 rounded-full border border-white/10 bg-white/5 hover:border-violet-500 hover:bg-violet-500/10 text-slate-300 hover:text-white text-[11px] font-mono whitespace-nowrap transition-all cursor-pointer shrink-0"
-            >
-              {prompt}
-            </button>
-          ))}
-        </div>
-
-        {/* Primary Controls Row */}
-        <div className="flex items-center justify-between max-w-2xl w-full gap-3">
-          {/* Status info */}
-          <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-slate-400">
-            <span className={`w-2 h-2 rounded-full ${
-              state === "speaking" ? "bg-emerald-400" :
-              state === "listening" ? "bg-violet-400" : "bg-slate-600"
-            }`} />
-            <span>
-              {state === "speaking" ? "Myraa Speaking..." :
-               state === "listening" ? "Listening to Voice..." :
-               state === "connecting" ? "Initializing..." : "Offline"}
-            </span>
-          </div>
-
-          {/* Central Microphone / Power Toggle */}
-          <div className="flex items-center gap-3 mx-auto">
-            <button
-              onClick={connectSession}
-              className={`p-4 rounded-3xl border font-bold transition-all shadow-xl cursor-pointer flex items-center justify-center gap-2.5 ${
-                state !== "disconnected"
-                  ? "bg-rose-600 border-rose-500 hover:bg-rose-500 text-white shadow-rose-600/30 scale-105"
-                  : "bg-violet-600 border-violet-500 hover:bg-violet-500 text-white shadow-violet-600/30 hover:scale-105"
-              }`}
-            >
-              {state !== "disconnected" ? (
-                <>
-                  <Power size={20} />
-                  <span className="font-mono text-xs uppercase tracking-wider pr-1">Disconnect</span>
-                </>
-              ) : (
-                <>
-                  <Mic size={20} />
-                  <span className="font-mono text-xs uppercase tracking-wider pr-1">Start Myraa Session</span>
-                </>
-              )}
-            </button>
-
-            {/* Interrupt button */}
-            {state === "speaking" && (
-              <button
-                onClick={() => sessionRef.current?.interrupt()}
-                className="px-3.5 py-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-mono text-xs font-bold transition-all cursor-pointer animate-fade-in"
-                title="Interrupt Myraa"
-              >
-                Interrupt
-              </button>
+      <footer className="relative z-30 flex items-center justify-center gap-3 px-4 py-4 border-t border-white/10 bg-slate-950/80 backdrop-blur-xl shrink-0">
+        {/* Central Microphone / Power Toggle */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={connectSession}
+            className={`p-4 px-6 rounded-3xl border font-bold transition-all shadow-xl cursor-pointer flex items-center justify-center gap-2.5 ${
+              state !== "disconnected"
+                ? "bg-rose-600 border-rose-500 hover:bg-rose-500 text-white shadow-rose-600/30 scale-105"
+                : "bg-violet-600 border-violet-500 hover:bg-violet-500 text-white shadow-violet-600/30 hover:scale-105"
+            }`}
+          >
+            {state !== "disconnected" ? (
+              <>
+                <Power size={20} />
+                <span className="font-mono text-xs uppercase tracking-wider pr-1">Disconnect</span>
+              </>
+            ) : (
+              <>
+                <Mic size={20} />
+                <span className="font-mono text-xs uppercase tracking-wider pr-1">Start Myraa Session</span>
+              </>
             )}
-          </div>
+          </button>
 
-          {/* Text Input Fallback */}
-          <form onSubmit={handleSendTyped} className="relative w-48 sm:w-64">
-            <input
-              type="text"
-              placeholder="Or type a question..."
-              value={typedInput}
-              onChange={e => setTypedInput(e.target.value)}
-              className="w-full pl-3 pr-8 py-2 rounded-xl bg-slate-900 border border-white/10 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-violet-500"
-            />
+          {/* Interrupt button */}
+          {state === "speaking" && (
             <button
-              type="submit"
-              disabled={!typedInput.trim()}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-violet-400 disabled:opacity-30 cursor-pointer"
+              onClick={() => sessionRef.current?.interrupt()}
+              className="px-4 py-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-mono text-xs font-bold transition-all cursor-pointer animate-fade-in"
+              title="Interrupt Myraa"
             >
-              <Send size={14} />
+              Interrupt
             </button>
-          </form>
+          )}
         </div>
       </footer>
 

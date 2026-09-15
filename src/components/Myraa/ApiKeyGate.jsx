@@ -31,14 +31,15 @@ export function ApiKeyGate({ isOpen, onClose, onKeySaved }) {
       return;
     }
 
-    if (!clean.startsWith("AIza")) {
+    if (!clean.startsWith("AIza") && !clean.startsWith("AQ.") && clean.length < 20) {
       setStatus("error");
-      setErrorMsg("Google Gemini API keys usually begin with 'AIza...'. Please verify your key.");
+      setErrorMsg("Google Gemini API keys usually begin with 'AIza...' or 'AQ.'. Please verify your key.");
       return;
     }
 
     try {
       localStorage.setItem("gemini_api_key", clean);
+      localStorage.setItem("doap_gemini_key", clean);
       setSavedKey(clean);
       setStatus("success");
       if (onKeySaved) onKeySaved(clean);

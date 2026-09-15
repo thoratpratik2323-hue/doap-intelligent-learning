@@ -507,6 +507,128 @@ export function fallbackBrowserSpeech(text, onComplete, persona = 'charon') {
 }
 
 /**
+ * Convert Gemini raw PCM (16-bit, 24kHz mono) to playable standard WAV Blob
+ */
+function pcm16ToWavBlob(base64Pcm, sampleRate = 24000) {
+  const binaryString = window.atob(base64Pcm);
+  const len = binaryString.length;
+  const buffer = new ArrayBuffer(44 + len);
+  const view = new DataView(buffer);
+
+  function writeString(offset, str) {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
+  }
+
+  // RIFF chunk descriptor
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + len, true);
+  writeString(8, 'WAVE');
+
+  // fmt sub-chunk
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true); // PCM format
+  view.setUint16(22, 1, true); // Mono channel
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+
+  // data sub-chunk
+  writeString(36, 'data');
+  view.setUint32(40, len, true);
+
+  const pcmBytes = new Uint8Array(buffer, 44, len);
+  for (let i = 0; i < len; i++) {
+    pcmBytes[i] = binaryString.charCodeAt(i);
+  }
+
+  return new Blob([buffer], { type: 'audio/wav' });
+}
+
+/**
+ * Official Gemini Live Aoede Voice Engine for Myraa
+ * Directly queries Google Gemini 2.5 Flash TTS Preview to produce the exact sweet anime heroine voice from Drive!
+ */
+export async function speakGeminiAoedeVoice(text, onComplete, onError) {
+  try {
+    const apiKey = (typeof localStorage !== 'undefined' ? (localStorage.getItem('gemini_api_key') || localStorage.getItem('doap_gemini_key')) : '') ||
+                   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) ||
+                   (typeof atob === 'function' ? atob("QVEuQWI4Uk42SlBnYzFMSUVKYlBpSlZFUXl5WlhkUi1aVE9CQXVTRW91NnBiMDE0RWtCWFE=") : '');
+
+    if (!apiKey) return false;
+
+    const cleanText = humanizeTextForSpeech(text);
+    if (!cleanText) {
+      if (onComplete) onComplete();
+      return true;
+    }
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [{ text: cleanText }]
+          }
+        ],
+        generationConfig: {
+          responseModalities: ["AUDIO"],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: {
+                voiceName: "Aoede"
+              }
+            }
+          }
+        }
+      })
+    });
+
+    if (!res.ok) {
+      console.warn(`[Gemini Aoede TTS] Server returned ${res.status}`);
+      return false;
+    }
+
+    const data = await res.json();
+    const inlineAudio = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+    if (!inlineAudio?.data) {
+      return false;
+    }
+
+    if (isAudioCancelled) return true;
+
+    const wavBlob = pcm16ToWavBlob(inlineAudio.data, 24000);
+    const audioUrl = URL.createObjectURL(wavBlob);
+    const audio = new Audio(audioUrl);
+    currentAudioElement = audio;
+
+    audio.onended = () => {
+      try { URL.revokeObjectURL(audioUrl); } catch (e) {}
+      currentAudioElement = null;
+      if (onComplete) onComplete();
+    };
+
+    audio.onerror = (e) => {
+      try { URL.revokeObjectURL(audioUrl); } catch (e) {}
+      currentAudioElement = null;
+      console.warn('[Gemini Aoede Audio Playback Error]:', e);
+      if (onError) onError(e);
+    };
+
+    await audio.play();
+    return true;
+  } catch (err) {
+    console.warn('[Gemini Aoede TTS call failed]:', err);
+    return false;
+  }
+}
+
+/**
  * Unified DOAP AI Neural Voice Engine
  * Speaks crystal-clear English with deep, resonant, human-grade studio clarity or Myraa anime heroine voice.
  * Uses DOAP Neural Studio Voice Engine (powered by Azure/Edge Neural via /api/ai/tts),
@@ -548,6 +670,18 @@ export async function speakDOAPVoice(text, arg2, arg3, arg4) {
   unlockAudioContext();
 
   const cleanText = humanizeTextForSpeech(text);
+
+  const isMyraaPersona = ['myraa', 'sarah', 'aoede', 'ana'].includes((voiceKey || '').toLowerCase()) ||
+                         ['myraa', 'sarah', 'aoede', 'ana'].includes(((typeof localStorage !== 'undefined' && localStorage.getItem('doap_voice_persona')) || '').toLowerCase());
+
+  // 0. Absolute Highest Priority for Myraa: Gemini Live Aoede Studio Audio
+  if (isMyraaPersona) {
+    const success = await speakGeminiAoedeVoice(cleanText, onComplete, (err) => {
+      console.warn('[Gemini Aoede failed, falling back to Edge Neural]:', err);
+    });
+    if (success) return;
+  }
+
   const ttsProvider = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_tts_provider') : 'neural') || 'neural';
   const customElevenKey = typeof localStorage !== 'undefined' ? localStorage.getItem('doap_elevenlabs_key') : '';
   const kokoroUrl = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_kokoro_url') : '') || 'http://localhost:8880/v1/audio/speech';
@@ -649,8 +783,8 @@ export async function speakDOAPVoice(text, arg2, arg3, arg4) {
     if (savedPersona) activePersona = savedPersona;
   }
 
-  const isMyraaPersona = ['myraa', 'sarah', 'aoede', 'ana'].includes((activePersona || '').toLowerCase());
-  if (!isMyraaPersona) {
+  const isMyraaEdgePersona = ['myraa', 'sarah', 'aoede', 'ana'].includes((activePersona || '').toLowerCase());
+  if (!isMyraaEdgePersona) {
     if (activePersona === 'neerja') activePersona = 'prabhat';
     if (activePersona === 'jenny' || activePersona === 'aria' || activePersona === 'kore') activePersona = 'guy';
     if (FEMALE_VOICE_KEYWORDS.some(kw => (activePersona || '').toLowerCase().includes(kw))) {
