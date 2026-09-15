@@ -91,6 +91,8 @@ export const VoiceTutor = () => {
       setCharacterState("talking");
     } else if (state === "connecting" || state === "thinking") {
       setCharacterState("thinking");
+    } else if (state === "listening") {
+      setCharacterState("listening");
     } else {
       setCharacterState("idle");
     }

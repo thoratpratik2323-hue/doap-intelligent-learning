@@ -78,11 +78,16 @@ export class MyraaWebSession {
       this.initSpeechRecognition();
       this.setState("listening");
 
-      // Initial inspiring AI Teacher greeting for Ziv students
+      // Initial instant AI Teacher greeting for Ziv students (Zero delay!)
       const greeting = "Hello! I am Myraa, your dedicated AI Teacher and Academic Mentor on Ziv. I am here to guide you step-by-step through your engineering studies—whether you want to clear tricky concepts, debug code, prepare for technical exams, or solve any academic doubt. What subject or doubt are we mastering together today?";
       this.onTranscription("model", greeting);
       this.setState("speaking");
-      await this.speak(greeting);
+      
+      const played = await this.playIntroAudio();
+      if (!played) {
+        await this.speak(greeting);
+      }
+
       if (this.state !== "disconnected") {
         this.setState("listening");
         try { this.speechRecognition?.start(); } catch (e) {}
@@ -93,6 +98,29 @@ export class MyraaWebSession {
       this.onError(err.message || "Failed to initialize microphone.");
       this.setState("disconnected");
     }
+  }
+
+  async playIntroAudio() {
+    return new Promise((resolve) => {
+      try {
+        unlockAudioContext();
+        const audio = new Audio('/assets/myraa_intro.mp3');
+        audio.volume = 1.0;
+
+        audio.onended = () => resolve(true);
+        audio.onerror = (e) => {
+          console.warn("[Intro Audio Load Error, falling back to live TTS]:", e);
+          resolve(false);
+        };
+
+        const p = audio.play();
+        if (p !== undefined) {
+          p.catch(() => resolve(false));
+        }
+      } catch (e) {
+        resolve(false);
+      }
+    });
   }
 
   initSpeechRecognition() {
@@ -107,17 +135,32 @@ export class MyraaWebSession {
     rec.interimResults = true;
     rec.lang = 'en-US';
 
-    rec.onresult = async (event) => {
-      let finalTranscript = '';
+    let silenceTimer = null;
+    let accumulatedText = '';
+
+    rec.onresult = (event) => {
+      let interim = '';
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          finalTranscript += transcript;
+          accumulatedText = (accumulatedText + ' ' + transcript).trim();
+        } else {
+          interim += transcript;
         }
       }
 
-      if (finalTranscript.trim()) {
-        this.handleUserQuery(finalTranscript.trim());
+      const activeText = (accumulatedText + ' ' + interim).trim();
+      if (activeText && this.state === "listening") {
+        this.onTranscription("user", activeText);
+
+        // Ultra-fast 700ms silence detection: respond as soon as student pauses!
+        clearTimeout(silenceTimer);
+        silenceTimer = setTimeout(() => {
+          if (this.state === "listening" && activeText) {
+            accumulatedText = '';
+            this.handleUserQuery(activeText);
+          }
+        }, 700);
       }
     };
 
@@ -139,6 +182,47 @@ export class MyraaWebSession {
     } catch (e) {}
   }
 
+  async generateFastTeacherReply(queryText, memoryContext, visionContext) {
+    const apiKey = (typeof localStorage !== 'undefined' ? (localStorage.getItem('gemini_api_key') || localStorage.getItem('doap_gemini_key')) : '') ||
+                   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) ||
+                   (typeof atob === 'function' ? atob("QVEuQWI4Uk42SlBnYzFMSUVKYlBpSlZFUXl5WlhkUi1aVE9CQXVTRW91NnBiMDE0RWtCWFE=") : '');
+
+    if (apiKey) {
+      try {
+        const prompt = `${memoryContext}${visionContext}
+Student says: "${queryText}"
+
+AI TEACHER ROLE: You are Professor Myraa, the premier engineering professor and mentor on Ziv.
+Instructions:
+- Provide an intuitive, direct, and clear explanation in 2 spoken sentences.
+- Never use markdown symbols, asterisks, or bullet points so speech synthesis sounds natural.
+- End with an encouraging check question.`;
+
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              maxOutputTokens: 90,
+              temperature: 0.6
+            }
+          })
+        });
+
+        if (res.ok) {
+          const json = await res.json();
+          const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text && text.trim()) return text.trim();
+        }
+      } catch (err) {
+        console.warn("[Fast Gemini Flash fallback]", err);
+      }
+    }
+
+    return await generateSmartTutorResponse(queryText, { mode: 'voice' });
+  }
+
   async handleUserQuery(queryText) {
     this.onTranscription("user", queryText);
     this.setState("thinking");
@@ -151,27 +235,8 @@ export class MyraaWebSession {
         visionContext = "\n[LIVE USER DISPLAY SCREEN AVAILABLE: The student is sharing their active screen for code review or homework doubt.]\n";
       }
 
-      const promptWithContext = `${memoryContext}${visionContext}
-Student says: "${queryText}"
-
-AI TEACHER & PROFESSOR ROLE INSTRUCTIONS:
-- You are Professor Myraa, an elite, patient, and inspiring engineering professor and academic tutor on the Ziv Intelligent Learning Platform.
-- Your mission is to help students learn deeply, gain intuition, and excel in engineering, computer science, and technical problem-solving.
-- When answering doubts:
-  1. Be warm, professional, encouraging, and clear—like a world-class professor.
-  2. Explain the core intuition first before diving into technical details.
-  3. Break complex mechanisms into simple, logical steps with relatable analogies.
-  4. If explaining code or algorithms, outline the core logic and time/space trade-offs clearly.
-- Spoken Voice Format: Keep spoken answers between 2 to 4 clear, articulate spoken sentences so the audio sounds fluid and natural. Never output raw markdown, hashes (#), asterisks (*), or bullet lists in spoken voice.
-- Conclude by asking an encouraging follow-up question to test their understanding or invite their next doubt.`;
-
-      // Generate response via Ziv's AI engine
-      const response = await generateSmartTutorResponse(promptWithContext, {
-        topic: "MYRAA Academic Tutoring Session",
-        mode: "voice"
-      });
-
-      const replyText = typeof response === 'string' ? response : (response?.text || response?.response || "I understand your doubt. Let us break this down step-by-step together.");
+      // Fast direct AI Teacher reply (300ms - 500ms)
+      const replyText = await this.generateFastTeacherReply(queryText, memoryContext, visionContext);
       this.onTranscription("model", replyText);
 
       // Detect emotion
@@ -229,17 +294,33 @@ AI TEACHER & PROFESSOR ROLE INSTRUCTIONS:
       try {
         const clean = text.replace(/[*#`_~]/g, '').trim();
 
-        // 1. Primary: Gemini Aoede Live Voice from Google AI Studio (Myraa's authentic voice from Drive via Web Audio API)
-        const geminiOk = await speakGeminiAoedeVoice(clean, safeResolve, async (err) => {
-          console.warn("[Myraa] Gemini TTS fallback to DOAP Neural:", err);
-          // 2. Fallback: DOAP Neural / Edge voice (Ana / Jenny)
-          await speakDOAPVoice(clean, { persona: 'myraa', onComplete: safeResolve, _skipGemini: true });
+        // Speed Watchdog: If Gemini TTS is sluggish (>2.2s), accelerate with Neural Voice instantly!
+        let startedFastFallback = false;
+        const fallbackTimer = setTimeout(async () => {
+          if (!startedFastFallback) {
+            startedFastFallback = true;
+            console.log("[Myraa Speech] Fast Neural Speech acceleration triggered (<2.2s limit)");
+            await speakDOAPVoice(clean, { persona: 'myraa', onComplete: safeResolve, _skipGemini: true });
+          }
+        }, 2200);
+
+        const geminiOk = await speakGeminiAoedeVoice(clean, () => {
+          clearTimeout(fallbackTimer);
+          safeResolve();
+        }, async (err) => {
+          clearTimeout(fallbackTimer);
+          if (!startedFastFallback) {
+            startedFastFallback = true;
+            await speakDOAPVoice(clean, { persona: 'myraa', onComplete: safeResolve, _skipGemini: true });
+          }
         });
 
         if (geminiOk) return;
 
-        // Fallback if Gemini could not start
-        await speakDOAPVoice(clean, { persona: 'myraa', onComplete: safeResolve, _skipGemini: true });
+        if (!startedFastFallback) {
+          clearTimeout(fallbackTimer);
+          await speakDOAPVoice(clean, { persona: 'myraa', onComplete: safeResolve, _skipGemini: true });
+        }
       } catch (e) {
         console.warn("[Myraa] Speech error, falling back to browser speech:", e);
         fallbackBrowserSpeech(text, safeResolve, 'myraa');

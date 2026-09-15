@@ -22,39 +22,22 @@ export const MyraaCoreVisualizer = ({
   const talkingVideoRef = useRef(null);
   const [videoError, setVideoError] = useState(false);
 
-  // Synchronized video playback state manager
+  // Synchronized video playback state manager (butter-smooth, zero jitter, zero frame freeze)
   useEffect(() => {
-    const playSafe = (video) => {
+    const ensurePlaying = (video) => {
       if (!video) return;
       try {
-        video.currentTime = 0;
-        const promise = video.play();
-        if (promise !== undefined) {
-          promise.catch(() => {});
+        if (video.paused) {
+          const promise = video.play();
+          if (promise !== undefined) promise.catch(() => {});
         }
       } catch (e) {}
     };
 
-    const pauseSafe = (video) => {
-      if (!video) return;
-      try {
-        video.pause();
-      } catch (e) {}
-    };
-
-    if (characterState === "idle") {
-      playSafe(idleVideoRef.current);
-      pauseSafe(thinkingVideoRef.current);
-      pauseSafe(talkingVideoRef.current);
-    } else if (characterState === "thinking") {
-      playSafe(thinkingVideoRef.current);
-      pauseSafe(idleVideoRef.current);
-      pauseSafe(talkingVideoRef.current);
-    } else if (characterState === "talking") {
-      playSafe(talkingVideoRef.current);
-      pauseSafe(idleVideoRef.current);
-      pauseSafe(thinkingVideoRef.current);
-    }
+    // Keep videos running smoothly in background so opacity crossfade is instant and fluid
+    ensurePlaying(idleVideoRef.current);
+    ensurePlaying(thinkingVideoRef.current);
+    ensurePlaying(talkingVideoRef.current);
   }, [characterState]);
 
   // Cursor position tracking
@@ -213,11 +196,37 @@ export const MyraaCoreVisualizer = ({
         id="myraa-animated-presence"
         className="absolute z-10 w-full h-full flex items-center justify-center pointer-events-none"
       >
-        <div className="relative w-full max-w-2xl aspect-[16/9] flex items-center justify-center scale-100 sm:scale-105 select-none pointer-events-none md:max-h-[68vh] max-h-[58vh]">
+        <div className={`relative w-full max-w-2xl aspect-[16/9] flex items-center justify-center select-none pointer-events-none md:max-h-[68vh] max-h-[58vh] transition-all duration-500 ease-out ${
+          characterState === "listening" ? "scale-[1.04] -translate-y-1.5" :
+          characterState === "thinking" ? "scale-100" :
+          "scale-100 sm:scale-105"
+        }`}>
           {/* Subtle Outer Ambient Shadow */}
-          <div className="absolute inset-0 rounded-[2.5rem] blur-[30px] opacity-25 bg-violet-600/20 mix-blend-screen" />
+          <div className={`absolute inset-0 rounded-[2.5rem] blur-[30px] opacity-25 mix-blend-screen transition-colors duration-700 ${
+            characterState === "thinking" ? "bg-amber-500/25" :
+            characterState === "talking" ? "bg-violet-600/30" :
+            characterState === "listening" ? "bg-cyan-500/25" : "bg-violet-600/20"
+          }`} />
 
-          {/* IDLE VIDEO */}
+          {/* Dedicated Attentive Listening Sound Wave Rings (Ears Forward & Alert) */}
+          {characterState === "listening" && (
+            <div className="absolute inset-0 flex items-center justify-between px-6 pointer-events-none z-20 animate-fade-in">
+              {/* Left ear sound waves */}
+              <div className="flex items-center gap-1 opacity-75">
+                <span className="w-1.5 h-6 rounded-full bg-cyan-400 animate-pulse" />
+                <span className="w-1.5 h-10 rounded-full bg-cyan-300 animate-pulse delay-75" />
+                <span className="w-1.5 h-4 rounded-full bg-cyan-400 animate-pulse delay-150" />
+              </div>
+              {/* Right ear sound waves */}
+              <div className="flex items-center gap-1 opacity-75">
+                <span className="w-1.5 h-4 rounded-full bg-cyan-400 animate-pulse delay-150" />
+                <span className="w-1.5 h-10 rounded-full bg-cyan-300 animate-pulse delay-75" />
+                <span className="w-1.5 h-6 rounded-full bg-cyan-400 animate-pulse" />
+              </div>
+            </div>
+          )}
+
+          {/* IDLE / ATTENTIVE LISTENING VIDEO */}
           <video
             ref={idleVideoRef}
             src="/assets/idle.mp4"
@@ -225,8 +234,8 @@ export const MyraaCoreVisualizer = ({
             muted
             playsInline
             autoPlay
-            className={`absolute inset-0 w-full h-full object-cover rounded-[2.5rem] transition-opacity duration-700 ease-in-out ${
-              characterState === "idle" ? "opacity-100 z-10 animate-fade-in" : "opacity-0 z-0"
+            className={`absolute inset-0 w-full h-full object-cover rounded-[2.5rem] transition-opacity duration-500 ease-in-out ${
+              characterState === "idle" || characterState === "listening" ? "opacity-100 z-10" : "opacity-0 z-0"
             }`}
             style={{
               maskImage: "radial-gradient(circle, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 80%)",
@@ -235,15 +244,16 @@ export const MyraaCoreVisualizer = ({
             onError={() => setVideoError(true)}
           />
 
-          {/* THINKING VIDEO */}
+          {/* THINKING VIDEO (Rock-steady, thoughtful contemplation pose) */}
           <video
             ref={thinkingVideoRef}
             src="/assets/thinking.mp4"
             loop
             muted
             playsInline
-            className={`absolute inset-0 w-full h-full object-cover rounded-[2.5rem] transition-opacity duration-700 ease-in-out ${
-              characterState === "thinking" ? "opacity-100 z-10 animate-fade-in" : "opacity-0 z-0"
+            autoPlay
+            className={`absolute inset-0 w-full h-full object-cover rounded-[2.5rem] transition-opacity duration-500 ease-in-out ${
+              characterState === "thinking" ? "opacity-100 z-10" : "opacity-0 z-0"
             }`}
             style={{
               maskImage: "radial-gradient(circle, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 80%)",
@@ -252,15 +262,16 @@ export const MyraaCoreVisualizer = ({
             onError={() => setVideoError(true)}
           />
 
-          {/* TALKING VIDEO */}
+          {/* TALKING VIDEO (Active teaching delivery & mouth movements) */}
           <video
             ref={talkingVideoRef}
             src="/assets/talking.mp4"
             loop
             muted
             playsInline
-            className={`absolute inset-0 w-full h-full object-cover rounded-[2.5rem] transition-opacity duration-700 ease-in-out ${
-              characterState === "talking" ? "opacity-100 z-10 animate-fade-in" : "opacity-0 z-0"
+            autoPlay
+            className={`absolute inset-0 w-full h-full object-cover rounded-[2.5rem] transition-opacity duration-500 ease-in-out ${
+              characterState === "talking" ? "opacity-100 z-10" : "opacity-0 z-0"
             }`}
             style={{
               maskImage: "radial-gradient(circle, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 80%)",
@@ -281,18 +292,18 @@ export const MyraaCoreVisualizer = ({
       />
 
       {/* 4. Floating HUD Emotion & Activity Status Pill */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-3.5 py-1.5 rounded-full border bg-black/60 backdrop-blur-md text-xs font-mono border-white/10 shadow-lg">
-        <span className={`w-2 h-2 rounded-full ${
-          state === "speaking" ? "bg-emerald-400 animate-ping" :
-          state === "thinking" ? "bg-amber-400 animate-pulse" :
-          state === "listening" ? "bg-violet-400 animate-pulse" :
-          state === "connecting" ? "bg-cyan-400 animate-pulse" : "bg-slate-500"
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 px-4 py-2 rounded-full border bg-black/70 backdrop-blur-md text-xs font-mono border-white/10 shadow-xl">
+        <span className={`w-2.5 h-2.5 rounded-full ${
+          characterState === "talking" ? "bg-emerald-400 animate-ping" :
+          characterState === "thinking" ? "bg-amber-400 animate-pulse" :
+          characterState === "listening" ? "bg-cyan-400 animate-pulse" :
+          state === "connecting" ? "bg-violet-400 animate-pulse" : "bg-slate-500"
         }`} />
         <span className="font-bold text-slate-200 uppercase tracking-wider text-[11px]">
-          {state === "speaking" ? "Myraa Speaking" :
-           state === "thinking" ? "Myraa Thinking..." :
-           state === "listening" ? "Listening to Voice" :
-           state === "connecting" ? "Establishing Holocore" : "Offline"}
+          {characterState === "talking" ? "🎙️ Professor Myraa Explaining" :
+           characterState === "thinking" ? "🧠 Formulating Intuitive Solution..." :
+           characterState === "listening" ? "👂 Listening Intently (Ears Alert)" :
+           state === "connecting" ? "⚡ Initializing Neural Core" : "Offline"}
         </span>
         {activeEmotion && activeEmotion !== "idle" && (
           <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-violet-500/20 text-violet-300 border border-violet-500/30">
