@@ -31,6 +31,7 @@ import { MyraaWebSession } from "../lib/myraaAudio";
 import { loadMemories, addMemory, deleteMemory } from "../lib/myraaMemory";
 import { MyraaWakeWordDetector } from "../lib/myraaWakeWord";
 import { DEFAULT_MYRAA_SETTINGS, THEME_COLOR_MAP } from "../lib/myraaTypes";
+import { getMyraaAudioAnalyser } from "../services/elevenLabsService";
 
 export const VoiceTutor = () => {
   const { navigateTo, isDarkMode } = useTheme();
@@ -272,7 +273,7 @@ export const VoiceTutor = () => {
             themeColor={settings.themeColor || "violet"}
             activeEmotion={activeEmotion}
             characterState={characterState}
-            audioAnalyser={sessionRef.current?.inputAnalyser || null}
+            audioAnalyser={getMyraaAudioAnalyser() || sessionRef.current?.inputAnalyser || null}
           />
         </div>
       </main>

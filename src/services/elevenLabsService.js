@@ -509,48 +509,45 @@ export function fallbackBrowserSpeech(text, onComplete, persona = 'charon') {
 /**
  * Convert Gemini raw PCM (16-bit, 24kHz mono) to playable standard WAV Blob
  */
-function pcm16ToWavBlob(base64Pcm, sampleRate = 24000) {
-  const binaryString = window.atob(base64Pcm);
+let myraaOutputAnalyser = null;
+
+export function getMyraaAudioAnalyser() {
+  return myraaOutputAnalyser;
+}
+
+/**
+ * Convert Base64 Raw PCM (16-bit signed Little-Endian, 24kHz mono) to Float32Array
+ */
+function pcm16ToFloats(uint8Array) {
+  const int16 = new Int16Array(
+    uint8Array.buffer,
+    uint8Array.byteOffset,
+    Math.floor(uint8Array.byteLength / 2)
+  );
+  const floats = new Float32Array(int16.length);
+  for (let i = 0; i < int16.length; i++) {
+    floats[i] = int16[i] / 32768.0;
+  }
+  return floats;
+}
+
+function base64ToUint8Array(base64) {
+  const binaryString = (typeof window !== 'undefined' && typeof window.atob === 'function') 
+    ? window.atob(base64) 
+    : (typeof atob === 'function' ? atob(base64) : '');
   const len = binaryString.length;
-  const buffer = new ArrayBuffer(44 + len);
-  const view = new DataView(buffer);
-
-  function writeString(offset, str) {
-    for (let i = 0; i < str.length; i++) {
-      view.setUint8(offset + i, str.charCodeAt(i));
-    }
-  }
-
-  // RIFF chunk descriptor
-  writeString(0, 'RIFF');
-  view.setUint32(4, 36 + len, true);
-  writeString(8, 'WAVE');
-
-  // fmt sub-chunk
-  writeString(12, 'fmt ');
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true); // PCM format
-  view.setUint16(22, 1, true); // Mono channel
-  view.setUint32(24, sampleRate, true);
-  view.setUint32(28, sampleRate * 2, true);
-  view.setUint16(32, 2, true);
-  view.setUint16(34, 16, true);
-
-  // data sub-chunk
-  writeString(36, 'data');
-  view.setUint32(40, len, true);
-
-  const pcmBytes = new Uint8Array(buffer, 44, len);
+  const bytes = new Uint8Array(len);
   for (let i = 0; i < len; i++) {
-    pcmBytes[i] = binaryString.charCodeAt(i);
+    bytes[i] = binaryString.charCodeAt(i);
   }
-
-  return new Blob([buffer], { type: 'audio/wav' });
+  return bytes;
 }
 
 /**
  * Official Gemini Live Aoede Voice Engine for Myraa
- * Directly queries Google Gemini 2.5 Flash TTS Preview to produce the exact sweet anime heroine voice from Drive!
+ * Direct Web Audio API AudioBuffer playback at 24kHz.
+ * Connects directly to hardware audio destination and real-time frequency analyser.
+ * Cascades across gemini-3.1-flash-tts-preview, gemini-2.5-flash-preview-tts, and gemini-2.5-pro-preview-tts.
  */
 export async function speakGeminiAoedeVoice(text, onComplete, onError) {
   try {
@@ -566,64 +563,137 @@ export async function speakGeminiAoedeVoice(text, onComplete, onError) {
       return true;
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: cleanText }]
-          }
-        ],
-        generationConfig: {
-          responseModalities: ["AUDIO"],
-          speechConfig: {
-            voiceConfig: {
-              prebuiltVoiceConfig: {
-                voiceName: "Aoede"
+    isAudioCancelled = false;
+
+    // Ordered list of models supporting Aoede studio speech
+    const candidateModels = [
+      "gemini-3.1-flash-tts-preview",
+      "gemini-2.5-flash-preview-tts",
+      "gemini-2.5-pro-preview-tts"
+    ];
+
+    let inlineAudioData = null;
+
+    for (const modelName of candidateModels) {
+      if (isAudioCancelled) return true;
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [{ text: cleanText }]
+              }
+            ],
+            generationConfig: {
+              responseModalities: ["AUDIO"],
+              speechConfig: {
+                voiceConfig: {
+                  prebuiltVoiceConfig: {
+                    voiceName: "Aoede"
+                  }
+                }
               }
             }
-          }
-        }
-      })
-    });
+          })
+        });
 
-    if (!res.ok) {
-      console.warn(`[Gemini Aoede TTS] Server returned ${res.status}`);
-      return false;
+        if (res.ok) {
+          const data = await res.json();
+          const audio = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+          if (audio) {
+            inlineAudioData = audio;
+            break;
+          }
+        } else {
+          console.warn(`[Gemini TTS ${modelName}] returned ${res.status}`);
+        }
+      } catch (callErr) {
+        console.warn(`[Gemini TTS ${modelName}] error:`, callErr);
+      }
     }
 
-    const data = await res.json();
-    const inlineAudio = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData;
-    if (!inlineAudio?.data) {
+    if (!inlineAudioData) {
+      if (onError) onError(new Error("No Gemini audio generated"));
       return false;
     }
 
     if (isAudioCancelled) return true;
 
-    const wavBlob = pcm16ToWavBlob(inlineAudio.data, 24000);
-    const audioUrl = URL.createObjectURL(wavBlob);
-    const audio = new Audio(audioUrl);
-    currentAudioElement = audio;
+    // Convert raw 16-bit 24kHz PCM to Float32Array
+    const uint8Array = base64ToUint8Array(inlineAudioData);
+    const floats = pcm16ToFloats(uint8Array);
 
-    audio.onended = () => {
-      try { URL.revokeObjectURL(audioUrl); } catch (e) {}
-      currentAudioElement = null;
+    const AudioContextClass = (typeof window !== 'undefined') ? (window.AudioContext || window.webkitAudioContext) : null;
+    if (!AudioContextClass) {
+      if (onError) onError(new Error("Web Audio API not supported"));
+      return false;
+    }
+
+    if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
+      sharedAudioCtx = new AudioContextClass();
+    }
+    if (sharedAudioCtx.state === 'suspended') {
+      await sharedAudioCtx.resume().catch(() => {});
+    }
+
+    // Stop any existing playing source
+    if (currentSource) {
+      try { currentSource.stop(); currentSource.disconnect(); } catch (e) {}
+      currentSource = null;
+    }
+
+    // Create 24000Hz AudioBuffer (native resampler handles output to hardware)
+    const audioBuffer = sharedAudioCtx.createBuffer(1, floats.length, 24000);
+    audioBuffer.getChannelData(0).set(floats);
+
+    const source = sharedAudioCtx.createBufferSource();
+    source.buffer = audioBuffer;
+
+    if (!myraaOutputAnalyser) {
+      myraaOutputAnalyser = sharedAudioCtx.createAnalyser();
+      myraaOutputAnalyser.fftSize = 256;
+      myraaOutputAnalyser.smoothingTimeConstant = 0.8;
+    }
+
+    const gainNode = sharedAudioCtx.createGain();
+    gainNode.gain.value = 1.0;
+
+    source.connect(gainNode);
+    gainNode.connect(myraaOutputAnalyser);
+    myraaOutputAnalyser.connect(sharedAudioCtx.destination);
+
+    currentSource = source;
+
+    let finished = false;
+    const finishHandler = () => {
+      if (finished) return;
+      finished = true;
+      if (currentSource === source) {
+        currentSource = null;
+      }
+      try { source.disconnect(); } catch (e) {}
+      try { gainNode.disconnect(); } catch (e) {}
       if (onComplete) onComplete();
     };
 
-    audio.onerror = (e) => {
-      try { URL.revokeObjectURL(audioUrl); } catch (e) {}
-      currentAudioElement = null;
-      console.warn('[Gemini Aoede Audio Playback Error]:', e);
-      if (onError) onError(e);
-    };
+    source.onended = finishHandler;
 
-    await audio.play();
+    // Safety watchdog: audioBuffer.duration + 0.6s to prevent UI locks
+    const watchdogMs = Math.ceil((audioBuffer.duration + 0.6) * 1000);
+    setTimeout(() => {
+      if (!finished && currentSource === source) {
+        finishHandler();
+      }
+    }, watchdogMs);
+
+    source.start(0);
     return true;
   } catch (err) {
     console.warn('[Gemini Aoede TTS call failed]:', err);
+    if (onError) onError(err);
     return false;
   }
 }
@@ -674,8 +744,10 @@ export async function speakDOAPVoice(text, arg2, arg3, arg4) {
   const isMyraaPersona = ['myraa', 'sarah', 'aoede', 'ana'].includes((voiceKey || '').toLowerCase()) ||
                          ['myraa', 'sarah', 'aoede', 'ana'].includes(((typeof localStorage !== 'undefined' && localStorage.getItem('doap_voice_persona')) || '').toLowerCase());
 
+  const skipGemini = (typeof arg2 === 'object' && arg2?._skipGemini) || false;
+
   // 0. Absolute Highest Priority for Myraa: Gemini Live Aoede Studio Audio
-  if (isMyraaPersona) {
+  if (isMyraaPersona && !skipGemini) {
     const success = await speakGeminiAoedeVoice(cleanText, onComplete, (err) => {
       console.warn('[Gemini Aoede failed, falling back to Edge Neural]:', err);
     });
