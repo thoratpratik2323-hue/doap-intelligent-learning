@@ -137,22 +137,22 @@ export const Home = () => {
           className="h-28 md:h-36 w-auto object-contain drop-shadow-sm mb-1"
         />
         <h1 className={`text-4xl md:text-6xl font-black tracking-tight ${
-          isDarkMode ? 'text-white' : 'text-[#0F172A]'
+          isDarkMode ? 'text-white' : 'text-slate-950'
         }`}>
           Ziv
         </h1>
-        <p className={`text-xs sm:text-sm font-semibold tracking-wide ${
-          isDarkMode ? 'text-violet-400' : 'text-violet-600'
+        <p className={`text-xs sm:text-sm font-bold tracking-wide ${
+          isDarkMode ? 'text-violet-400' : 'text-violet-700'
         }`}>
           The modern playground for future developers
         </p>
-        <h2 className={`text-2xl md:text-3xl font-bold tracking-tight ${
-          isDarkMode ? 'text-slate-100' : 'text-[#0F172A]'
+        <h2 className={`text-2xl md:text-3xl font-extrabold tracking-tight ${
+          isDarkMode ? 'text-slate-100' : 'text-slate-950'
         }`}>
           Back again? Good.
         </h2>
-        <p className={`font-normal text-sm ${
-          isDarkMode ? 'text-slate-400' : 'text-[#475569]'
+        <p className={`font-semibold text-sm ${
+          isDarkMode ? 'text-slate-400' : 'text-slate-700'
         }`}>
           What do you want to work on today?
         </p>
@@ -163,28 +163,30 @@ export const Home = () => {
         {/* Continue Learning Card */}
         <div className="p-6 rounded-2xl border space-y-4 flex flex-col justify-between transition-all doap-card hover-glide">
           <div className="space-y-2">
-            <span className="text-[11px] font-mono uppercase tracking-widest block" style={{ color: isDarkMode ? '#94A3B8' : '#64748B' }}>
+            <span className="text-[11px] font-mono uppercase tracking-widest block font-bold" style={{ color: isDarkMode ? '#94A3B8' : '#475569' }}>
               CONTINUE
             </span>
-            <h3 className="text-xl font-bold" style={{ color: isDarkMode ? '#F8FAFC' : '#0F172A' }}>
+            <h3 className="text-xl font-bold" style={{ color: isDarkMode ? '#F8FAFC' : '#020617' }}>
               Data Structures
             </h3>
-            <p className="text-xs font-medium" style={{ color: isDarkMode ? '#94A3B8' : '#475569' }}>
+            <p className="text-xs font-semibold" style={{ color: isDarkMode ? '#94A3B8' : '#1E293B' }}>
               Binary Search Trees
             </p>
           </div>
 
           <div className="space-y-4 pt-2">
             <div className="flex items-center gap-3">
-              <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
+              <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }}>
                 <div className="h-full rounded-full w-[72%] bg-gradient-to-r from-violet-500 to-indigo-500" />
               </div>
-              <span className="text-xs font-mono font-bold" style={{ color: isDarkMode ? '#F8FAFC' : '#0F172A' }}>72%</span>
+              <span className="text-xs font-mono font-bold" style={{ color: isDarkMode ? '#F8FAFC' : '#020617' }}>72%</span>
             </div>
 
             <button 
               onClick={() => navigateTo('/learning')}
-              className="font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer text-violet-400 hover:text-violet-300"
+              className={`font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer ${
+                isDarkMode ? 'text-violet-400 hover:text-violet-300' : 'text-violet-700 hover:text-violet-900'
+              }`}
             >
               <span>Continue</span>
               <ArrowRight size={14} />
@@ -197,22 +199,26 @@ export const Home = () => {
           {/* Top Header & Streak Pill */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono uppercase tracking-widest block font-bold" style={{ color: isDarkMode ? '#94A3B8' : '#64748B' }}>
+              <span className="text-[11px] font-mono uppercase tracking-widest block font-bold" style={{ color: isDarkMode ? '#94A3B8' : '#475569' }}>
                 DAILY ZIV DRILL
               </span>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-orange-500/10 border border-orange-500/25 text-orange-400">
-                <Flame size={13} className="text-orange-400 animate-pulse" />
+              <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-bold border ${
+                isDarkMode 
+                  ? 'bg-orange-500/10 border-orange-500/25 text-orange-400' 
+                  : 'bg-orange-50 border-orange-200 text-orange-700'
+              }`}>
+                <Flame size={13} className="text-orange-500 animate-pulse" />
                 <span>{streakCount} Days Streak</span>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold" style={{ color: isDarkMode ? '#F8FAFC' : '#0F172A' }}>
+              <h3 className="text-base font-extrabold" style={{ color: isDarkMode ? '#F8FAFC' : '#020617' }}>
                 {dailyChallenge.topic}
               </h3>
             </div>
 
-            <p className="text-xs font-medium leading-relaxed" style={{ color: isDarkMode ? '#94A3B8' : '#334155' }}>
+            <p className="text-xs sm:text-sm font-semibold leading-relaxed" style={{ color: isDarkMode ? '#94A3B8' : '#0F172A' }}>
               {dailyChallenge.question}
             </p>
           </div>
@@ -229,12 +235,12 @@ export const Home = () => {
                     <button
                       key={idx}
                       onClick={() => handleSelectOption(idx)}
-                      className={`w-full text-left p-2.5 rounded-xl border text-xs font-medium transition-all cursor-pointer flex items-center justify-between ${
+                      className={`w-full text-left p-3 rounded-xl border text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center justify-between ${
                         isWrong
                           ? 'bg-rose-950/40 border-rose-500 text-rose-200 animate-shake'
                           : isDarkMode
                           ? 'bg-slate-900/60 border-white/8 hover:border-violet-500/40 hover:bg-slate-800/80 text-slate-200'
-                          : 'bg-[#F8FAFC] border-[#E2E8F0] hover:border-violet-400 hover:bg-white text-[#0F172A]'
+                          : 'bg-white border-slate-200 hover:border-violet-600 hover:bg-violet-50/50 text-slate-900 shadow-xs'
                       }`}
                     >
                       <span>{opt}</span>
@@ -259,8 +265,8 @@ export const Home = () => {
 
             {/* Weekly Streak Mini Dots */}
             <div className="flex items-center justify-between pt-2 border-t text-[10px] font-mono"
-              style={{ borderColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#E2E8F0', color: isDarkMode ? '#94A3B8' : '#64748B' }}>
-              <span className="font-semibold">This Week:</span>
+              style={{ borderColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#E2E8F0', color: isDarkMode ? '#94A3B8' : '#334155' }}>
+              <span className="font-bold">This Week:</span>
               <div className="flex items-center gap-1.5">
                 {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => {
                   const isPastOrToday = i <= (new Date().getDay() === 0 ? 6 : new Date().getDay() - 1);
@@ -295,19 +301,23 @@ export const Home = () => {
           </div>
           <div className="space-y-0.5">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-sm md:text-base font-bold" style={{ color: isDarkMode ? '#F8FAFC' : '#0F172A' }}>
+                <h3 className="text-sm md:text-base font-bold" style={{ color: isDarkMode ? '#F8FAFC' : '#020617' }}>
                 🏢 Looking for Company-Specific Questions?
               </h3>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full font-bold bg-orange-500/10 border border-orange-500/25 text-orange-400">
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border ${
+                isDarkMode ? 'bg-orange-500/10 border-orange-500/25 text-orange-400' : 'bg-orange-50 border-orange-200 text-orange-700'
+              }`}>
                 8,600+ LEETCODE QUESTIONS
               </span>
             </div>
-            <p className="text-xs leading-relaxed" style={{ color: isDarkMode ? '#94A3B8' : '#475569' }}>
-              Explore authentic interview questions asked by <strong style={{ color: isDarkMode ? '#F8FAFC' : '#0F172A' }}>TCS, Infosys, Accenture, Cognizant, Google, Amazon, Microsoft, Apple & Meta</strong> on the Company Prep Dashboard.
+            <p className="text-xs font-medium leading-relaxed" style={{ color: isDarkMode ? '#94A3B8' : '#334155' }}>
+              Explore authentic interview questions asked by <strong style={{ color: isDarkMode ? '#F8FAFC' : '#020617' }}>TCS, Infosys, Accenture, Cognizant, Google, Amazon, Microsoft, Apple & Meta</strong> on the Company Prep Dashboard.
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 text-xs font-semibold shrink-0 self-end sm:self-center text-violet-400 group-hover:text-violet-300">
+        <div className={`flex items-center gap-1.5 text-xs font-bold shrink-0 self-end sm:self-center ${
+          isDarkMode ? 'text-violet-400 group-hover:text-violet-300' : 'text-violet-700 group-hover:text-violet-900'
+        }`}>
           <span>Open Company Archive</span>
           <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
         </div>
@@ -328,18 +338,22 @@ export const Home = () => {
                   <Icon size={18} />
                 </div>
                 <div className="text-left">
-                  <h3 className="font-bold text-base leading-snug flex items-center gap-2" style={{ color: isDarkMode ? '#F8FAFC' : '#0F172A' }}>
+                  <h3 className="font-bold text-base leading-snug flex items-center gap-2" style={{ color: isDarkMode ? '#F8FAFC' : '#020617' }}>
                     <span>{act.title}</span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full font-medium border bg-violet-500/10 border-violet-500/20 text-violet-300">
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border ${
+                      isDarkMode ? 'bg-violet-500/10 border-violet-500/20 text-violet-300' : 'bg-violet-50 border-violet-200 text-violet-700'
+                    }`}>
                       Text & Voice
                     </span>
                   </h3>
-                  <p className="text-xs font-normal" style={{ color: '#94A3B8' }}>
+                  <p className="text-xs font-medium" style={{ color: isDarkMode ? '#94A3B8' : '#334155' }}>
                     {act.desc}
                   </p>
                 </div>
               </div>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform group-hover:translate-x-1 text-violet-400 group-hover:text-violet-300">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-transform group-hover:translate-x-1 ${
+                isDarkMode ? 'text-violet-400 group-hover:text-violet-300' : 'text-violet-700 group-hover:text-violet-900'
+              }`}>
                 <ArrowRight size={16} />
               </div>
             </button>

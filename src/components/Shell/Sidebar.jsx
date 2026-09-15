@@ -105,16 +105,23 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
               onClick={() => handleNavClick(item.path)}
               title={isSidebarCollapsed ? item.label : undefined}
               className={`
-                w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium
+                w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold
                 transition-all duration-150 cursor-pointer border-0 outline-none text-left
-                ${isActive ? '' : 'hover:bg-white/5 hover:text-slate-200'}
+                ${isActive 
+                  ? '' 
+                  : (isDarkMode ? 'hover:bg-white/5 hover:text-slate-200' : 'hover:bg-slate-100 hover:text-slate-950')
+                }
               `}
               style={{
                 backgroundColor: isActive
-                  ? 'rgba(139, 92, 246, 0.12)'
+                  ? (isDarkMode ? 'rgba(139, 92, 246, 0.14)' : 'rgba(124, 58, 237, 0.10)')
                   : 'transparent',
-                color: isActive ? '#A78BFA' : 'var(--doap-text-sec)',
-                borderLeft: isActive ? '2px solid #8B5CF6' : '2px solid transparent',
+                color: isActive 
+                  ? (isDarkMode ? '#A78BFA' : '#6D28D9') 
+                  : (isDarkMode ? 'var(--doap-text-sec)' : '#1E293B'),
+                borderLeft: isActive 
+                  ? (isDarkMode ? '3px solid #8B5CF6' : '3px solid #7C3AED') 
+                  : '3px solid transparent',
               }}
             >
               {/* Icon + status dot */}
@@ -131,12 +138,12 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
               {/* Label */}
               {!isSidebarCollapsed && (
                 <span className="flex-1 flex items-center justify-between truncate">
-                  <span>{item.label}</span>
+                  <span className="truncate">{item.label}</span>
                   {isAITutorItem && isAIThinking && (
-                    <span className="text-[9px] font-mono text-[#FB923C] opacity-80 animate-pulse">Working</span>
+                    <span className="text-[9px] font-mono text-[#FB923C] font-bold animate-pulse">Working</span>
                   )}
                   {isAITutorItem && !isAIThinking && hasAIUnread && (
-                    <span className="text-[9px] font-mono text-[#FB923C] opacity-80">New</span>
+                    <span className="text-[9px] font-mono text-[#FB923C] font-bold">New</span>
                   )}
                 </span>
               )}
@@ -151,7 +158,7 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
           className="border-t px-4 py-3"
           style={{ borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.06)' : '#E2E8F0' }}
         >
-          <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+          <p className="text-[10px] font-mono uppercase tracking-widest font-bold" style={{ color: isDarkMode ? '#64748B' : '#475569' }}>
             Ziv Platform v1.0
           </p>
         </div>

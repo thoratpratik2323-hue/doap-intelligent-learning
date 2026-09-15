@@ -318,3 +318,74 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .dark .accent-glow {
   box-shadow: 0 0 24px rgba(139, 92, 246, 0.25);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   LIGHT MODE CONTRAST & TYPOGRAPHY ENGINE
+   Ensures text is dark, crisp, and easily readable with proper font thickness
+   ══════════════════════════════════════════════════════════════ */
+html:not(.dark) body {
+  background-color: #F8FAFC !important;
+  color: #020617 !important;
+  font-weight: 500;
+  -webkit-font-smoothing: subpixel-antialiased;
+}
+
+html:not(.dark) .doap-card {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  color: #020617 !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+}
+
+html:not(.dark) .doap-card:hover {
+  border-color: rgba(124, 58, 237, 0.40) !important;
+  box-shadow: 0 8px 28px -4px rgba(124, 58, 237, 0.12), 0 2px 6px rgba(15, 23, 42, 0.04) !important;
+}
+
+html:not(.dark) .doap-card-sec {
+  background-color: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+  color: #020617 !important;
+}
+
+/* Fix faint gray utility classes in Light Mode */
+html:not(.dark) .text-slate-400,
+html:not(.dark) .text-neutral-400,
+html:not(.dark) .text-gray-400 {
+  color: #334155 !important; /* Slate-700 instead of pale gray */
+  font-weight: 500;
+}
+
+html:not(.dark) .text-slate-500,
+html:not(.dark) .text-neutral-500,
+html:not(.dark) .text-gray-500 {
+  color: #1E293B !important; /* Slate-800 */
+  font-weight: 500;
+}
+
+html:not(.dark) .text-slate-300,
+html:not(.dark) .text-neutral-300,
+html:not(.dark) .text-gray-300 {
+  color: #475569 !important; /* Slate-600 */
+}
+
+/* Make headings solid dark and punchy */
+html:not(.dark) h1,
+html:not(.dark) h2,
+html:not(.dark) h3,
+html:not(.dark) h4,
+html:not(.dark) h5,
+html:not(.dark) h6 {
+  color: #020617 !important;
+  font-weight: 700;
+}
+
+/* Ensure small texts remain bold and legible */
+html:not(.dark) .text-xs {
+  font-weight: 500;
+}
+
+html:not(.dark) .font-mono {
+  font-weight: 600;
+}
+
