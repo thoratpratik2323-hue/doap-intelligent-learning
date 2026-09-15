@@ -658,10 +658,28 @@ export async function speakGeminiAoedeVoice(text, onComplete, onError) {
       myraaOutputAnalyser.smoothingTimeConstant = 0.8;
     }
 
-    const gainNode = sharedAudioCtx.createGain();
-    gainNode.gain.value = 1.0;
+    // Studio Vocal Presence Filter (enhances vocal clarity & speech intelligibility at 2.8kHz)
+    const presenceFilter = sharedAudioCtx.createBiquadFilter();
+    presenceFilter.type = 'peaking';
+    presenceFilter.frequency.value = 2800;
+    presenceFilter.Q.value = 1.0;
+    presenceFilter.gain.value = 3.5;
 
-    source.connect(gainNode);
+    // Studio Dynamics Compressor (levels quiet syllables and prevents clipping when boosted)
+    const compressor = sharedAudioCtx.createDynamicsCompressor();
+    compressor.threshold.value = -18;
+    compressor.knee.value = 10;
+    compressor.ratio.value = 4;
+    compressor.attack.value = 0.003;
+    compressor.release.value = 0.2;
+
+    // Output Gain Booster: 2.2x (+6.8dB) for loud, crystal-clear projection
+    const gainNode = sharedAudioCtx.createGain();
+    gainNode.gain.value = 2.2;
+
+    source.connect(presenceFilter);
+    presenceFilter.connect(compressor);
+    compressor.connect(gainNode);
     gainNode.connect(myraaOutputAnalyser);
     myraaOutputAnalyser.connect(sharedAudioCtx.destination);
 
@@ -675,6 +693,8 @@ export async function speakGeminiAoedeVoice(text, onComplete, onError) {
         currentSource = null;
       }
       try { source.disconnect(); } catch (e) {}
+      try { presenceFilter.disconnect(); } catch (e) {}
+      try { compressor.disconnect(); } catch (e) {}
       try { gainNode.disconnect(); } catch (e) {}
       if (onComplete) onComplete();
     };
