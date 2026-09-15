@@ -76,8 +76,8 @@ export const LandingPage = ({ onGetStarted, onSignIn }) => {
             className="flex items-center gap-2.5 cursor-pointer group"
           >
             <img 
-              src="/doap-logo.jpg" 
-              alt="DOAP Logo" 
+              src="/ziv-logo.png" 
+              alt="Ziv Logo" 
               className="h-8 object-contain rounded-lg hover:opacity-80 transition-opacity" 
             />
           </div>

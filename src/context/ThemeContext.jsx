@@ -31,7 +31,7 @@ export const DEFAULT_PERSONALIZATION = {
   depthShift: true,
   parallax: false,
   smoothTransitions: true,
-  themeMode: 'dark',
+  themeMode: 'light',
   profileBackground: 'monochrome',
 };
 
@@ -57,9 +57,7 @@ export const ThemeProvider = ({ children }) => {
 
   const [settings, setSettings] = useState(() => {
     try {
-      // Try new key first, then legacy key
-      const saved = localStorage.getItem('doap_personalization_v2')
-        || localStorage.getItem('doap_personalization_theme');
+      const saved = localStorage.getItem('ziv_personalization_v4');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && typeof parsed === 'object') {
@@ -67,7 +65,7 @@ export const ThemeProvider = ({ children }) => {
         }
       }
     } catch (e) {
-      console.warn('[DOAP Theme] Invalid localStorage theme, falling back to default', e);
+      console.warn('[Ziv Theme] Invalid localStorage theme, falling back to default', e);
     }
     return { ...DEFAULT_PERSONALIZATION };
   });
@@ -192,7 +190,7 @@ export const ThemeProvider = ({ children }) => {
 
     // ── Persist ──
     try {
-      localStorage.setItem('doap_personalization_v2', JSON.stringify(settings));
+      localStorage.setItem('ziv_personalization_v4', JSON.stringify(settings));
     } catch { /* ignore */ }
   }, [settings]);
 

@@ -48,23 +48,23 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
       `}
       style={{
         backgroundColor: isDarkMode ? '#0B0F19' : '#ffffff',
-        borderColor: isDarkMode ? 'rgba(147, 51, 234, 0.15)' : 'rgba(14,165,233,0.15)',
-        color: isDarkMode ? '#F8FAFC' : '#0a1628',
+        borderColor: isDarkMode ? 'rgba(147, 51, 234, 0.15)' : '#E2E8F0',
+        color: isDarkMode ? '#F8FAFC' : '#0F172A',
       }}
     >
       {/* ── Logo / Header ── */}
       <div
         className="h-14 flex items-center justify-between px-4 border-b shrink-0"
-        style={{ borderColor: isDarkMode ? 'rgba(147, 51, 234, 0.15)' : 'rgba(14,165,233,0.12)' }}
+        style={{ borderColor: isDarkMode ? 'rgba(147, 51, 234, 0.15)' : '#E2E8F0' }}
       >
         <div
           onClick={() => handleNavClick('/')}
           className="flex items-center gap-2.5 cursor-pointer"
         >
-          <img src="/doap-logo.jpg" alt="Ziv" className="h-7 w-7 object-contain rounded" />
+          <img src="/ziv-logo.png" alt="Ziv" className="h-7 w-7 object-contain rounded" />
           {!isSidebarCollapsed && (
             <div className="flex flex-col leading-tight">
-              <span className="text-sm font-bold tracking-tight" style={{ color: '#F8FAFC' }}>Ziv</span>
+              <span className="text-sm font-bold tracking-tight" style={{ color: isDarkMode ? '#F8FAFC' : '#0F172A' }}>Ziv</span>
               {isDevBypass && (
                 <span className="text-[9px] font-mono text-[#9333EA] uppercase tracking-widest">Dev Mode</span>
               )}
@@ -148,7 +148,7 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
       {!isSidebarCollapsed && (
         <div
           className="border-t px-4 py-3"
-          style={{ borderColor: 'rgba(147, 51, 234, 0.15)' }}
+          style={{ borderColor: isDarkMode ? 'rgba(147, 51, 234, 0.15)' : '#E2E8F0' }}
         >
           <p className="text-[10px] font-mono text-[#9333EA]/60 uppercase tracking-widest">
             Ziv Platform v1.0

@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
-import { Pencil, Target, Palette, Plus, User, Mail, GraduationCap } from 'lucide-react';
+import React from 'react';
+import { Pencil, Target, Plus, User, Mail, GraduationCap } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import { AppearancePage } from '../components/Shell/AppearancePage';
 
 export const Profile = () => {
   const { profile, setIsEditProfileOpen, isDarkMode, activeAccentHex } = useTheme();
-  const [activeTab, setActiveTab] = useState('profile');
-  const accentHex = activeAccentHex || 'var(--doap-accent, #ffffff)';
+  const accentHex = activeAccentHex || 'var(--doap-accent, #9333EA)';
 
   const hasEducation = profile?.university || profile?.course || profile?.year;
   const hasSkills = profile?.skills && profile.skills.length > 0;
@@ -15,64 +13,29 @@ export const Profile = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 md:py-6 animate-page-transition select-none">
-      {/* Tab header */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="space-y-1">
           <h1 className="text-3xl font-black tracking-tight" style={{ color: 'var(--doap-text-prim)' }}>
-            {activeTab === 'profile' ? 'Profile' : 'Appearance'}
+            Profile
           </h1>
           <p className="text-xs font-mono uppercase tracking-wider" style={{ color: 'var(--doap-text-sec)' }}>
-            {activeTab === 'profile' ? 'Verified student identity & career portfolio' : 'Global personalization system'}
+            Verified student identity & career portfolio
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <div
-            className="flex items-center gap-1 p-1 rounded-2xl border"
-            style={{ backgroundColor: 'var(--doap-surface)', borderColor: 'var(--doap-border)' }}
+          <button
+            onClick={() => setIsEditProfileOpen(true)}
+            className="px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer hover-glide doap-card"
           >
-            {[
-              { id: 'profile', label: 'Overview' },
-              { id: 'appearance', label: 'Appearance', icon: Palette },
-            ].map(({ id, label, icon: Icon }) => {
-              const active = activeTab === id;
-              return (
-                <button
-                  key={id}
-                  onClick={() => setActiveTab(id)}
-                  className="px-4 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
-                  style={{
-                    backgroundColor: active ? 'rgba(255,255,255,0.1)' : 'transparent',
-                    color: active ? 'var(--doap-text-prim)' : 'var(--doap-text-sec)',
-                    boxShadow: active ? '0 1px 4px rgba(0,0,0,0.3)' : 'none',
-                  }}
-                >
-                  {Icon && <Icon size={13} />}
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-
-          {activeTab === 'profile' && (
-            <button
-              onClick={() => setIsEditProfileOpen(true)}
-              className="px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer hover-glide doap-card"
-            >
-              <Pencil size={13} />
-              Edit Profile
-            </button>
-          )}
+            <Pencil size={13} />
+            Edit Profile
+          </button>
         </div>
       </div>
 
-      {/* Tab content */}
-      {activeTab === 'appearance' && (
-        <AppearancePage />
-      )}
-
-      {activeTab === 'profile' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in">
           {/* Left Profile Summary Card */}
           <div className="lg:col-span-4 space-y-6">
             <div className="p-6 rounded-3xl text-center space-y-4 doap-card">
@@ -263,7 +226,6 @@ export const Profile = () => {
             </div>
           </div>
         </div>
-      )}
     </div>
   );
 };
