@@ -18,11 +18,11 @@ const ThemeContext = createContext();
 export const DEFAULT_PERSONALIZATION = {
   theme: 'monochrome',
   accent: 'neutral',
-  background: 'default',       // 'default' | 'gradient' | 'animated'
+  background: 'animated',       // 'default' | 'gradient' | 'animated'
   gradientStyle: 'subtle',     // 'subtle' | 'balanced' | 'dynamic'
-  backgroundIntensity: 40,     // 0–100
+  backgroundIntensity: 35,     // 0–100
   gradientDirection: 'diagonal',
-  glassIntensity: 'subtle',    // 'subtle' | 'balanced' | 'strong'
+  glassIntensity: 'balanced',   // 'subtle' | 'balanced' | 'strong'
   depth: 'subtle',
   borderStrength: 'subtle',
   shadowStrength: 'subtle',
@@ -31,7 +31,7 @@ export const DEFAULT_PERSONALIZATION = {
   depthShift: true,
   parallax: false,
   smoothTransitions: true,
-  themeMode: 'light',
+  themeMode: 'dark',
   profileBackground: 'monochrome',
 };
 
@@ -57,7 +57,7 @@ export const ThemeProvider = ({ children }) => {
 
   const [settings, setSettings] = useState(() => {
     try {
-      const saved = localStorage.getItem('ziv_personalization_v4');
+      const saved = localStorage.getItem('ziv_personalization_v5');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && typeof parsed === 'object') {
@@ -190,7 +190,7 @@ export const ThemeProvider = ({ children }) => {
 
     // ── Persist ──
     try {
-      localStorage.setItem('ziv_personalization_v4', JSON.stringify(settings));
+      localStorage.setItem('ziv_personalization_v5', JSON.stringify(settings));
     } catch { /* ignore */ }
   }, [settings]);
 

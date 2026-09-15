@@ -49,8 +49,8 @@ export const Header = ({ onOpenMobileSidebar }) => {
     <header
       className="sticky top-0 z-30 border-b flex items-center justify-between px-5 h-14 transition-colors"
       style={{
-        backgroundColor: isDarkMode ? 'rgba(11, 15, 25, 0.97)' : '#ffffff',
-        borderColor: isDarkMode ? 'rgba(147, 51, 234, 0.20)' : '#E2E8F0',
+        backgroundColor: isDarkMode ? 'rgba(9, 13, 22, 0.85)' : 'rgba(255, 255, 255, 0.85)',
+        borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.07)' : 'rgba(226, 232, 240, 0.8)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
       }}
@@ -72,10 +72,10 @@ export const Header = ({ onOpenMobileSidebar }) => {
           <button
             onClick={() => setIsSidebarHidden(false)}
             className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border rounded transition-colors hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
-            style={{ borderColor: isDarkMode ? 'rgba(147, 51, 234, 0.20)' : '#E2E8F0', color: isDarkMode ? '#94A3B8' : '#64748B' }}
+            style={{ borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : '#E2E8F0', color: isDarkMode ? '#94A3B8' : '#64748B' }}
             title="Show Sidebar"
           >
-            <PanelLeftOpen size={14} className="text-[#9333EA]" />
+            <PanelLeftOpen size={14} className="text-[#8B5CF6]" />
             Menu
           </button>
         )}
@@ -94,11 +94,9 @@ export const Header = ({ onOpenMobileSidebar }) => {
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs cursor-pointer transition-transform hover:scale-105 border shrink-0"
+              className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs cursor-pointer transition-transform hover:scale-105 border shrink-0 bg-gradient-to-tr from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/25"
               style={{
-                backgroundColor: '#9333EA',
-                color: '#ffffff',
-                borderColor: 'rgba(147,51,234,0.4)',
+                borderColor: 'rgba(139, 92, 246, 0.4)',
               }}
               title={user.email || 'Profile & Menu'}
             >
@@ -107,11 +105,11 @@ export const Header = ({ onOpenMobileSidebar }) => {
 
             {isMenuOpen && (
               <div
-                className="absolute right-0 mt-2 w-48 rounded-2xl border shadow-2xl z-50 overflow-hidden"
+                className="absolute right-0 mt-2 w-48 rounded-2xl border shadow-2xl z-50 overflow-hidden backdrop-blur-xl"
                 style={{
-                  backgroundColor: isDarkMode ? '#0F1423' : '#ffffff',
-                  borderColor: isDarkMode ? 'rgba(147, 51, 234, 0.20)' : '#E2E8F0',
-                  boxShadow: '0 12px 32px rgba(0,0,0,0.12)',
+                  backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.95)' : '#ffffff',
+                  borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : '#E2E8F0',
+                  boxShadow: '0 12px 32px rgba(0,0,0,0.3)',
                 }}
               >
                 {/* User email header */}
@@ -128,7 +126,7 @@ export const Header = ({ onOpenMobileSidebar }) => {
                   className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-medium transition-colors hover:bg-black/5 dark:hover:bg-white/5 text-left cursor-pointer"
                   style={{ color: isDarkMode ? '#F8FAFC' : '#0F172A' }}
                 >
-                  <User size={14} className="text-[#9333EA] shrink-0" />
+                  <User size={14} className="text-[#8B5CF6] shrink-0" />
                   Profile
                 </button>
 
@@ -139,9 +137,9 @@ export const Header = ({ onOpenMobileSidebar }) => {
                 >
                   <div className="flex items-center gap-2">
                     {isDarkMode ? (
-                      <Moon size={13} className="text-[#9333EA] shrink-0" />
+                      <Moon size={13} className="text-[#8B5CF6] shrink-0" />
                     ) : (
-                      <Sun size={13} className="text-[#FF9E7D] shrink-0" />
+                      <Sun size={13} className="text-[#FB923C] shrink-0" />
                     )}
                     <span className="text-xs font-medium" style={{ color: isDarkMode ? '#F8FAFC' : '#0F172A' }}>
                       Dark Mode
@@ -152,7 +150,7 @@ export const Header = ({ onOpenMobileSidebar }) => {
                     onClick={() => handleUpdateMode(isDarkMode ? 'light' : 'dark')}
                     aria-label="Toggle dark mode"
                     className="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
-                    style={{ backgroundColor: isDarkMode ? '#9333EA' : 'rgba(148,163,184,0.3)' }}
+                    style={{ backgroundColor: isDarkMode ? '#8B5CF6' : 'rgba(148,163,184,0.3)' }}
                   >
                     <span
                       className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
@@ -179,7 +177,7 @@ export const Header = ({ onOpenMobileSidebar }) => {
         ) : (
           <button
             onClick={() => openAuthModal('login')}
-            className="px-4 py-1.5 text-xs font-semibold rounded-full bg-[#9333EA] text-white hover:bg-[#7e22ce] transition-colors cursor-pointer shadow-sm"
+            className="px-4 py-1.5 text-xs font-semibold rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white transition-all cursor-pointer shadow-md shadow-violet-500/25"
           >
             Sign In
           </button>

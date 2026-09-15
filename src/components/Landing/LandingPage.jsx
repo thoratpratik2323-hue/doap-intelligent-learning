@@ -40,7 +40,7 @@ export const LandingPage = ({ onGetStarted, onSignIn }) => {
 
   return (
     <div className={`min-h-screen transition-colors duration-300 select-none font-sans relative overflow-x-hidden ${
-      isDarkMode ? 'bg-[#000000] text-white' : 'bg-[#ffffff] text-[#0a0a0a]'
+      isDarkMode ? 'bg-[#090D16] text-white' : 'bg-[#F8FAFC] text-[#0F172A]'
     }`}>
       {/* Monochromatic Background Orbs & Grain Texture */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -151,8 +151,7 @@ export const LandingPage = ({ onGetStarted, onSignIn }) => {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
           <button
             onClick={onGetStarted}
-            className="w-full sm:w-auto px-8 py-3.5 font-semibold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 group shadow-lg shadow-purple-900/40 hover:opacity-90"
-            style={{ backgroundColor: '#9333EA', color: '#F8FAFC' }}
+            className="w-full sm:w-auto px-8 py-3.5 font-semibold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 group shadow-xl shadow-violet-500/25 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white"
           >
             <span>Get Started</span>
             <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
@@ -160,12 +159,7 @@ export const LandingPage = ({ onGetStarted, onSignIn }) => {
 
           <button
             onClick={onSignIn}
-            className="w-full sm:w-auto px-8 py-3.5 border font-semibold text-xs rounded-xl transition-all cursor-pointer hover:border-purple-500"
-            style={{
-              backgroundColor: 'rgba(15, 20, 35, 0.95)',
-              borderColor: 'rgba(147, 51, 234, 0.30)',
-              color: '#F8FAFC',
-            }}
+            className="w-full sm:w-auto px-8 py-3.5 border font-semibold text-xs rounded-xl transition-all cursor-pointer hover:border-violet-500/40 bg-slate-900/60 border-white/10 text-slate-200"
           >
             <span>Sign In to Platform</span>
           </button>
@@ -179,8 +173,8 @@ export const LandingPage = ({ onGetStarted, onSignIn }) => {
             onMouseLeave={handleMouseLeave}
             style={{
               ...tiltStyle,
-              backgroundColor: 'rgba(15, 20, 35, 0.95)',
-              borderColor: 'rgba(147, 51, 234, 0.20)',
+              backgroundColor: 'rgba(15, 23, 42, 0.70)',
+              borderColor: 'rgba(255, 255, 255, 0.08)',
             }}
             className="rounded-2xl border p-6 md:p-10 text-left transition-transform duration-300 ease-out space-y-6 shadow-2xl"
           >
@@ -375,8 +369,7 @@ export const LandingPage = ({ onGetStarted, onSignIn }) => {
         <div className="pt-2">
           <button
             onClick={onGetStarted}
-            className="px-10 py-3.5 font-semibold text-xs rounded-xl transition-all inline-flex items-center gap-2 cursor-pointer group shadow-lg shadow-purple-900/40 hover:opacity-90"
-            style={{ backgroundColor: '#9333EA', color: '#F8FAFC' }}
+            className="px-10 py-3.5 font-semibold text-xs rounded-xl transition-all inline-flex items-center gap-2 cursor-pointer group shadow-xl shadow-violet-500/25 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white"
           >
             <span>Get Started</span>
             <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />

@@ -13,8 +13,8 @@ export const AmbientBackground = ({ children }) => {
     <div
       className="min-h-screen w-full font-sans relative overflow-hidden transition-colors duration-500"
       style={{
-        backgroundColor: 'var(--doap-bg, #0b0c10)',
-        color: 'var(--doap-text-prim, #f5f5f5)',
+        backgroundColor: 'var(--doap-bg, #090D16)',
+        color: 'var(--doap-text-prim, #F8FAFC)',
       }}
     >
       {/* ── Ambient gradient atmosphere (only when gradient/animated) ── */}

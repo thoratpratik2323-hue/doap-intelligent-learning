@@ -21,10 +21,10 @@ const InputField = ({ id, name, label, type, placeholder, value, onChange, icon:
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className={`w-full pl-10 pr-10 py-2.5 rounded-xl border text-sm transition-all duration-200 disabled:opacity-50 font-sans focus:outline-none focus:ring-1 focus:ring-[#9333EA] ${
+        className={`w-full pl-10 pr-10 py-2.5 rounded-xl border text-sm transition-all duration-200 disabled:opacity-50 font-sans focus:outline-none focus:ring-1 focus:ring-violet-500 ${
           isDarkMode
-            ? 'text-[#F8FAFC] placeholder-[#64748B] bg-[#0F1424]/90 border-[#9333EA]/25 focus:border-[#9333EA]'
-            : 'text-[#0F172A] placeholder-[#94A3B8] bg-[#F8FAFC] border-[#E2E8F0] focus:border-[#9333EA]'
+            ? 'text-[#F8FAFC] placeholder-slate-500 bg-slate-900/60 border-white/10 focus:border-violet-500'
+            : 'text-[#0F172A] placeholder-[#94A3B8] bg-[#F8FAFC] border-[#E2E8F0] focus:border-violet-500'
         }`}
       />
       {rightSlot}
@@ -96,19 +96,19 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
 
   return (
     <div className={`min-h-screen flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden font-sans select-none transition-colors ${
-      isDarkMode ? 'bg-[#0B0F19]' : 'bg-[#FFFFFF]'
+      isDarkMode ? 'bg-[#090D16]' : 'bg-[#F8FAFC]'
     }`}>
       {/* Background Subtle Pattern & Glow */}
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.03]"
         style={{
           backgroundImage: isDarkMode
-            ? 'linear-gradient(#9333EA 1px, transparent 1px), linear-gradient(90deg, #9333EA 1px, transparent 1px)'
+            ? 'linear-gradient(rgba(139, 92, 246, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.2) 1px, transparent 1px)'
             : 'linear-gradient(#0F172A 1px, transparent 1px), linear-gradient(90deg, #0F172A 1px, transparent 1px)',
           backgroundSize: '36px 36px',
         }}
       />
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[350px] rounded-full bg-[#9333EA]/8 blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[400px] rounded-full bg-violet-600/10 blur-[150px] pointer-events-none" />
 
       {/* Top Bar Back Link */}
       {onBackToLanding && (
@@ -127,9 +127,9 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
       )}
 
       {/* Main Authentication Card */}
-      <div className={`relative z-10 w-full max-w-[420px] rounded-2xl p-7 sm:p-8 backdrop-blur-xl transition-colors ${
+      <div className={`relative z-10 w-full max-w-[420px] rounded-2xl p-7 sm:p-8 backdrop-blur-2xl transition-colors ${
         isDarkMode
-          ? 'bg-[#0F1424]/90 border border-[#9333EA]/20 shadow-2xl shadow-black/80'
+          ? 'bg-slate-900/70 border border-white/8 shadow-2xl shadow-black/80'
           : 'bg-[#FFFFFF] border border-[#E2E8F0] shadow-2xl shadow-neutral-200/80'
       }`}>
         {/* Brand Header with New Logo */}
@@ -152,7 +152,7 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
         {/* Mode Pill Switcher */}
         {mode !== 'reset' && (
           <div className={`flex p-1 rounded-xl mb-6 ${
-            isDarkMode ? 'bg-[#0B0F19]/80 border border-[#9333EA]/20' : 'bg-[#F1F5F9] border border-[#E2E8F0]'
+            isDarkMode ? 'bg-slate-950/60 border border-white/8' : 'bg-[#F1F5F9] border border-[#E2E8F0]'
           }`}>
             <button
               type="button"
@@ -160,7 +160,7 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
               disabled={isSubmitting}
               className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                 mode === 'login'
-                  ? 'bg-[#9333EA] text-[#F8FAFC] shadow-md shadow-[#9333EA]/30'
+                  ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-[#F8FAFC] shadow-md shadow-violet-500/25'
                   : isDarkMode ? 'text-[#94A3B8] hover:text-[#F8FAFC]' : 'text-[#64748B] hover:text-[#0F172A]'
               }`}
             >
@@ -172,7 +172,7 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
               disabled={isSubmitting}
               className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                 mode === 'signup'
-                  ? 'bg-[#9333EA] text-[#F8FAFC] shadow-md shadow-[#9333EA]/30'
+                  ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-[#F8FAFC] shadow-md shadow-violet-500/25'
                   : isDarkMode ? 'text-[#94A3B8] hover:text-[#F8FAFC]' : 'text-[#64748B] hover:text-[#0F172A]'
               }`}
             >
@@ -262,7 +262,7 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={isSubmitting}
                   className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer ${
-                    isDarkMode ? 'text-[#94A3B8] hover:text-[#FF9E7D]' : 'text-[#64748B] hover:text-[#9333EA]'
+                    isDarkMode ? 'text-[#94A3B8] hover:text-violet-400' : 'text-[#64748B] hover:text-violet-600'
                   }`}
                 >
                   {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -291,7 +291,7 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   disabled={isSubmitting}
                   className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer ${
-                    isDarkMode ? 'text-[#94A3B8] hover:text-[#FF9E7D]' : 'text-[#64748B] hover:text-[#9333EA]'
+                    isDarkMode ? 'text-[#94A3B8] hover:text-violet-400' : 'text-[#64748B] hover:text-violet-600'
                   }`}
                 >
                   {showConfirmPassword ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -307,7 +307,7 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
                 onClick={() => handleModeSwitch('reset')}
                 disabled={isSubmitting}
                 className={`text-xs transition-colors cursor-pointer ${
-                  isDarkMode ? 'text-[#94A3B8] hover:text-[#FF9E7D]' : 'text-[#64748B] hover:text-[#9333EA]'
+                  isDarkMode ? 'text-[#94A3B8] hover:text-violet-400' : 'text-[#64748B] hover:text-violet-600'
                 }`}
               >
                 Forgot password?
@@ -315,11 +315,11 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
             </div>
           )}
 
-          {/* Primary CTA (Electric Purple) */}
+          {/* Primary CTA */}
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full mt-2 py-2.5 px-4 rounded-xl font-semibold text-sm text-[#F8FAFC] bg-[#9333EA] hover:bg-[#7e22ce] shadow-lg shadow-[#9333EA]/25 transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-[0.99]"
+            className="w-full mt-2 py-2.5 px-4 rounded-xl font-semibold text-sm text-[#F8FAFC] bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 shadow-xl shadow-violet-500/25 transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-[0.99]"
           >
             {isSubmitting ? (
               <>
@@ -337,9 +337,9 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
 
           {/* Divider */}
           <div className="relative flex items-center justify-center my-4">
-            <div className={`w-full border-t ${isDarkMode ? 'border-[#9333EA]/15' : 'border-[#E2E8F0]'}`} />
+            <div className={`w-full border-t ${isDarkMode ? 'border-white/10' : 'border-[#E2E8F0]'}`} />
             <span className={`absolute px-3 text-[11px] font-mono uppercase tracking-wider ${
-              isDarkMode ? 'bg-[#0F1424] text-[#94A3B8]' : 'bg-[#FFFFFF] text-[#64748B]'
+              isDarkMode ? 'bg-slate-900 text-slate-400' : 'bg-[#FFFFFF] text-[#64748B]'
             }`}>
               or
             </span>
@@ -352,11 +352,11 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
             disabled={isSubmitting}
             className={`w-full py-2.5 px-4 rounded-xl border text-xs font-medium transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 ${
               isDarkMode
-                ? 'border-[#9333EA]/25 bg-[#0B0F19]/50 hover:bg-[#9333EA]/10 hover:border-[#FF9E7D]/40 text-[#F8FAFC]'
+                ? 'border-white/10 bg-slate-950/40 hover:bg-white/5 hover:border-violet-500/40 text-slate-200'
                 : 'border-[#E2E8F0] bg-[#F8FAFC] hover:bg-[#F1F5F9] text-[#0F172A]'
             }`}
           >
-            <Sparkles size={14} className="text-[#9333EA]" />
+            <Sparkles size={14} className="text-violet-400" />
             <span>Continue as Guest (Demo Mode)</span>
           </button>
         </form>
@@ -369,7 +369,7 @@ export const AuthScreen = ({ initialMode = 'login', onBackToLanding }) => {
               type="button"
               onClick={() => handleModeSwitch('login')}
               disabled={isSubmitting}
-              className="text-[#9333EA] font-semibold hover:underline cursor-pointer ml-1"
+              className="text-violet-400 font-semibold hover:underline cursor-pointer ml-1"
             >
               Sign In
             </button>

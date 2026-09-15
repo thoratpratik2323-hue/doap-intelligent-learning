@@ -5,7 +5,7 @@ import { useTheme } from '../../context/ThemeContext';
 
 export const SetupStep = ({ onNext }) => {
   const { isDarkMode, activeAccentHex } = useTheme();
-  const accentHex = activeAccentHex || '#9333EA';
+  const accentHex = activeAccentHex || '#8B5CF6';
 
   const [selectedCompanyTrack, setSelectedCompanyTrack] = useState('google');
   const [selectedPositionId, setSelectedPositionId] = useState('software-engineer');
@@ -37,15 +37,11 @@ export const SetupStep = ({ onNext }) => {
     <div className="space-y-8 animate-fade-in select-none">
       {/* Quick Action Top Bar */}
       <div 
-        className="p-4 sm:p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm transition-colors"
-        style={{
-          backgroundColor: isDarkMode ? 'rgba(15, 20, 35, 0.95)' : '#FFFFFF',
-          borderColor: isDarkMode ? 'rgba(147, 51, 234, 0.20)' : '#E2E8F0',
-        }}
+        className="p-4 sm:p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm transition-all doap-card hover-glide"
       >
         <div className="flex items-center gap-3">
           <div 
-            className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm text-white shrink-0 bg-[#9333EA] shadow-md shadow-[#9333EA]/20"
+            className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm text-white shrink-0 bg-gradient-to-r from-violet-600 to-indigo-600 shadow-md shadow-violet-500/25"
           >
             ✓
           </div>
@@ -63,7 +59,7 @@ export const SetupStep = ({ onNext }) => {
 
         <button
           onClick={handleProceed}
-          className="px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:bg-[#7e22ce] text-white bg-[#9333EA] self-stretch sm:self-auto active:scale-[0.99]"
+          className="px-6 py-2.5 rounded-xl font-bold text-xs shadow-lg shadow-violet-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 self-stretch sm:self-auto active:scale-[0.99]"
         >
           <span>Continue ➔ Next Step</span>
         </button>
@@ -78,8 +74,7 @@ export const SetupStep = ({ onNext }) => {
           {selectedCompanyTrack && (
             <button
               onClick={() => setSelectedCompanyTrack(null)}
-              className="text-xs font-medium hover:underline cursor-pointer"
-              style={{ color: '#9333EA' }}
+              className="text-xs font-medium hover:underline cursor-pointer text-violet-400 hover:text-violet-300"
             >
               Reset to General Role
             </button>
@@ -97,19 +92,19 @@ export const SetupStep = ({ onNext }) => {
                 className={`p-3.5 rounded-xl text-left transition-all cursor-pointer border flex flex-col justify-between space-y-2 ${
                   isSelected
                     ? isDarkMode
-                      ? 'border-[#9333EA] bg-[#9333EA]/15 shadow-md shadow-[#9333EA]/20'
-                      : 'border-[#9333EA] bg-[#FAF5FF] shadow-sm shadow-[#9333EA]/10'
+                      ? 'border-violet-500 bg-violet-600/15 shadow-md shadow-violet-500/20'
+                      : 'border-violet-500 bg-violet-50 shadow-sm shadow-violet-500/10'
                     : isDarkMode
-                    ? 'border-[#9333EA]/15 bg-[#0F1424] hover:border-[#9333EA]/40'
+                    ? 'border-white/8 bg-slate-900/50 hover:border-violet-500/40 hover:bg-slate-900/80'
                     : 'border-[#E2E8F0] bg-white hover:border-slate-300'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-xs" style={{ color: isSelected ? '#9333EA' : (isDarkMode ? '#F8FAFC' : '#0F172A') }}>
+                  <span className="font-semibold text-xs" style={{ color: isSelected ? '#A78BFA' : (isDarkMode ? '#F8FAFC' : '#0F172A') }}>
                     {track.name}
                   </span>
                   {isSelected && (
-                    <span className="w-2 h-2 rounded-full bg-[#9333EA]" />
+                    <span className="w-2 h-2 rounded-full bg-violet-500" />
                   )}
                 </div>
                 <span className={`text-[11px] font-medium px-2 py-0.5 rounded truncate block ${
@@ -127,10 +122,10 @@ export const SetupStep = ({ onNext }) => {
         {selectedCompanyTrack && (
           <div className={`p-3.5 rounded-xl border text-xs font-medium flex items-center gap-2 animate-fade-in ${
             isDarkMode
-              ? 'bg-purple-950/30 border-purple-800 text-purple-200'
-              : 'bg-purple-50 border-purple-200 text-purple-900'
+              ? 'bg-violet-950/30 border-violet-800/50 text-violet-200'
+              : 'bg-violet-50 border-violet-200 text-violet-900'
           }`}>
-            <Sparkles size={14} className="text-[#9333EA] shrink-0" />
+            <Sparkles size={14} className="text-violet-400 shrink-0" />
             <span>
               <strong className="font-semibold">{COMPANY_TRACKS.find(t => t.id === selectedCompanyTrack)?.name} Active:</strong>{' '}
               {COMPANY_TRACKS.find(t => t.id === selectedCompanyTrack)?.rubric}
@@ -154,10 +149,10 @@ export const SetupStep = ({ onNext }) => {
                 className={`p-4 rounded-xl text-left transition-all cursor-pointer border flex flex-col justify-between space-y-2 hover-glide ${
                   isSelected
                     ? isDarkMode
-                      ? 'border-[#9333EA] bg-[#9333EA]/15 shadow-md shadow-[#9333EA]/20'
-                      : 'border-[#9333EA] bg-[#FAF5FF] shadow-sm'
+                      ? 'border-violet-500 bg-violet-600/15 shadow-md shadow-violet-500/20'
+                      : 'border-violet-500 bg-violet-50 shadow-sm'
                     : isDarkMode
-                    ? 'border-[#9333EA]/15 bg-[#0F1424] hover:border-[#9333EA]/40'
+                    ? 'border-white/8 bg-slate-900/50 hover:border-violet-500/40 hover:bg-slate-900/80'
                     : 'border-[#E2E8F0] bg-white hover:border-slate-300 shadow-sm'
                 }`}
               >
@@ -167,7 +162,7 @@ export const SetupStep = ({ onNext }) => {
                   </span>
                   {isSelected && (
                     <div 
-                      className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[11px] font-bold bg-[#9333EA]"
+                      className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[11px] font-bold bg-gradient-to-r from-violet-600 to-indigo-600"
                     >
                       ✓
                     </div>
@@ -184,23 +179,18 @@ export const SetupStep = ({ onNext }) => {
 
       {/* Optional Job Description Paste */}
       <div 
-        className="p-5 rounded-2xl space-y-3 border shadow-sm transition-colors"
-        style={{
-          backgroundColor: isDarkMode ? 'rgba(15, 20, 35, 0.95)' : '#FFFFFF',
-          borderColor: isDarkMode ? 'rgba(147, 51, 234, 0.20)' : '#E2E8F0',
-        }}
+        className="p-5 rounded-2xl space-y-3 border shadow-sm transition-all doap-card hover-glide"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <FileText size={18} className="text-[#9333EA]" />
+            <FileText size={18} className="text-violet-400" />
             <span className="text-sm font-bold" style={{ color: isDarkMode ? '#F8FAFC' : '#0F172A' }}>
               Custom Job Description (Optional)
             </span>
           </div>
           <button
             onClick={() => setShowJdInput(!showJdInput)}
-            className="text-xs font-bold hover:underline cursor-pointer"
-            style={{ color: '#9333EA' }}
+            className="text-xs font-bold hover:underline cursor-pointer text-violet-400 hover:text-violet-300"
           >
             {showJdInput ? "Hide Field" : "+ Paste Job Posting"}
           </button>
@@ -215,8 +205,8 @@ export const SetupStep = ({ onNext }) => {
               onChange={(e) => setJobDescription(e.target.value)}
               className={`w-full p-3.5 rounded-xl border text-xs focus:outline-none resize-none transition-colors ${
                 isDarkMode
-                  ? 'bg-[#0F1424] border-[#9333EA]/25 text-[#F8FAFC] placeholder-[#64748B]'
-                  : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#0F172A] placeholder-[#94A3B8]'
+                  ? 'bg-slate-900/60 border-white/10 text-white placeholder-slate-500 focus:border-violet-500'
+                  : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#0F172A] placeholder-[#94A3B8] focus:border-violet-500'
               }`}
             />
             <p className="text-xs" style={{ color: isDarkMode ? '#94A3B8' : '#64748B' }}>
@@ -243,10 +233,10 @@ export const SetupStep = ({ onNext }) => {
                   onClick={(e) => { e.preventDefault(); setSelectedType(type); }}
                   className={`w-full p-3 rounded-xl font-semibold text-xs transition-all cursor-pointer border flex items-center justify-between active:scale-[0.98] ${
                     isSelected
-                      ? 'bg-[#9333EA] text-white border-[#9333EA] shadow-md shadow-[#9333EA]/30'
+                      ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-violet-500 shadow-md shadow-violet-500/25'
                       : isDarkMode
-                      ? 'border-[#9333EA]/20 bg-[#0F1424] text-[#94A3B8] hover:border-[#9333EA]/50 hover:text-white'
-                      : 'border-[#E2E8F0] bg-white text-[#334155] hover:border-[#9333EA]/50 hover:bg-[#FAF5FF]'
+                      ? 'border-white/8 bg-slate-900/50 text-slate-300 hover:border-violet-500/40 hover:text-white'
+                      : 'border-[#E2E8F0] bg-white text-[#334155] hover:border-violet-400 hover:bg-[#FAF5FF]'
                   }`}
                 >
                   <span>{type}</span>
@@ -278,10 +268,10 @@ export const SetupStep = ({ onNext }) => {
                   onClick={(e) => { e.preventDefault(); setSelectedDifficulty(diff); }}
                   className={`w-full p-3 rounded-xl font-semibold text-xs transition-all cursor-pointer border flex items-center justify-between active:scale-[0.98] ${
                     isSelected
-                      ? 'bg-[#9333EA] text-white border-[#9333EA] shadow-md shadow-[#9333EA]/30'
+                      ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-violet-500 shadow-md shadow-violet-500/25'
                       : isDarkMode
-                      ? 'border-[#9333EA]/20 bg-[#0F1424] text-[#94A3B8] hover:border-[#9333EA]/50 hover:text-white'
-                      : 'border-[#E2E8F0] bg-white text-[#334155] hover:border-[#9333EA]/50 hover:bg-[#FAF5FF]'
+                      ? 'border-white/8 bg-slate-900/50 text-slate-300 hover:border-violet-500/40 hover:text-white'
+                      : 'border-[#E2E8F0] bg-white text-[#334155] hover:border-violet-400 hover:bg-[#FAF5FF]'
                   }`}
                 >
                   <span>{diff}</span>
@@ -313,10 +303,10 @@ export const SetupStep = ({ onNext }) => {
                   onClick={(e) => { e.preventDefault(); setSelectedDuration(dur); }}
                   className={`w-full p-3 rounded-xl font-semibold text-xs transition-all cursor-pointer border flex items-center justify-between active:scale-[0.98] ${
                     isSelected
-                      ? 'bg-[#9333EA] text-white border-[#9333EA] shadow-md shadow-[#9333EA]/30'
+                      ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-violet-500 shadow-md shadow-violet-500/25'
                       : isDarkMode
-                      ? 'border-[#9333EA]/20 bg-[#0F1424] text-[#94A3B8] hover:border-[#9333EA]/50 hover:text-white'
-                      : 'border-[#E2E8F0] bg-white text-[#334155] hover:border-[#9333EA]/50 hover:bg-[#FAF5FF]'
+                      ? 'border-white/8 bg-slate-900/50 text-slate-300 hover:border-violet-500/40 hover:text-white'
+                      : 'border-[#E2E8F0] bg-white text-[#334155] hover:border-violet-400 hover:bg-[#FAF5FF]'
                   }`}
                 >
                   <span>{dur}</span>
@@ -337,7 +327,7 @@ export const SetupStep = ({ onNext }) => {
       {/* Main Continue Button */}
       <button
         onClick={handleProceed}
-        className="w-full py-3.5 font-bold text-sm rounded-xl shadow-lg shadow-[#9333EA]/20 transition-all flex items-center justify-center gap-2 cursor-pointer text-white bg-[#9333EA] hover:bg-[#7e22ce] active:scale-[0.99]"
+        className="w-full py-3.5 font-bold text-sm rounded-xl shadow-xl shadow-violet-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 active:scale-[0.99]"
       >
         <span>Proceed to Interview Rules & System Check</span>
         <ChevronRight size={18} />

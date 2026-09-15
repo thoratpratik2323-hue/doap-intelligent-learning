@@ -4,7 +4,7 @@ import { useTheme } from '../context/ThemeContext';
 
 export const Profile = () => {
   const { profile, setIsEditProfileOpen, isDarkMode, activeAccentHex } = useTheme();
-  const accentHex = activeAccentHex || 'var(--doap-accent, #9333EA)';
+  const accentHex = activeAccentHex || 'var(--doap-accent, #8B5CF6)';
 
   const hasEducation = profile?.university || profile?.course || profile?.year;
   const hasSkills = profile?.skills && profile.skills.length > 0;

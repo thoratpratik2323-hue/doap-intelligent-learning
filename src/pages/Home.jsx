@@ -141,18 +141,18 @@ export const Home = () => {
         }`}>
           Ziv
         </h1>
-        <p className={`text-xs sm:text-sm font-mono tracking-widest uppercase font-semibold ${
-          isDarkMode ? 'text-purple-400' : 'text-purple-600'
+        <p className={`text-xs sm:text-sm font-semibold tracking-wide ${
+          isDarkMode ? 'text-violet-400' : 'text-violet-600'
         }`}>
           The modern playground for future developers
         </p>
-        <h2 className={`text-2xl md:text-3xl font-semibold tracking-tight ${
-          isDarkMode ? 'text-neutral-200' : 'text-[#0F172A]'
+        <h2 className={`text-2xl md:text-3xl font-bold tracking-tight ${
+          isDarkMode ? 'text-slate-100' : 'text-[#0F172A]'
         }`}>
           Back again? Good.
         </h2>
         <p className={`font-normal text-sm ${
-          isDarkMode ? 'text-neutral-400' : 'text-[#475569]'
+          isDarkMode ? 'text-slate-400' : 'text-[#475569]'
         }`}>
           What do you want to work on today?
         </p>
@@ -161,13 +161,7 @@ export const Home = () => {
       {/* Top 2 Feature Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-2xl mx-auto">
         {/* Continue Learning Card */}
-        <div className="p-6 rounded-2xl border space-y-4 flex flex-col justify-between transition-colors doap-card"
-          style={{
-            backgroundColor: isDarkMode ? 'rgba(15, 20, 35, 0.95)' : '#FFFFFF',
-            borderColor: isDarkMode ? 'rgba(147, 51, 234, 0.20)' : '#E2E8F0',
-            color: isDarkMode ? '#F8FAFC' : '#0F172A',
-            boxShadow: isDarkMode ? 'none' : '0 4px 20px rgba(0, 0, 0, 0.05)',
-          }}>
+        <div className="p-6 rounded-2xl border space-y-4 flex flex-col justify-between transition-all doap-card hover-glide">
           <div className="space-y-2">
             <span className="text-[11px] font-mono uppercase tracking-widest block" style={{ color: isDarkMode ? '#94A3B8' : '#64748B' }}>
               CONTINUE
@@ -183,15 +177,14 @@ export const Home = () => {
           <div className="space-y-4 pt-2">
             <div className="flex items-center gap-3">
               <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
-                <div className="h-full rounded-full w-[72%]" style={{ backgroundColor: '#9333EA' }} />
+                <div className="h-full rounded-full w-[72%] bg-gradient-to-r from-violet-500 to-indigo-500" />
               </div>
               <span className="text-xs font-mono font-bold" style={{ color: isDarkMode ? '#F8FAFC' : '#0F172A' }}>72%</span>
             </div>
 
             <button 
               onClick={() => navigateTo('/learning')}
-              className="font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer hover:underline"
-              style={{ color: '#9333EA' }}
+              className="font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer text-violet-400 hover:text-violet-300"
             >
               <span>Continue</span>
               <ArrowRight size={14} />
@@ -200,22 +193,15 @@ export const Home = () => {
         </div>
 
         {/* Daily Ziv Streak & Challenge Engine Card */}
-        <div className="p-6 rounded-2xl border space-y-4 flex flex-col justify-between transition-colors doap-card relative overflow-hidden"
-          style={{
-            backgroundColor: isDarkMode ? 'rgba(15, 20, 35, 0.95)' : '#FFFFFF',
-            borderColor: isDarkMode ? 'rgba(147, 51, 234, 0.20)' : '#E2E8F0',
-            color: isDarkMode ? '#F8FAFC' : '#0F172A',
-            boxShadow: isDarkMode ? 'none' : '0 4px 20px rgba(0, 0, 0, 0.05)',
-          }}>
+        <div className="p-6 rounded-2xl border space-y-4 flex flex-col justify-between transition-all doap-card hover-glide relative overflow-hidden">
           {/* Top Header & Streak Pill */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-mono uppercase tracking-widest block font-bold" style={{ color: isDarkMode ? '#94A3B8' : '#64748B' }}>
                 DAILY ZIV DRILL
               </span>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-bold"
-                style={{ backgroundColor: 'rgba(255, 158, 125, 0.15)', border: '1px solid rgba(255, 158, 125, 0.35)', color: '#FF9E7D' }}>
-                <Flame size={13} style={{ color: '#FF9E7D' }} className="animate-pulse" />
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-orange-500/10 border border-orange-500/25 text-orange-400">
+                <Flame size={13} className="text-orange-400 animate-pulse" />
                 <span>{streakCount} Days Streak</span>
               </div>
             </div>
@@ -247,8 +233,8 @@ export const Home = () => {
                         isWrong
                           ? 'bg-rose-950/40 border-rose-500 text-rose-200 animate-shake'
                           : isDarkMode
-                          ? 'bg-neutral-900/60 border-neutral-800 hover:border-neutral-700 hover:bg-neutral-800/80 text-neutral-200'
-                          : 'bg-[#F8FAFC] border-[#E2E8F0] hover:border-[#9333EA]/40 hover:bg-white text-[#0F172A]'
+                          ? 'bg-slate-900/60 border-white/8 hover:border-violet-500/40 hover:bg-slate-800/80 text-slate-200'
+                          : 'bg-[#F8FAFC] border-[#E2E8F0] hover:border-violet-400 hover:bg-white text-[#0F172A]'
                       }`}
                     >
                       <span>{opt}</span>
@@ -283,8 +269,8 @@ export const Home = () => {
                       key={i}
                       className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[9px] ${
                         isPastOrToday
-                          ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30'
-                          : isDarkMode ? 'bg-neutral-900 text-neutral-600' : 'bg-neutral-100 text-neutral-400'
+                          ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                          : isDarkMode ? 'bg-slate-900 text-slate-600' : 'bg-slate-100 text-slate-400'
                       }`}
                       title={`${day}: Active`}
                     >
@@ -301,16 +287,10 @@ export const Home = () => {
       {/* Company Prep LeetCode Archive Cross-Link Banner */}
       <div 
         onClick={() => navigateTo('/company-prep')}
-        className="p-4 md:p-5 rounded-2xl border transition-all cursor-pointer group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 max-w-2xl mx-auto shadow-lg hover:scale-[1.01]"
-        style={{
-          backgroundColor: isDarkMode ? 'rgba(15, 20, 35, 0.95)' : '#FFFFFF',
-          borderColor: isDarkMode ? 'rgba(147, 51, 234, 0.25)' : '#E2E8F0',
-          boxShadow: isDarkMode ? 'none' : '0 4px 20px rgba(0, 0, 0, 0.05)',
-        }}
+        className="p-4 md:p-5 rounded-2xl border transition-all cursor-pointer group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 max-w-2xl mx-auto shadow-lg hover:scale-[1.01] doap-card hover-glide"
       >
         <div className="flex items-center gap-3.5">
-          <div className="p-2.5 rounded-xl border group-hover:scale-110 transition-transform shrink-0"
-            style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', borderColor: 'rgba(147, 51, 234, 0.35)', color: '#9333EA' }}>
+          <div className="p-2.5 rounded-xl border group-hover:scale-110 transition-transform shrink-0 bg-violet-500/15 border-violet-500/30 text-violet-400">
             <Building2 size={22} />
           </div>
           <div className="space-y-0.5">
@@ -318,8 +298,7 @@ export const Home = () => {
               <h3 className="text-sm md:text-base font-bold" style={{ color: isDarkMode ? '#F8FAFC' : '#0F172A' }}>
                 🏢 Looking for Company-Specific Questions?
               </h3>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full font-bold"
-                style={{ backgroundColor: 'rgba(255, 158, 125, 0.15)', borderColor: 'rgba(255, 158, 125, 0.35)', color: '#FF9E7D', border: '1px solid' }}>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full font-bold bg-orange-500/10 border border-orange-500/25 text-orange-400">
                 8,600+ LEETCODE QUESTIONS
               </span>
             </div>
@@ -328,8 +307,7 @@ export const Home = () => {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 text-xs font-semibold shrink-0 self-end sm:self-center"
-          style={{ color: '#9333EA' }}>
+        <div className="flex items-center gap-1.5 text-xs font-semibold shrink-0 self-end sm:self-center text-violet-400 group-hover:text-violet-300">
           <span>Open Company Archive</span>
           <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
         </div>
@@ -343,24 +321,16 @@ export const Home = () => {
             <button
               key={index}
               onClick={() => setIsTutorModalOpen(true)}
-              className="w-full p-4.5 rounded-2xl flex items-center justify-between transition-all border cursor-pointer group doap-card"
-              style={{
-                backgroundColor: isDarkMode ? 'rgba(15, 20, 35, 0.95)' : '#FFFFFF',
-                borderColor: isDarkMode ? 'rgba(147, 51, 234, 0.20)' : '#E2E8F0',
-                color: isDarkMode ? '#F8FAFC' : '#0F172A',
-                boxShadow: isDarkMode ? 'none' : '0 4px 20px rgba(0, 0, 0, 0.05)',
-              }}
+              className="w-full p-4.5 rounded-2xl flex items-center justify-between transition-all border cursor-pointer group doap-card hover-glide"
             >
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors border"
-                  style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', borderColor: 'rgba(147, 51, 234, 0.35)', color: '#9333EA' }}>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors border bg-violet-500/15 border-violet-500/30 text-violet-400">
                   <Icon size={18} />
                 </div>
                 <div className="text-left">
                   <h3 className="font-bold text-base leading-snug flex items-center gap-2" style={{ color: isDarkMode ? '#F8FAFC' : '#0F172A' }}>
                     <span>{act.title}</span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full font-medium border"
-                      style={{ backgroundColor: 'rgba(255, 158, 125, 0.12)', borderColor: 'rgba(255, 158, 125, 0.30)', color: '#FF9E7D' }}>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full font-medium border bg-violet-500/10 border-violet-500/20 text-violet-300">
                       Text & Voice
                     </span>
                   </h3>
@@ -369,8 +339,7 @@ export const Home = () => {
                   </p>
                 </div>
               </div>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform group-hover:translate-x-1"
-                style={{ color: '#9333EA' }}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform group-hover:translate-x-1 text-violet-400 group-hover:text-violet-300">
                 <ArrowRight size={16} />
               </div>
             </button>
@@ -385,10 +354,10 @@ export const Home = () => {
           onClick={() => setIsTutorModalOpen(false)}
         >
           <div 
-            className="relative w-full max-w-lg rounded-2xl border p-6 sm:p-7 shadow-2xl transition-all animate-scale-in space-y-6 my-auto"
+            className="relative w-full max-w-lg rounded-2xl border p-6 sm:p-7 shadow-2xl transition-all animate-scale-in space-y-6 my-auto backdrop-blur-xl"
             style={{
-              backgroundColor: '#0B0F19',
-              borderColor: 'rgba(147, 51, 234, 0.30)',
+              backgroundColor: '#090D16',
+              borderColor: 'rgba(255, 255, 255, 0.1)',
               color: '#F8FAFC',
             }}
             onClick={(e) => e.stopPropagation()}
@@ -426,36 +395,33 @@ export const Home = () => {
                   setIsTutorModalOpen(false);
                   navigateTo('/ai-tutor');
                 }}
-                className="p-5 rounded-2xl border text-left flex flex-col justify-between transition-all duration-200 cursor-pointer group hover:scale-[1.02]"
+                className="p-5 rounded-2xl border text-left flex flex-col justify-between transition-all duration-200 cursor-pointer group hover:scale-[1.02] doap-card hover-glide"
                 style={{
-                  backgroundColor: 'rgba(15, 20, 35, 0.95)',
-                  borderColor: 'rgba(147, 51, 234, 0.25)',
+                  backgroundColor: 'rgba(15, 23, 42, 0.75)',
+                  borderColor: 'rgba(255, 255, 255, 0.08)',
                 }}
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl border flex items-center justify-center"
-                      style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', borderColor: 'rgba(147, 51, 234, 0.35)', color: '#9333EA' }}>
+                    <div className="w-10 h-10 rounded-xl border flex items-center justify-center bg-violet-500/15 border-violet-500/30 text-violet-400">
                       <MessageSquare size={20} />
                     </div>
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold border"
-                      style={{ backgroundColor: 'rgba(255, 158, 125, 0.12)', borderColor: 'rgba(255, 158, 125, 0.30)', color: '#FF9E7D' }}>
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold border bg-violet-500/10 border-violet-500/20 text-violet-300">
                       Self-Thinking
                     </span>
                   </div>
 
                   <div>
-                    <h4 className="font-bold text-base transition-colors" style={{ color: '#F8FAFC' }}>
+                    <h4 className="font-bold text-base transition-colors text-white">
                       Text AI Tutor
                     </h4>
-                    <p className="text-xs mt-1 leading-relaxed" style={{ color: '#94A3B8' }}>
+                    <p className="text-xs mt-1 leading-relaxed text-slate-400">
                       Deep cognitive reasoning with &lt;think&gt; trace, flash quizzes, syntax-highlighted code & Flux AI art.
                     </p>
                   </div>
                 </div>
 
-                <div className="pt-4 flex items-center gap-1.5 text-xs font-bold group-hover:translate-x-1 transition-transform"
-                  style={{ color: '#9333EA' }}>
+                <div className="pt-4 flex items-center gap-1.5 text-xs font-bold group-hover:translate-x-1 transition-transform text-violet-400 group-hover:text-violet-300">
                   <span>Open Text Chat</span>
                   <ArrowRight size={13} />
                 </div>
@@ -467,36 +433,33 @@ export const Home = () => {
                   setIsTutorModalOpen(false);
                   navigateTo('/voice-tutor');
                 }}
-                className="p-5 rounded-2xl border text-left flex flex-col justify-between transition-all duration-200 cursor-pointer group hover:scale-[1.02]"
+                className="p-5 rounded-2xl border text-left flex flex-col justify-between transition-all duration-200 cursor-pointer group hover:scale-[1.02] doap-card hover-glide"
                 style={{
-                  backgroundColor: 'rgba(15, 20, 35, 0.95)',
-                  borderColor: 'rgba(147, 51, 234, 0.25)',
+                  backgroundColor: 'rgba(15, 23, 42, 0.75)',
+                  borderColor: 'rgba(255, 255, 255, 0.08)',
                 }}
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl border flex items-center justify-center"
-                      style={{ backgroundColor: 'rgba(255, 158, 125, 0.15)', borderColor: 'rgba(255, 158, 125, 0.35)', color: '#FF9E7D' }}>
+                    <div className="w-10 h-10 rounded-xl border flex items-center justify-center bg-orange-500/15 border-orange-500/30 text-orange-400">
                       <Mic size={20} />
                     </div>
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold border"
-                      style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', borderColor: 'rgba(147, 51, 234, 0.35)', color: '#9333EA' }}>
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold border bg-orange-500/10 border-orange-500/20 text-orange-300">
                       Zero Latency
                     </span>
                   </div>
 
                   <div>
-                    <h4 className="font-bold text-base transition-colors" style={{ color: '#F8FAFC' }}>
+                    <h4 className="font-bold text-base transition-colors text-white">
                       Voice AI Tutor
                     </h4>
-                    <p className="text-xs mt-1 leading-relaxed" style={{ color: '#94A3B8' }}>
+                    <p className="text-xs mt-1 leading-relaxed text-slate-400">
                       Hands-free real-time audio dialogue with Charon studio voice and live Arc-Reactor HUD.
                     </p>
                   </div>
                 </div>
 
-                <div className="pt-4 flex items-center gap-1.5 text-xs font-bold group-hover:translate-x-1 transition-transform"
-                  style={{ color: '#FF9E7D' }}>
+                <div className="pt-4 flex items-center gap-1.5 text-xs font-bold group-hover:translate-x-1 transition-transform text-orange-400 group-hover:text-orange-300">
                   <span>Start Voice Call</span>
                   <ArrowRight size={13} />
                 </div>
