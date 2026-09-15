@@ -16,8 +16,8 @@ export { THEME_PRESETS, IPHONE_17_COLLECTION, ACCENT_SWATCHES, GRADIENT_THEMES, 
 const ThemeContext = createContext();
 
 export const DEFAULT_PERSONALIZATION = {
-  theme: 'azure',
-  accent: 'sky',
+  theme: 'cherry',
+  accent: 'cherry',
   background: 'subtle',         // 'default' | 'gradient' | 'subtle'
   gradientStyle: 'subtle',     // 'subtle' | 'balanced' | 'dynamic'
   backgroundIntensity: 20,     // 0–100
@@ -123,25 +123,25 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     const root = document.documentElement;
 
-    // Unified Aesthetic: Crisp White Background + Sky Blue & Deep Dark Blue Accents
+    // Unified Aesthetic: Pure Crisp White Background + Luxury Cherry Red Accents
     setIsDarkMode(false);
     root.classList.remove('dark');
 
     const colors = {
       bg: '#FFFFFF',
       surface: '#FFFFFF',
-      surfaceSec: '#F0F9FF',
-      border: 'rgba(14, 165, 233, 0.18)',
-      borderActive: '#0284C7',
-      textPrim: '#0F172A', // Deep Dark Blue / Navy
-      textSec: '#334155',
-      textMuted: '#64748B',
-      accent: '#0284C7',   // Sky Blue
-      accentSoft: 'rgba(2, 132, 199, 0.08)',
-      glow: 'rgba(56, 189, 248, 0.25)',
-      shadow: '0 4px 20px -2px rgba(2, 132, 199, 0.08)',
+      surfaceSec: '#FFF1F2', // soft cherry blush surface
+      border: 'rgba(225, 29, 72, 0.16)', // subtle cherry red border
+      borderActive: '#E11D48', // vivid cherry red
+      textPrim: '#18181B', // deep rich charcoal/black
+      textSec: '#3F3F46',
+      textMuted: '#71717A',
+      accent: '#E11D48',   // Cherry Red
+      accentSoft: 'rgba(225, 29, 72, 0.08)',
+      glow: 'rgba(225, 29, 72, 0.25)',
+      shadow: '0 4px 20px -2px rgba(225, 29, 72, 0.08)',
     };
-    const accentHex = '#0284C7';
+    const accentHex = '#E11D48';
 
     // ── Primary design tokens ──
     root.style.setProperty('--doap-bg', colors.bg);
@@ -171,17 +171,17 @@ export const ThemeProvider = ({ children }) => {
     root.style.setProperty('--glass-border', colors.border);
 
     // ── Ambient background ──
-    root.style.setProperty('--doap-bg-gradient', 'linear-gradient(180deg, #FFFFFF 0%, #F0F9FF 100%)');
-    root.style.setProperty('--doap-orb1', '#38BDF8');
-    root.style.setProperty('--doap-orb2', '#0284C7');
-    root.style.setProperty('--doap-bg-intensity', '0.2');
+    root.style.setProperty('--doap-bg-gradient', 'linear-gradient(180deg, #FFFFFF 0%, #FFF1F2 100%)');
+    root.style.setProperty('--doap-orb1', '#F43F5E');
+    root.style.setProperty('--doap-orb2', '#BE123C');
+    root.style.setProperty('--doap-bg-intensity', '0.15');
 
     // ── Glass blur ──
     const blur = GLASS_BLUR[settings?.glassIntensity || 'subtle'];
     root.style.setProperty('--doap-glass-blur', blur);
 
     // ── Data attributes for CSS selectors ──
-    const themeKey = settings?.theme || 'azure';
+    const themeKey = settings?.theme || 'cherry';
     root.setAttribute('data-theme', themeKey);
     root.setAttribute('data-glass', settings?.glassIntensity || 'subtle');
     root.setAttribute('data-depth', settings?.depth || 'subtle');

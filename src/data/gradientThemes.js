@@ -2,6 +2,45 @@
 // Centralized data source for all themes, colors, and gradient previews
 
 export const GRADIENT_THEMES = {
+  cherry: {
+    id: 'cherry',
+    name: 'Cherry Red & White',
+    subtitle: 'Pure White · Vivid Cherry Red',
+    dark: {
+      bg: '#FFFFFF',
+      surface: '#FFFFFF',
+      surfaceSec: '#FFF1F2',
+      border: 'rgba(225, 29, 72, 0.16)',
+      borderActive: '#E11D48',
+      textPrim: '#18181B',
+      textSec: '#3F3F46',
+      textMuted: '#71717A',
+      accent: '#E11D48',
+      accentSoft: 'rgba(225, 29, 72, 0.08)',
+      glow: 'rgba(225, 29, 72, 0.25)',
+      shadow: '0 4px 20px -2px rgba(225, 29, 72, 0.08)',
+    },
+    light: {
+      bg: '#FFFFFF',
+      surface: '#FFFFFF',
+      surfaceSec: '#FFF1F2',
+      border: 'rgba(225, 29, 72, 0.16)',
+      borderActive: '#E11D48',
+      textPrim: '#18181B',
+      textSec: '#3F3F46',
+      textMuted: '#71717A',
+      accent: '#E11D48',
+      accentSoft: 'rgba(225, 29, 72, 0.08)',
+      glow: 'rgba(225, 29, 72, 0.25)',
+      shadow: '0 4px 20px -2px rgba(225, 29, 72, 0.08)',
+    },
+    gradient: [
+      'linear-gradient(180deg, #FFFFFF 0%, #FFF1F2 100%)',
+    ],
+    bgGradient: 'linear-gradient(180deg, #FFFFFF 0%, #FFF1F2 100%)',
+    orb1Color: '#F43F5E',
+    orb2Color: '#BE123C',
+  },
   azure: {
     id: 'azure',
     name: 'Ziv Signature Azure',
@@ -369,8 +408,9 @@ export const IPHONE_THEMES = {
 };
 
 export const ACCENT_COLORS = [
-  { id: 'sky', name: 'Sky Blue', hex: '#0284C7' },
-  { id: 'neutral', name: 'Sky Blue', hex: '#0284C7' },
+  { id: 'cherry', name: 'Cherry Red', hex: '#E11D48' },
+  { id: 'crimson', name: 'Deep Crimson', hex: '#BE123C' },
+  { id: 'neutral', name: 'Cherry Red', hex: '#E11D48' },
   { id: 'purple', name: 'Electric Violet', hex: '#8B5CF6' },
   { id: 'peach', name: 'Digital Peach', hex: '#FB923C' },
   { id: 'slate', name: 'Slate Gray', hex: '#94A3B8' },

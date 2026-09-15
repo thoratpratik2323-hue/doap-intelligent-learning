@@ -4,7 +4,7 @@ import { THEME_COLOR_MAP } from "../../lib/myraaTypes";
 
 export const MyraaCoreVisualizer = ({
   state = "disconnected", // "disconnected" | "connecting" | "listening" | "speaking"
-  themeColor = "violet",
+  themeColor = "crimson",
   activeEmotion = "idle",
   characterState = "idle", // "idle" | "thinking" | "talking"
   audioAnalyser = null,
@@ -204,8 +204,8 @@ export const MyraaCoreVisualizer = ({
           {/* Subtle Outer Ambient Shadow */}
           <div className={`absolute inset-0 rounded-[2.5rem] blur-[30px] opacity-25 mix-blend-screen transition-colors duration-700 ${
             characterState === "thinking" ? "bg-amber-500/25" :
-            characterState === "talking" ? "bg-violet-600/30" :
-            characterState === "listening" ? "bg-cyan-500/25" : "bg-violet-600/20"
+            characterState === "talking" ? "bg-rose-600/30" :
+            characterState === "listening" ? "bg-rose-500/25" : "bg-rose-600/20"
           }`} />
 
           {/* Dedicated Attentive Listening Sound Wave Rings (Ears Forward & Alert) */}
@@ -213,15 +213,15 @@ export const MyraaCoreVisualizer = ({
             <div className="absolute inset-0 flex items-center justify-between px-6 pointer-events-none z-20 animate-fade-in">
               {/* Left ear sound waves */}
               <div className="flex items-center gap-1 opacity-75">
-                <span className="w-1.5 h-6 rounded-full bg-cyan-400 animate-pulse" />
-                <span className="w-1.5 h-10 rounded-full bg-cyan-300 animate-pulse delay-75" />
-                <span className="w-1.5 h-4 rounded-full bg-cyan-400 animate-pulse delay-150" />
+                <span className="w-1.5 h-6 rounded-full bg-rose-500 animate-pulse" />
+                <span className="w-1.5 h-10 rounded-full bg-rose-400 animate-pulse delay-75" />
+                <span className="w-1.5 h-4 rounded-full bg-rose-500 animate-pulse delay-150" />
               </div>
               {/* Right ear sound waves */}
               <div className="flex items-center gap-1 opacity-75">
-                <span className="w-1.5 h-4 rounded-full bg-cyan-400 animate-pulse delay-150" />
-                <span className="w-1.5 h-10 rounded-full bg-cyan-300 animate-pulse delay-75" />
-                <span className="w-1.5 h-6 rounded-full bg-cyan-400 animate-pulse" />
+                <span className="w-1.5 h-4 rounded-full bg-rose-500 animate-pulse delay-150" />
+                <span className="w-1.5 h-10 rounded-full bg-rose-400 animate-pulse delay-75" />
+                <span className="w-1.5 h-6 rounded-full bg-rose-500 animate-pulse" />
               </div>
             </div>
           )}
@@ -281,7 +281,7 @@ export const MyraaCoreVisualizer = ({
           />
 
           {/* Cybernetic Edge Guard */}
-          <div className="absolute inset-0 rounded-[2.5rem] border border-sky-200/40 pointer-events-none" />
+          <div className="absolute inset-0 rounded-[2.5rem] border border-rose-200/40 pointer-events-none" />
         </div>
       </div>
 
@@ -292,21 +292,21 @@ export const MyraaCoreVisualizer = ({
       />
 
       {/* 4. Floating HUD Emotion & Activity Status Pill */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 px-4 py-2 rounded-full border bg-white/95 backdrop-blur-md text-xs font-mono border-sky-200/80 shadow-lg shadow-sky-950/10">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 px-4 py-2 rounded-full border bg-white/95 backdrop-blur-md text-xs font-mono border-rose-200/80 shadow-lg shadow-rose-950/10">
         <span className={`w-2.5 h-2.5 rounded-full ${
           characterState === "talking" ? "bg-emerald-500 animate-ping" :
           characterState === "thinking" ? "bg-amber-500 animate-pulse" :
-          characterState === "listening" ? "bg-sky-500 animate-pulse" :
-          state === "connecting" ? "bg-sky-400 animate-pulse" : "bg-slate-400"
+          characterState === "listening" ? "bg-rose-500 animate-pulse" :
+          state === "connecting" ? "bg-rose-400 animate-pulse" : "bg-slate-400"
         }`} />
-        <span className="font-bold text-[#0F172A] uppercase tracking-wider text-[11px]">
+        <span className="font-bold text-[#18181B] uppercase tracking-wider text-[11px]">
           {characterState === "talking" ? "🎙️ Professor Myraa Explaining" :
            characterState === "thinking" ? "🧠 Formulating Intuitive Solution..." :
            characterState === "listening" ? "👂 Listening Intently (Ears Alert)" :
            state === "connecting" ? "⚡ Initializing Neural Core" : "Offline"}
         </span>
         {activeEmotion && activeEmotion !== "idle" && (
-          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200">
+          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
             {activeEmotion}
           </span>
         )}

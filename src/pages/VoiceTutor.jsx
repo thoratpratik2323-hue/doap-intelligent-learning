@@ -40,7 +40,7 @@ export const VoiceTutor = () => {
   const [state, setState] = useState("disconnected"); // "disconnected" | "connecting" | "listening" | "speaking"
   const [characterState, setCharacterState] = useState("idle");
   const [activeEmotion, setActiveEmotion] = useState("idle");
-  const [themeColor, setThemeColor] = useState("violet");
+  const [themeColor, setThemeColor] = useState("crimson");
 
   // Captions & Transcripts
   const [userCaption, setUserCaption] = useState("");
@@ -264,7 +264,7 @@ export const VoiceTutor = () => {
   };
 
   return (
-    <div className="relative w-full h-[calc(100vh-3.5rem)] flex flex-col justify-between overflow-hidden bg-gradient-to-b from-sky-50/30 via-white to-sky-50/20 text-[#0F172A] select-none">
+    <div className="relative w-full h-[calc(100vh-3.5rem)] flex flex-col justify-between overflow-hidden bg-gradient-to-b from-rose-50/40 via-white to-rose-50/30 text-[#18181B] select-none">
       
       {/* ── Center Stage: Holographic Visualizer ─────────────── */}
       <main className="relative flex-1 flex flex-col items-center justify-center overflow-hidden">
@@ -272,7 +272,7 @@ export const VoiceTutor = () => {
         <div className="absolute inset-0">
           <MyraaCoreVisualizer
             state={state}
-            themeColor={settings.themeColor || "celestial"}
+            themeColor={settings.themeColor || "crimson"}
             activeEmotion={activeEmotion}
             characterState={characterState}
             audioAnalyser={getMyraaAudioAnalyser() || sessionRef.current?.inputAnalyser || null}
@@ -281,15 +281,15 @@ export const VoiceTutor = () => {
       </main>
 
       {/* ── 3. Bottom Controls HUD ────────────────────────────────────────── */}
-      <footer className="relative z-30 flex items-center justify-center gap-3 px-4 py-4 border-t border-sky-100 bg-white/90 backdrop-blur-xl shrink-0 shadow-lg shadow-sky-950/5">
+      <footer className="relative z-30 flex items-center justify-center gap-3 px-4 py-4 border-t border-rose-100 bg-white/95 backdrop-blur-xl shrink-0 shadow-lg shadow-rose-950/5">
         {/* Central Microphone / Power Toggle */}
         <div className="flex items-center gap-3">
           <button
             onClick={connectSession}
             className={`p-4 px-6 rounded-3xl border font-bold transition-all shadow-xl cursor-pointer flex items-center justify-center gap-2.5 ${
               state !== "disconnected"
-                ? "bg-rose-600 border-rose-500 hover:bg-rose-500 text-white shadow-rose-600/30 scale-105"
-                : "bg-[#0F172A] border-sky-900 hover:bg-[#1E293B] text-white shadow-sky-950/20 hover:scale-105"
+                ? "bg-rose-600 border-rose-500 hover:bg-rose-700 text-white shadow-rose-600/30 scale-105"
+                : "bg-rose-600 border-rose-500 hover:bg-rose-700 text-white shadow-rose-600/25 hover:scale-105"
             }`}
           >
             {state !== "disconnected" ? (
@@ -299,7 +299,7 @@ export const VoiceTutor = () => {
               </>
             ) : (
               <>
-                <Mic size={20} className="text-sky-400" />
+                <Mic size={20} className="text-white" />
                 <span className="font-mono text-xs uppercase tracking-wider pr-1 text-white">Start Myraa Session</span>
               </>
             )}
@@ -309,7 +309,7 @@ export const VoiceTutor = () => {
           {state === "speaking" && (
             <button
               onClick={() => sessionRef.current?.interrupt()}
-              className="px-4 py-3.5 rounded-2xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 font-mono text-xs font-bold transition-all cursor-pointer animate-fade-in shadow-sm"
+              className="px-4 py-3.5 rounded-2xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-800 font-mono text-xs font-bold transition-all cursor-pointer animate-fade-in shadow-sm"
               title="Interrupt Myraa"
             >
               Interrupt
@@ -325,7 +325,7 @@ export const VoiceTutor = () => {
         memories={memories}
         onAddMemory={handleAddMemory}
         onDeleteMemory={handleDeleteMemory}
-        themeColor={settings.themeColor || "violet"}
+        themeColor={settings.themeColor || "crimson"}
       />
 
       <SettingsPanel

@@ -48,14 +48,14 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
       `}
       style={{
         backgroundColor: '#FFFFFF',
-        borderColor: 'rgba(14, 165, 233, 0.15)',
-        color: '#0F172A',
+        borderColor: 'rgba(225, 29, 72, 0.16)',
+        color: '#18181B',
       }}
     >
       {/* ── Logo / Header ── */}
       <div
         className="h-14 flex items-center justify-between px-4 border-b shrink-0"
-        style={{ borderColor: 'rgba(14, 165, 233, 0.15)' }}
+        style={{ borderColor: 'rgba(225, 29, 72, 0.16)' }}
       >
         <div
           onClick={() => handleNavClick('/')}
@@ -64,9 +64,9 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
           <img src="/ziv-logo.png" alt="Ziv" className="h-8 w-8 object-contain rounded-lg shadow-sm" />
           {!isSidebarCollapsed && (
             <div className="flex flex-col leading-tight">
-              <span className="text-base font-extrabold tracking-tight text-[#0F172A]">Ziv</span>
+              <span className="text-base font-extrabold tracking-tight text-[#18181B]">Ziv</span>
               {isDevBypass && (
-                <span className="text-[9px] font-mono text-sky-600 uppercase tracking-widest font-bold">Dev Mode</span>
+                <span className="text-[9px] font-mono text-rose-600 uppercase tracking-widest font-bold">Dev Mode</span>
               )}
             </div>
           )}
@@ -75,7 +75,7 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         <div className="hidden md:flex items-center gap-0.5">
           <button
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className="p-1.5 rounded-lg transition-colors cursor-pointer hover:bg-sky-50 text-slate-500 hover:text-slate-800"
+            className="p-1.5 rounded-lg transition-colors cursor-pointer hover:bg-rose-50 text-slate-500 hover:text-slate-800"
             title={isSidebarCollapsed ? 'Expand' : 'Collapse'}
           >
             {isSidebarCollapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
@@ -106,24 +106,24 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                 w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[13px] sm:text-sm font-bold
                 transition-all duration-150 cursor-pointer border-0 outline-none text-left
                 ${isActive 
-                  ? 'shadow-sm shadow-sky-100' 
-                  : 'hover:bg-sky-50/70 text-slate-700 hover:text-[#0F172A]'
+                  ? 'shadow-sm shadow-rose-100' 
+                  : 'hover:bg-rose-50/70 text-slate-700 hover:text-[#18181B]'
                 }
               `}
               style={{
-                backgroundColor: isActive ? '#F0F9FF' : 'transparent',
-                color: isActive ? '#0284C7' : '#334155',
-                borderLeft: isActive ? '3px solid #0284C7' : '3px solid transparent',
+                backgroundColor: isActive ? '#FFF1F2' : 'transparent',
+                color: isActive ? '#BE123C' : '#3F3F46',
+                borderLeft: isActive ? '3px solid #E11D48' : '3px solid transparent',
               }}
             >
               {/* Icon + status dot */}
               <div className="relative shrink-0">
                 <IconComponent size={18} strokeWidth={2.2} />
                 {isAITutorItem && isAIThinking && (
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#FB923C] rounded-full animate-ping" />
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#E11D48] rounded-full animate-ping" />
                 )}
                 {isAITutorItem && !isAIThinking && hasAIUnread && (
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#FB923C] rounded-full" />
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#E11D48] rounded-full" />
                 )}
               </div>
 
@@ -132,10 +132,10 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                 <span className="flex-1 flex items-center justify-between truncate">
                   <span className="truncate font-bold tracking-tight">{item.label}</span>
                   {isAITutorItem && isAIThinking && (
-                    <span className="text-[9px] font-mono text-[#FB923C] font-extrabold animate-pulse">Working</span>
+                    <span className="text-[9px] font-mono text-[#E11D48] font-extrabold animate-pulse">Working</span>
                   )}
                   {isAITutorItem && !isAIThinking && hasAIUnread && (
-                    <span className="text-[9px] font-mono text-[#FB923C] font-extrabold">New</span>
+                    <span className="text-[9px] font-mono text-[#E11D48] font-extrabold">New</span>
                   )}
                 </span>
               )}
@@ -148,9 +148,9 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
       {!isSidebarCollapsed && (
         <div
           className="border-t px-4 py-3"
-          style={{ borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.06)' : '#E2E8F0' }}
+          style={{ borderColor: 'rgba(225, 29, 72, 0.12)' }}
         >
-          <p className="text-[10px] font-mono uppercase tracking-widest font-bold" style={{ color: isDarkMode ? '#64748B' : '#475569' }}>
+          <p className="text-[10px] font-mono uppercase tracking-widest font-bold text-rose-800/70">
             Ziv Platform v1.0
           </p>
         </div>

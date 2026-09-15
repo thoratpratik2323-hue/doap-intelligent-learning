@@ -21,8 +21,8 @@
   }
 
   ::selection {
-    background-color: rgba(2, 132, 199, 0.25);
-    color: #0369A1;
+    background-color: rgba(225, 29, 72, 0.22);
+    color: #BE123C;
   }
 
   *, *::before, *::after {
@@ -35,7 +35,7 @@
 
   select option {
     background-color: #FFFFFF !important;
-    color: #0F172A !important;
+    color: #18181B !important;
   }
 }
 
@@ -43,11 +43,11 @@
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(2, 132, 199, 0.35);
+  background: rgba(225, 29, 72, 0.35);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(2, 132, 199, 0.60);
+  background: rgba(225, 29, 72, 0.60);
 }
 .scrollbar-none, .no-scrollbar {
   scrollbar-width: none !important;
@@ -62,18 +62,18 @@
 /* ── Global canvas utility ──────────────────────────────── */
 .doap-canvas {
   background-color: var(--doap-bg, #FFFFFF);
-  color: var(--doap-text-prim, #0F172A);
+  color: var(--doap-text-prim, #18181B);
 }
 
 /* ── Card surface ───────────────────────────────────────── */
 .doap-card {
   background-color: var(--doap-surface, #FFFFFF);
-  border: 1px solid var(--doap-border, rgba(14, 165, 233, 0.18));
-  color: var(--doap-text-prim, #0F172A);
+  border: 1px solid var(--doap-border, rgba(225, 29, 72, 0.16));
+  color: var(--doap-text-prim, #18181B);
   border-radius: 16px;
   transform: translateZ(0);
   backface-visibility: hidden;
-  box-shadow: 0 4px 20px -2px rgba(2, 132, 199, 0.06);
+  box-shadow: 0 4px 20px -2px rgba(225, 29, 72, 0.06);
   backdrop-filter: blur(var(--doap-glass-blur, 16px));
   -webkit-backdrop-filter: blur(var(--doap-glass-blur, 16px));
   transition:
@@ -84,14 +84,14 @@
 }
 
 .doap-card:hover {
-  border-color: var(--doap-border-active, #0284C7);
-  box-shadow: 0 8px 30px -4px rgba(2, 132, 199, 0.12);
+  border-color: var(--doap-border-active, #E11D48);
+  box-shadow: 0 8px 30px -4px rgba(225, 29, 72, 0.12);
 }
 
 .doap-card-sec {
-  background-color: var(--doap-surface-sec, #F0F9FF);
-  border: 1px solid var(--doap-border, rgba(14, 165, 233, 0.15));
-  color: var(--doap-text-prim, #0F172A);
+  background-color: var(--doap-surface-sec, #FFF1F2);
+  border: 1px solid var(--doap-border, rgba(225, 29, 72, 0.12));
+  color: var(--doap-text-prim, #18181B);
   border-radius: 12px;
   transform: translateZ(0);
   backface-visibility: hidden;
