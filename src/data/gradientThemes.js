@@ -2,6 +2,45 @@
 // Centralized data source for all themes, colors, and gradient previews
 
 export const GRADIENT_THEMES = {
+  azure: {
+    id: 'azure',
+    name: 'Ziv Signature Azure',
+    subtitle: 'Crisp White · Sky Blue · Deep Navy',
+    dark: {
+      bg: '#FFFFFF',
+      surface: '#FFFFFF',
+      surfaceSec: '#F0F9FF',
+      border: 'rgba(14, 165, 233, 0.18)',
+      borderActive: '#0284C7',
+      textPrim: '#0F172A',
+      textSec: '#334155',
+      textMuted: '#64748B',
+      accent: '#0284C7',
+      accentSoft: 'rgba(2, 132, 199, 0.08)',
+      glow: 'rgba(56, 189, 248, 0.25)',
+      shadow: '0 4px 20px -2px rgba(2, 132, 199, 0.08)',
+    },
+    light: {
+      bg: '#FFFFFF',
+      surface: '#FFFFFF',
+      surfaceSec: '#F0F9FF',
+      border: 'rgba(14, 165, 233, 0.18)',
+      borderActive: '#0284C7',
+      textPrim: '#0F172A',
+      textSec: '#334155',
+      textMuted: '#64748B',
+      accent: '#0284C7',
+      accentSoft: 'rgba(2, 132, 199, 0.08)',
+      glow: 'rgba(56, 189, 248, 0.25)',
+      shadow: '0 4px 20px -2px rgba(2, 132, 199, 0.08)',
+    },
+    gradient: [
+      'linear-gradient(180deg, #FFFFFF 0%, #F0F9FF 100%)',
+    ],
+    bgGradient: 'linear-gradient(180deg, #FFFFFF 0%, #F0F9FF 100%)',
+    orb1Color: '#38BDF8',
+    orb2Color: '#0284C7',
+  },
   monochrome: {
     id: 'monochrome',
     name: 'Obsidian Studio',
@@ -330,7 +369,8 @@ export const IPHONE_THEMES = {
 };
 
 export const ACCENT_COLORS = [
-  { id: 'neutral', name: 'Electric Violet', hex: '#8B5CF6' },
+  { id: 'sky', name: 'Sky Blue', hex: '#0284C7' },
+  { id: 'neutral', name: 'Sky Blue', hex: '#0284C7' },
   { id: 'purple', name: 'Electric Violet', hex: '#8B5CF6' },
   { id: 'peach', name: 'Digital Peach', hex: '#FB923C' },
   { id: 'slate', name: 'Slate Gray', hex: '#94A3B8' },

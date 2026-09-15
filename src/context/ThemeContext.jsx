@@ -181,6 +181,7 @@ export const ThemeProvider = ({ children }) => {
     root.style.setProperty('--doap-glass-blur', blur);
 
     // ── Data attributes for CSS selectors ──
+    const themeKey = settings?.theme || 'azure';
     root.setAttribute('data-theme', themeKey);
     root.setAttribute('data-glass', settings?.glassIntensity || 'subtle');
     root.setAttribute('data-depth', settings?.depth || 'subtle');
