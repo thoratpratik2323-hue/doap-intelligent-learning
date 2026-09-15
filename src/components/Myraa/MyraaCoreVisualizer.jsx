@@ -16,6 +16,47 @@ export const MyraaCoreVisualizer = ({
   const speechVolumeRef = useRef(0);
   const particlesRef = useRef([]);
 
+  // Character Video Element Refs
+  const idleVideoRef = useRef(null);
+  const thinkingVideoRef = useRef(null);
+  const talkingVideoRef = useRef(null);
+  const [videoError, setVideoError] = useState(false);
+
+  // Synchronized video playback state manager
+  useEffect(() => {
+    const playSafe = (video) => {
+      if (!video) return;
+      try {
+        video.currentTime = 0;
+        const promise = video.play();
+        if (promise !== undefined) {
+          promise.catch(() => {});
+        }
+      } catch (e) {}
+    };
+
+    const pauseSafe = (video) => {
+      if (!video) return;
+      try {
+        video.pause();
+      } catch (e) {}
+    };
+
+    if (characterState === "idle") {
+      playSafe(idleVideoRef.current);
+      pauseSafe(thinkingVideoRef.current);
+      pauseSafe(talkingVideoRef.current);
+    } else if (characterState === "thinking") {
+      playSafe(thinkingVideoRef.current);
+      pauseSafe(idleVideoRef.current);
+      pauseSafe(talkingVideoRef.current);
+    } else if (characterState === "talking") {
+      playSafe(talkingVideoRef.current);
+      pauseSafe(idleVideoRef.current);
+      pauseSafe(thinkingVideoRef.current);
+    }
+  }, [characterState]);
+
   // Cursor position tracking
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -44,7 +85,7 @@ export const MyraaCoreVisualizer = ({
     let height = (canvas.height = canvas.offsetHeight);
 
     const generateParticles = () => {
-      const count = Math.min(70, Math.floor(width / 20));
+      const count = Math.min(60, Math.floor(width / 22));
       particlesRef.current = Array.from({ length: count }, () => ({
         x: Math.random() * width,
         y: Math.random() * height + height * 0.1,
@@ -84,7 +125,6 @@ export const MyraaCoreVisualizer = ({
           audioLevel = sum / 32; // 0..255
         } catch (e) {}
       } else if (state === "speaking") {
-        // Simulated natural voice modulation when talking
         audioLevel = 60 + Math.sin(systemTime * 0.01) * 35 + Math.cos(systemTime * 0.02) * 20;
       } else if (state === "listening") {
         audioLevel = 25 + Math.sin(systemTime * 0.005) * 15;
@@ -98,14 +138,13 @@ export const MyraaCoreVisualizer = ({
       mouseRef.current.y += (targetMouseRef.current.y - mouseRef.current.y) * 0.05;
 
       const centerX = width / 2;
-      const centerY = height * 0.46;
-      const baseScale = Math.min(width, height) / 380;
+      const baseScale = Math.min(width, height) / 400;
       const s = Math.max(0.85, Math.min(1.4, baseScale));
 
       // ── 1. Volumetric Conical Light Beam ──────────────────────────────────
       ctx.save();
       const projectorCenterY = height + 30;
-      const baseDiameterX = 260 * s;
+      const baseDiameterX = 280 * s;
 
       const beamGrad = ctx.createLinearGradient(centerX, height * 0.15, centerX, height);
       beamGrad.addColorStop(0, "rgba(0,0,0,0)");
@@ -123,75 +162,7 @@ export const MyraaCoreVisualizer = ({
       ctx.fill();
       ctx.restore();
 
-      // ── 2. Holographic Core Rings & Reactor ────────────────────────────────
-      ctx.save();
-      const coreRadius = (72 + vol * 36) * s;
-      const pulseTime = systemTime * 0.002;
-
-      // Outer Orbital Rings
-      const ringCount = 3;
-      for (let i = 0; i < ringCount; i++) {
-        const angleOffset = (pulseTime * (i % 2 === 0 ? 1 : -1) * (0.8 + i * 0.3));
-        const rX = coreRadius + (i * 24 + Math.sin(pulseTime + i) * 6) * s;
-        const rY = (coreRadius * 0.45) + (i * 12) * s;
-
-        ctx.strokeStyle = i === 0 ? colors.primary : colors.secondary;
-        ctx.lineWidth = i === 0 ? 2 : 1.2;
-        ctx.globalAlpha = 0.35 + vol * 0.45;
-
-        ctx.beginPath();
-        ctx.ellipse(centerX, centerY, rX, rY, angleOffset, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Node satellites along orbit
-        const satAngle = angleOffset + pulseTime * 1.5;
-        const satX = centerX + Math.cos(satAngle) * rX;
-        const satY = centerY + Math.sin(satAngle) * rY;
-        ctx.fillStyle = colors.glow;
-        ctx.beginPath();
-        ctx.arc(satX, satY, 3 * s, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // Central Plasma Orb
-      const plasmaGrad = ctx.createRadialGradient(
-        centerX + (mouseRef.current.x - 0.5) * 20,
-        centerY + (mouseRef.current.y - 0.5) * 20,
-        4 * s,
-        centerX,
-        centerY,
-        coreRadius
-      );
-      plasmaGrad.addColorStop(0, "#FFFFFF");
-      plasmaGrad.addColorStop(0.25, colors.primary);
-      plasmaGrad.addColorStop(0.7, colors.secondary);
-      plasmaGrad.addColorStop(1, "rgba(0,0,0,0)");
-
-      ctx.globalAlpha = 0.85 + vol * 0.15;
-      ctx.fillStyle = plasmaGrad;
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, coreRadius, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Core Inner Tech Hexagon
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.75)";
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      const hexSides = 6;
-      const hexRadius = (coreRadius * 0.42);
-      for (let h = 0; h < hexSides; h++) {
-        const hexAngle = (h * 2 * Math.PI) / hexSides + pulseTime * 0.5;
-        const hX = centerX + hexRadius * Math.cos(hexAngle);
-        const hY = centerY + hexRadius * Math.sin(hexAngle);
-        if (h === 0) ctx.moveTo(hX, hY);
-        else ctx.lineTo(hX, hY);
-      }
-      ctx.closePath();
-      ctx.stroke();
-
-      ctx.restore();
-
-      // ── 3. Rising Neural Particles (Stardust Field) ────────────────────────
+      // ── 2. Rising Neural Particles (Stardust Field) ────────────────────────
       ctx.save();
       particlesRef.current.forEach((p) => {
         const riseSpeed = p.speed * (1 + vol * 2.2);
@@ -230,28 +201,96 @@ export const MyraaCoreVisualizer = ({
       {/* 1. Behind Ambient Radial Glow */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
         <div
-          className="w-[420px] h-[420px] rounded-full blur-[120px] opacity-35 transition-all duration-1000"
+          className="w-[480px] h-[480px] rounded-full blur-[140px] opacity-30 transition-all duration-1000"
           style={{
             backgroundColor: THEME_COLOR_MAP[themeColor]?.hex || "#8B5CF6",
           }}
         />
       </div>
 
-      {/* 2. Interactive Canvas */}
+      {/* 2. Character Girl Animated Presence (Z-index 10) */}
+      <div 
+        id="myraa-animated-presence"
+        className="absolute z-10 w-full h-full flex items-center justify-center pointer-events-none"
+      >
+        <div className="relative w-full max-w-2xl aspect-[16/9] flex items-center justify-center scale-100 sm:scale-105 select-none pointer-events-none md:max-h-[68vh] max-h-[58vh]">
+          {/* Subtle Outer Ambient Shadow */}
+          <div className="absolute inset-0 rounded-[2.5rem] blur-[30px] opacity-25 bg-violet-600/20 mix-blend-screen" />
+
+          {/* IDLE VIDEO */}
+          <video
+            ref={idleVideoRef}
+            src="/assets/idle.mp4"
+            loop
+            muted
+            playsInline
+            autoPlay
+            className={`absolute inset-0 w-full h-full object-cover rounded-[2.5rem] transition-opacity duration-700 ease-in-out ${
+              characterState === "idle" ? "opacity-100 z-10 animate-fade-in" : "opacity-0 z-0"
+            }`}
+            style={{
+              maskImage: "radial-gradient(circle, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 80%)",
+              WebkitMaskImage: "radial-gradient(circle, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 80%)",
+            }}
+            onError={() => setVideoError(true)}
+          />
+
+          {/* THINKING VIDEO */}
+          <video
+            ref={thinkingVideoRef}
+            src="/assets/thinking.mp4"
+            loop
+            muted
+            playsInline
+            className={`absolute inset-0 w-full h-full object-cover rounded-[2.5rem] transition-opacity duration-700 ease-in-out ${
+              characterState === "thinking" ? "opacity-100 z-10 animate-fade-in" : "opacity-0 z-0"
+            }`}
+            style={{
+              maskImage: "radial-gradient(circle, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 80%)",
+              WebkitMaskImage: "radial-gradient(circle, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 80%)",
+            }}
+            onError={() => setVideoError(true)}
+          />
+
+          {/* TALKING VIDEO */}
+          <video
+            ref={talkingVideoRef}
+            src="/assets/talking.mp4"
+            loop
+            muted
+            playsInline
+            className={`absolute inset-0 w-full h-full object-cover rounded-[2.5rem] transition-opacity duration-700 ease-in-out ${
+              characterState === "talking" ? "opacity-100 z-10 animate-fade-in" : "opacity-0 z-0"
+            }`}
+            style={{
+              maskImage: "radial-gradient(circle, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 80%)",
+              WebkitMaskImage: "radial-gradient(circle, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 80%)",
+            }}
+            onError={() => setVideoError(true)}
+          />
+
+          {/* Cybernetic Edge Guard */}
+          <div className="absolute inset-0 rounded-[2.5rem] border border-white/5 pointer-events-none" />
+        </div>
+      </div>
+
+      {/* 3. Foreground Interactive Stardust Canvas (Z-index 20) */}
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full pointer-events-none z-10"
+        className="absolute inset-0 w-full h-full pointer-events-none z-20"
       />
 
-      {/* 3. Floating HUD Emotion & Activity Status Pill */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3.5 py-1.5 rounded-full border bg-black/40 backdrop-blur-md text-xs font-mono border-white/10 shadow-lg">
+      {/* 4. Floating HUD Emotion & Activity Status Pill */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-3.5 py-1.5 rounded-full border bg-black/60 backdrop-blur-md text-xs font-mono border-white/10 shadow-lg">
         <span className={`w-2 h-2 rounded-full ${
           state === "speaking" ? "bg-emerald-400 animate-ping" :
+          state === "thinking" ? "bg-amber-400 animate-pulse" :
           state === "listening" ? "bg-violet-400 animate-pulse" :
-          state === "connecting" ? "bg-amber-400 animate-pulse" : "bg-slate-500"
+          state === "connecting" ? "bg-cyan-400 animate-pulse" : "bg-slate-500"
         }`} />
         <span className="font-bold text-slate-200 uppercase tracking-wider text-[11px]">
-          {state === "speaking" ? "Myraa Responding" :
+          {state === "speaking" ? "Myraa Speaking" :
+           state === "thinking" ? "Myraa Thinking..." :
            state === "listening" ? "Listening to Voice" :
            state === "connecting" ? "Establishing Holocore" : "Offline"}
         </span>

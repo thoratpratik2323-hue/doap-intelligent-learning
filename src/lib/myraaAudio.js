@@ -4,7 +4,7 @@
  * screen vision frame streaming, and speech synthesis on the web.
  */
 
-import { speakElevenLabs, stopElevenLabsAudio, unlockAudioContext } from '../services/elevenLabsService';
+import { speakElevenLabs, stopElevenLabsAudio, unlockAudioContext, fallbackBrowserSpeech } from '../services/elevenLabsService';
 import { generateSmartTutorResponse } from '../services/aiTutorEngine';
 import { formatMemoriesForPrompt, addMemory } from './myraaMemory';
 
@@ -15,7 +15,7 @@ export class MyraaWebSession {
     this.onError = handlers.onError || (() => {});
     this.onEmotionChange = handlers.onEmotionChange || (() => {});
 
-    this.state = "disconnected"; // "disconnected" | "connecting" | "listening" | "speaking"
+    this.state = "disconnected"; // "disconnected" | "connecting" | "listening" | "thinking" | "speaking"
     this.audioCtx = null;
     this.inputAnalyser = null;
     this.outputAnalyser = null;
@@ -67,10 +67,14 @@ export class MyraaWebSession {
       this.initSpeechRecognition();
       this.setState("listening");
 
-      // Initial friendly greeting
-      const greeting = "Hello! I am Myraa, your holographic AI companion. How can I assist you with your code or study goals today?";
+      // Initial friendly anime heroine greeting
+      const greeting = "Hello! I am Myraa, your animated AI companion! How can I help you with your studies or code today?";
       this.onTranscription("model", greeting);
+      this.setState("speaking");
       await this.speak(greeting);
+      if (this.state !== "disconnected") {
+        this.setState("listening");
+      }
 
     } catch (err) {
       console.error("[Myraa Audio] Connection error:", err);
@@ -125,7 +129,7 @@ export class MyraaWebSession {
 
   async handleUserQuery(queryText) {
     this.onTranscription("user", queryText);
-    this.setState("speaking");
+    this.setState("thinking");
 
     try {
       // Build context with memories and screen vision info
@@ -135,7 +139,9 @@ export class MyraaWebSession {
         visionContext = "\n[LIVE USER DISPLAY SCREEN AVAILABLE: The student is sharing their active screen for code review.]\n";
       }
 
-      const promptWithContext = `${memoryContext}${visionContext}\nStudent says: "${queryText}"\nRespond warmly and directly as MYRAA (knowledgeable, concise, encouraging, and clear).`;
+      const promptWithContext = `${memoryContext}${visionContext}
+Student says: "${queryText}"
+Personality instructions: You are Myraa, a warm, soft-spoken, and extraordinarily cute anime heroine companion (age 18-22). Respond in a sweet, gentle, encouraging tone in 1 to 2 spoken sentences. Avoid markdown symbols, asterisks, or lists so the speech synthesis sounds completely natural.`;
 
       // Generate response via Ziv's AI engine
       const response = await generateSmartTutorResponse(promptWithContext, {
@@ -153,13 +159,15 @@ export class MyraaWebSession {
       // Auto-extract memory if user shared personal preferences or projects
       this.autoExtractMemory(queryText);
 
-      // Speak response
+      // Speak response as Myraa
+      this.setState("speaking");
       await this.speak(replyText);
 
     } catch (err) {
       console.error("[Myraa] Error generating response:", err);
-      const fallback = "I caught that, but let's take a quick look at your code together.";
+      const fallback = "I caught that! Let's explore that topic together.";
       this.onTranscription("model", fallback);
+      this.setState("speaking");
       await this.speak(fallback);
     } finally {
       if (this.state !== "disconnected") {
@@ -188,49 +196,14 @@ export class MyraaWebSession {
   async speak(text) {
     return new Promise((resolve) => {
       try {
-        // Clean text of markdown symbols
         const clean = text.replace(/[*#`_~]/g, '').trim();
-
-        // 1. Try ElevenLabs with Myraa/Sarah natural female voice
-        speakElevenLabs(clean, {
-          voiceName: 'Sarah', // Natural studio female voice
-          onStart: () => {},
-          onEnd: () => resolve(),
-          onError: () => {
-            // 2. Fallback to Web Speech Synthesis
-            this.fallbackBrowserSpeech(clean, resolve);
-          }
+        speakElevenLabs(clean, 'myraa', () => resolve(), () => {
+          fallbackBrowserSpeech(clean, resolve, 'myraa');
         });
       } catch (e) {
-        this.fallbackBrowserSpeech(text, resolve);
+        fallbackBrowserSpeech(text, resolve, 'myraa');
       }
     });
-  }
-
-  fallbackBrowserSpeech(text, onComplete) {
-    if (typeof window === 'undefined' || !window.speechSynthesis) {
-      if (onComplete) onComplete();
-      return;
-    }
-
-    try {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.0;
-      utterance.pitch = 1.05;
-
-      const voices = window.speechSynthesis.getVoices();
-      const femaleVoice = voices.find(v => 
-        (v.name.includes("Female") || v.name.includes("Samantha") || v.name.includes("Zira") || v.name.includes("Google US English")) && v.lang.startsWith("en")
-      );
-      if (femaleVoice) utterance.voice = femaleVoice;
-
-      utterance.onend = () => { if (onComplete) onComplete(); };
-      utterance.onerror = () => { if (onComplete) onComplete(); };
-      window.speechSynthesis.speak(utterance);
-    } catch (e) {
-      if (onComplete) onComplete();
-    }
   }
 
   interrupt() {

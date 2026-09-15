@@ -283,8 +283,9 @@ export const AppearancePage = () => {
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 pt-1">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-2 pt-1">
                       {[
+                        { id: 'myraa', label: 'Myraa Anime Heroine', desc: 'Sweet, Warm & Soft Companion (Female)' },
                         { id: 'charon', label: 'Andrew / Charon', desc: 'Resonant Studio Voice (Male)' },
                         { id: 'prabhat', label: 'Prabhat Neural', desc: 'Articulate Indian Mentor (Male)' },
                         { id: 'guy', label: 'Guy Neural', desc: 'Conversational Tech Lead (Male)' },

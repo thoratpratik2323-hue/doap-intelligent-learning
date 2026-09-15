@@ -4,8 +4,14 @@ import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
 
 const router = Router();
 
-// Voice dictionary mapping DOAP personas to neural voices (Male-Only Enforcement)
+// Voice dictionary mapping personas to neural voices
 const VOICE_MAP = {
+  // Myraa Sweet Anime Heroine Neural Voice
+  myraa: 'en-US-AnaNeural',
+  sarah: 'en-US-JennyNeural',
+  aoede: 'en-US-AnaNeural',
+
+  // Core masculine studio voices
   charon: 'en-US-AndrewMultilingualNeural',
   doap: 'en-US-AndrewMultilingualNeural',
   andrew: 'en-US-AndrewMultilingualNeural',
@@ -14,7 +20,6 @@ const VOICE_MAP = {
   indian_male: 'en-IN-PrabhatNeural',
   guy: 'en-US-GuyNeural',
   conversational: 'en-US-GuyNeural',
-  // Female voice keys remapped to male equivalents
   neerja: 'en-IN-PrabhatNeural',
   indian_female: 'en-IN-PrabhatNeural',
   jenny: 'en-US-GuyNeural',

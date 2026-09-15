@@ -88,7 +88,7 @@ export const VoiceTutor = () => {
   useEffect(() => {
     if (state === "speaking") {
       setCharacterState("talking");
-    } else if (state === "connecting") {
+    } else if (state === "connecting" || state === "thinking") {
       setCharacterState("thinking");
     } else {
       setCharacterState("idle");

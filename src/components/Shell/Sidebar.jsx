@@ -105,20 +105,20 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
               onClick={() => handleNavClick(item.path)}
               title={isSidebarCollapsed ? item.label : undefined}
               className={`
-                w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold
+                w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[13px] sm:text-sm font-bold
                 transition-all duration-150 cursor-pointer border-0 outline-none text-left
                 ${isActive 
                   ? '' 
-                  : (isDarkMode ? 'hover:bg-white/5 hover:text-slate-200' : 'hover:bg-slate-100 hover:text-slate-950')
+                  : (isDarkMode ? 'hover:bg-white/10 hover:text-white' : 'hover:bg-slate-100 hover:text-slate-950')
                 }
               `}
               style={{
                 backgroundColor: isActive
-                  ? (isDarkMode ? 'rgba(139, 92, 246, 0.14)' : 'rgba(124, 58, 237, 0.10)')
+                  ? (isDarkMode ? 'rgba(139, 92, 246, 0.18)' : 'rgba(124, 58, 237, 0.12)')
                   : 'transparent',
                 color: isActive 
-                  ? (isDarkMode ? '#A78BFA' : '#6D28D9') 
-                  : (isDarkMode ? 'var(--doap-text-sec)' : '#1E293B'),
+                  ? (isDarkMode ? '#C4B5FD' : '#6D28D9') 
+                  : (isDarkMode ? '#E2E8F0' : '#020617'),
                 borderLeft: isActive 
                   ? (isDarkMode ? '3px solid #8B5CF6' : '3px solid #7C3AED') 
                   : '3px solid transparent',
@@ -126,7 +126,7 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
             >
               {/* Icon + status dot */}
               <div className="relative shrink-0">
-                <IconComponent size={16} />
+                <IconComponent size={18} strokeWidth={2.2} />
                 {isAITutorItem && isAIThinking && (
                   <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#FB923C] rounded-full animate-ping" />
                 )}
@@ -138,12 +138,12 @@ export const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
               {/* Label */}
               {!isSidebarCollapsed && (
                 <span className="flex-1 flex items-center justify-between truncate">
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate font-bold tracking-tight">{item.label}</span>
                   {isAITutorItem && isAIThinking && (
-                    <span className="text-[9px] font-mono text-[#FB923C] font-bold animate-pulse">Working</span>
+                    <span className="text-[9px] font-mono text-[#FB923C] font-extrabold animate-pulse">Working</span>
                   )}
                   {isAITutorItem && !isAIThinking && hasAIUnread && (
-                    <span className="text-[9px] font-mono text-[#FB923C] font-bold">New</span>
+                    <span className="text-[9px] font-mono text-[#FB923C] font-extrabold">New</span>
                   )}
                 </span>
               )}

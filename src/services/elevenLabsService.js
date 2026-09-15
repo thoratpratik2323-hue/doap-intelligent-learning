@@ -7,8 +7,10 @@ const ELEVEN_API_KEY = (typeof localStorage !== 'undefined' ? localStorage.getIt
                        (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_ELEVENLABS_KEY) ||
                        'sk_5f91a262d00d2924db057bf3fd48a71b8857415c268c9452';
 
-/// Official ElevenLabs Studio Voices configured for DOAP AI Voice Engine (Male-Only)
+/// Official ElevenLabs Studio Voices configured for DOAP AI Voice Engine
 export const ELEVEN_VOICES = {
+  myraa: { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Myraa (Sweet, Warm & Soft-Spoken Companion - Female)' },
+  sarah: { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Myraa Sarah (Sweet & Gentle Female)' },
   charon: { id: 'pNInz6obpgDQGcFmaJgB', name: 'Charon (Deep, Calm & Resonant Studio Voice - Male)' },
   doap: { id: 'pNInz6obpgDQGcFmaJgB', name: 'DOAP AI Charon (Warm, Articulate & Resonant Male)' },
   studio: { id: 'pNInz6obpgDQGcFmaJgB', name: 'Charon Studio HD (Male)' },
@@ -85,6 +87,57 @@ const FEMALE_VOICE_KEYWORDS = [
   'eva', 'mary', 'ana', 'mia', 'emma', 'stephanie', 'clara', 'natalie',
   'sarah', 'ava', 'alva', 'kendra', 'joanna', 'salli', 'ivy', 'ayanda'
 ];
+
+/**
+ * Intelligent Sweet Anime Heroine Voice Selector for Myraa
+ * Selects the sweetest, warmest, and most expressive female neural voice available.
+ * Prioritizes Microsoft Ana, Jenny, Aria, Neerja, Google US English Female, Apple Samantha/Victoria.
+ */
+export function getMyraaVoice(synth) {
+  if (!synth) return null;
+  const voices = synth.getVoices ? synth.getVoices() : [];
+  if (!voices || voices.length === 0) return null;
+
+  // 1. Highest Priority: Microsoft Edge / Azure Natural Sweet Female Voices (Ana, Jenny, Aria, Sonia, Neerja)
+  const edgeNaturalFemale = voices.find(v => {
+    const n = (v.name || '').toLowerCase();
+    return (n.includes('online (natural)') || n.includes('natural') || n.includes('neural')) &&
+           (n.includes('ana') || n.includes('jenny') || n.includes('aria') || n.includes('sonia') || n.includes('neerja') || n.includes('samantha'));
+  });
+  if (edgeNaturalFemale) return edgeNaturalFemale;
+
+  // 2. Microsoft Ana, Jenny, Zira, Samantha
+  const msFemale = voices.find(v => {
+    const n = (v.name || '').toLowerCase();
+    return n.includes('ana') || n.includes('jenny') || n.includes('zira') || n.includes('samantha');
+  });
+  if (msFemale) return msFemale;
+
+  // 3. Google Chrome Natural Female Voices
+  const googleFemale = voices.find(v => {
+    const n = (v.name || '').toLowerCase();
+    return (n.includes('google') || n.includes('chrome')) &&
+           (n.includes('female') || n.includes('us english') || n.includes('uk english female'));
+  });
+  if (googleFemale) return googleFemale;
+
+  // 4. Apple Samantha, Victoria, Karen, Tessa
+  const appleFemale = voices.find(v => {
+    const n = (v.name || '').toLowerCase();
+    return (n.includes('samantha') || n.includes('victoria') || n.includes('karen') || n.includes('tessa')) &&
+           (v.lang || '').startsWith('en');
+  });
+  if (appleFemale) return appleFemale;
+
+  // 5. Any English voice matching female keywords
+  const anyFemale = voices.find(v => {
+    const n = (v.name || '').toLowerCase();
+    return (v.lang || '').toLowerCase().startsWith('en') && FEMALE_VOICE_KEYWORDS.some(kw => n.includes(kw));
+  });
+  if (anyFemale) return anyFemale;
+
+  return voices.find(v => (v.lang || '').toLowerCase().startsWith('en')) || voices[0] || null;
+}
 
 /**
  * Intelligent Neural Voice Selector for Browser SpeechSynthesis
@@ -386,9 +439,9 @@ export function splitTextIntoSpokenChunks(text) {
 }
 
 /**
- * Fallback to browser native SpeechSynthesis with authentic Indian English / Hindi voice
+ * Fallback to browser native SpeechSynthesis with authentic Indian English / Hindi voice or Myraa Anime voice
  */
-export function fallbackBrowserSpeech(text, onComplete) {
+export function fallbackBrowserSpeech(text, onComplete, persona = 'charon') {
   if (typeof window === 'undefined' || !window.speechSynthesis) {
     if (onComplete) onComplete();
     return;
@@ -398,14 +451,28 @@ export function fallbackBrowserSpeech(text, onComplete) {
     window.speechSynthesis.cancel();
     const spokenHumanText = humanizeTextForSpeech(text);
     const utterance = new SpeechSynthesisUtterance(spokenHumanText);
-    utterance.rate = 0.98;
-    utterance.pitch = 1.0;
-    utterance.lang = 'en-US';
 
-    const naturalVoice = getBestNaturalVoice(window.speechSynthesis, 'charon');
-    if (naturalVoice) {
-      utterance.voice = naturalVoice;
-      utterance.lang = naturalVoice.lang || 'en-US';
+    const isMyraa = ['myraa', 'sarah', 'aoede', 'ana'].includes((persona || '').toLowerCase());
+
+    if (isMyraa) {
+      // Myraa sweet, cute, high-pitched anime heroine cadence (25% higher pitch, gentle, adorable delivery)
+      utterance.pitch = 1.25;
+      utterance.rate = 0.94;
+      utterance.lang = 'en-US';
+      const myraaVoice = getMyraaVoice(window.speechSynthesis);
+      if (myraaVoice) {
+        utterance.voice = myraaVoice;
+        utterance.lang = myraaVoice.lang || 'en-US';
+      }
+    } else {
+      utterance.rate = 0.98;
+      utterance.pitch = 1.0;
+      utterance.lang = 'en-US';
+      const naturalVoice = getBestNaturalVoice(window.speechSynthesis, persona || 'charon');
+      if (naturalVoice) {
+        utterance.voice = naturalVoice;
+        utterance.lang = naturalVoice.lang || 'en-US';
+      }
     }
 
     currentUtterance = utterance;
@@ -441,14 +508,39 @@ export function fallbackBrowserSpeech(text, onComplete) {
 
 /**
  * Unified DOAP AI Neural Voice Engine
- * Speaks crystal-clear English with deep, resonant, human-grade studio clarity.
+ * Speaks crystal-clear English with deep, resonant, human-grade studio clarity or Myraa anime heroine voice.
  * Uses DOAP Neural Studio Voice Engine (powered by Azure/Edge Neural via /api/ai/tts),
  * Kokoro local open-weights, or personal ElevenLabs key.
  */
-export async function speakDOAPVoice(text, onComplete, onError, voiceKey = 'charon') {
+export async function speakDOAPVoice(text, arg2, arg3, arg4) {
   if (!text || !text.trim()) {
-    if (onComplete) onComplete();
+    if (typeof arg2 === 'function') arg2();
+    else if (typeof arg3 === 'function') arg3();
     return;
+  }
+
+  let onComplete = null;
+  let onError = null;
+  let voiceKey = 'charon';
+
+  // Flexible argument handling:
+  // Case A: (text, onComplete, onError, voiceKey)
+  if (typeof arg2 === 'function') {
+    onComplete = arg2;
+    onError = typeof arg3 === 'function' ? arg3 : null;
+    voiceKey = typeof arg3 === 'string' ? arg3 : (typeof arg4 === 'string' ? arg4 : 'charon');
+  }
+  // Case B: (text, voiceKey, onComplete, onError)
+  else if (typeof arg2 === 'string') {
+    voiceKey = arg2;
+    onComplete = typeof arg3 === 'function' ? arg3 : null;
+    onError = typeof arg4 === 'function' ? arg4 : null;
+  }
+  // Case C: (text, optionsObject)
+  else if (typeof arg2 === 'object' && arg2 !== null) {
+    voiceKey = arg2.voiceKey || arg2.voiceName || arg2.voice || 'charon';
+    onComplete = arg2.onEnd || arg2.onComplete || null;
+    onError = arg2.onError || null;
   }
 
   stopElevenLabsAudio();
@@ -490,7 +582,7 @@ export async function speakDOAPVoice(text, onComplete, onError, voiceKey = 'char
 
         audio.onerror = () => {
           URL.revokeObjectURL(audioBlobUrl);
-          fallbackBrowserSpeech(cleanText, onComplete);
+          fallbackBrowserSpeech(cleanText, onComplete, voiceKey);
         };
 
         await audio.play();
@@ -504,7 +596,8 @@ export async function speakDOAPVoice(text, onComplete, onError, voiceKey = 'char
   // 2. Personal ElevenLabs API Key if user configured one in Settings
   if (ttsProvider === 'elevenlabs' && customElevenKey) {
     try {
-      const elevenVoiceId = ELEVEN_VOICES[voiceKey]?.id || 'pNInz6obpgDQGcFmaJgB';
+      const normalizedKey = (voiceKey || '').toLowerCase();
+      const elevenVoiceId = ELEVEN_VOICES[normalizedKey]?.id || ELEVEN_VOICES.charon.id;
       const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenVoiceId}/stream`, {
         method: 'POST',
         headers: {
@@ -538,7 +631,7 @@ export async function speakDOAPVoice(text, onComplete, onError, voiceKey = 'char
         audio.onerror = () => {
           URL.revokeObjectURL(audioUrl);
           currentAudioElement = null;
-          fallbackBrowserSpeech(cleanText, onComplete);
+          fallbackBrowserSpeech(cleanText, onComplete, voiceKey);
         };
         await audio.play();
         return;
@@ -550,13 +643,22 @@ export async function speakDOAPVoice(text, onComplete, onError, voiceKey = 'char
 
   // 3. DOAP High-Fidelity Studio Neural Voice Engine (via /api/ai/tts)
   // Powered by Azure / Microsoft Edge Neural Voices: 100% human-grade, zero API keys, unlimited characters!
-  try {
-    let activePersona = (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_voice_persona') : '') || voiceKey || 'charon';
+  let activePersona = voiceKey;
+  if (!activePersona || activePersona === 'default' || activePersona === 'charon') {
+    const savedPersona = typeof localStorage !== 'undefined' ? localStorage.getItem('doap_voice_persona') : '';
+    if (savedPersona) activePersona = savedPersona;
+  }
+
+  const isMyraaPersona = ['myraa', 'sarah', 'aoede', 'ana'].includes((activePersona || '').toLowerCase());
+  if (!isMyraaPersona) {
     if (activePersona === 'neerja') activePersona = 'prabhat';
     if (activePersona === 'jenny' || activePersona === 'aria' || activePersona === 'kore') activePersona = 'guy';
-    if (FEMALE_VOICE_KEYWORDS.some(kw => activePersona.toLowerCase().includes(kw))) {
+    if (FEMALE_VOICE_KEYWORDS.some(kw => (activePersona || '').toLowerCase().includes(kw))) {
       activePersona = 'charon';
     }
+  }
+
+  try {
     const ttsRes = await fetch('/api/ai/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -583,7 +685,7 @@ export async function speakDOAPVoice(text, onComplete, onError, voiceKey = 'char
         try { URL.revokeObjectURL(audioUrl); } catch (e) {}
         currentAudioElement = null;
         console.warn('[DOAP Neural Voice] Playback error, falling back to browser:', e);
-        fallbackBrowserSpeech(cleanText, onComplete);
+        fallbackBrowserSpeech(cleanText, onComplete, activePersona);
       };
 
       const playPromise = audio.play();
@@ -600,18 +702,13 @@ export async function speakDOAPVoice(text, onComplete, onError, voiceKey = 'char
 
   // 4. Final Fallback: Browser Native SpeechSynthesis with softened pitch & rate
   if (!isAudioCancelled) {
-    fallbackBrowserSpeech(cleanText, onComplete);
+    fallbackBrowserSpeech(cleanText, onComplete, activePersona);
   }
 }
 
 /**
  * Backward-compatible alias for all DOAP components
  */
-export async function speakElevenLabs(text, voiceKey = 'charon', onComplete, onError) {
-  if (typeof voiceKey === 'function') {
-    onError = onComplete;
-    onComplete = voiceKey;
-    voiceKey = 'charon';
-  }
-  return speakDOAPVoice(text, onComplete, onError, voiceKey);
+export async function speakElevenLabs(text, arg2 = 'charon', arg3, arg4) {
+  return speakDOAPVoice(text, arg2, arg3, arg4);
 }
