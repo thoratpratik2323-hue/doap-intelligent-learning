@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { Landing3DBackground } from './Landing3DBackground';
 
 export const LandingPage = ({ onGetStarted, onSignIn }) => {
   const [tiltStyle, setTiltStyle] = useState({ transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg)' });
@@ -31,11 +32,14 @@ export const LandingPage = ({ onGetStarted, onSignIn }) => {
 
   return (
     <div className="min-h-screen bg-white text-[#18181B] select-none font-sans relative overflow-x-hidden">
-      {/* Ambient Cherry Glow & Subtle Grain Texture */}
+      {/* Interactive 3D WebGL Background (Three.js undulating cherry mesh, floating geometric crystals & stardust) */}
+      <Landing3DBackground />
+
+      {/* Ambient Cherry Glow & Subtle Grid Texture */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute inset-0 [background-size:32px_32px] bg-[radial-gradient(#e11d48_1px,transparent_1px)] opacity-[0.025]" />
-        <div className="absolute top-[-10%] left-[-10%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tr from-rose-100/50 via-white to-rose-50/40 blur-[140px]" />
-        <div className="absolute bottom-[-15%] right-[-10%] w-[65vw] h-[65vw] rounded-full bg-gradient-to-bl from-rose-100/40 via-white to-white blur-[150px]" />
+        <div className="absolute inset-0 [background-size:32px_32px] bg-[radial-gradient(#e11d48_1px,transparent_1px)] opacity-[0.02]" />
+        <div className="absolute top-[-10%] left-[-10%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tr from-rose-100/40 via-white/50 to-rose-50/30 blur-[140px]" />
+        <div className="absolute bottom-[-15%] right-[-10%] w-[65vw] h-[65vw] rounded-full bg-gradient-to-bl from-rose-100/30 via-white/40 to-transparent blur-[150px]" />
       </div>
 
       {/* Navbar */}
