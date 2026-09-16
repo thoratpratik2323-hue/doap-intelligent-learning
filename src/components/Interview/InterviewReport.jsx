@@ -589,8 +589,8 @@ Please return valid JSON ONLY with no markdown backticks:
           <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ fontSize: '9px', color: '#64748b' }}>
               {companyTrackId === 'sanjivani_campus'
-                ? 'Sanjivani Rural Education Society • Autonomous Placement Evaluation Engine • https://doap-1908.web.app'
-                : 'DOAP AI Super-Brain Multi-Modal Proctoring & LLM Evaluation Engine • https://doap-1908.web.app'}
+                ? 'Sanjivani Rural Education Society • Autonomous Placement Evaluation Engine • https://ziv-1304.web.app'
+                : 'ZIV AI Super-Brain Multi-Modal Proctoring & LLM Evaluation Engine • https://ziv-1304.web.app'}
             </div>
             <div style={{ fontSize: '9px', fontFamily: 'monospace', color: '#059669', fontWeight: '700' }}>
               {companyTrackId === 'sanjivani_campus' ? 'SRES VERIFIED AUDIT' : 'AUTHENTICATED CERTIFICATE'}

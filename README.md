@@ -8,7 +8,7 @@
 
 <br />
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Production-doap--1908.web.app-E11D48?style=for-the-badge&logo=google-chrome&logoColor=white)](https://doap-1908.web.app)
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Production-ziv--1304.web.app-E11D48?style=for-the-badge&logo=google-chrome&logoColor=white)](https://ziv-1304.web.app)
 [![GitHub Stars](https://img.shields.io/github/stars/thoratpratik2323-hue/doap-intelligent-learning?style=for-the-badge&color=E11D48)](https://github.com/thoratpratik2323-hue/doap-intelligent-learning/stargazers)
 [![License](https://img.shields.io/badge/License-MIT-BE123C?style=for-the-badge)](LICENSE)
 
@@ -26,7 +26,7 @@
 
 <br />
 
-[🚀 Explore Live Web App](https://doap-1908.web.app) • [📦 GitHub Repository](https://github.com/thoratpratik2323-hue/doap-intelligent-learning) • [🐛 Report Bug / Feedback](https://github.com/thoratpratik2323-hue/doap-intelligent-learning/issues)
+[🚀 Explore Live Web App](https://ziv-1304.web.app) • [📦 GitHub Repository](https://github.com/thoratpratik2323-hue/doap-intelligent-learning) • [🐛 Report Bug / Feedback](https://github.com/thoratpratik2323-hue/doap-intelligent-learning/issues)
 
 </div>
 
@@ -214,7 +214,7 @@ firebase login
 # Deploy hosting assets
 firebase deploy --only hosting
 ```
-Live URL: **[https://doap-1908.web.app](https://doap-1908.web.app)**
+Live URL: **[https://ziv-1304.web.app](https://ziv-1304.web.app)**
 
 ---
 

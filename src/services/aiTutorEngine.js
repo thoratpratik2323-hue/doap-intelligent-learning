@@ -1145,8 +1145,8 @@ Core Persona & Vibe:
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${openRouterKey}`,
-            'HTTP-Referer': 'https://doap-1908.web.app',
-            'X-Title': 'DOAP Engineering Platform'
+            'HTTP-Referer': 'https://ziv-1304.web.app',
+            'X-Title': 'ZIV Engineering Platform'
           },
           signal: controller.signal,
           body: JSON.stringify({
