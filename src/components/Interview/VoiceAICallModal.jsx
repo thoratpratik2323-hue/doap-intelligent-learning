@@ -261,7 +261,7 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
     try {
       await speakElevenLabs(
         text,
-        'doap',
+        'aoede',
         () => {
           if (onFinished && isComponentMounted.current) onFinished();
         },

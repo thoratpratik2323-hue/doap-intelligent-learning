@@ -29,13 +29,13 @@ export const AIInterviewerAvatar = ({ questionText = '', isAiSpeaking = false, o
     try {
       await speakElevenLabs(
         cleanSpeech,
-        'doap',
+        'aoede',
         () => {
           setSpeakingState('listening');
           if (onSpeechComplete) onSpeechComplete();
         },
         () => {
-          fallbackBrowserSpeech(cleanSpeech);
+          fallbackBrowserSpeech(cleanSpeech, null, 'aoede');
         }
       );
     } catch (e) {

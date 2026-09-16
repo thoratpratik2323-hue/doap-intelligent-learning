@@ -4,28 +4,12 @@ import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
 
 const router = Router();
 
-// Voice dictionary mapping personas to neural voices
+// Voice dictionary mapping to Aoede-grade sweet neural voice
 const VOICE_MAP = {
-  // Myraa Young Female Professor Neural Voice
+  aoede: 'en-US-JennyNeural',
   myraa: 'en-US-JennyNeural',
   sarah: 'en-US-JennyNeural',
-  aoede: 'en-US-JennyNeural',
-  leda: 'en-US-JennyNeural',
-
-  // Core masculine studio voices
-  charon: 'en-US-AndrewMultilingualNeural',
-  doap: 'en-US-AndrewMultilingualNeural',
-  andrew: 'en-US-AndrewMultilingualNeural',
-  brian: 'en-US-BrianNeural',
-  prabhat: 'en-IN-PrabhatNeural',
-  indian_male: 'en-IN-PrabhatNeural',
-  guy: 'en-US-GuyNeural',
-  conversational: 'en-US-GuyNeural',
-  neerja: 'en-IN-NeerjaNeural',
-  indian_female: 'en-IN-NeerjaNeural',
-  jenny: 'en-US-JennyNeural',
-  aria: 'en-US-AriaNeural',
-  kore: 'en-US-JennyNeural'
+  default: 'en-US-JennyNeural'
 };
 
 /**
@@ -88,14 +72,14 @@ router.post('/evaluate-interview', async (req, res) => {
  */
 router.post('/tts', async (req, res) => {
   try {
-    const { text, voice = 'charon' } = req.body;
+    const { text, voice = 'aoede' } = req.body;
 
     if (!text || typeof text !== 'string' || !text.trim()) {
       return res.status(400).json({ error: 'Valid text string is required.' });
     }
 
     const cleanText = text.trim();
-    const targetVoice = VOICE_MAP[voice] || voice || 'en-US-AndrewMultilingualNeural';
+    const targetVoice = VOICE_MAP[voice] || VOICE_MAP.aoede || 'en-US-JennyNeural';
 
     const tts = new MsEdgeTTS();
     await tts.setMetadata(targetVoice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);

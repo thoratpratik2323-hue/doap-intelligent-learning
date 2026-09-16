@@ -9,17 +9,9 @@ const ELEVEN_API_KEY = (typeof localStorage !== 'undefined' ? localStorage.getIt
 
 /// Official ElevenLabs Studio Voices configured for DOAP AI Voice Engine
 export const ELEVEN_VOICES = {
-  myraa: { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Myraa (Sweet, Warm & Soft-Spoken Companion - Female)' },
-  sarah: { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Myraa Sarah (Sweet & Gentle Female)' },
-  charon: { id: 'pNInz6obpgDQGcFmaJgB', name: 'Charon (Deep, Calm & Resonant Studio Voice - Male)' },
-  doap: { id: 'pNInz6obpgDQGcFmaJgB', name: 'DOAP AI Charon (Warm, Articulate & Resonant Male)' },
-  studio: { id: 'pNInz6obpgDQGcFmaJgB', name: 'Charon Studio HD (Male)' },
-  conversational: { id: 'ErXwobaYiN019PkySvjV', name: 'DOAP AI Natural Tutor (Guy Male)' },
-  guy: { id: 'ErXwobaYiN019PkySvjV', name: 'DOAP AI Guy Neural (Male)' },
-  prabhat: { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'DOAP AI Prabhat Neural (Indian Male)' },
-  antoni: { id: 'ErXwobaYiN019PkySvjV', name: 'DOAP AI Conversational (Male)' },
-  fenrir: { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'DOAP AI Technical (Male)' },
-  brian: { id: 'nPczCjzI2devNBz1zQrb', name: 'DOAP AI Brian Academic (Male)' }
+  aoede: { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Myraa Aoede (Sweet, Warm & Soft-Spoken Companion - Female)' },
+  myraa: { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Myraa Aoede (Sweet, Warm & Soft-Spoken Companion - Female)' },
+  sarah: { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Myraa Sarah (Sweet & Gentle Female)' }
 };
 
 let sharedAudioCtx = null;
@@ -150,63 +142,9 @@ export function getMyraaVoice(synth) {
  * Exclusively selects masculine / male neural voices across the entire platform.
  * Prioritizes Microsoft Edge Neural Male (Andrew, Prabhat, Guy, Brian), Google Male, or Microsoft David.
  */
-export function getBestNaturalVoice(synth, mode = 'indian') {
-  if (!synth) return null;
-  const voices = synth.getVoices ? synth.getVoices() : [];
-  if (!voices || voices.length === 0) return null;
-
-  const isFemale = (voice) => {
-    const name = (voice?.name || '').toLowerCase();
-    return FEMALE_VOICE_KEYWORDS.some(kw => name.includes(kw));
-  };
-
-  // Strictly eliminate all female voices
-  const maleVoices = voices.filter(v => !isFemale(v));
-  const candidatePool = maleVoices.length > 0 ? maleVoices : voices;
-
-  // 1. Absolute Highest Priority: Charon / Andrew Studio Resonant Male Voice
-  const charonVoice = candidatePool.find(v => {
-    const n = (v.name || '').toLowerCase();
-    return (n.includes('charon') || n.includes('andrew')) && !isFemale(v);
-  });
-  if (charonVoice) return charonVoice;
-
-  // 2. Microsoft Edge Online Natural / Neural Male Voices
-  const edgeNaturalMale = candidatePool.find(v => {
-    const n = (v.name || '').toLowerCase();
-    return (n.includes('online (natural)') || n.includes('natural') || n.includes('neural')) &&
-           (n.includes('charon') || n.includes('andrew') || n.includes('guy') || n.includes('brian') || n.includes('prabhat'));
-  });
-  if (edgeNaturalMale) return edgeNaturalMale;
-
-  // 2. High-Quality Indian English / Hindi Male Voices
-  const indianMaleVoice = candidatePool.find(v => {
-    const name = (v.name || '').toLowerCase();
-    const lang = (v.lang || '').toLowerCase().replace('_', '-');
-    return (lang === 'en-in' || lang === 'hi-in' || name.includes('india') || name.includes('hindi')) &&
-           (name.includes('prabhat') || name.includes('madhur') || name.includes('rishi') || name.includes('male'));
-  });
-  if (indianMaleVoice) return indianMaleVoice;
-
-  // 3. Google Chrome Natural Neural Male Voices
-  const googleMaleVoice = candidatePool.find(v => {
-    const name = (v.name || '').toLowerCase();
-    return name.includes('google') && (v.lang || '').startsWith('en') && !isFemale(v);
-  });
-  if (googleMaleVoice) return googleMaleVoice;
-
-  // 4. Windows Desktop Fallback: Microsoft David (Clear Male Voice)
-  const davidVoice = candidatePool.find(v => {
-    const name = (v.name || '').toLowerCase();
-    return name.includes('david') || name.includes('george') || name.includes('mark') || name.includes('james');
-  });
-  if (davidVoice) return davidVoice;
-
-  // 5. Any English Male voice from candidate pool
-  const fallbackMaleEnglish = candidatePool.find(v => (v.lang || '').toLowerCase().startsWith('en') && !isFemale(v));
-  if (fallbackMaleEnglish) return fallbackMaleEnglish;
-
-  return candidatePool[0] || voices[0] || null;
+export function getBestNaturalVoice(synth) {
+  // Pure Aoede Voice: Exclusively returns the sweetest, warmest natural female voice
+  return getMyraaVoice(synth);
 }
 
 /**
@@ -447,13 +385,13 @@ export function splitTextIntoSpokenChunks(text) {
 /**
  * Fallback to browser native SpeechSynthesis with authentic Indian English / Hindi voice or Myraa Anime voice
  */
-export function fallbackBrowserSpeech(text, onComplete, persona = 'charon') {
+export function fallbackBrowserSpeech(text, onComplete, persona = 'aoede') {
   if (typeof window === 'undefined' || !window.speechSynthesis) {
     if (onComplete) onComplete();
     return;
   }
 
-  // Never speak with robotic browser TTS if high-fidelity audio or Gemini is actively playing!
+  // Never speak with browser TTS if high-fidelity audio or Gemini is actively playing!
   if (currentSource || currentAudioElement || isAudioCancelled) {
     console.log('[fallbackBrowserSpeech] Blocked: high-fidelity audio already active');
     if (onComplete) onComplete();
@@ -465,33 +403,23 @@ export function fallbackBrowserSpeech(text, onComplete, persona = 'charon') {
     const spokenHumanText = humanizeTextForSpeech(text);
     const utterance = new SpeechSynthesisUtterance(spokenHumanText);
 
-    const isMyraa = ['myraa', 'sarah', 'aoede', 'ana'].includes((persona || '').toLowerCase());
+    // Myraa Aoede Voice: Sweet, warm, high-pitched anime heroine companion
+    // Pitch: +25% higher pitch (light and airy tone)
+    // Speed: 0.95x speed (delicate, calm, and comforting pace)
+    utterance.pitch = 1.25;
+    utterance.rate = 0.95;
+    utterance.lang = 'en-US';
 
-    if (isMyraa) {
-      // Myraa youthful, articulate young female professor cadence (Natural pitch, lively delivery)
-      utterance.pitch = 1.05;
-      utterance.rate = 1.06;
-      utterance.lang = 'en-US';
-      const myraaVoice = getMyraaVoice(window.speechSynthesis);
-      if (myraaVoice) {
-        utterance.voice = myraaVoice;
-        utterance.lang = myraaVoice.lang || 'en-US';
-      }
-    } else {
-      utterance.rate = 0.98;
-      utterance.pitch = 1.0;
-      utterance.lang = 'en-US';
-      const naturalVoice = getBestNaturalVoice(window.speechSynthesis, persona || 'charon');
-      if (naturalVoice) {
-        utterance.voice = naturalVoice;
-        utterance.lang = naturalVoice.lang || 'en-US';
-      }
+    const myraaVoice = getMyraaVoice(window.speechSynthesis);
+    if (myraaVoice) {
+      utterance.voice = myraaVoice;
+      utterance.lang = myraaVoice.lang || 'en-US';
     }
 
     currentUtterance = utterance;
     if (typeof window !== 'undefined') window._doapActiveUtterance = utterance;
 
-    // Chrome SpeechSynthesis watchdog: prevents Chrome from silently pausing or cutting off after 14 seconds
+    // Chrome SpeechSynthesis watchdog: prevents Chrome from silently pausing or cutting off
     const keepAlivePing = setInterval(() => {
       if (typeof window === 'undefined' || !window.speechSynthesis || !window.speechSynthesis.speaking) {
         clearInterval(keepAlivePing);
@@ -603,7 +531,7 @@ export async function speakGeminiAoedeVoice(text, onComplete, onError) {
               speechConfig: {
                 voiceConfig: {
                   prebuiltVoiceConfig: {
-                    voiceName: "Leda"
+                    voiceName: "Aoede"
                   }
                 }
               }
@@ -747,7 +675,7 @@ export async function speakDOAPVoice(text, arg2, arg3, arg4) {
 
   let onComplete = null;
   let onError = null;
-  let voiceKey = 'charon';
+  let voiceKey = 'aoede';
 
   // Flexible argument handling:
   // Case A: (text, onComplete, onError, voiceKey)
@@ -949,6 +877,6 @@ export async function speakDOAPVoice(text, arg2, arg3, arg4) {
 /**
  * Backward-compatible alias for all DOAP components
  */
-export async function speakElevenLabs(text, arg2 = 'charon', arg3, arg4) {
+export async function speakElevenLabs(text, arg2 = 'aoede', arg3, arg4) {
   return speakDOAPVoice(text, arg2, arg3, arg4);
 }

@@ -76,11 +76,7 @@ export const AppearancePage = () => {
 
   // Open-Source Engine States
   const [ttsProvider, setTtsProvider] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_tts_provider') || 'neural' : 'neural'));
-  const [voicePersona, setVoicePersona] = useState(() => {
-    const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('doap_voice_persona') : null;
-    if (saved === 'neerja' || saved === 'jenny' || saved === 'aria') return 'charon';
-    return saved || 'charon';
-  });
+  const [voicePersona, setVoicePersona] = useState('aoede');
   const [elevenKey, setElevenKey] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_elevenlabs_key') || '' : ''));
   const [kokoroUrl, setKokoroUrl] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_kokoro_url') || 'http://localhost:8880/v1/audio/speech' : 'http://localhost:8880/v1/audio/speech'));
   const [pistonUrl, setPistonUrl] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_piston_url') || 'http://localhost:2000' : 'http://localhost:2000'));
@@ -151,14 +147,8 @@ export const AppearancePage = () => {
     setIsPreviewPlaying(true);
     try {
       const { speakDOAPVoice } = await import('../../services/elevenLabsService');
-      const samplePhrases = {
-        charon: "Hello! I am Andrew, your DOAP AI technical mentor. My voice is powered by high-definition neural speech synthesis. How are your data structures studies going?",
-        prabhat: "Namaste! Main Prabhat hoon, aapka DOAP AI mentor. Sanjeevani learning studio me milkar algorithmic problems aur placements crack karenge.",
-        guy: "Hey there! I am Guy, your conversational tech lead. Whenever you hit a bug or want to brainstorm system design, let's solve it together.",
-        brian: "Greetings. I am Brian, your academic research tutor. We will analyze time complexity, amortized bounds, and optimal memory layouts."
-      };
-      const text = samplePhrases[voicePersona] || samplePhrases.charon;
-      await speakDOAPVoice(text, () => setIsPreviewPlaying(false), () => setIsPreviewPlaying(false), voicePersona);
+      const text = "Hello! I am Myraa, your personal AI mentor on Ziv. What concept or problem shall we master together today?";
+      await speakDOAPVoice(text, () => setIsPreviewPlaying(false), () => setIsPreviewPlaying(false), 'aoede');
     } catch (e) {
       setIsPreviewPlaying(false);
     }
@@ -289,28 +279,19 @@ export const AppearancePage = () => {
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-2 pt-1">
-                      {[
-                        { id: 'myraa', label: 'Myraa Anime Heroine', desc: 'Sweet, Warm & Soft Companion (Female)' },
-                        { id: 'charon', label: 'Andrew / Charon', desc: 'Resonant Studio Voice (Male)' },
-                        { id: 'prabhat', label: 'Prabhat Neural', desc: 'Articulate Indian Mentor (Male)' },
-                        { id: 'guy', label: 'Guy Neural', desc: 'Conversational Tech Lead (Male)' },
-                        { id: 'brian', label: 'Brian Academic', desc: 'Deep Technical Mentor (Male)' }
-                      ].map(v => (
-                        <button
-                          key={v.id}
-                          type="button"
-                          onClick={() => setVoicePersona(v.id)}
-                          className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
-                            voicePersona === v.id
-                              ? 'border-cyan-400 bg-cyan-500/15 text-white'
-                              : 'border-neutral-800 bg-neutral-900/30 text-neutral-400 hover:border-neutral-700'
-                          }`}
-                        >
-                          <p className="text-xs font-bold">{v.label}</p>
-                          <p className="text-[10px] text-neutral-400 mt-0.5">{v.desc}</p>
-                        </button>
-                      ))}
+                    <div className="pt-1">
+                      <div className="p-3.5 rounded-xl border border-rose-500/30 bg-rose-500/10 text-white flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                            <p className="text-xs font-bold text-rose-300">🌸 Professor Myraa (Aoede Voice)</p>
+                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-200 font-mono">ACTIVE</span>
+                          </div>
+                          <p className="text-[11px] text-neutral-300 mt-1">
+                            Sweet, warm, soft-spoken anime-heroine voice powered by Google Aoede Studio Voice Engine (+25% pitch, 0.95x rate).
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
 

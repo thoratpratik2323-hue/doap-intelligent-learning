@@ -255,7 +255,7 @@ export const AITutor = () => {
 
       await speakElevenLabs(
         cleanText,
-        'doap',
+        'aoede',
         () => {
           // Finished playback
           setSpeakingMsgId(null);
@@ -264,7 +264,7 @@ export const AITutor = () => {
           console.warn('[AITutor] Voice playback error, falling back to browser speech:', err);
           fallbackBrowserSpeech(cleanText, () => {
             setSpeakingMsgId(null);
-          });
+          }, 'aoede');
         }
       );
     } catch (e) {
