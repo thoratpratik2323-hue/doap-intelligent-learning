@@ -72,8 +72,8 @@ export const AppearancePage = () => {
   const [ttsProvider, setTtsProvider] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_tts_provider') || 'neural' : 'neural'));
   const [voicePersona, setVoicePersona] = useState(() => {
     const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('doap_voice_persona') : null;
-    if (saved === 'neerja' || saved === 'jenny' || saved === 'aria') return 'charon';
-    return saved || 'charon';
+    if (saved === 'charon' || !saved) return 'swara';
+    return saved;
   });
   const [elevenKey, setElevenKey] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_elevenlabs_key') || '' : ''));
   const [kokoroUrl, setKokoroUrl] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('doap_kokoro_url') || 'http://localhost:8880/v1/audio/speech' : 'http://localhost:8880/v1/audio/speech'));
@@ -144,14 +144,14 @@ export const AppearancePage = () => {
     if (isPreviewPlaying) return;
     setIsPreviewPlaying(true);
     try {
-      const { speakDOAPVoice } = await import('../../services/elevenLabsService');
       const samplePhrases = {
-        charon: "Hello! I am Andrew, your DOAP AI technical mentor. My voice is powered by high-definition neural speech synthesis. How are your data structures studies going?",
+        swara: "Namaste! Main Swara hoon, aapki DOAP AI mentor. Hindi, Hinglish aur English me hum complex coding concepts aur interview preparation par saath kaam karenge.",
+        neerja: "Hello! I am Neerja, your DOAP AI mentor. Let's master technical interview concepts, system design, and coding problems together.",
         prabhat: "Namaste! Main Prabhat hoon, aapka DOAP AI mentor. Sanjeevani learning studio me milkar algorithmic problems aur placements crack karenge.",
         guy: "Hey there! I am Guy, your conversational tech lead. Whenever you hit a bug or want to brainstorm system design, let's solve it together.",
-        brian: "Greetings. I am Brian, your academic research tutor. We will analyze time complexity, amortized bounds, and optimal memory layouts."
+        charon: "Namaste! Main Swara hoon, aapki DOAP AI mentor."
       };
-      const text = samplePhrases[voicePersona] || samplePhrases.charon;
+      const text = samplePhrases[voicePersona] || samplePhrases.swara;
       await speakDOAPVoice(text, () => setIsPreviewPlaying(false), () => setIsPreviewPlaying(false), voicePersona);
     } catch (e) {
       setIsPreviewPlaying(false);
@@ -285,10 +285,10 @@ export const AppearancePage = () => {
 
                     <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 pt-1">
                       {[
-                        { id: 'charon', label: 'Andrew / Charon', desc: 'Resonant Studio Voice (Male)' },
-                        { id: 'prabhat', label: 'Prabhat Neural', desc: 'Articulate Indian Mentor (Male)' },
-                        { id: 'guy', label: 'Guy Neural', desc: 'Conversational Tech Lead (Male)' },
-                        { id: 'brian', label: 'Brian Academic', desc: 'Deep Technical Mentor (Male)' }
+                        { id: 'swara', label: 'Swara Neural (Female)', desc: 'Hindi, Hinglish & English' },
+                        { id: 'neerja', label: 'Neerja Neural (Female)', desc: 'Indian English & Hinglish' },
+                        { id: 'prabhat', label: 'Prabhat Neural (Male)', desc: 'Articulate Indian Mentor' },
+                        { id: 'guy', label: 'Guy Neural (Male)', desc: 'Conversational Tech Lead' }
                       ].map(v => (
                         <button
                           key={v.id}

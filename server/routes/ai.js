@@ -4,22 +4,22 @@ import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
 
 const router = Router();
 
-// Voice dictionary mapping DOAP personas to neural voices (Male-Only Enforcement)
+// Voice dictionary mapping DOAP personas to neural voices (Female Indian default supporting Hindi + English + Hinglish)
 const VOICE_MAP = {
-  charon: 'en-US-AndrewMultilingualNeural',
-  doap: 'en-US-AndrewMultilingualNeural',
-  andrew: 'en-US-AndrewMultilingualNeural',
-  brian: 'en-US-BrianNeural',
+  // Female voices (Hindi + Hinglish + Indian English native)
+  swara: 'hi-IN-SwaraNeural',
+  neerja: 'en-IN-NeerjaNeural',
+  female: 'hi-IN-SwaraNeural',
+  hinglish: 'hi-IN-SwaraNeural',
+  hindi: 'hi-IN-SwaraNeural',
+  doap: 'hi-IN-SwaraNeural',
+  default: 'hi-IN-SwaraNeural',
+  // Male options if selected in settings
   prabhat: 'en-IN-PrabhatNeural',
-  indian_male: 'en-IN-PrabhatNeural',
+  andrew: 'en-US-AndrewMultilingualNeural',
+  charon: 'hi-IN-SwaraNeural',
   guy: 'en-US-GuyNeural',
-  conversational: 'en-US-GuyNeural',
-  // Female voice keys remapped to male equivalents
-  neerja: 'en-IN-PrabhatNeural',
-  indian_female: 'en-IN-PrabhatNeural',
-  jenny: 'en-US-GuyNeural',
-  aria: 'en-US-AndrewMultilingualNeural',
-  kore: 'en-US-AndrewMultilingualNeural'
+  brian: 'en-US-BrianNeural'
 };
 
 /**
@@ -89,7 +89,7 @@ router.post('/tts', async (req, res) => {
     }
 
     const cleanText = text.trim();
-    const targetVoice = VOICE_MAP[voice] || voice || 'en-US-AndrewMultilingualNeural';
+    const targetVoice = VOICE_MAP[voice] || (voice && voice.includes('-') ? voice : 'hi-IN-SwaraNeural');
 
     const tts = new MsEdgeTTS();
     await tts.setMetadata(targetVoice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
