@@ -1938,7 +1938,7 @@ Evaluate this code strictly:
           {/* Problems List */}
           <div className="space-y-3">
             {paginatedProblems.map((prob) => {
-              const isCompleted = completedProblems.has(prob.id);
+              const isCompleted = Boolean(solvedProblems && solvedProblems.includes(prob.id));
 
               return (
                 <div
