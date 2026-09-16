@@ -30,7 +30,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { generateSmartTutorResponse } from '../services/aiTutorEngine';
 import { memoryBrain } from '../services/memoryBrain';
-import { speakElevenLabs, stopElevenLabsAudio, unlockAudioContext, getBestNaturalVoice, humanizeTextForSpeech } from '../services/elevenLabsService';
+import { speakElevenLabs, stopElevenLabsAudio, unlockAudioContext, getBestNaturalVoice, humanizeTextForSpeech, fallbackBrowserSpeech } from '../services/elevenLabsService';
 import { transcribeAudioWithGroq } from '../services/whisperService';
 // Mark LII Arc-Reactor Acoustic Synthesizer (Web Audio API)
 const playBootChime = () => {
@@ -933,69 +933,12 @@ export const VoiceTutor = () => {
           safeComplete();
         },
         () => {
-          if (!finished) {
-            fallbackBrowserSpeech(text, safeComplete);
-          }
+          safeComplete();
         }
       );
     } catch (err) {
-      if (!finished) {
-        fallbackBrowserSpeech(text, safeComplete);
-      }
-    }
-  };
-
-  const fallbackBrowserSpeech = (text, onComplete, specificVoice = null) => {
-    if (!synthRef.current) {
-      if (onComplete) onComplete();
-      return;
-    }
-
-    try {
-      synthRef.current.cancel();
-      const spokenHumanText = humanizeTextForSpeech(text);
-      const utterance = new SpeechSynthesisUtterance(spokenHumanText);
-      utterance.rate = 1.02;
-      utterance.pitch = 1.04;
-
-      const chosenVoice = specificVoice || getBestNaturalVoice(synthRef.current, 'indian');
-      if (chosenVoice) {
-        utterance.voice = chosenVoice;
-        utterance.lang = chosenVoice.lang || 'en-US';
-      } else {
-        utterance.lang = 'en-US';
-      }
-
-      // Keep live reference so Chrome does not garbage-collect utterance mid-speech
-      activeUtteranceRef.current = utterance;
-      if (typeof window !== 'undefined') window._doapActiveUtterance = utterance;
-
-      // Chrome SpeechSynthesis keep-alive ping: Chromium has a bug that pauses speech after ~14s
-      const keepAlivePing = setInterval(() => {
-        if (!synthRef.current || !synthRef.current.speaking) {
-          clearInterval(keepAlivePing);
-        } else {
-          try {
-            synthRef.current.pause();
-            synthRef.current.resume();
-          } catch (e) {}
-        }
-      }, 8000);
-
-      const finishSpeech = () => {
-        clearInterval(keepAlivePing);
-        activeUtteranceRef.current = null;
-        if (typeof window !== 'undefined') window._doapActiveUtterance = null;
-        if (onComplete && isMountedRef.current) onComplete();
-      };
-
-      utterance.onend = finishSpeech;
-      utterance.onerror = finishSpeech;
-
-      synthRef.current.speak(utterance);
-    } catch(err) {
-      console.warn('[BrowserSpeech] Speak error:', err);
-      if (onComplete && isMountedRef.current) onComplete();
+      console.warn('[VoiceTutor] Voice engine error:', err);
+      safeComplete();
     }
   };
 

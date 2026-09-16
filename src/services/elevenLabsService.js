@@ -366,6 +366,7 @@ export function splitTextIntoSpokenChunks(text) {
 }
 
 /**
+/**
  * Fallback to browser native SpeechSynthesis with authentic Indian English / Hindi voice
  */
 export function fallbackBrowserSpeech(text, onComplete) {
@@ -377,15 +378,21 @@ export function fallbackBrowserSpeech(text, onComplete) {
   try {
     window.speechSynthesis.cancel();
     const spokenHumanText = humanizeTextForSpeech(text);
+    if (!spokenHumanText || !spokenHumanText.trim()) {
+      if (onComplete) onComplete();
+      return;
+    }
+
     const utterance = new SpeechSynthesisUtterance(spokenHumanText);
     utterance.rate = 1.0;
     utterance.pitch = 1.05;
-    utterance.lang = 'hi-IN';
 
     const naturalVoice = getBestNaturalVoice(window.speechSynthesis, 'indian');
     if (naturalVoice) {
       utterance.voice = naturalVoice;
-      utterance.lang = naturalVoice.lang || 'hi-IN';
+      utterance.lang = naturalVoice.lang || 'en-IN';
+    } else {
+      utterance.lang = 'en-IN';
     }
 
     currentUtterance = utterance;
@@ -403,7 +410,14 @@ export function fallbackBrowserSpeech(text, onComplete) {
       }
     }, 8000);
 
-    const safeFinish = () => {
+    let finished = false;
+    const safeFinish = (e) => {
+      if (finished) return;
+      if (e && (e.error === 'interrupted' || e.error === 'canceled')) {
+        clearInterval(keepAlivePing);
+        return;
+      }
+      finished = true;
       clearInterval(keepAlivePing);
       currentUtterance = null;
       if (typeof window !== 'undefined') window._doapActiveUtterance = null;
@@ -545,36 +559,49 @@ export async function speakDOAPVoice(text, onComplete, onError, voiceKey = 'swar
       })
     });
 
-    if (ttsRes.ok) {
+    const contentType = (ttsRes.headers && ttsRes.headers.get('content-type')) || '';
+    if (ttsRes.ok && contentType.includes('audio')) {
       const blob = await ttsRes.blob();
       if (isAudioCancelled) return;
       const audioUrl = URL.createObjectURL(blob);
       const audio = new Audio(audioUrl);
       currentAudioElement = audio;
 
-      audio.onended = () => {
+      let playedDone = false;
+      const handleDone = () => {
+        if (playedDone) return;
+        playedDone = true;
         try { URL.revokeObjectURL(audioUrl); } catch (e) {}
         currentAudioElement = null;
         if (onComplete) onComplete();
       };
 
-      audio.onerror = (e) => {
+      audio.onended = handleDone;
+      audio.onerror = () => {
+        if (playedDone) return;
+        playedDone = true;
         try { URL.revokeObjectURL(audioUrl); } catch (e) {}
         currentAudioElement = null;
-        console.warn('[DOAP Neural Voice] Playback error, falling back to browser:', e);
         fallbackBrowserSpeech(cleanText, onComplete);
       };
 
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        await playPromise;
+      try {
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          await playPromise;
+        }
+        return; // High-fidelity neural speech active!
+      } catch (playErr) {
+        if (playedDone) return;
+        playedDone = true;
+        try { URL.revokeObjectURL(audioUrl); } catch (e) {}
+        currentAudioElement = null;
+        fallbackBrowserSpeech(cleanText, onComplete);
+        return;
       }
-      return; // High-fidelity neural speech active!
-    } else {
-      console.warn(`[DOAP Neural Voice] /api/ai/tts returned status ${ttsRes.status}`);
     }
   } catch (neuralErr) {
-    console.warn('[DOAP Neural Voice] Backend TTS call failed, falling back to browser:', neuralErr);
+    // Silently fall through to browser speech without crashing
   }
 
   // 4. Final Fallback: Browser Native SpeechSynthesis with softened pitch & rate

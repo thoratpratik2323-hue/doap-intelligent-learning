@@ -266,11 +266,11 @@ export const VoiceAICallModal = ({ isOpen, onClose, onSaveCallToChat, isDarkMode
           if (onFinished && isComponentMounted.current) onFinished();
         },
         () => {
-          fallbackModalSpeech(text, onFinished);
+          if (onFinished && isComponentMounted.current) onFinished();
         }
       );
     } catch (e) {
-      fallbackModalSpeech(text, onFinished);
+      if (onFinished && isComponentMounted.current) onFinished();
     }
   };
 

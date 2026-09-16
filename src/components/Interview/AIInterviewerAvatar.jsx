@@ -35,11 +35,13 @@ export const AIInterviewerAvatar = ({ questionText = '', isAiSpeaking = false, o
           if (onSpeechComplete) onSpeechComplete();
         },
         () => {
-          fallbackBrowserSpeech(cleanSpeech);
+          setSpeakingState('listening');
+          if (onSpeechComplete) onSpeechComplete();
         }
       );
     } catch (e) {
-      fallbackBrowserSpeech(cleanSpeech);
+      setSpeakingState('listening');
+      if (onSpeechComplete) onSpeechComplete();
     }
   };
 
