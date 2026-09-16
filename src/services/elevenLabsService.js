@@ -98,7 +98,7 @@ export function getMyraaVoice(synth) {
   const voices = synth.getVoices ? synth.getVoices() : [];
   if (!voices || voices.length === 0) return null;
 
-  // 1. Highest Priority: Microsoft Edge / Azure Natural Sweet Female Voices (Ana, Jenny, Aria, Sonia, Neerja)
+  // 1. Highest Priority: Microsoft Edge / Azure Natural Neural Female Voices (Ana, Jenny, Aria, Sonia, Neerja)
   const edgeNaturalFemale = voices.find(v => {
     const n = (v.name || '').toLowerCase();
     return (n.includes('online (natural)') || n.includes('natural') || n.includes('neural')) &&
@@ -106,22 +106,15 @@ export function getMyraaVoice(synth) {
   });
   if (edgeNaturalFemale) return edgeNaturalFemale;
 
-  // 2. Microsoft Ana, Jenny, Zira, Samantha
-  const msFemale = voices.find(v => {
-    const n = (v.name || '').toLowerCase();
-    return n.includes('ana') || n.includes('jenny') || n.includes('zira') || n.includes('samantha');
-  });
-  if (msFemale) return msFemale;
-
-  // 3. Google Chrome Natural Female Voices
+  // 2. Google Chrome Natural Studio/Female Voices (Google US English, Google UK English Female)
   const googleFemale = voices.find(v => {
     const n = (v.name || '').toLowerCase();
     return (n.includes('google') || n.includes('chrome')) &&
-           (n.includes('female') || n.includes('us english') || n.includes('uk english female'));
+           (n.includes('female') || n.includes('us english') || n.includes('uk english female') || n.includes('english united states'));
   });
   if (googleFemale) return googleFemale;
 
-  // 4. Apple Samantha, Victoria, Karen, Tessa
+  // 3. Apple Natural Female Voices (Samantha, Victoria, Karen, Tessa)
   const appleFemale = voices.find(v => {
     const n = (v.name || '').toLowerCase();
     return (n.includes('samantha') || n.includes('victoria') || n.includes('karen') || n.includes('tessa')) &&
@@ -129,14 +122,27 @@ export function getMyraaVoice(synth) {
   });
   if (appleFemale) return appleFemale;
 
-  // 5. Any English voice matching female keywords
+  // 4. Microsoft Natural / Neural Female (Ana, Jenny, Sonia) without old legacy mechanical Zira
+  const msNatural = voices.find(v => {
+    const n = (v.name || '').toLowerCase();
+    return (n.includes('ana') || n.includes('jenny') || n.includes('sonia') || n.includes('samantha')) && !n.includes('desktop');
+  });
+  if (msNatural) return msNatural;
+
+  // 5. Any English voice strictly matching verified female keywords (excluding all male names)
   const anyFemale = voices.find(v => {
     const n = (v.name || '').toLowerCase();
-    return (v.lang || '').toLowerCase().startsWith('en') && FEMALE_VOICE_KEYWORDS.some(kw => n.includes(kw));
+    const isMale = n.includes('david') || n.includes('mark') || n.includes('george') || n.includes('male') || n.includes('guy') || n.includes('stefan');
+    return !isMale && (v.lang || '').toLowerCase().startsWith('en') && FEMALE_VOICE_KEYWORDS.some(kw => n.includes(kw));
   });
   if (anyFemale) return anyFemale;
 
-  return voices.find(v => (v.lang || '').toLowerCase().startsWith('en')) || voices[0] || null;
+  // 6. Safe fallback: any English voice that is explicitly not male
+  const safeNonMale = voices.find(v => {
+    const n = (v.name || '').toLowerCase();
+    return !n.includes('david') && !n.includes('mark') && !n.includes('george') && !n.includes('male') && (v.lang || '').toLowerCase().startsWith('en');
+  });
+  return safeNonMale || voices[0] || null;
 }
 
 /**

@@ -350,48 +350,40 @@ Instructions:
         // Cancel any lingering audio before speaking
         stopElevenLabsAudio();
 
-        // Reveal caption and state at the exact moment speech begins
-        this.onTranscription("model", text);
         this.setState("speaking");
 
-        // Fast 1.4s race limit on Gemini Aoede to guarantee sub-2.5s response time
-        let hasVoiceStarted = false;
-        const speedTimer = setTimeout(() => {
-          if (!hasVoiceStarted) {
-            hasVoiceStarted = true;
-            fallbackBrowserSpeech(clean, safeResolve, 'myraa');
+        let hasFinished = false;
+        const onAudioEnd = () => {
+          if (!hasFinished) {
+            hasFinished = true;
+            safeResolve();
           }
-        }, 1400);
+        };
 
+        // 1. Primary Engine: Gemini Live Aoede Studio Voice (Original Myraa Voice)
         const geminiOk = await speakGeminiAoedeVoice(
           clean, 
-          () => {
-            clearTimeout(speedTimer);
-            safeResolve();
-          }, 
+          onAudioEnd, 
           (err) => {
-            clearTimeout(speedTimer);
-            if (!hasVoiceStarted) {
-              hasVoiceStarted = true;
+            console.warn("[Myraa] Gemini Aoede TTS unavailable, using clean Myraa voice:", err);
+            if (!hasFinished) {
+              hasFinished = true;
               fallbackBrowserSpeech(clean, safeResolve, 'myraa');
             }
           }
         );
 
         if (geminiOk) {
-          hasVoiceStarted = true;
-          clearTimeout(speedTimer);
           return;
         }
 
-        if (!hasVoiceStarted) {
-          hasVoiceStarted = true;
-          clearTimeout(speedTimer);
+        // 2. Fallback: Only if Gemini Aoede could not initialize
+        if (!hasFinished) {
+          hasFinished = true;
           fallbackBrowserSpeech(clean, safeResolve, 'myraa');
         }
       } catch (e) {
         console.warn("[Myraa] Speech error:", e);
-        this.onTranscription("model", text);
         this.setState("speaking");
         fallbackBrowserSpeech(text, safeResolve, 'myraa');
       }
