@@ -37,11 +37,14 @@ class LocalSystemConnector {
       return;
     }
 
+    const NativeWebSocket = typeof window !== 'undefined' ? window.WebSocket : (typeof WebSocket !== 'undefined' ? WebSocket : null);
+    if (!NativeWebSocket) return;
+
     try {
-      const ws = new WebSocket(this.wsUrl);
+      const ws = new NativeWebSocket(this.wsUrl);
 
       const timer = setTimeout(() => {
-        if (ws.readyState !== WebSocket.OPEN) {
+        if (ws.readyState !== NativeWebSocket.OPEN) {
           try { ws.close(); } catch (e) {}
           this.isConnected = false;
           this.notify();
@@ -99,7 +102,7 @@ class LocalSystemConnector {
    */
   async executeLocalCode(language, code) {
     // 1. Try WebSocket if active
-    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+    if (this.socket && this.socket.readyState === 1 /* OPEN */) {
       return new Promise((resolve) => {
         const reqId = 'run_' + Date.now();
         const handler = (event) => {

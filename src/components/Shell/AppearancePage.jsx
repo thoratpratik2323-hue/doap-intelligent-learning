@@ -3,6 +3,12 @@ import { Sun, Moon, Monitor, RotateCcw, ChevronDown, MoveUpRight, ArrowRight } f
 import { useTheme } from '../../context/ThemeContext';
 import { GRADIENT_THEMES, IPHONE_THEMES, ACCENT_COLORS } from '../../data/gradientThemes';
 import { GradientPreview } from '../Common/GradientPreview';
+import { 
+  getHarnessState, 
+  toggleRlmMode, 
+  refineHarness, 
+  rollbackHarness 
+} from '../../services/primeAgentHarness';
 
 // ─────────────────────────────────────────────────────────────
 // Gradient Direction icons (SVG arrows)

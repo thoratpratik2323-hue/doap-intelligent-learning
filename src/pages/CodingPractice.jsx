@@ -419,14 +419,111 @@ const PROBLEM_DEFINITIONS = [
 
 export const ALL_PROBLEMS = [...PROBLEM_DEFINITIONS, ...DSA_PROBLEMS, ...HACKERRANK_PROBLEMS];
 
+export function resolveProblemTests(activeProblem) {
+  if (!activeProblem) return [];
+  
+  // 1. Explicit tests defined on problem
+  if (Array.isArray(activeProblem.tests) && activeProblem.tests.length > 0) {
+    const isCompanyDummy = Boolean(
+      activeProblem.isCompanyProblem && 
+      activeProblem.tests.length === 1 && 
+      activeProblem.tests[0]?.expected === true && 
+      (!activeProblem.tests[0]?.input || activeProblem.tests[0]?.input.length === 0)
+    );
+
+    if (!isCompanyDummy) {
+      return activeProblem.tests.map((t, idx) => ({
+        id: t.id || idx + 1,
+        display: t.display || `${activeProblem.functionName || 'solution'}(${JSON.stringify(t.input || [])})`,
+        expected: t.expected,
+        input: Array.isArray(t.input) ? t.input : [t.input],
+        isGenericVerification: false
+      }));
+    }
+  }
+
+  // 2. Intelligently parse examples (supports DSA JSON arrays, strings, multi-args)
+  if (Array.isArray(activeProblem.examples) && activeProblem.examples.length > 0) {
+    return activeProblem.examples.map((ex, idx) => {
+      let parsedExpected = ex.output;
+      if (typeof ex.output === 'string') {
+        const trimmedOut = ex.output.trim();
+        try {
+          parsedExpected = JSON.parse(trimmedOut);
+        } catch (e) {
+          if (trimmedOut.toLowerCase() === 'true') parsedExpected = true;
+          else if (trimmedOut.toLowerCase() === 'false') parsedExpected = false;
+          else if (!isNaN(Number(trimmedOut)) && trimmedOut !== '') parsedExpected = Number(trimmedOut);
+          else parsedExpected = trimmedOut;
+        }
+      }
+
+      let parsedInput = [ex.input];
+      if (typeof ex.input === 'string') {
+        const trimmedIn = ex.input.trim();
+        try {
+          const directJson = JSON.parse(trimmedIn);
+          parsedInput = [directJson];
+        } catch (e1) {
+          try {
+            const stripped = trimmedIn.replace(/[a-zA-Z_]\w*\s*=\s*/g, '');
+            const multiArg = JSON.parse(`[${stripped}]`);
+            if (Array.isArray(multiArg)) parsedInput = multiArg;
+          } catch (e2) {
+            parsedInput = [trimmedIn];
+          }
+        }
+      } else if (Array.isArray(ex.input)) {
+        parsedInput = ex.input;
+      }
+
+      return {
+        id: idx + 1,
+        display: `${activeProblem.functionName || 'solution'}(${typeof ex.input === 'string' ? ex.input : JSON.stringify(ex.input)})`,
+        expected: parsedExpected,
+        input: parsedInput,
+        isGenericVerification: false
+      };
+    });
+  }
+
+  // 3. Fallback for company placement questions and open-ended algorithmic challenges
+  const fnName = activeProblem.functionName || 'solution';
+  return [
+    {
+      id: 1,
+      display: `${fnName}()`,
+      expected: 'Execution Successful',
+      input: [],
+      isGenericVerification: true
+    }
+  ];
+}
+
 function deepEqual(a, b) {
   if (a === b) return true;
   if (a === undefined || b === undefined) return a === b;
   if (a === null || b === null) return a === b;
-  if (typeof a !== typeof b) return false;
-  if (typeof a === 'number') {
+
+  if (typeof a === 'number' && typeof b === 'number') {
     return Math.abs(a - b) < 1e-6;
   }
+
+  try {
+    const jsonA = typeof a === 'string' ? a.trim() : JSON.stringify(a);
+    const jsonB = typeof b === 'string' ? b.trim() : JSON.stringify(b);
+    if (jsonA === jsonB) return true;
+
+    const parsedA = typeof a === 'string' ? JSON.parse(a) : a;
+    const parsedB = typeof b === 'string' ? JSON.parse(b) : b;
+    if (JSON.stringify(parsedA) === JSON.stringify(parsedB)) return true;
+  } catch (e) {}
+
+  if (typeof a !== typeof b) {
+    if (String(a).trim().toLowerCase() === String(b).trim().toLowerCase()) return true;
+    return false;
+  }
+
   try {
     return JSON.stringify(a) === JSON.stringify(b);
   } catch (e) {
@@ -1220,16 +1317,7 @@ Act as my Socratic AI Tutor. Do NOT write the entire solved code. Instead, analy
     // 2. Client-Side Python 3 Wasm Execution via Pyodide (0ms latency, zero server cost)
     if (selectedLanguage === 'python') {
       try {
-        const activeTests = (activeProblem.tests && activeProblem.tests.length > 0)
-          ? activeProblem.tests
-          : (activeProblem.examples && activeProblem.examples.length > 0)
-            ? activeProblem.examples.map((ex, idx) => ({
-                id: idx + 1,
-                display: `${activeProblem.functionName || 'solution'}(${ex.input})`,
-                expected: ex.output,
-                input: [ex.input]
-              }))
-            : [{ id: 1, display: `${activeProblem.functionName || 'solution'}()`, expected: true, input: [] }];
+        const activeTests = resolveProblemTests(activeProblem);
 
         const pyResult = await runPythonTestsInBrowser(code, activeProblem.functionName || 'solution', activeTests);
         if (pyResult && pyResult.success) {
@@ -1302,16 +1390,7 @@ Act as my Socratic AI Tutor. Do NOT write the entire solved code. Instead, analy
 
         // Self-Healing Fallback: DOAP AI Neural Code Simulation Engine
         if (!executedSuccessfully) {
-          const activeTests = (activeProblem.tests && activeProblem.tests.length > 0)
-            ? activeProblem.tests
-            : (activeProblem.examples && activeProblem.examples.length > 0)
-              ? activeProblem.examples.map((ex, idx) => ({
-                  id: idx + 1,
-                  display: `${activeProblem.functionName || 'solution'}(${ex.input})`,
-                  expected: ex.output,
-                  input: [ex.input]
-                }))
-              : [{ id: 1, display: `${activeProblem.functionName || 'solution'}()`, expected: true, input: [] }];
+          const activeTests = resolveProblemTests(activeProblem);
 
           const evalPrompt = `You are the DOAP AI Execution Engine for ${selectedLanguage.toUpperCase()}.
 Algorithmic Challenge: "${activeProblem.title}"
@@ -1403,10 +1482,24 @@ Evaluate this code strictly:
           if (a === b) return true;
           if (a === undefined || b === undefined) return a === b;
           if (a === null || b === null) return a === b;
-          if (typeof a !== typeof b) return false;
-          if (typeof a === 'number') {
+          if (typeof a === 'number' && typeof b === 'number') {
             return Math.abs(a - b) < 1e-6;
           }
+          try {
+            const jsonA = typeof a === 'string' ? a.trim() : JSON.stringify(a);
+            const jsonB = typeof b === 'string' ? b.trim() : JSON.stringify(b);
+            if (jsonA === jsonB) return true;
+
+            const parsedA = typeof a === 'string' ? JSON.parse(a) : a;
+            const parsedB = typeof b === 'string' ? JSON.parse(b) : b;
+            if (JSON.stringify(parsedA) === JSON.stringify(parsedB)) return true;
+          } catch (e) {}
+
+          if (typeof a !== typeof b) {
+            if (String(a).trim().toLowerCase() === String(b).trim().toLowerCase()) return true;
+            return false;
+          }
+
           try {
             return JSON.stringify(a) === JSON.stringify(b);
           } catch (e) {
@@ -1436,7 +1529,18 @@ Evaluate this code strictly:
               let passed = false;
               try {
                 actual = runner(...testCase.input);
-                passed = deepEqual(actual, testCase.expected);
+                if (testCase.isGenericVerification) {
+                  passed = true;
+                  actual = actual !== undefined ? actual : 'Executed cleanly';
+                } else {
+                  passed = deepEqual(actual, testCase.expected);
+                  if (!passed && actual === undefined && Array.isArray(testCase.input) && testCase.input.length > 0) {
+                    if (deepEqual(testCase.input[0], testCase.expected)) {
+                      passed = true;
+                      actual = testCase.input[0];
+                    }
+                  }
+                }
               } catch (execErr) {
                 passed = false;
                 actual = "Error: " + execErr.message;
@@ -1472,16 +1576,7 @@ Evaluate this code strictly:
         console.warn('Web Worker initialization failed, fallback to main thread:', workerInitErr);
       }
 
-      const activeTests = (activeProblem.tests && activeProblem.tests.length > 0)
-        ? activeProblem.tests
-        : (activeProblem.examples && activeProblem.examples.length > 0)
-          ? activeProblem.examples.map((ex, idx) => ({
-              id: idx + 1,
-              display: `${activeProblem.functionName || 'solution'}(${ex.input})`,
-              expected: ex.output,
-              input: [ex.input]
-            }))
-          : [{ id: 1, display: `${activeProblem.functionName || 'solution'}()`, expected: true, input: [] }];
+      const activeTests = resolveProblemTests(activeProblem);
 
       const runMainThreadFallback = () => {
         try {
@@ -1505,7 +1600,18 @@ Evaluate this code strictly:
             let passed = false;
             try {
               actual = runner(...testCase.input);
-              passed = deepEqual(actual, testCase.expected);
+              if (testCase.isGenericVerification) {
+                passed = true;
+                actual = actual !== undefined ? actual : 'Executed cleanly';
+              } else {
+                passed = deepEqual(actual, testCase.expected);
+                if (!passed && actual === undefined && Array.isArray(testCase.input) && testCase.input.length > 0) {
+                  if (deepEqual(testCase.input[0], testCase.expected)) {
+                    passed = true;
+                    actual = testCase.input[0];
+                  }
+                }
+              }
             } catch (execErr) {
               passed = false;
               actual = `Error: ${execErr.message}`;

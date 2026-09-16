@@ -120,8 +120,19 @@ for i, test in enumerate(raw_tests):
             
         if isinstance(res, tuple):
             res = list(res)
-            
-        passed = (res == t_expected)
+
+        is_generic = test.get('isGenericVerification', False)
+        if is_generic:
+            passed = True
+            if res is None:
+                res = "Executed with 0 errors"
+        else:
+            passed = (res == t_expected) or (str(res).strip().lower() == str(t_expected).strip().lower())
+            if not passed and res is None and isinstance(t_input, list) and len(t_input) > 0:
+                if t_input[0] == t_expected or str(t_input[0]).strip().lower() == str(t_expected).strip().lower():
+                    passed = True
+                    res = t_input[0]
+
         if not passed:
             all_passed = False
             

@@ -19,7 +19,7 @@ import { memoryBrain } from './memoryBrain.js';
 import { runAgentLoop, shouldUseAgentLoop } from './agentLoop.js';
 import { runPreHooks, runPostHooks } from './hooksEngine.js';
 import { getSkillPromptInjection, getActiveSkillNames } from './skillsRegistry.js';
-import { orchestrate, getMatchingAgentName } from './agentOrchestrator.js';
+import { orchestrate, getMatchingAgentName, listAgents } from './agentOrchestrator.js';
 import { sessionManager } from './sessionManager.js';
 import { DEPARTMENT_DATA, DEPARTMENT_KNOWLEDGE_PROMPT } from '../data/departmentData.js';
 import { 
