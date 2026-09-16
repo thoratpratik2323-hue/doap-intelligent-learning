@@ -273,6 +273,9 @@ Instructions:
   }
 
   async handleUserQuery(queryText) {
+    if (this.isProcessingQuery || this.state === "speaking") return;
+    this.isProcessingQuery = true;
+    clearTimeout(this.silenceTimer);
     this.stopListening();
     this.onTranscription("user", queryText);
     this.setState("thinking");
@@ -307,6 +310,7 @@ Instructions:
       this.setState("speaking");
       await this.speak(fallback);
     } finally {
+      this.isProcessingQuery = false;
       if (this.state !== "disconnected") {
         this.setState("listening");
         this.startListening();
@@ -343,37 +347,34 @@ Instructions:
 
       try {
         const clean = text.replace(/[*#`_~]/g, '').trim();
-
-        // Speed Watchdog: If Gemini TTS is sluggish (>2.2s), accelerate with Neural Voice instantly!
-        let startedFastFallback = false;
-        const fallbackTimer = setTimeout(async () => {
-          if (!startedFastFallback) {
-            startedFastFallback = true;
-            console.log("[Myraa Speech] Fast Neural Speech acceleration triggered (<2.2s limit)");
-            await speakDOAPVoice(clean, { persona: 'myraa', onComplete: safeResolve, _skipGemini: true });
-          }
-        }, 2200);
-
-        const geminiOk = await speakGeminiAoedeVoice(clean, () => {
-          clearTimeout(fallbackTimer);
+        if (!clean) {
           safeResolve();
-        }, async (err) => {
-          clearTimeout(fallbackTimer);
-          if (!startedFastFallback) {
-            startedFastFallback = true;
+          return;
+        }
+
+        // Cancel any lingering audio or speech synthesis before speaking
+        stopElevenLabsAudio();
+
+        // 1. Primary Engine: Gemini Live Aoede Studio Voice (Myraa)
+        const geminiOk = await speakGeminiAoedeVoice(
+          clean, 
+          safeResolve, 
+          async (err) => {
+            console.warn("[Myraa] Gemini Aoede TTS failed, falling back to DOAP Voice:", err);
             await speakDOAPVoice(clean, { persona: 'myraa', onComplete: safeResolve, _skipGemini: true });
           }
-        });
+        );
 
-        if (geminiOk) return;
-
-        if (!startedFastFallback) {
-          clearTimeout(fallbackTimer);
-          await speakDOAPVoice(clean, { persona: 'myraa', onComplete: safeResolve, _skipGemini: true });
+        if (geminiOk) {
+          // Gemini audio is playing through Web Audio API and will resolve onComplete
+          return;
         }
+
+        // 2. Secondary Engine: Only if Gemini Aoede could not start (no API key or network error)
+        await speakDOAPVoice(clean, { persona: 'myraa', onComplete: safeResolve, _skipGemini: true });
       } catch (e) {
-        console.warn("[Myraa] Speech error, falling back to browser speech:", e);
-        fallbackBrowserSpeech(text, safeResolve, 'myraa');
+        console.warn("[Myraa] Speech error:", e);
+        safeResolve();
       }
     });
   }

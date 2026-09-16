@@ -447,6 +447,13 @@ export function fallbackBrowserSpeech(text, onComplete, persona = 'charon') {
     return;
   }
 
+  // Never speak with robotic browser TTS if high-fidelity audio or Gemini is actively playing!
+  if (currentSource || currentAudioElement || isAudioCancelled) {
+    console.log('[fallbackBrowserSpeech] Blocked: high-fidelity audio already active');
+    if (onComplete) onComplete();
+    return;
+  }
+
   try {
     window.speechSynthesis.cancel();
     const spokenHumanText = humanizeTextForSpeech(text);
@@ -639,10 +646,13 @@ export async function speakGeminiAoedeVoice(text, onComplete, onError) {
       await sharedAudioCtx.resume().catch(() => {});
     }
 
-    // Stop any existing playing source
+    // Stop any existing playing source and silence any browser robot speech
     if (currentSource) {
       try { currentSource.stop(); currentSource.disconnect(); } catch (e) {}
       currentSource = null;
+    }
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      try { window.speechSynthesis.cancel(); } catch (e) {}
     }
 
     // Create 24000Hz AudioBuffer (native resampler handles output to hardware)
