@@ -1722,14 +1722,14 @@ Evaluate this code strictly:
           <div className="space-y-2 p-3.5 rounded-2xl bg-neutral-900/40 border border-neutral-800/80 backdrop-blur-sm">
             <div className="flex items-center justify-between text-xs font-mono text-neutral-400">
               <span className="flex items-center gap-1.5 font-bold text-neutral-200">
-                <Building2 size={14} className="text-cyan-400" />
+                <Building2 size={14} className="text-rose-600" />
                 <span>Company Placement Archive ({totalCombinedProblemsCount.toLocaleString()}+ Problems):</span>
               </span>
               {selectedCompanyId !== 'All' && (
                 <button
                   type="button"
                   onClick={() => setSelectedCompanyId('All')}
-                  className="text-cyan-400 hover:text-cyan-300 underline cursor-pointer text-[11px] font-sans transition-colors"
+                  className="text-rose-600 hover:text-rose-700 underline cursor-pointer text-[11px] font-sans font-bold transition-colors"
                 >
                   Show All ({totalCombinedProblemsCount.toLocaleString()})
                 </button>
@@ -1765,8 +1765,8 @@ Evaluate this code strictly:
                   onClick={() => setSelectedCompanyId('All')}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border flex items-center gap-1.5 ${
                     selectedCompanyId === 'All'
-                      ? (isDarkMode ? 'bg-cyan-400 text-black border-cyan-400 font-bold shadow-sm' : 'bg-black text-white border-black font-bold shadow-sm')
-                      : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white hover:border-neutral-700' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
+                      ? 'bg-rose-600 text-white border-rose-600 font-bold shadow-sm'
+                      : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white hover:border-neutral-700' : 'bg-neutral-100 text-neutral-700 border-neutral-200 hover:text-black hover:border-rose-300')
                   }`}
                 >
                   <span>✨ All Companies ({totalCombinedProblemsCount.toLocaleString()})</span>
@@ -1778,8 +1778,8 @@ Evaluate this code strictly:
                   onClick={() => setSelectedCompanyId('curated')}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border flex items-center gap-1.5 ${
                     selectedCompanyId === 'curated'
-                      ? (isDarkMode ? 'bg-cyan-400 text-black border-cyan-400 font-bold shadow-sm' : 'bg-black text-white border-black font-bold shadow-sm')
-                      : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white hover:border-neutral-700' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
+                      ? 'bg-rose-600 text-white border-rose-600 font-bold shadow-sm'
+                      : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white hover:border-neutral-700' : 'bg-neutral-100 text-neutral-700 border-neutral-200 hover:text-black hover:border-rose-300')
                   }`}
                 >
                   <span>🌐 Curated Core ({ALL_PROBLEMS.length})</span>
@@ -1792,8 +1792,8 @@ Evaluate this code strictly:
                     onClick={() => setSelectedCompanyId(comp.id)}
                     className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border flex items-center gap-1.5 ${
                       selectedCompanyId === comp.id
-                        ? (isDarkMode ? 'bg-gradient-to-r from-blue-500 to-cyan-400 text-black border-cyan-400 font-bold shadow-sm' : 'bg-blue-600 text-white border-blue-600 font-bold shadow-sm')
-                        : (isDarkMode ? 'bg-neutral-900 text-neutral-300 border-neutral-800 hover:border-neutral-700 hover:text-white' : 'bg-neutral-100 text-neutral-700 border-neutral-200 hover:text-black')
+                        ? 'bg-rose-600 text-white border-rose-600 font-bold shadow-sm'
+                        : (isDarkMode ? 'bg-neutral-900 text-neutral-300 border-neutral-800 hover:border-neutral-700 hover:text-white' : 'bg-neutral-100 text-neutral-700 border-neutral-200 hover:text-black hover:border-rose-300')
                     }`}
                   >
                     <span>{COMPANY_ICONS[comp.id] || '🏢'}</span>
@@ -1825,7 +1825,7 @@ Evaluate this code strictly:
             {/* Level / Difficulty Filter */}
             <div className="flex items-center gap-3 flex-wrap">
               <span className="text-xs font-mono font-bold text-neutral-300 flex items-center gap-1.5 shrink-0">
-                <Filter size={13} className="text-cyan-400" />
+                <Filter size={13} className="text-rose-600" />
                 <span>Level:</span>
               </span>
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -1872,7 +1872,7 @@ Evaluate this code strictly:
                     setSelectedCompanyId('All');
                     setProblemSearchQuery('');
                   }}
-                  className="ml-auto text-xs text-neutral-400 hover:text-cyan-300 underline cursor-pointer font-mono"
+                  className="ml-auto text-xs text-neutral-500 hover:text-rose-600 underline cursor-pointer font-mono font-bold"
                 >
                   Reset All Filters
                 </button>
@@ -1883,14 +1883,14 @@ Evaluate this code strictly:
             <div className="space-y-1.5 pt-2 border-t border-neutral-800/50">
               <div className="flex items-center justify-between text-xs font-mono text-neutral-400">
                 <span className="flex items-center gap-1.5 text-neutral-300 font-bold">
-                  <Layers size={13} className="text-purple-400" />
+                  <Layers size={13} className="text-rose-600" />
                   <span>Problem Type / Topic:</span>
                 </span>
                 {selectedCategory !== 'All' && (
                   <button
                     type="button"
                     onClick={() => setSelectedCategory('All')}
-                    className="text-cyan-400 hover:underline cursor-pointer text-[11px]"
+                    className="text-rose-600 hover:underline cursor-pointer text-[11px] font-bold"
                   >
                     All Types
                   </button>
@@ -1905,8 +1905,8 @@ Evaluate this code strictly:
                     className={`
                       px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors cursor-pointer border
                       ${selectedCategory === cat 
-                        ? (isDarkMode ? 'bg-white text-black border-white font-bold shadow-sm' : 'bg-black text-white border-black font-bold shadow-sm') 
-                        : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-600 border-neutral-200 hover:text-black')
+                        ? 'bg-rose-600 text-white border-rose-600 font-bold shadow-sm' 
+                        : (isDarkMode ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-700 border-neutral-200 hover:text-black hover:border-rose-300')
                       }
                     `}
                   >
@@ -1918,44 +1918,38 @@ Evaluate this code strictly:
           </div>
 
           {/* Count Indicator */}
-          <div className="flex items-center justify-between text-xs font-mono text-neutral-400 px-1">
+          <div className="flex items-center justify-between text-xs font-mono text-neutral-500 px-1">
             <span>
               Showing {filteredProblems.length === 0 ? 0 : (problemPage - 1) * itemsPerPage + 1} - {Math.min(problemPage * itemsPerPage, filteredProblems.length).toLocaleString()} of {filteredProblems.length.toLocaleString()} Problems
               {selectedCompanyId !== 'All' && selectedCompanyId !== 'curated' && (
-                <span className="ml-1.5 text-cyan-400 font-bold">
+                <span className="ml-1.5 text-rose-600 font-bold">
                   ({companyCatalog.find(c => c.id === selectedCompanyId)?.name || selectedCompanyId} Placement Archive)
                 </span>
               )}
               {selectedCompanyId === 'curated' && (
-                <span className="ml-1.5 text-cyan-400 font-bold">
+                <span className="ml-1.5 text-rose-600 font-bold">
                   (Curated Core Suite)
                 </span>
               )}
             </span>
-            <span className="hidden sm:inline text-purple-400 font-bold">⚡ 100% In-Browser Ziv IDE Execution & Test Suite</span>
+            <span className="hidden sm:inline text-rose-600 font-bold">⚡ 100% In-Browser Ziv IDE Execution & Test Suite</span>
           </div>
 
           {/* Problems List */}
           <div className="space-y-3">
             {paginatedProblems.map((prob) => {
-              const isSolved = solvedProblems.includes(prob.id);
+              const isCompleted = completedProblems.has(prob.id);
 
               return (
                 <div
                   key={prob.id}
                   onClick={() => handleOpenProblem(prob)}
-                  className={`
-                    p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all cursor-pointer border doap-card group
-                    ${isDarkMode 
-                      ? 'bg-[#111111] border-neutral-800 text-white hover:border-neutral-700' 
-                      : 'bg-white border-neutral-200 text-black hover:border-neutral-300'
-                    }
-                  `}
+                  className="group p-4 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 doap-card"
                 >
-                  <div className="flex items-start sm:items-center gap-3.5">
-                    <div className="text-neutral-400 mt-1 sm:mt-0">
-                      {isSolved ? (
-                        <CheckCircle2 size={20} style={{ color: accentHex }} />
+                  <div className="flex items-start gap-3.5 flex-1 min-w-0">
+                    <div className="pt-0.5 shrink-0">
+                      {isCompleted ? (
+                        <CheckCircle2 size={20} className="text-emerald-500 fill-emerald-500/10" />
                       ) : (
                         <Circle size={20} className={isDarkMode ? "text-neutral-600" : "text-neutral-300"} />
                       )}
@@ -1964,63 +1958,63 @@ Evaluate this code strictly:
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs font-mono font-bold text-neutral-500">#{prob.id}</span>
-                        <h3 className="text-sm font-bold group-hover:text-cyan-300 transition-colors">{prob.title}</h3>
+                        <h3 className="text-sm font-bold group-hover:text-rose-600 transition-colors text-neutral-800">{prob.title}</h3>
                         
                         {/* Company Badge */}
                         {prob.company && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-cyan-500/40 text-cyan-300 bg-cyan-950/40 font-bold flex items-center gap-1">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-rose-200 text-rose-700 bg-rose-50 font-bold flex items-center gap-1">
                             <span>{prob.companyLogo || '🏢'}</span> {prob.company}
                           </span>
                         )}
 
                         {/* Frequency Badge */}
                         {prob.frequency !== undefined && prob.frequency !== null && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-amber-500/30 text-amber-300 bg-amber-500/10 flex items-center gap-1">
-                            <Flame size={10} className="text-amber-400" /> {prob.frequency}% Freq
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-amber-500/30 text-amber-800 bg-amber-50 font-semibold flex items-center gap-1">
+                            <Flame size={10} className="text-amber-500" /> {prob.frequency}% Freq
                           </span>
                         )}
 
                         {/* Acceptance Rate */}
                         {prob.acceptanceRate && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-neutral-700 text-neutral-400 bg-black/40">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-neutral-200 text-neutral-600 bg-neutral-100 font-semibold">
                             Acc: {prob.acceptanceRate}
                           </span>
                         )}
 
                         {prob.platform === 'HackerRank' && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-emerald-500/40 text-emerald-400 bg-emerald-950/50 font-bold">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-emerald-500/40 text-emerald-700 bg-emerald-50 font-bold">
                             🟩 HackerRank
                           </span>
                         )}
                         {prob.track && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-emerald-500/30 text-emerald-300 bg-emerald-500/10">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-emerald-500/30 text-emerald-700 bg-emerald-50 font-semibold">
                             📜 {prob.track}
                           </span>
                         )}
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono border font-bold ${
                           prob.difficulty === 'Easy'
-                            ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
+                            ? 'border-emerald-500/30 text-emerald-700 bg-emerald-50'
                             : prob.difficulty === 'Hard'
-                            ? 'border-rose-500/30 text-rose-400 bg-rose-500/10'
-                            : 'border-amber-500/30 text-amber-400 bg-amber-500/10'
+                            ? 'border-rose-500/30 text-rose-700 bg-rose-50'
+                            : 'border-amber-500/30 text-amber-800 bg-amber-50'
                         }`}>
                           {prob.difficulty}
                         </span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-cyan-500/30 text-cyan-300 bg-cyan-500/10">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-rose-200 text-rose-700 bg-rose-50 font-semibold">
                           {prob.category}
                         </span>
                         {prob.pattern && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-purple-500/30 text-purple-300 bg-purple-500/10">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-purple-200 text-purple-700 bg-purple-50 font-semibold">
                             🎯 {prob.pattern}
                           </span>
                         )}
                         {prob.target_complexity && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-neutral-700 text-neutral-400 bg-black/40">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono border border-neutral-200 text-neutral-600 bg-neutral-100 font-semibold">
                             ⏱️ {prob.target_complexity}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-neutral-400 line-clamp-2 leading-relaxed">{prob.description}</p>
+                      <p className="text-xs text-neutral-600 line-clamp-2 leading-relaxed">{prob.description}</p>
                     </div>
                   </div>
 
@@ -2046,10 +2040,10 @@ Evaluate this code strictly:
                         e.stopPropagation();
                         handleAskAiTutor(`Explain how to solve "${prob.title}" in DSA from first principles. Include algorithmic intuition, pattern "${prob.pattern || prob.category}", target complexity "${prob.target_complexity || 'optimal'}", and key edge cases.`);
                       }}
-                      className="px-2.5 py-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+                      className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-rose-600/20 cursor-pointer shrink-0 active:scale-95"
                       title="Ask AI Tutor 🤖"
                     >
-                      <Bot size={13} />
+                      <Bot size={14} className="text-white" />
                       <span className="hidden md:inline">Ask AI</span>
                     </button>
 
@@ -2228,9 +2222,9 @@ Evaluate this code strictly:
 
                   <button
                     onClick={() => handleAskAiTutor(`Explain "${k.title}" in DSA from first principles. Include complexity invariants, common pitfalls, and real technical interview edge cases.`)}
-                    className="px-3 py-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all"
+                    className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-md shadow-rose-600/20 active:scale-95"
                   >
-                    <Bot size={13} />
+                    <Bot size={14} className="text-white" />
                     <span>Ask AI Tutor</span>
                   </button>
                 </div>
@@ -2380,9 +2374,9 @@ Evaluate this code strictly:
                       </div>
                       <button
                         onClick={() => handleAskAiTutor(`Explain this DSA quiz question in detail: "${q.question}". Correct Answer: "${q.options[q.correctIndex]}". Why is this the correct answer and how should I think about it in a coding interview?`)}
-                        className="text-[11px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold cursor-pointer"
+                        className="text-[11px] text-rose-600 hover:text-rose-700 flex items-center gap-1 font-bold cursor-pointer"
                       >
-                        <Bot size={12} />
+                        <Bot size={13} className="text-rose-600" />
                         <span>Ask AI Tutor</span>
                       </button>
                     </div>

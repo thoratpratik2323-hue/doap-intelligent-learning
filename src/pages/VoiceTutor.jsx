@@ -280,6 +280,24 @@ export const VoiceTutor = () => {
         </div>
       </main>
 
+      {/* ── Live Speech Subtitles / Dialogue Feedback Bar ── */}
+      {(userCaption || modelCaption) && state !== "disconnected" && (
+        <div className="relative z-30 max-w-xl mx-auto px-4 pb-2 w-full animate-fade-in">
+          <div className="p-3.5 rounded-2xl bg-white/95 border border-rose-200 shadow-xl shadow-rose-950/5 backdrop-blur-md text-center space-y-1">
+            {state === "listening" && userCaption && (
+              <p className="text-xs font-mono text-neutral-500 font-semibold truncate">
+                <span className="text-rose-600 font-bold">🎙️ You:</span> "{userCaption}"
+              </p>
+            )}
+            {modelCaption && (
+              <p className="text-xs sm:text-sm font-medium text-[#18181B] leading-relaxed">
+                <span className="text-rose-600 font-bold">👩‍🏫 Myraa:</span> "{modelCaption}"
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ── 3. Bottom Controls HUD ────────────────────────────────────────── */}
       <footer className="relative z-30 flex items-center justify-center gap-3 px-4 py-4 border-t border-rose-100 bg-white/95 backdrop-blur-xl shrink-0 shadow-lg shadow-rose-950/5">
         {/* Central Microphone / Power Toggle */}

@@ -160,18 +160,18 @@ export class MyraaWebSession {
         }
 
         const activeText = (accumulatedText + ' ' + interim).trim();
-        if (activeText && this.state === "listening") {
+        if (activeText.length >= 2 && this.state === "listening") {
           this.onTranscription("user", activeText);
 
-          // 800ms silence detection: respond promptly when student finishes speaking
+          // 750ms silence detection: respond promptly when student finishes speaking
           clearTimeout(this.silenceTimer);
           this.silenceTimer = setTimeout(() => {
-            if (this.state === "listening" && activeText) {
+            if (this.state === "listening" && activeText.trim().length >= 2) {
               accumulatedText = '';
               this.stopListening();
-              this.handleUserQuery(activeText);
+              this.handleUserQuery(activeText.trim());
             }
-          }, 800);
+          }, 750);
         }
       };
 
@@ -237,8 +237,9 @@ Student asks: "${queryText}"
 
 AI TEACHER ROLE: You are Professor Myraa, the premier engineering professor and mentor on Ziv.
 Instructions:
-- Provide an intuitive, direct, and clear explanation in 2 spoken sentences.
+- Provide an intuitive, direct, and clear explanation in 2 to 3 spoken sentences.
 - Speak in a natural, polite, engaging young female professor voice.
+- STRICT LANGUAGE MATCHING: If the student asks in Hindi or Hinglish (e.g. "bhai", "kya", "kaise", "samjhao", "sikhna hai"), you MUST reply in natural, friendly spoken Hinglish! If they ask in English, reply in English!
 - Never use markdown symbols, asterisks, or bullet points so speech synthesis sounds completely natural.
 - End with an encouraging check question.`;
 
@@ -248,23 +249,27 @@ Instructions:
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
             generationConfig: {
-              maxOutputTokens: 90,
-              temperature: 0.6
+              maxOutputTokens: 250,
+              temperature: 0.7,
+              thinkingConfig: {
+                thinkingBudget: 0
+              }
             }
           })
         });
 
         if (res.ok) {
           const json = await res.json();
-          const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text && text.trim()) return text.trim();
+          const parts = json?.candidates?.[0]?.content?.parts || [];
+          const textPart = parts.find(p => p.text)?.text || parts[0]?.text;
+          if (textPart && textPart.trim()) return textPart.trim();
         }
       } catch (err) {
         console.warn("[Fast Gemini Flash fallback]", err);
       }
     }
 
-    return await generateSmartTutorResponse(queryText, { mode: 'voice' });
+    return await generateSmartTutorResponse(queryText, { mode: 'voice', voiceMode: true });
   }
 
   async handleUserQuery(queryText) {

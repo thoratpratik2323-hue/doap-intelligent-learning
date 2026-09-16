@@ -381,3 +381,34 @@ html:not(.dark) .font-mono {
   font-weight: 600;
 }
 
+/* ── Eliminate Faint Light Blue/Cyan across the entire app for 100% Readability ── */
+html:not(.dark) .text-cyan-200,
+html:not(.dark) .text-cyan-300,
+html:not(.dark) .text-cyan-400,
+html:not(.dark) .text-sky-200,
+html:not(.dark) .text-sky-300,
+html:not(.dark) .text-sky-400,
+html:not(.dark) .text-blue-300,
+html:not(.dark) .text-blue-400 {
+  color: #BE123C !important; /* Deep Rich Cherry Red / Crimson (7:1+ contrast) */
+  font-weight: 700 !important;
+}
+
+html:not(.dark) .bg-cyan-500\/10,
+html:not(.dark) .bg-cyan-500\/15,
+html:not(.dark) .bg-cyan-500\/20,
+html:not(.dark) .bg-cyan-950\/40,
+html:not(.dark) .bg-sky-500\/10,
+html:not(.dark) .bg-sky-500\/20 {
+  background-color: #FFF1F2 !important; /* Soft Cherry Blush */
+}
+
+html:not(.dark) .border-cyan-500\/20,
+html:not(.dark) .border-cyan-500\/30,
+html:not(.dark) .border-cyan-500\/40,
+html:not(.dark) .border-cyan-400,
+html:not(.dark) .border-sky-500\/30,
+html:not(.dark) .border-sky-500\/40 {
+  border-color: rgba(225, 29, 72, 0.25) !important;
+}
+
