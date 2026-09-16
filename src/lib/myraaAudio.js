@@ -87,10 +87,8 @@ export class MyraaWebSession {
       this.onTranscription("model", greeting);
       this.setState("speaking");
       
-      const played = await this.playIntroAudio();
-      if (!played) {
-        await this.speak(greeting);
-      }
+      // Speak greeting directly using pure Aoede voice (matching user conversational voice 100%)
+      await this.speak(greeting);
 
       // Transition to active listening only AFTER intro finishes
       if (this.state !== "disconnected") {

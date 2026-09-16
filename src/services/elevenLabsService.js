@@ -508,6 +508,7 @@ export async function speakGeminiAoedeVoice(text, onComplete, onError) {
 
     // Direct target model for Aoede studio speech (bypasses failed quota retries)
     const candidateModels = [
+      "gemini-3.1-flash-tts-preview",
       "gemini-2.5-flash-preview-tts"
     ];
 
