@@ -366,7 +366,7 @@ Instructions:
             console.warn("[Myraa] Gemini Aoede TTS unavailable, using clean Myraa voice:", err);
             if (!hasFinished) {
               hasFinished = true;
-              fallbackBrowserSpeech(clean, safeResolve, 'myraa');
+              fallbackBrowserSpeech(clean, safeResolve, 'aoede');
             }
           }
         );
@@ -378,12 +378,12 @@ Instructions:
         // 2. Fallback: Only if Gemini Aoede could not initialize
         if (!hasFinished) {
           hasFinished = true;
-          fallbackBrowserSpeech(clean, safeResolve, 'myraa');
+          fallbackBrowserSpeech(clean, safeResolve, 'aoede');
         }
       } catch (e) {
         console.warn("[Myraa] Speech error:", e);
         this.setState("speaking");
-        fallbackBrowserSpeech(text, safeResolve, 'myraa');
+        fallbackBrowserSpeech(text, safeResolve, 'aoede');
       }
     });
   }

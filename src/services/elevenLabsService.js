@@ -391,15 +391,20 @@ export function fallbackBrowserSpeech(text, onComplete, persona = 'aoede') {
     return;
   }
 
-  // Never speak with browser TTS if high-fidelity audio or Gemini is actively playing!
-  if (currentSource || currentAudioElement || isAudioCancelled) {
-    console.log('[fallbackBrowserSpeech] Blocked: high-fidelity audio already active');
-    if (onComplete) onComplete();
-    return;
+  // Clear any existing audio playback so browser TTS can speak cleanly without being blocked
+  if (currentSource) {
+    try { currentSource.stop(); currentSource.disconnect(); } catch (e) {}
+    currentSource = null;
   }
+  if (currentAudioElement) {
+    try { currentAudioElement.pause(); currentAudioElement.src = ''; } catch (e) {}
+    currentAudioElement = null;
+  }
+  isAudioCancelled = false;
 
   try {
     window.speechSynthesis.cancel();
+    window.speechSynthesis.resume();
     const spokenHumanText = humanizeTextForSpeech(text);
     const utterance = new SpeechSynthesisUtterance(spokenHumanText);
 
@@ -408,6 +413,7 @@ export function fallbackBrowserSpeech(text, onComplete, persona = 'aoede') {
     // Speed: 0.95x speed (delicate, calm, and comforting pace)
     utterance.pitch = 1.25;
     utterance.rate = 0.95;
+    utterance.volume = 1.0;
     utterance.lang = 'en-US';
 
     const myraaVoice = getMyraaVoice(window.speechSynthesis);
@@ -460,16 +466,46 @@ export function getMyraaAudioAnalyser() {
  * Convert Base64 Raw PCM (16-bit signed Little-Endian, 24kHz mono) to Float32Array
  */
 function pcm16ToFloats(uint8Array) {
-  const int16 = new Int16Array(
-    uint8Array.buffer,
-    uint8Array.byteOffset,
-    Math.floor(uint8Array.byteLength / 2)
-  );
-  const floats = new Float32Array(int16.length);
-  for (let i = 0; i < int16.length; i++) {
-    floats[i] = int16[i] / 32768.0;
+  const numSamples = Math.floor(uint8Array.byteLength / 2);
+  const floats = new Float32Array(numSamples);
+  const dataView = new DataView(uint8Array.buffer, uint8Array.byteOffset, uint8Array.byteLength);
+  for (let i = 0; i < numSamples; i++) {
+    floats[i] = dataView.getInt16(i * 2, true) / 32768.0;
   }
   return floats;
+}
+
+/**
+ * Convert raw 16-bit PCM (24kHz Mono) into standard playable RIFF WAV Blob
+ */
+function pcm16ToWavBlob(uint8Array, sampleRate = 24000, numChannels = 1) {
+  const dataLength = uint8Array.byteLength;
+  const buffer = new ArrayBuffer(44 + dataLength);
+  const view = new DataView(buffer);
+
+  // "RIFF" chunk descriptor
+  view.setUint32(0, 0x52494646, false); // "RIFF"
+  view.setUint32(4, 36 + dataLength, true); // file size - 8
+  view.setUint32(8, 0x57415645, false); // "WAVE"
+
+  // "fmt " sub-chunk
+  view.setUint32(12, 0x666d7420, false); // "fmt "
+  view.setUint32(16, 16, true); // Subchunk1Size (16 for PCM)
+  view.setUint16(20, 1, true); // AudioFormat (1 = PCM)
+  view.setUint16(22, numChannels, true); // NumChannels
+  view.setUint32(24, sampleRate, true); // SampleRate
+  view.setUint32(28, sampleRate * numChannels * 2, true); // ByteRate
+  view.setUint16(32, numChannels * 2, true); // BlockAlign
+  view.setUint16(34, 16, true); // BitsPerSample (16-bit)
+
+  // "data" sub-chunk
+  view.setUint32(36, 0x64617461, false); // "data"
+  view.setUint32(40, dataLength, true); // data size
+
+  // Write PCM samples
+  new Uint8Array(buffer, 44).set(uint8Array);
+
+  return new Blob([buffer], { type: 'audio/wav' });
 }
 
 function base64ToUint8Array(base64) {
@@ -486,9 +522,9 @@ function base64ToUint8Array(base64) {
 
 /**
  * Official Gemini Live Aoede Voice Engine for Myraa
- * Direct Web Audio API AudioBuffer playback at 24kHz.
+ * Direct Web Audio API AudioBuffer & HTML5 WAV playback at 24kHz.
  * Connects directly to hardware audio destination and real-time frequency analyser.
- * Cascades across gemini-3.1-flash-tts-preview, gemini-2.5-flash-preview-tts, and gemini-2.5-pro-preview-tts.
+ * Cascades across gemini-2.5-flash-preview-tts, gemini-2.5-pro-preview-tts, and gemini-3.1-flash-tts-preview.
  */
 export async function speakGeminiAoedeVoice(text, onComplete, onError) {
   try {
@@ -506,10 +542,11 @@ export async function speakGeminiAoedeVoice(text, onComplete, onError) {
 
     isAudioCancelled = false;
 
-    // Direct target model for Aoede studio speech (bypasses failed quota retries)
+    // Direct target models for Aoede studio speech (prioritize stable 2.5 Flash TTS)
     const candidateModels = [
-      "gemini-3.1-flash-tts-preview",
-      "gemini-2.5-flash-preview-tts"
+      "gemini-2.5-flash-preview-tts",
+      "gemini-2.5-pro-preview-tts",
+      "gemini-3.1-flash-tts-preview"
     ];
 
     let inlineAudioData = null;
@@ -544,8 +581,15 @@ export async function speakGeminiAoedeVoice(text, onComplete, onError) {
           const data = await res.json();
           const audio = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
           if (audio) {
-            inlineAudioData = audio;
-            break;
+            // Check that audio is not completely silent / all zeroes
+            const sampleBytes = base64ToUint8Array(audio.slice(0, 100));
+            const hasSignal = sampleBytes.some(b => b !== 0);
+            if (hasSignal || audio.length > 500) {
+              inlineAudioData = audio;
+              break;
+            } else {
+              console.warn(`[Gemini TTS ${modelName}] returned silent stream, checking next model`);
+            }
           }
         } else {
           console.warn(`[Gemini TTS ${modelName}] returned ${res.status}`);
@@ -562,97 +606,78 @@ export async function speakGeminiAoedeVoice(text, onComplete, onError) {
 
     if (isAudioCancelled) return true;
 
-    // Convert raw 16-bit 24kHz PCM to Float32Array
+    // Convert raw 16-bit 24kHz PCM to both Float32Array and playable WAV Blob
     const uint8Array = base64ToUint8Array(inlineAudioData);
-    const floats = pcm16ToFloats(uint8Array);
-
-    const AudioContextClass = (typeof window !== 'undefined') ? (window.AudioContext || window.webkitAudioContext) : null;
-    if (!AudioContextClass) {
-      if (onError) onError(new Error("Web Audio API not supported"));
-      return false;
-    }
-
-    if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
-      sharedAudioCtx = new AudioContextClass();
-    }
-    if (sharedAudioCtx.state === 'suspended') {
-      await sharedAudioCtx.resume().catch(() => {});
-    }
+    const wavBlob = pcm16ToWavBlob(uint8Array, 24000);
+    const audioUrl = URL.createObjectURL(wavBlob);
 
     // Stop any existing playing source and silence any browser robot speech
     if (currentSource) {
       try { currentSource.stop(); currentSource.disconnect(); } catch (e) {}
       currentSource = null;
     }
+    if (currentAudioElement) {
+      try { currentAudioElement.pause(); currentAudioElement.src = ''; } catch (e) {}
+      currentAudioElement = null;
+    }
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       try { window.speechSynthesis.cancel(); } catch (e) {}
     }
 
-    // Create 24000Hz AudioBuffer (native resampler handles output to hardware)
-    const audioBuffer = sharedAudioCtx.createBuffer(1, floats.length, 24000);
-    audioBuffer.getChannelData(0).set(floats);
-
-    const source = sharedAudioCtx.createBufferSource();
-    source.buffer = audioBuffer;
-
-    if (!myraaOutputAnalyser) {
-      myraaOutputAnalyser = sharedAudioCtx.createAnalyser();
-      myraaOutputAnalyser.fftSize = 256;
-      myraaOutputAnalyser.smoothingTimeConstant = 0.8;
-    }
-
-    // Studio Vocal Presence Filter (enhances vocal clarity & speech intelligibility at 2.8kHz)
-    const presenceFilter = sharedAudioCtx.createBiquadFilter();
-    presenceFilter.type = 'peaking';
-    presenceFilter.frequency.value = 2800;
-    presenceFilter.Q.value = 1.0;
-    presenceFilter.gain.value = 3.5;
-
-    // Studio Dynamics Compressor (levels quiet syllables and prevents clipping when boosted)
-    const compressor = sharedAudioCtx.createDynamicsCompressor();
-    compressor.threshold.value = -18;
-    compressor.knee.value = 10;
-    compressor.ratio.value = 4;
-    compressor.attack.value = 0.003;
-    compressor.release.value = 0.2;
-
-    // Output Gain Booster: 2.2x (+6.8dB) for loud, crystal-clear projection
-    const gainNode = sharedAudioCtx.createGain();
-    gainNode.gain.value = 2.2;
-
-    source.connect(presenceFilter);
-    presenceFilter.connect(compressor);
-    compressor.connect(gainNode);
-    gainNode.connect(myraaOutputAnalyser);
-    myraaOutputAnalyser.connect(sharedAudioCtx.destination);
-
-    currentSource = source;
+    const audio = new Audio(audioUrl);
+    audio.volume = 1.0;
+    currentAudioElement = audio;
 
     let finished = false;
     const finishHandler = () => {
       if (finished) return;
       finished = true;
-      if (currentSource === source) {
-        currentSource = null;
+      try { URL.revokeObjectURL(audioUrl); } catch (e) {}
+      if (currentAudioElement === audio) {
+        currentAudioElement = null;
       }
-      try { source.disconnect(); } catch (e) {}
-      try { presenceFilter.disconnect(); } catch (e) {}
-      try { compressor.disconnect(); } catch (e) {}
-      try { gainNode.disconnect(); } catch (e) {}
       if (onComplete) onComplete();
     };
 
-    source.onended = finishHandler;
+    audio.onended = finishHandler;
+    audio.onerror = (e) => {
+      console.warn('[Gemini Aoede HTML Audio playback error, falling back]:', e);
+      try { URL.revokeObjectURL(audioUrl); } catch (err) {}
+      currentAudioElement = null;
+      if (onError) onError(e);
+    };
 
-    // Safety watchdog: audioBuffer.duration + 0.6s to prevent UI locks
-    const watchdogMs = Math.ceil((audioBuffer.duration + 0.6) * 1000);
-    setTimeout(() => {
-      if (!finished && currentSource === source) {
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(async (playErr) => {
+        console.warn('[Gemini Aoede HTML Audio play blocked, falling back to Web Audio API buffer]:', playErr);
+        try {
+          const AudioContextClass = (typeof window !== 'undefined') ? (window.AudioContext || window.webkitAudioContext) : null;
+          if (AudioContextClass) {
+            if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
+              sharedAudioCtx = new AudioContextClass();
+            }
+            if (sharedAudioCtx.state === 'suspended') {
+              await sharedAudioCtx.resume().catch(() => {});
+            }
+            const floats = pcm16ToFloats(uint8Array);
+            const audioBuffer = sharedAudioCtx.createBuffer(1, floats.length, 24000);
+            audioBuffer.getChannelData(0).set(floats);
+            const source = sharedAudioCtx.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(sharedAudioCtx.destination);
+            currentSource = source;
+            source.onended = finishHandler;
+            source.start(0);
+            return;
+          }
+        } catch (webaudioErr) {
+          console.warn('[Web Audio API fallback failed]:', webaudioErr);
+        }
         finishHandler();
-      }
-    }, watchdogMs);
+      });
+    }
 
-    source.start(0);
     return true;
   } catch (err) {
     console.warn('[Gemini Aoede TTS call failed]:', err);
@@ -683,7 +708,7 @@ export async function speakDOAPVoice(text, arg2, arg3, arg4) {
   if (typeof arg2 === 'function') {
     onComplete = arg2;
     onError = typeof arg3 === 'function' ? arg3 : null;
-    voiceKey = typeof arg3 === 'string' ? arg3 : (typeof arg4 === 'string' ? arg4 : 'charon');
+    voiceKey = typeof arg3 === 'string' ? arg3 : (typeof arg4 === 'string' ? arg4 : 'aoede');
   }
   // Case B: (text, voiceKey, onComplete, onError)
   else if (typeof arg2 === 'string') {
@@ -693,7 +718,7 @@ export async function speakDOAPVoice(text, arg2, arg3, arg4) {
   }
   // Case C: (text, optionsObject)
   else if (typeof arg2 === 'object' && arg2 !== null) {
-    voiceKey = arg2.voiceKey || arg2.voiceName || arg2.voice || 'charon';
+    voiceKey = arg2.voiceKey || arg2.voiceName || arg2.voice || 'aoede';
     onComplete = arg2.onEnd || arg2.onComplete || null;
     onError = arg2.onError || null;
   }
@@ -703,16 +728,12 @@ export async function speakDOAPVoice(text, arg2, arg3, arg4) {
   unlockAudioContext();
 
   const cleanText = humanizeTextForSpeech(text);
-
-  const isMyraaPersona = ['myraa', 'sarah', 'aoede', 'ana'].includes((voiceKey || '').toLowerCase()) ||
-                         ['myraa', 'sarah', 'aoede', 'ana'].includes(((typeof localStorage !== 'undefined' && localStorage.getItem('doap_voice_persona')) || '').toLowerCase());
-
   const skipGemini = (typeof arg2 === 'object' && arg2?._skipGemini) || false;
 
-  // 0. Absolute Highest Priority for Myraa: Gemini Live Aoede Studio Audio
-  if (isMyraaPersona && !skipGemini) {
+  // 0. Absolute Highest Priority: Gemini Live Aoede Studio Audio
+  if (!skipGemini) {
     const success = await speakGeminiAoedeVoice(cleanText, onComplete, (err) => {
-      console.warn('[Gemini Aoede failed, falling back to Edge Neural]:', err);
+      console.warn('[Gemini Aoede failed, falling back to Browser Neural]:', err);
     });
     if (success) return;
   }
@@ -766,7 +787,7 @@ export async function speakDOAPVoice(text, arg2, arg3, arg4) {
   if (ttsProvider === 'elevenlabs' && customElevenKey) {
     try {
       const normalizedKey = (voiceKey || '').toLowerCase();
-      const elevenVoiceId = ELEVEN_VOICES[normalizedKey]?.id || ELEVEN_VOICES.charon.id;
+      const elevenVoiceId = ELEVEN_VOICES[normalizedKey]?.id || ELEVEN_VOICES.aoede?.id || ELEVEN_VOICES.charon?.id;
       const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenVoiceId}/stream`, {
         method: 'POST',
         headers: {
@@ -810,69 +831,50 @@ export async function speakDOAPVoice(text, arg2, arg3, arg4) {
     }
   }
 
-  // 3. DOAP High-Fidelity Studio Neural Voice Engine (via /api/ai/tts)
-  // Powered by Azure / Microsoft Edge Neural Voices: 100% human-grade, zero API keys, unlimited characters!
-  let activePersona = voiceKey;
-  if (!activePersona || activePersona === 'default' || activePersona === 'charon') {
-    const savedPersona = typeof localStorage !== 'undefined' ? localStorage.getItem('doap_voice_persona') : '';
-    if (savedPersona) activePersona = savedPersona;
-  }
+  // 3. If running on local server with active Node backend, attempt /api/ai/tts
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    try {
+      const ttsRes = await fetch('/api/ai/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: cleanText,
+          voice: 'aoede'
+        })
+      });
 
-  const isMyraaEdgePersona = ['myraa', 'sarah', 'aoede', 'ana'].includes((activePersona || '').toLowerCase());
-  if (!isMyraaEdgePersona) {
-    if (activePersona === 'neerja') activePersona = 'prabhat';
-    if (activePersona === 'jenny' || activePersona === 'aria' || activePersona === 'kore') activePersona = 'guy';
-    if (FEMALE_VOICE_KEYWORDS.some(kw => (activePersona || '').toLowerCase().includes(kw))) {
-      activePersona = 'charon';
-    }
-  }
+      if (ttsRes.ok && ttsRes.headers.get('content-type')?.includes('audio')) {
+        const blob = await ttsRes.blob();
+        if (isAudioCancelled) return;
+        const audioUrl = URL.createObjectURL(blob);
+        const audio = new Audio(audioUrl);
+        currentAudioElement = audio;
 
-  try {
-    const ttsRes = await fetch('/api/ai/tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text: cleanText,
-        voice: activePersona
-      })
-    });
+        audio.onended = () => {
+          try { URL.revokeObjectURL(audioUrl); } catch (e) {}
+          currentAudioElement = null;
+          if (onComplete) onComplete();
+        };
 
-    if (ttsRes.ok) {
-      const blob = await ttsRes.blob();
-      if (isAudioCancelled) return;
-      const audioUrl = URL.createObjectURL(blob);
-      const audio = new Audio(audioUrl);
-      currentAudioElement = audio;
+        audio.onerror = () => {
+          try { URL.revokeObjectURL(audioUrl); } catch (e) {}
+          currentAudioElement = null;
+          fallbackBrowserSpeech(cleanText, onComplete, 'aoede');
+        };
 
-      audio.onended = () => {
-        try { URL.revokeObjectURL(audioUrl); } catch (e) {}
-        currentAudioElement = null;
-        if (onComplete) onComplete();
-      };
-
-      audio.onerror = (e) => {
-        try { URL.revokeObjectURL(audioUrl); } catch (e) {}
-        currentAudioElement = null;
-        console.warn('[DOAP Neural Voice] Playback error, falling back to browser:', e);
-        fallbackBrowserSpeech(cleanText, onComplete, activePersona);
-      };
-
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        await playPromise;
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          await playPromise;
+        }
+        return;
       }
-      return; // High-fidelity neural speech active!
-    } else {
-      console.warn(`[DOAP Neural Voice] /api/ai/tts returned status ${ttsRes.status}`);
+    } catch (neuralErr) {
+      console.warn('[DOAP Neural Voice] Local backend TTS failed, falling back to browser:', neuralErr);
     }
-  } catch (neuralErr) {
-    console.warn('[DOAP Neural Voice] Backend TTS call failed, falling back to browser:', neuralErr);
   }
 
-  // 4. Final Fallback: Browser Native SpeechSynthesis with softened pitch & rate
-  if (!isAudioCancelled) {
-    fallbackBrowserSpeech(cleanText, onComplete, activePersona);
-  }
+  // 4. Guaranteed Zero-Failure Fallback: Browser Native SpeechSynthesis with sweet Aoede pitch & pacing
+  fallbackBrowserSpeech(cleanText, onComplete, 'aoede');
 }
 
 /**
