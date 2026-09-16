@@ -46,6 +46,8 @@ The platform was built under the visionary educational leadership of:
 
 Created for the landmark **"Build Sanjivani's Own Large Language Model — Build AI for Sanjivani, by Sanjivani"** initiative on the occasion of the Birthday of Hon. Shri Nitindada S. Kolhe Saheb, DOAP represents an elite leap in academic AI, hands-free conversational intelligence, and software engineering mentorship.
 
+📄 **Official Technical Documentation**: The complete 15-section architectural and pedagogical engineering report is available in the repository root as [`DOAP_Technical_Specification_Report.docx`](DOAP_Technical_Specification_Report.docx).
+
 ---
 
 ## 📖 Table of Contents
@@ -87,7 +89,7 @@ Created for the landmark **"Build Sanjivani's Own Large Language Model — Build
  🎥 AI Interview Fullscreen   │ 👔 Instant 1-Click Native Fullscreen, Live Webcam, Waveform & Telemetry HUD
  🏢 Sleek Company Carousel    │ 🖱️ Zero Ugly Scrollbars + Next/Prev Navigation Buttons & Mouse-Wheel Scrolling
  🧠 DOAP Thinking 120B Brain  │ ⚡ Deep Cognitive Self-Thinking & Sub-150ms Groq LPU Inference
- 🎙️ Neural Studio Voice Core  │ 🔊 Zero-Key High-Fidelity Audio (Andrew, Neerja Expressive, Jenny, Prabhat)
+ 🎙️ Neural Studio Voice Core  │ 🔊 Multilingual Female Voice (Swara - Hindi, English & Hinglish) + Neerja & Prabhat
  🏢 Company Placement Archive │ 🏛️ 8,699+ Curated Questions across 16 Tech Giants (TCS, Google, Amazon)
  🟩 HackerRank Placement Track│ 🎯 20 Iconic Interview Prep Kit & Problem Solving Cert Challenges
  🌐 Multi-Platform Filtering  │ 🔍 1-Click Switch: All (167+), HackerRank, LeetCode & Blind 75
@@ -321,13 +323,19 @@ DOAP features an enterprise-grade, zero-API-key **Neural Studio Voice Engine** (
 
 ### 🌟 Key Studio Voice Personas
 
-| Persona Name | Voice Identifier | Accent & Speaking Persona | Best Suited For |
-|---|---|---|---|
-| **Andrew / Charon** | `en-US-AndrewMultilingualNeural` | Deep, articulate, authoritative US English | Principal Engineer Mock Interviews |
-| **Neerja Expressive** | `en-IN-NeerjaExpressiveNeural` | Warm, expressive Indian English with natural inflections | Daily Socratic Mentorship & Voice Tutor |
-| **Prabhat** | `en-IN-PrabhatNeural` | Crisp, academic, articulate Indian English | Technical Concept Explanations & Theory |
-| **Jenny** | `en-US-JennyNeural` | Energetic, crisp, contemporary Silicon Valley lead | Dynamic Speed Coding & Daily Drills |
-| **Brian** | `en-US-BrianNeural` | Grounded, professional UK/US technical lead | Behavioral & System Design Interviews |
+| Persona Name | Voice Identifier | Accent & Speaking Persona | Language Fluency | Best Suited For |
+|---|---|---|---|---|
+| **Swara Neural (Default)** | `hi-IN-SwaraNeural` | Warm, articulate, high-definition Indian Female mentor | **Hindi (हिंदी), Hinglish & English** | Daily Socratic Mentorship, Voice Tutor & Code Explanations |
+| **Neerja Neural** | `en-IN-NeerjaNeural` | Crisp, professional Indian Female interviewer | **Indian English & Hinglish** | Mock Technical Interviews & Executive Evaluations |
+| **Prabhat Neural** | `en-IN-PrabhatNeural` | Crisp, academic, articulate Indian Male mentor | **Indian English & Hinglish** | Algorithmic Problem Solving & Theoretical Deep-Dives |
+| **Guy Neural** | `en-US-GuyNeural` | Conversational, energetic Silicon Valley Tech Lead | **US English** | Dynamic Speed Coding & System Architecture Reviews |
+
+#### 🗣️ Native Multilingual & Hinglish Phonetic Normalization
+DOAP's voice engine incorporates an advanced humanizing phonetic normalizer ([`src/services/elevenLabsService.js`](file:///src/services/elevenLabsService.js)):
+* **Zero Emoji Pronunciation**: Strips all Unicode emojis, pictographs, and dingbats so the TTS never vocalizes symbol descriptions.
+* **Hinglish Conversational Smoothing**: Pronunciation rules optimize colloquial Hindi/Hinglish phrases (e.g., *"samjhe"*, *"kaise ho"*, *"shuru karte hain"*, *"theek hai"*, *"dekho"*) for native Indian speech cadence.
+* **Code & Operator Translation**: Mathematical and programming symbols (`!==`, `===`, `<=`, `O(n log n)`) are automatically converted into fluid, conversational spoken English.
+* **Triple Fallback Resilience**: Seamlessly cascades from Microsoft Edge Neural TTS (`/api/ai/tts`) → Kokoro Open-Weights Local Container (`http://localhost:8880`) → Browser Native SpeechSynthesis (`getBestNaturalVoice()`).
 
 ---
 
@@ -373,7 +381,7 @@ Mounted globally via [`src/components/Modals/BrainVaultModal.jsx`](file:///src/c
 
 ## 🎙️ Real-Time Voice AI Tutor with Live I/O Console (`IO`)
 
-Powered by ElevenLabs Charon Studio Voice and Groq Whisper Large v3 Turbo, the Voice Tutor includes a **Three-Tier Glassmorphic Live I/O Console** (accessible via the top-bar `IO` button):
+Powered by the **DOAP Neural Studio Voice Engine (Swara Female Neural — Hindi, Hinglish & English)**, ElevenLabs Studio, and Groq Whisper Large v3 Turbo, the Voice Tutor includes a **Three-Tier Glassmorphic Live I/O Console** (accessible via the top-bar `IO` button):
 
 1. **INPUT Block (Voice / Prompt)**: Displays the student's real-time spoken transcript with a live `"Listening..."` indicator and 1-click **Copy Input** button.
 2. **OUTPUT Block (DOAP AI Response)**: Displays the AI tutor's text response with a `"Speaking..."` status pill and 1-click **Copy Output** button.
@@ -601,7 +609,7 @@ npx -y firebase-tools@latest deploy
 | **Frontend Framework** | React 18, Vite 6 |
 | **Styling & UI Design** | Tailwind CSS v4, Lucide Icons, Glassmorphism & Print Media Engine |
 | **Large Language Models** | Groq LPU (GPT-OSS 120B Flagship, Qwen 27B) + Deep Cognitive Self-Thinking |
-| **Speech & Audio** | DOAP Neural Studio Voice Engine (`msedge-tts` / `/api/ai/tts`), Groq Whisper Large v3 Turbo, ElevenLabs Charon Studio (`eleven_turbo_v2_5`), Kokoro TTS |
+| **Speech & Audio** | DOAP Neural Studio Voice Engine (Swara Female Neural — Hindi/Hinglish/English, Neerja, Prabhat via `msedge-tts` / `/api/ai/tts`), Groq Whisper Large v3 Turbo, ElevenLabs Studio (`eleven_turbo_v2_5`), Kokoro TTS |
 | **Backend & Proxy** | Node.js Express (`server/index.js`) + Vite Dynamic Proxy Engine |
 | **Assessments & Certs** | 28 Interactive Certification Tracks, 36 GitHub Take-Home Projects, 482+ Questions |
 | **Cognitive Memory** | Unified 8-Layer Living Memory Brain (`memoryBrain.js`) + Interactive Brain Vault Modal |

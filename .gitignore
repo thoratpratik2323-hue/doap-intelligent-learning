@@ -25,6 +25,7 @@ build/
 .DS_Store
 Thumbs.db
 Desktop.ini
+~$*
 
 # ─── Editor directories and files ────────────────────────────
 .vscode/
