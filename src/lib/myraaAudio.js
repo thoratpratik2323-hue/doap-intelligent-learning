@@ -163,7 +163,7 @@ export class MyraaWebSession {
         if (activeText.length >= 2 && this.state === "listening") {
           this.onTranscription("user", activeText);
 
-          // 750ms silence detection: respond promptly when student finishes speaking
+          // 450ms silence detection: respond promptly when student finishes speaking
           clearTimeout(this.silenceTimer);
           this.silenceTimer = setTimeout(() => {
             if (this.state === "listening" && activeText.trim().length >= 2) {
@@ -171,7 +171,7 @@ export class MyraaWebSession {
               this.stopListening();
               this.handleUserQuery(activeText.trim());
             }
-          }, 750);
+          }, 450);
         }
       };
 
@@ -237,11 +237,10 @@ Student asks: "${queryText}"
 
 AI TEACHER ROLE: You are Professor Myraa, the premier engineering professor and mentor on Ziv.
 Instructions:
-- Provide an intuitive, direct, and clear explanation in 2 to 3 spoken sentences.
-- Speak in a natural, polite, engaging young female professor voice.
-- STRICT LANGUAGE MATCHING: If the student asks in Hindi or Hinglish (e.g. "bhai", "kya", "kaise", "samjhao", "sikhna hai"), you MUST reply in natural, friendly spoken Hinglish! If they ask in English, reply in English!
-- Never use markdown symbols, asterisks, or bullet points so speech synthesis sounds completely natural.
-- End with an encouraging check question.`;
+- Provide an intuitive, direct explanation in 1 to 2 crisp spoken sentences (max 25-30 words).
+- Speak in a natural, polite, engaging young female voice.
+- STRICT LANGUAGE MATCHING: If the student asks in Hindi or Hinglish (e.g. "bhai", "kya", "kaise", "samjhao"), reply in natural, friendly spoken Hinglish! If English, reply in English!
+- Never use markdown symbols, asterisks, or bullet points.`;
 
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
           method: 'POST',
@@ -249,8 +248,8 @@ Instructions:
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
             generationConfig: {
-              maxOutputTokens: 250,
-              temperature: 0.7,
+              maxOutputTokens: 75,
+              temperature: 0.6,
               thinkingConfig: {
                 thinkingBudget: 0
               }
@@ -288,9 +287,8 @@ Instructions:
         visionContext = `\n[LIVE USER DISPLAY SCREEN AVAILABLE: The student is sharing their active screen for code review or homework doubt.]\n`;
       }
 
-      // Fast direct AI Teacher reply (300ms - 500ms)
+      // Fast direct AI Teacher reply (sub-1 second)
       const replyText = await this.generateFastTeacherReply(queryText, memoryContext, visionContext);
-      this.onTranscription("model", replyText);
 
       // Detect emotion
       const emotion = this.detectEmotion(replyText);
@@ -299,15 +297,12 @@ Instructions:
       // Auto-extract memory if user shared personal preferences or projects
       this.autoExtractMemory(queryText);
 
-      // Speak response as Myraa
-      this.setState("speaking");
+      // Speak response as Myraa (reveals text and voice concurrently with zero lag)
       await this.speak(replyText);
 
     } catch (err) {
       console.error("[Myraa] Error generating response:", err);
       const fallback = "I caught your question! Let us explore that topic step-by-step together.";
-      this.onTranscription("model", fallback);
-      this.setState("speaking");
       await this.speak(fallback);
     } finally {
       this.isProcessingQuery = false;
@@ -352,29 +347,53 @@ Instructions:
           return;
         }
 
-        // Cancel any lingering audio or speech synthesis before speaking
+        // Cancel any lingering audio before speaking
         stopElevenLabsAudio();
 
-        // 1. Primary Engine: Gemini Live Aoede Studio Voice (Myraa)
+        // Reveal caption and state at the exact moment speech begins
+        this.onTranscription("model", text);
+        this.setState("speaking");
+
+        // Fast 1.4s race limit on Gemini Aoede to guarantee sub-2.5s response time
+        let hasVoiceStarted = false;
+        const speedTimer = setTimeout(() => {
+          if (!hasVoiceStarted) {
+            hasVoiceStarted = true;
+            fallbackBrowserSpeech(clean, safeResolve, 'myraa');
+          }
+        }, 1400);
+
         const geminiOk = await speakGeminiAoedeVoice(
           clean, 
-          safeResolve, 
-          async (err) => {
-            console.warn("[Myraa] Gemini Aoede TTS failed, falling back to DOAP Voice:", err);
-            await speakDOAPVoice(clean, { persona: 'myraa', onComplete: safeResolve, _skipGemini: true });
+          () => {
+            clearTimeout(speedTimer);
+            safeResolve();
+          }, 
+          (err) => {
+            clearTimeout(speedTimer);
+            if (!hasVoiceStarted) {
+              hasVoiceStarted = true;
+              fallbackBrowserSpeech(clean, safeResolve, 'myraa');
+            }
           }
         );
 
         if (geminiOk) {
-          // Gemini audio is playing through Web Audio API and will resolve onComplete
+          hasVoiceStarted = true;
+          clearTimeout(speedTimer);
           return;
         }
 
-        // 2. Secondary Engine: Only if Gemini Aoede could not start (no API key or network error)
-        await speakDOAPVoice(clean, { persona: 'myraa', onComplete: safeResolve, _skipGemini: true });
+        if (!hasVoiceStarted) {
+          hasVoiceStarted = true;
+          clearTimeout(speedTimer);
+          fallbackBrowserSpeech(clean, safeResolve, 'myraa');
+        }
       } catch (e) {
         console.warn("[Myraa] Speech error:", e);
-        safeResolve();
+        this.onTranscription("model", text);
+        this.setState("speaking");
+        fallbackBrowserSpeech(text, safeResolve, 'myraa');
       }
     });
   }

@@ -462,9 +462,9 @@ export function fallbackBrowserSpeech(text, onComplete, persona = 'charon') {
     const isMyraa = ['myraa', 'sarah', 'aoede', 'ana'].includes((persona || '').toLowerCase());
 
     if (isMyraa) {
-      // Myraa youthful, articulate young female professor cadence (Natural pitch, clear delivery)
-      utterance.pitch = 1.0;
-      utterance.rate = 1.0;
+      // Myraa youthful, articulate young female professor cadence (Natural pitch, lively delivery)
+      utterance.pitch = 1.05;
+      utterance.rate = 1.06;
       utterance.lang = 'en-US';
       const myraaVoice = getMyraaVoice(window.speechSynthesis);
       if (myraaVoice) {
@@ -572,11 +572,9 @@ export async function speakGeminiAoedeVoice(text, onComplete, onError) {
 
     isAudioCancelled = false;
 
-    // Ordered list of models supporting Aoede studio speech
+    // Direct target model for Aoede studio speech (bypasses failed quota retries)
     const candidateModels = [
-      "gemini-3.1-flash-tts-preview",
-      "gemini-2.5-flash-preview-tts",
-      "gemini-2.5-pro-preview-tts"
+      "gemini-2.5-flash-preview-tts"
     ];
 
     let inlineAudioData = null;
