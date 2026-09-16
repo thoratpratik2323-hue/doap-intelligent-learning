@@ -11,6 +11,7 @@ import { EditProfileModal } from './components/Modals/EditProfileModal';
 import { SettingsModal } from './components/Modals/SettingsModal';
 import { AuthModal } from './components/Modals/AuthModal';
 import { ErrorBoundary } from './components/Common/ErrorBoundary';
+import { MobileBottomNav } from './components/Shell/MobileBottomNav';
 
 // Code-split lazy loaded components for lightweight initial bundle & fast navigation
 const LandingPage = lazy(() => import('./components/Landing/LandingPage').then(m => ({ default: m.LandingPage })));
@@ -46,16 +47,16 @@ if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
 
 const LoadingScreen = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 select-none doap-canvas">
-      <div className="rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center space-y-4 border doap-card" style={{ backgroundColor: 'var(--doap-surface, #111111)', borderColor: 'var(--doap-border, #262626)' }}>
+    <div className="min-h-screen flex items-center justify-center p-4 select-none bg-white">
+      <div className="rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center space-y-4 border border-rose-100 bg-white shadow-rose-950/5">
         <img 
-          src="/doap-logo.jpg" 
+          src="/ziv-logo.png" 
           alt="Ziv Logo" 
-          className="h-10 mx-auto object-contain rounded-xl shadow-md animate-pulse" 
+          className="h-14 mx-auto object-contain drop-shadow-sm animate-pulse" 
         />
         <div className="space-y-1">
-          <h3 className="font-bold text-base tracking-tight" style={{ color: 'var(--text-primary, var(--doap-text-prim))' }}>Resolving Ziv Session</h3>
-          <p className="text-xs font-mono" style={{ color: 'var(--text-secondary, var(--doap-text-sec))' }}>Verifying session status...</p>
+          <h3 className="font-bold text-base tracking-tight text-[#18181B]">Resolving Ziv Session</h3>
+          <p className="text-xs font-mono text-rose-600 font-semibold">Verifying session status...</p>
         </div>
       </div>
     </div>
@@ -191,7 +192,7 @@ const AppContent = () => {
               <Header onOpenMobileSidebar={() => setIsMobileOpen(true)} />
             )}
             
-            <main className={`flex-1 min-w-0 ${currentPath === '/ai-tutor' || currentPath === '/voice-tutor' ? 'p-0 h-[100dvh] md:h-[calc(100vh-2rem)] lg:h-[calc(100vh-3rem)] overflow-hidden flex flex-col' : 'p-3 md:p-6 lg:p-8 overflow-y-auto'}`}>
+            <main className={`flex-1 min-w-0 ${currentPath === '/ai-tutor' || currentPath === '/voice-tutor' ? 'p-0 h-[100dvh] md:h-[calc(100vh-2rem)] lg:h-[calc(100vh-3rem)] overflow-hidden flex flex-col' : 'p-3 md:p-6 lg:p-8 pb-20 md:pb-8 overflow-y-auto'}`}>
               <ErrorBoundary>
                 <div key={currentPath} className={`animate-page-transition ${currentPath === '/ai-tutor' || currentPath === '/voice-tutor' ? 'h-full flex-1 flex flex-col min-h-0' : ''}`}>
                   <Suspense fallback={<PageLoader />}>
@@ -203,6 +204,9 @@ const AppContent = () => {
           </div>
         </div>
       </div>
+
+      {/* Sleek Mobile Bottom Navigation */}
+      <MobileBottomNav />
 
       {/* Floating Action Button, Background AI Notifications & Modals */}
       <AITutorBackgroundNotification />

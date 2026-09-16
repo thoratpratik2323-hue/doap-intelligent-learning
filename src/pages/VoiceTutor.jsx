@@ -268,6 +268,15 @@ export const VoiceTutor = () => {
       
       {/* ── Center Stage: Holographic Visualizer ─────────────── */}
       <main className="relative flex-1 flex flex-col items-center justify-center overflow-hidden">
+        {state !== "disconnected" && (
+          <div className="absolute top-4 z-30 flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 border border-rose-200 shadow-md shadow-rose-950/5 backdrop-blur-md animate-fade-in">
+            <span className="w-2 h-2 rounded-full bg-rose-600 animate-ping" />
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-rose-700">
+              Professor Myraa • Active
+            </span>
+          </div>
+        )}
+
         {/* Living Core Visualizer */}
         <div className="absolute inset-0">
           <MyraaCoreVisualizer

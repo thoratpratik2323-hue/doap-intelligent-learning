@@ -602,7 +602,7 @@ const formatTimer = (totalSecs) => {
 export const CodingPractice = ({ initialTab = 'problems' }) => {
   const { isDarkMode, activeAccentHex, navigateTo } = useTheme();
   const { userProgress, updateUserProgress } = useAuth();
-  const accentHex = activeAccentHex || 'var(--doap-accent, #ffffff)';
+  const accentHex = '#E11D48';
 
   const solvedProblems = userProgress?.solvedProblems || [];
 
@@ -3308,7 +3308,7 @@ Evaluate this code strictly:
                     type="button"
                     onClick={handleRunCode}
                     disabled={isRunning}
-                    className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center gap-2 cursor-pointer border border-white/20 transition-all active:scale-95 disabled:opacity-50"
+                    className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-lg shadow-rose-600/25 transition-all active:scale-95 disabled:opacity-50"
                   >
                     <Play size={13} className={isRunning ? 'animate-spin' : ''} />
                     <span>{isRunning ? 'Running...' : 'Run Code'}</span>
@@ -3750,8 +3750,7 @@ Evaluate this code strictly:
                 <button
                   onClick={handleRunCode}
                   disabled={isRunning}
-                  className="px-6 py-2.5 rounded-xl text-xs font-bold shadow-md cursor-pointer hover-glide flex items-center gap-2 disabled:opacity-50"
-                  style={{ backgroundColor: accentHex, color: 'var(--doap-bg, #000000)' }}
+                  className="px-6 py-2.5 rounded-xl text-xs font-bold shadow-xl shadow-rose-600/25 bg-rose-600 hover:bg-rose-700 text-white cursor-pointer flex items-center gap-2 disabled:opacity-50 transition-transform active:scale-95"
                 >
                   <Play size={14} className={isRunning ? "animate-spin" : ""} />
                   <span>{isRunning ? 'Running Tests...' : 'Run Code & Tests'}</span>
