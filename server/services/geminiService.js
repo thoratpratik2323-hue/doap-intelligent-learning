@@ -25,21 +25,26 @@ Guidelines:
 - Tone: friendly, encouraging, sharp, and academic.
 - User info: ${userContext.name || 'Student'}, Year: ${userContext.year || '3rd Year'}, Major: ${userContext.course || 'Computer Science'}.
 
-DEPARTMENT FACULTY & SUBJECT DIRECTORY (Artificial Intelligence & Data Science - AI & DS):
-- Department: Artificial Intelligence and Data Science
+DEPARTMENT FACULTY & LEADERSHIP DIRECTORIES:
+
+1. Department of Integrated M.Tech (IMTECH):
+- Head of Department (HOD): Dr. Anwar A Shaikh (Contact: 9044013605, Email: anwarshaikhset@sanjivani.edu.in)
+- 1st Year: Prof. Prajwal Aher (Maths-1, NSS), Prof. Piyush Sahu (Design Thinking, Indian Knowledge System), Dr. Anwar A Shaikh (Computing Systems), Prof. Sadhna Gunjir (English), Prof. Hari Prasath K (C Programming)
+- 2nd Year: Dr. Latika Bawankar (Linear Algebra), Prof. Prajwal Aher (Python / Data Science), Prof. Piyush Sahu (Cyber Security), Prof. Vikas Kumar (Data Analytics), Dr. Anwar A Shaikh (DSA), Dr. Bandana Thakur (Financial Management), Prof. D. Roushan (Japanese), Prof. Riya Khandelwal (German)
+
+2. Department of Artificial Intelligence and Data Science (AI & DS):
 - Head of Department (HOD): Dr. Kishor Jhadav (Contact: 9890423309)
 - First Year Class Coordinator: Dr. Shreeparna Das (Cabin: 9th Floor)
-- Faculty, Subject & Cabin Mapping:
-  1. Dr. Vishwesh Nagamalla — Introduction to Programming and Data Structure | Cabin: 9th Floor
-  2. Prashant Kamkar (IBM Faculty) — Python | Industry Expert Faculty (IBM)
-  3. Ganesh Phopase — Technical and Professional Communication Skills
-  4. Sarvjeet Singh — Engineering Mathematics | Cabin: 2nd Floor
-  5. Dr. Tanay Ghosh — Applied Physics (Theory) | Cabin: 2nd Floor
-  6. Mrs. Sarika Maske — Applied Physics (Practical) | Cabin: Extension Building
-  7. Dr. Hirak Chatterjee — Applied Chemistry (Theory and Practical) | Cabin: 10th Floor
-  8. Ms. Tanvi Chatse — German (Foreign Language)
-  9. Dr. Shreeparna Das — First Year Class Coordinator | Cabin: 9th Floor
-When asked about any faculty, teachers, HOD, contact numbers, cabin locations, or subjects in AI & DS, provide these exact details accurately.`;
+- Faculties: Dr. Vishwesh Nagamalla (Programming & Data Structures, 9th Floor), Prashant Kamkar (Python, IBM Center / Lab), Ganesh Phopase (Technical Communication), Sarvjeet Singh (Engineering Maths, 2nd Floor), Dr. Tanay Ghosh (Physics Theory, 2nd Floor), Mrs. Sarika Maske (Physics Practicals, Extension Building), Dr. Hirak Chatterjee (Chemistry, 10th Floor), Ms. Tanvi Chatse (German)
+
+3. Department of Mechanical Engineering:
+- Head of Department (HOD): Kailash Bhosale (Cabin: 7th Floor Staff Room)
+- Class Coordinator: Omkar Dadi | Clerk: Harshda Kolpe | All faculty on 7th Floor Staff Room
+- Faculties: Pankaj Patil (CAD/Graphics), Kiran Wakchure (Makerspace), Jaydeep Ashtekar & Pratibha Sinha (Python), Tanay Renu Ghosh (Physics), Hirak Chatterjee (Chemistry), Prajwal Aher (Maths), Sadhna Ganjir (English)
+
+CRITICAL PRECISION RULE:
+- When asked a specific question (e.g., "Who is the HOD of IMTech?", "Who teaches Python?", "Where is Dr. Vishwesh's cabin?"), answer ONLY that specific question with the exact person's name, title, cabin, and contact details in 2-4 lines.
+- NEVER dump the entire faculty directory or list unrelated professors unless the user explicitly requests the full list or all faculties.`;
 
       // Build conversation contents
       const contents = history.map(item => ({
@@ -129,10 +134,32 @@ Analyze the candidate's answers and respond ONLY with a valid JSON object matchi
   return generateOfflineInterviewEvaluation({ positionTitle, answers, strikeCount, violations });
 }
 
-function generateOfflineTutorResponse(message) {
-  const q = (message || '').toLowerCase();
-  
-  if (q.includes('faculty') || q.includes('teacher') || q.includes('hod') || q.includes('prof') || q.includes('cabin') || q.includes('vishwesh') || q.includes('jhadav') || q.includes('kamkar') || q.includes('shreeparna') || q.includes('sarvjeet') || q.includes('tanay') || q.includes('hirak')) {
+  // Check for HOD specific queries
+  if (q.includes('hod') || q.includes('head of department') || q.includes('dept head')) {
+    if (q.includes('imtech') || q.includes('integrated') || q.includes('anwar')) {
+      return `### 🎓 Head of Department (HOD) — Integrated M.Tech (IMTECH)\n\n- 🎖️ **Head of Department (HOD):** **Dr. Anwar A Shaikh**\n- 📞 **Contact Number:** \`9044013605\`\n- ✉️ **Email:** \`anwarshaikhset@sanjivani.edu.in\`\n- 🏛️ **Department:** Integrated M.Tech (IMTECH), School of Engineering & Technology\n- 📚 **Subjects:** Fundamentals of Computing Systems (1st Year) | Data Structures & Algorithms (2nd Year)`;
+    }
+    if (q.includes('mech') || q.includes('bhosale')) {
+      return `### 🔧 Head of Department (HOD) — Mechanical Engineering\n\n- 🎖️ **Head of Department (HOD):** **Kailash Bhosale**\n- 🏢 **Cabin Location:** **7th Floor Staff Room**\n- 🏛️ **Department:** Mechanical Engineering, School of Engineering & Technology`;
+    }
+    return `### 🏛️ Head of Department (HOD) — Artificial Intelligence & Data Science (AI & DS)\n\n- 🎖️ **Head of Department (HOD):** **Dr. Kishor Jhadav**\n- 📞 **Contact Number:** \`9890423309\`\n- 🏛️ **Department:** Artificial Intelligence & Data Science, School of Engineering & Technology`;
+  }
+
+  // Check for specific faculty member queries
+  if (q.includes('anwar shaikh') || (q.includes('anwar') && !q.includes('hod'))) {
+    return `### 👨‍🏫 Faculty Profile: Dr. Anwar A Shaikh\n\n- 🎖️ **Role:** Head of Department (HOD) & Faculty\n- 🏛️ **Department:** Integrated M.Tech (IMTECH)\n- 📚 **Subjects Taught:** Computing Systems (1st Year) | Data Structures & Algorithms (2nd Year)\n- 📞 **Contact:** \`9044013605\` | ✉️ \`anwarshaikhset@sanjivani.edu.in\``;
+  }
+  if (q.includes('vishwesh')) {
+    return `### 👨‍🏫 Faculty Profile: Dr. Vishwesh Nagamalla\n\n- 🎖️ **Role:** Senior Faculty\n- 🏛️ **Department:** Artificial Intelligence & Data Science (AI & DS)\n- 📚 **Subject:** Introduction to Programming and Data Structure\n- 🏢 **Cabin Location:** **9th Floor**`;
+  }
+  if (q.includes('kamkar')) {
+    return `### 👨‍🏫 Faculty Profile: Prashant Kamkar (IBM Faculty)\n\n- 🎖️ **Role:** IBM Industry Expert Faculty\n- 🏛️ **Department:** AI & DS | 🐍 **Subject:** Python Programming\n- 💻 **Location:** **IBM Center / Lab**`;
+  }
+
+  if (q.includes('faculty') || q.includes('teacher') || q.includes('prof') || q.includes('cabin') || q.includes('directory')) {
+    if (q.includes('imtech') || q.includes('integrated')) {
+      return `### 🎓 Department of Integrated M.Tech (IMTECH) — Faculty Directory\n\n- **HOD:** **Dr. Anwar A Shaikh** (📞 \`9044013605\` | ✉️ \`anwarshaikhset@sanjivani.edu.in\`)\n- **1st Year:** Prof. Prajwal Aher (Maths-1), Prof. Piyush Sahu (Design Thinking), Dr. Anwar A Shaikh (Computing Systems), Prof. Sadhna Gunjir (English), Prof. Hari Prasath K (C Programming)\n- **2nd Year:** Dr. Latika Bawankar (Linear Algebra), Prof. Prajwal Aher (Python), Prof. Piyush Sahu (Cyber Security), Prof. Vikas Kumar (Data Analytics), Dr. Anwar A Shaikh (DSA), Dr. Bandana Thakur (Financial Management), Prof. D. Roushan (Japanese), Prof. Riya Khandelwal (German)`;
+    }
     return `### 🏛️ Department of Artificial Intelligence & Data Science (AI & DS)\n#### 👨‍🏫 Faculty, Subject & Cabin Directory\n\n**👑 Leadership:**\n- **Head of Department (HOD):** **Dr. Kishor Jhadav** | 📞 Contact: \`9890423309\`\n- **First Year Class Coordinator:** **Dr. Shreeparna Das** | 🏢 Cabin: **9th Floor**\n\n| Faculty Name | Subject | Cabin Location |\n| :--- | :--- | :--- |\n| **Dr. Vishwesh Nagamalla** | Introduction to Programming and Data Structure | 🏢 **9th Floor** |\n| **Prashant Kamkar** (IBM) | Python | 💻 **IBM Center / Lab** |\n| **Ganesh Phopase** | Technical & Professional Communication Skills | 🏢 **Department** |\n| **Sarvjeet Singh** | Engineering Mathematics | 🏢 **2nd Floor** |\n| **Dr. Tanay Ghosh** | Applied Physics (Theory) | 🏢 **2nd Floor** |\n| **Mrs. Sarika Maske** | Applied Physics (Practical) | 🏢 **Extension Building** |\n| **Dr. Hirak Chatterjee** | Applied Chemistry (Theory & Practical) | 🏢 **10th Floor** |\n| **Ms. Tanvi Chatse** | German | 🏢 **Language Wing** |\n| **Dr. Shreeparna Das** | First Year Class Coordinator | 🏢 **9th Floor** |`;
   }
 

@@ -152,6 +152,10 @@ INTEGRATED M.TECH (IMTECH) DEPARTMENT — FACULTY & SUBJECT DIRECTORY:
 8. Prof. Riya Khandelwal — Foreign Language - 1 (German)
 
 Whenever any student asks about IMTECH faculty, HOD, Maths, Design Thinking, Computing Systems, English, C Programming, Data Science, Python, Cyber Security, Data Analytics, Data Structures, Financial Management, Japanese, German — provide exact details!
+
+CRITICAL PRECISION GUIDELINE FOR AI CHATBOT & TUTOR:
+- If a user asks a specific question (e.g. "Who is the HOD of IMTech?", "Who teaches Python?", "Where is Dr. Vishwesh's cabin?"), answer ONLY that specific question with the exact person's name, role, cabin, and contact details in 2-4 lines.
+- NEVER dump the entire faculty directory or list all other professors unless the user explicitly requests the full list, table, or all faculties!
 `;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -380,4 +384,8 @@ INTEGRATED M.TECH (IMTECH) DEPARTMENT — FACULTY & SUBJECT DIRECTORY:
 8. Prof. Riya Khandelwal — Foreign Language - 1 (German)
 
 Whenever any student asks about IMTECH faculty, HOD Dr. Anwar Shaikh, Maths, Design Thinking, Computing Systems, C Programming, Data Science, Python, Cyber Security, Data Analytics, DSA, Financial Management, Japanese, German in IMTECH department — provide these exact details accurately and clearly!
+
+CRITICAL PRECISION GUIDELINE:
+- When asked specifically about HOD Dr. Anwar Shaikh, respond ONLY with his details, subjects, and contact information.
+- Do NOT list other faculties unless asked for the entire directory or full list.
 `;
