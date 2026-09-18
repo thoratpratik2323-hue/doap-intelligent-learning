@@ -134,6 +134,9 @@ Analyze the candidate's answers and respond ONLY with a valid JSON object matchi
   return generateOfflineInterviewEvaluation({ positionTitle, answers, strikeCount, violations });
 }
 
+function generateOfflineTutorResponse(message) {
+  const q = (message || '').toLowerCase();
+
   // Check for HOD specific queries
   if (q.includes('hod') || q.includes('head of department') || q.includes('dept head')) {
     if (q.includes('imtech') || q.includes('integrated') || q.includes('anwar')) {
