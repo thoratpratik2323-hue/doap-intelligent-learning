@@ -359,10 +359,10 @@ Developed by **Pratik Thorat** for **Sanjivani College of Engineering (SCOE) / S
   );
 
   if (isFacultyQuery) {
-    // 1. Department Detection
-    const isMechQuery = /\b(mech|mechanical|bhosale|pankaj patil|kiran wakchure|wakchure|jaydeep ashtekar|pratibha sinha|vasudev sengar|sengar|tanay renu|omkar dadi|dadi|harshda kolpe|kolpe|engineering graphics|cad|makerspace|7th floor)\b/i.test(cleanText);
-    const isImtechQuery = /\b(imtech|integrated mtech|integrated m\.tech|anwar shaikh|piyush sahu|latika bawankar|vikas kumar|bandana thakur|roushan|riya khandelwal|hari prasath|cyber security|data analytics|japanese|financial management)\b/i.test(cleanText);
-    const isAidsQuery = /\b(aids|ai & ds|ai and ds|ai\/ds|artificial intelligence|data science|kishor jhadav|jhadav|shreeparna|vishwesh|nagamalla|prashant kamkar|kamkar|sarika maske|tanvi chatse|9th floor|10th floor)\b/i.test(cleanText);
+    // 1. Department Detection (with typo tolerance e.g. mechnaical, im tech, aids)
+    const isMechQuery = /\b(m[ea]ch[a-z]*|bhosale|pankaj patil|kiran wakchure|wakchure|jaydeep ashtekar|pratibha sinha|vasudev sengar|sengar|tanay renu|omkar dadi|dadi|harshda kolpe|kolpe|engineering graphics|cad|makerspace|7th floor)\b/i.test(cleanText) || /m[ea]ch/i.test(cleanText);
+    const isImtechQuery = /\b(im\s*tech|integrated\s*m[a-z]*|anwar|anwar shaikh|piyush sahu|latika bawankar|vikas kumar|bandana thakur|roushan|riya khandelwal|hari prasath|cyber security|data analytics|japanese|financial management)\b/i.test(cleanText) || /im\s*tech/i.test(cleanText);
+    const isAidsQuery = /\b(aids|ai\s*(&|and)?\s*ds|ai\/ds|artific[a-z]*|data\s*scien[a-z]*|kishor|jhadav|shreeparna|vishwesh|nagamalla|prashant kamkar|kamkar|sarika maske|tanvi chatse|9th floor|10th floor)\b/i.test(cleanText);
 
     // 2. Full Directory Request Check (e.g., "show all faculties", "faculty list", "give me the complete table")
     const isFullListRequested = /\b(all|entire|full|purna|saare|sarv|list|directory|table|saglya|saglyanche|overview|everyone)\b/i.test(cleanText) ||
